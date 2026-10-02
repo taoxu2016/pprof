@@ -42,7 +42,7 @@ Fixtures are never edited by hand and never regenerated to make a failing test p
 
 ## What a fixture holds
 
-Each `<case-id>.rds` is a list with `format_version`, the `case` (function, arguments with markers for datasets, formulas, and parent results, seed, tolerance tier), and the `result`: outcome (`value` or `error`), the processed value, the error, warnings, messages, printed output, and the iteration count parsed from the C++ log. Values are processed by `reference_fixture_value()`: vectors longer than 5,000 elements become signatures (counts, sums, extremes, a sample, and an exact checksum), lme4 fits become their extracted components, and ggplot objects become the data of their layers.
+Each `<case-id>.rds` is a list with `format_version`, the `case` (function, arguments with markers for datasets, formulas, parent results, and expressions evaluated when the case runs, such as lme4 control objects; seed; tolerance tier), and the `result`: outcome (`value` or `error`), the processed value, the error, warnings, messages, printed output, and the iteration count parsed from the C++ log. Values are processed by `reference_fixture_value()`: vectors longer than 5,000 elements become signatures (counts, sums, extremes, a sample, and an exact checksum), lme4 fits become their extracted components, and ggplot objects become the data of their layers.
 
 `manifest.json` records the reference (version, commit, CRAN MD5), the generator commit, the library lock, R and platform, compiler, BLAS and LAPACK, locale, thread settings, every package version, and for each case its call, seed, tier, outcome, iteration count, and checksum.
 

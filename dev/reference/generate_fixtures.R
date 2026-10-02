@@ -86,6 +86,7 @@ format_arg <- function(a) {
   if (inherits(a, "pprof_ref_formula")) return(sprintf('ref_formula("%s")', a$text))
   if (inherits(a, "pprof_ref_fit")) return(sprintf('ref_fit("%s")', a$case_id))
   if (inherits(a, "pprof_ref_value")) return(sprintf('ref_value("%s", "%s")', a$case_id, a$element))
+  if (inherits(a, "pprof_ref_expr")) return(a$text)   # the expression as evaluated
   paste(deparse(a, width.cutoff = 500L), collapse = " ")
 }
 format_call <- function(case) {

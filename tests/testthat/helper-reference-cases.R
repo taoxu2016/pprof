@@ -17,11 +17,15 @@ ref_element <- function(name, element) structure(list(name = name, element = ele
 ref_formula <- function(text) structure(list(text = text), class = "pprof_ref_formula")
 ref_fit <- function(case_id) structure(list(case_id = case_id), class = "pprof_ref_fit")
 ref_value <- function(case_id, element) structure(list(case_id = case_id, element = element), class = "pprof_ref_value")
+# An R expression evaluated when the case runs, for arguments such as lme4 control objects
+# whose structure depends on the installed lme4 version.
+ref_expr <- function(text) structure(list(text = text), class = "pprof_ref_expr")
 
 reference_resolve_arg <- function(arg, datasets, results) {
   if (inherits(arg, "pprof_ref_dataset")) return(datasets[[arg$name]])
   if (inherits(arg, "pprof_ref_element")) return(datasets[[arg$name]][[arg$element]])
   if (inherits(arg, "pprof_ref_formula")) return(stats::as.formula(arg$text, env = globalenv()))
+  if (inherits(arg, "pprof_ref_expr")) return(eval(str2lang(arg$text), envir = baseenv()))
   if (inherits(arg, "pprof_ref_fit") || inherits(arg, "pprof_ref_value")) {
     parent <- results[[arg$case_id]]
     if (is.null(parent) || !identical(parent$outcome, "value")) {

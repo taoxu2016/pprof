@@ -2,7 +2,7 @@
 # grid (ARCHITECTURE §G.2), on the bundled datasets and the synthetic suite in datasets.R.
 #
 # Requires the argument markers from tests/testthat/helper-reference-cases.R (ref_dataset(),
-# ref_element(), ref_formula(), ref_fit(), ref_value()).
+# ref_element(), ref_formula(), ref_fit(), ref_value(), ref_expr()).
 #
 # Fields of a case:
 #   id      unique identifier, also the fixture file name
@@ -164,6 +164,25 @@ reference_cases <- function() {
   KX <- "logis_cre-extreme"
   add(KX, "logis_cre", list(data = ref_dataset("syn_extreme"), Y.char = "Y", wb.char = "x1", other.char = c("x2", "x3"),
                             ProvID.char = "ProvID"), "lme4")
+  # A control object passed through `...` to lme4 (ARCHITECTURE §G.2). Nelder_Mead is not the
+  # default optimizer of lmer() or glmer() and moves the estimates by far more than the lme4
+  # tolerance (theta by at least 6.8e-7 relative), so a control argument that does not reach
+  # lme4 fails the comparison. (bobyqa for lmer() lands within 4e-9 of the default for
+  # linear_cre, which the tolerance would not detect.)
+  lmer_control <- ref_expr('lme4::lmerControl(optimizer = "Nelder_Mead")')
+  glmer_control <- ref_expr('lme4::glmerControl(optimizer = "Nelder_Mead")')
+  add("linear_re-linear-control", "linear_re",
+      list(data = ref_dataset("linear_example"), Y.char = "Y", Z.char = z5, ProvID.char = "ProvID", control = lmer_control), "lme4",
+      notes = "... pass-through")
+  add("logis_re-extreme-control", "logis_re",
+      list(data = ref_dataset("syn_extreme"), Y.char = "Y", Z.char = c("x1", "x2", "x3"), ProvID.char = "ProvID",
+           control = glmer_control), "lme4", notes = "... pass-through")
+  add("linear_cre-linear-control", "linear_cre",
+      list(data = ref_dataset("linear_example"), Y.char = "Y", wb.char = c("z1", "z2"), other.char = c("z3", "z4", "z5"),
+           ProvID.char = "ProvID", control = lmer_control), "lme4", notes = "... pass-through")
+  add("logis_cre-extreme-control", "logis_cre",
+      list(data = ref_dataset("syn_extreme"), Y.char = "Y", wb.char = "x1", other.char = c("x2", "x3"), ProvID.char = "ProvID",
+           control = glmer_control), "lme4", notes = "... pass-through")
 
   # --- test() -----------------------------------------------------------------------------
   alts <- c("two.sided", "greater", "less")
@@ -177,6 +196,13 @@ reference_cases <- function() {
         list(fit = ref_fit(F1), test = "score", score_modified = FALSE, alternative = a, threads = 1), "iterative", notes = "K-66")
     add(paste0("test-binary-wald-", a), "test", list(fit = ref_fit(F1), test = "wald", alternative = a, threads = 1), "iterative",
         notes = "K-67")
+  }
+  # Three seeds of one bootstrap configuration (ARCHITECTURE §G.2); the first seed is
+  # test-binary-bootstrap-two.sided above.
+  for (k in 2:3) {
+    add(sprintf("test-binary-bootstrap-two.sided-seed%d", k), "test",
+        list(fit = ref_fit(F1), test = "exact.bootstrap", n = 500, alternative = "two.sided", threads = 1), "iterative",
+        seed = 20261003 + k, notes = "K-64")
   }
   add("test-binary-exact-null0", "test", list(fit = ref_fit(F1), null = 0, threads = 1), "iterative", notes = "K-60")
   add("test-binary-exact-null-negative", "test", list(fit = ref_fit(F1), null = -0.5, threads = 1), "iterative", notes = "K-60")
