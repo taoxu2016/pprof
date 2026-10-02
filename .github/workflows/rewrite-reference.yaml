@@ -1,0 +1,61 @@
+# The full reference suite (DEC-020, DEC-026; brief §3.1, §6).
+#
+# Runs every case of the core and full fixture sets with validation/run-reference.R on Linux,
+# with R 4.4.0 and packages from the CRAN snapshot that built the reference library
+# (2026-10-01, DEC-017), so that lme4 and Matrix match the fixture manifest. The job fails if
+# they do not match, instead of skipping the lme4-backed cases, and fails if any case fails.
+# The equivalence report is uploaded as an artifact.
+name: rewrite-reference
+
+on:
+  push:
+    branches: ["rewrite/**"]
+  pull_request:
+    branches: ["rewrite/**"]
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  reference:
+    runs-on: ubuntu-24.04
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      OMP_THREAD_LIMIT: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.4.0"
+          use-public-rspm: false
+
+      - name: Use the CRAN snapshot of the reference library
+        run: echo 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2026-10-01"))' >> ~/.Rprofile
+
+      # Every package comes from the snapshot, so upgrading takes the snapshot's versions;
+      # without it, R's bundled Matrix would be kept.
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::devtools, Matrix, lme4
+          needs: check
+          upgrade: "TRUE"
+
+      - name: Require the fixture manifest's lme4 and Matrix
+        shell: Rscript {0}
+        run: |
+          wanted <- jsonlite::read_json("tests/testthat/fixtures/reference/manifest.json")$numerically_relevant_packages
+          for (p in c("lme4", "Matrix")) {
+            cat(sprintf("%s: installed %s, fixture manifest %s\n", p, utils::packageVersion(p), wanted[[p]]))
+            if (utils::packageVersion(p) != package_version(wanted[[p]])) stop(p, " differs from the fixture manifest")
+          }
+
+      - name: Run the reference suite
+        run: Rscript validation/run-reference.R validation/equivalence-report-ci.md
+
+      - name: Upload the equivalence report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: equivalence-report
+          path: validation/equivalence-report-ci.md

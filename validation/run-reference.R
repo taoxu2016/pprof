@@ -8,6 +8,7 @@
 # The report lists, per case, the outcome and the largest absolute and relative differences
 # from the reference, and the providers whose reference p-value lies within the probability
 # tolerance of a flag threshold (the boundary rule: their flags may legitimately differ).
+# The exit status is 1 when any case fails.
 
 args <- commandArgs(trailingOnly = TRUE)
 report_file <- if (length(args)) args[[1]] else file.path("validation", "equivalence-report.md")
@@ -141,3 +142,5 @@ lines <- c(lines, "## Cases", "",
 writeLines(lines, report_file)
 cat(sprintf("Wrote %s: %d cases, %d failing, %d skipped, %d boundary providers\n", report_file, nrow(tab),
             sum(startsWith(tab$status, "FAIL")), sum(startsWith(tab$status, "skipped")), if (is.null(bnd)) 0L else nrow(bnd)))
+# A failing case makes the exit status 1, so that CI fails on it (DEC-026).
+if (any(startsWith(tab$status, "FAIL"))) quit(status = 1L)
