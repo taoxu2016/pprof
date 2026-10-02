@@ -1,0 +1,102 @@
+==============================================================================
+20: preliminary timings
+==============================================================================
+pprof loaded from: <PPROF_REF_LIB>/pprof 
+Run at: 2026-10-02 17:21:49 UTC 
+
+R version 4.4.0 (2024-04-24 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 22621)
+
+Matrix products: default
+
+
+locale:
+[1] LC_COLLATE=English_United States.utf8 
+[2] LC_CTYPE=English_United States.utf8   
+[3] LC_MONETARY=English_United States.utf8
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.utf8    
+
+time zone: America/New_York
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] pprof_1.0.3
+
+loaded via a namespace (and not attached):
+ [1] gtable_0.3.6         ggplot2_4.0.3        recipes_1.4.0       
+ [4] lattice_0.23-1       vctrs_0.7.3          tools_4.4.0         
+ [7] Rdpack_2.6.6         generics_0.1.4       goftest_1.2-3       
+[10] stats4_4.4.0         parallel_4.4.0       tibble_3.3.1        
+[13] pkgconfig_2.0.3      ModelMetrics_1.2.2.2 Matrix_1.7-6        
+[16] data.table_1.18.6.1  RColorBrewer_1.1-3   S7_0.2.2            
+[19] RcppParallel_6.2.1   lifecycle_1.0.5      compiler_4.4.0      
+[22] farver_2.1.2         stringr_1.6.0        codetools_0.2-20    
+[25] carData_3.0-6        class_7.3-24         Formula_1.2-6       
+[28] prodlim_2026.03.11   pillar_1.11.1        car_3.1-5           
+[31] nloptr_2.2.1         MASS_7.3-66          gower_1.0.2         
+[34] reformulas_0.4.4     iterators_1.0.14     abind_1.4-8         
+[37] rpart_4.1.27         boot_1.3-32          foreach_1.5.2       
+[40] nlme_3.1-171         parallelly_1.48.0    lava_1.9.3          
+[43] nortest_1.0-4        tidyselect_1.2.1     digest_0.6.39       
+[46] stringi_1.8.9        future_1.76.0        poibin_1.6          
+[49] olsrr_0.7.0          dplyr_1.2.1          reshape2_1.4.5      
+[52] purrr_1.2.2          listenv_1.0.0        splines_4.4.0       
+[55] grid_4.4.0           cli_3.6.6            magrittr_2.0.5      
+[58] survival_3.8-12      future.apply_1.20.2  withr_3.0.3         
+[61] scales_1.4.0         lubridate_1.9.5      timechange_0.4.0    
+[64] globals_0.19.1       nnet_7.3-21          lme4_2.0-6          
+[67] gridExtra_2.3.1      timeDate_4052.112    rbibutils_2.4.1     
+[70] hardhat_1.4.3        caret_7.0-1          rlang_1.3.0         
+[73] Rcpp_1.1.2           glue_1.8.1           pROC_1.19.1         
+[76] ipred_0.9-16         minqa_1.2.8          R6_2.6.1            
+[79] plyr_1.8.9          
+
+Warning message:
+package 'bench' was built under R version 4.4.3 
+
+[B1] NOTE: SerBIN: C++ core versus an R port with identical iterations (stop = 'or'), and the whole logis_fe() call; R allocations only (C++ allocations are not tracked)
+           n    m  p cpp_core_s r_port_s r_port_alloc_mb logis_fe_total_s
+    1  79779 1000 10  0.1832332 0.421316        168.9839        0.6947308
+    2 300166 3000 10  0.7039484 1.144792        632.4800        2.8456401
+      logis_fe_alloc_mb
+    1          217.9339
+    2          822.8152
+
+[B2] NOTE: linear_fe builds n_i x n_i centering blocks with Matrix::bdiag, so time and memory grow with sum(n_i^2); demeaning gives the same beta at O(np)
+       m  n_i sum_n_i_sq linear_fe_s linear_fe_alloc_mb demean_beta_s
+    1 20  250    1250000   0.2739825           280.5046     0.0005516
+    2 20  500    5000000   1.2816145          1098.3186     0.0010067
+    3 20 1000   20000000   5.0819189          4351.7610     0.0019809
+      demean_alloc_mb max_rel_beta_diff
+    1       0.4519348      1.077188e-14
+    2       0.9011841      1.174511e-14
+    3       1.7996826      1.456455e-14
+
+[B3] NOTE: computeDirectExp (m x n logistic evaluations) in C++ versus vapply() over providers in R
+    n = 79779, m = 1000: C++ 2.776 s, R 4.385 s (R allocations 1217.4 MB)
+    max rel diff 2.52e-14
+
+[B4] NOTE: Post-estimation run time as the number of providers grows (provider size about 60, p = 5, one run each)
+        m     n test_exact_s test_score_standard_s confint_gamma_exact_s
+    1 100  5948    0.0836700             0.0190836             0.7712206
+    2 200 12067    0.0890408             0.0971385             1.5928063
+    3 400 23920    0.2303741             0.2904066             3.2425187
+      confint_SM_exact_s summary_lr_s
+    1          0.9406216    0.2928524
+    2          3.2741059    1.6356045
+    3          4.7271656    1.1502360
+
+[B5] NOTE: Size of a reference logis_fe object versus the compact fields proposed in ARCHITECTURE §D (keep_data = FALSE); the design matrix is what keep_data = TRUE would add
+           n    m  p reference_object_mb reference_data_include_mb
+    1  79779 1000 10            19.93088                  8.523659
+    2 300166 3000 10            74.85165                 32.063522
+      reference_fitted_plus_linear_pred_mb compact_mb design_matrix_mb
+    1                             10.95708   1.378220         6.086655
+    2                             41.22263   5.053856        22.900848
+
+Done.

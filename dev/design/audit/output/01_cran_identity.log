@@ -1,0 +1,70 @@
+md5 of tarball:
+6fa1344f4a265811059d27a105d06d6b *pprof_1.0.3.tar.gz
+md5 in CRAN PACKAGES index:
+Version: 1.0.3
+MD5sum: 6fa1344f4a265811059d27a105d06d6b
+R/: identical
+src/: identical
+tests/: identical
+data/: identical
+man/: identical
+NAMESPACE: identical
+DESCRIPTION differences (expected: R CMD build normalization only):
+22,24c22,39
+< Imports: Rcpp, RcppParallel, stats, caret, olsrr, pROC, poibin, dplyr,
+<         ggplot2, Matrix, lme4, magrittr, scales, tibble, rlang,
+<         tidyselect, globals
+---
+> Imports:
+>     Rcpp, 
+>     RcppParallel,
+>     stats,
+>     caret,
+>     olsrr,
+>     pROC,
+>     poibin,
+>     dplyr, 
+>     ggplot2, 
+>     Matrix,
+>     lme4,
+>     magrittr,
+>     scales,
+>     tibble,
+>     rlang,
+>     tidyselect,
+>     globals
+26,27c41,46
+< Depends: R (>= 4.1.0)
+< Suggests: knitr, rmarkdown, testthat (>= 3.0.0)
+---
+> Depends:
+>     R (>= 4.1.0)
+> Suggests: 
+>     knitr,
+>     rmarkdown,
+>     testthat (>= 3.0.0)
+32a52
+> Roxygen: list(markdown = TRUE)
+34,44d53
+< NeedsCompilation: yes
+< Packaged: 2026-02-10 00:24:39 UTC; emilyliu
+< Author: Xiaohan Liu [aut, cre],
+<   Lingfeng Luo [aut],
+<   Yubo Shao [aut],
+<   Xiangeng Fang [aut],
+<   Wenbo Wu [aut],
+<   Kevin He [aut]
+< Maintainer: Xiaohan Liu <xhliuu@umich.edu>
+< Repository: CRAN
+< Date/Publication: 2026-02-10 00:50:03 UTC
+Top level of tarball:
+DESCRIPTION
+LICENSE
+MD5
+NAMESPACE
+R
+README.md
+data
+man
+src
+tests

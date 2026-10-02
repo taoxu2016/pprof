@@ -1,0 +1,208 @@
+==============================================================================
+10: logis_fe fitting
+==============================================================================
+pprof loaded from: <PPROF_REF_LIB>/pprof 
+Run at: 2026-10-02 17:12:50 UTC 
+
+R version 4.4.0 (2024-04-24 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 22621)
+
+Matrix products: default
+
+
+locale:
+[1] LC_COLLATE=English_United States.utf8 
+[2] LC_CTYPE=English_United States.utf8   
+[3] LC_MONETARY=English_United States.utf8
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.utf8    
+
+time zone: America/New_York
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] pprof_1.0.3
+
+loaded via a namespace (and not attached):
+ [1] gtable_0.3.6         ggplot2_4.0.3        recipes_1.4.0       
+ [4] lattice_0.23-1       vctrs_0.7.3          tools_4.4.0         
+ [7] Rdpack_2.6.6         generics_0.1.4       goftest_1.2-3       
+[10] stats4_4.4.0         parallel_4.4.0       tibble_3.3.1        
+[13] pkgconfig_2.0.3      ModelMetrics_1.2.2.2 Matrix_1.7-6        
+[16] data.table_1.18.6.1  RColorBrewer_1.1-3   S7_0.2.2            
+[19] RcppParallel_6.2.1   lifecycle_1.0.5      compiler_4.4.0      
+[22] farver_2.1.2         stringr_1.6.0        codetools_0.2-20    
+[25] carData_3.0-6        class_7.3-24         Formula_1.2-6       
+[28] prodlim_2026.03.11   pillar_1.11.1        car_3.1-5           
+[31] nloptr_2.2.1         MASS_7.3-66          gower_1.0.2         
+[34] reformulas_0.4.4     iterators_1.0.14     abind_1.4-8         
+[37] rpart_4.1.27         boot_1.3-32          foreach_1.5.2       
+[40] nlme_3.1-171         parallelly_1.48.0    lava_1.9.3          
+[43] nortest_1.0-4        tidyselect_1.2.1     digest_0.6.39       
+[46] stringi_1.8.9        future_1.76.0        poibin_1.6          
+[49] olsrr_0.7.0          dplyr_1.2.1          reshape2_1.4.5      
+[52] purrr_1.2.2          listenv_1.0.0        splines_4.4.0       
+[55] grid_4.4.0           cli_3.6.6            magrittr_2.0.5      
+[58] survival_3.8-12      future.apply_1.20.2  withr_3.0.3         
+[61] scales_1.4.0         lubridate_1.9.5      timechange_0.4.0    
+[64] globals_0.19.1       nnet_7.3-21          lme4_2.0-6          
+[67] gridExtra_2.3.1      timeDate_4052.112    rbibutils_2.4.1     
+[70] hardhat_1.4.3        caret_7.0-1          rlang_1.3.0         
+[73] Rcpp_1.1.2           glue_1.8.1           pROC_1.19.1         
+[76] ipred_0.9-16         minqa_1.2.8          R6_2.6.1            
+[79] plyr_1.8.9          
+
+
+[V10.1] CONFIRMED: R ports encoding the §5.7 conventions reproduce SerBIN and BAN (all stopping rules, backtrack on/off) on ExampleDataBinary: same iteration counts, estimates equal to near machine precision
+       method  stop backtrack iter_cpp iter_port backtracks_port max_rel_beta
+    1  SerBIN    or      TRUE        8         8               0            0
+    2     BAN    or      TRUE        8         8               0            0
+    3  SerBIN  beta      TRUE        8         8               0            0
+    4     BAN  beta      TRUE       11        11               0            0
+    5  SerBIN relch      TRUE        9         9               0            0
+    6     BAN relch      TRUE        8         8               0            0
+    7  SerBIN ratch      TRUE        9         9               0            0
+    8     BAN ratch      TRUE        8         8               0            0
+    9  SerBIN   all      TRUE        9         9               0            0
+    10    BAN   all      TRUE       11        11               0            0
+    11 SerBIN    or     FALSE        8         8               0            0
+    12    BAN    or     FALSE        8         8               0            0
+    13 SerBIN  beta     FALSE        8         8               0            0
+    14    BAN  beta     FALSE       11        11               0            0
+    15 SerBIN relch     FALSE        9         9               0            0
+    16    BAN relch     FALSE        8         8               0            0
+    17 SerBIN ratch     FALSE        9         9               0            0
+    18    BAN ratch     FALSE        8         8               0            0
+    19 SerBIN   all     FALSE        9         9               0            0
+    20    BAN   all     FALSE       11        11               0            0
+       max_abs_gamma
+    1   8.881784e-16
+    2   1.776357e-15
+    3   8.881784e-16
+    4   4.440892e-16
+    5   1.776357e-15
+    6   1.776357e-15
+    7   1.776357e-15
+    8   1.776357e-15
+    9   1.776357e-15
+    10  4.440892e-16
+    11  8.881784e-16
+    12  1.776357e-15
+    13  8.881784e-16
+    14  4.440892e-16
+    15  1.776357e-15
+    16  1.776357e-15
+    17  1.776357e-15
+    18  1.776357e-15
+    19  1.776357e-15
+    20  4.440892e-16
+
+[V10.2] CONFIRMED: With no-event/all-event providers the clamp gamma in [median(gamma) - bound, median(gamma) + bound] binds every iteration and the port still reproduces SerBIN
+      stop backtrack iter_cpp iter_port clamp_events_port backtracks_port
+    1   or      TRUE       11        11                18               0
+    2   or     FALSE       11        11                18               0
+    3 beta      TRUE       12        12                24               0
+    4 beta     FALSE       12        12                24               0
+      gamma_at_bound max_rel_beta max_abs_gamma
+    1              6 1.121614e-16  2.220446e-16
+    2              6 1.121614e-16  2.220446e-16
+    3              6 1.121614e-16  4.440892e-16
+    4              6 1.121614e-16  4.440892e-16
+
+[V10.3] CONFIRMED: Armijo constants s = 0.01, t = 0.6: with backtracking active, the t = 0.6 port matches the C++ path after 3 iterations and a t = 0.8 port does not
+        armijo_t backtracks iterations max_abs_beta_vs_cpp
+    0.6      0.6         17          3        1.436629e-13
+    0.8      0.8         48          3        3.706615e-01
+                       step_sizes
+    0.6   0.01008, 0.1296, 0.1296
+    0.8 0.01153, 0.05498, 0.03518
+
+[V10.4] CONFIRMED: SerBIN runs up to max.iter + 1 iterations, BAN up to max.iter, and both report 'converged' when the limit is hit (D-03)
+           method max.iter iterations_run
+    SerBIN SerBIN        3              4
+    BAN       BAN        3              3
+                                                   final_message
+    SerBIN serBIN (Rcpp) algorithm converged after 4 iterations!
+    BAN       BAN algorithm (Rcpp) converged after 3 iterations!
+
+[V10.5] CONFIRMED: Initial values are gamma_i = logit(mean(Y)) over included observations for every provider and beta = 0 (BAN with max.iter = 0 returns the starting point)
+    logit(mean(Y)) = -0.45693154767838295
+    range(gamma) = -0.45693154767838295 .. -0.45693154767838295
+    beta = 0, 0, 0, 0, 0
+
+[V10.6] CONFIRMED: BAN with backtrack = 2 (any value other than 0/1/TRUE/FALSE) runs zero iterations and silently returns the starting values (new finding)
+    beta = 0, 0, 0, 0, 0
+
+[V10.7] NOTE: SerBIN with threads = 0 or -1 takes neither branch at Fixed_effect.cpp:383-388, so info_beta is used uninitialized (undefined behavior; new finding). Results observed in a child process:
+    $`threads = 1`
+    [1] 1.0926220 1.0178412 0.9950259 1.0386844 1.0563464
+    
+    $`threads = 0`
+    [1] -9.970265e-16  2.035584e-16 -4.314749e-16 -5.333422e-18  4.135390e-17
+    
+    $`threads = -1`
+    [1] -9.970265e-16  2.035584e-16 -4.314749e-16 -5.333422e-18  4.135390e-17
+    
+Input format: data, Y.char, Z.char, and ProvID.char.
+0 out of 3 remaining providers with no events.
+0 out of 3 remaining providers with all events.
+After screening, 27.87% of all records exhibit occurrences of events (Y = 1)
+Implementing SerBIN algorithm (Rcpp) for fixed provider effects model ...
+Iter 1: Minimum criterion across all checks is 4.255e-03;
+Iter 2: Minimum criterion across all checks is 5.256e-06;
+serBIN (Rcpp) algorithm converged after 2 iterations!
+Setting levels: control = 0, case = 1
+Setting direction: controls < cases
+
+[V10.8] CONFIRMED: Inclusion is n_i >= cutoff, but the warning counts n_i <= cutoff (D-01): sizes 9, 10, 11, 40 with cutoff = 10 keep three providers while the warning says two were filtered
+    kept providers: p10, p11, p40
+    warning: 2 out of 4 providers considered small and filtered out!
+    data_include rows: 61 (excluded rows are dropped, not kept with included = 0)
+
+[V10.9] CONFIRMED: No-event and all-event providers stay in the fit with finite gamma; indicators are stored per observation in data_include
+    no.events providers: 1, 2, 3, 36
+    all.events providers: 4, 5
+    gamma - median(gamma) for providers 1-5: -8.95685, -8.62886, -8.77393, 10.00000, 10.00000
+
+[V10.10] CONFIRMED: Providers are ordered by factor() levels: numeric IDs sort numerically, character IDs sort by the session's collation locale, so the order (and anything that depends on it) differs between C and English locales
+    LC_COLLATE=C: 10 9 A B _c a b
+    LC_COLLATE=English_United States.1252: _c 10 9 a A b B
+    numeric IDs 100, 20, 3, 4 -> 3 4 20 100
+
+[V10.11] CONFIRMED: Formula, column-name, and vector inputs give bitwise-identical estimates on ExampleDataBinary
+    class(data_include$ProvID): formula=numeric columns=numeric vectors=numeric
+    names(fit): coefficient, variance, fitted, observation, linear_pred, Loglkd, AIC, BIC, AUC, char_list, data_include
+
+[V10.12] CONFIRMED: Formula terms are matched against column names by regular expressions, so transformed or interaction terms fail with a misleading message, and factor levels containing spaces break the model-matrix round trip through data.frame() (D-18)
+    ERROR: Formula contains variables not in the data or is incorrectly structured.
+    ERROR: Formula contains variables not in the data or is incorrectly structured.
+    ERROR: undefined columns selected
+    ERROR: Formula contains variables not in the data or is incorrectly structured.
+    ERROR: undefined columns selected
+
+[V10.13] CONFIRMED: Design matrix is model.matrix(reformulate(Z.char), data)[, -1], so factor coding follows options('contrasts')
+    contr.treatment columns: z1, grpb, grpc
+    contr.sum columns:       z1, grp1, grp2
+
+[V10.14] CONFIRMED: Listwise deletion uses only the response, provider, and covariate columns (an all-NA unused column does not drop rows)
+    rows: input 7944, after deletion 7939
+
+[V10.15] CONFIRMED: AUC from pROC::auc equals the rank-based Mann-Whitney estimate (ties counted one half)
+    pROC 0.92381357335099112  Mann-Whitney 0.92381357335099112
+
+[V10.16] CONFIRMED: Loglkd = sum(eta*y - log(1 + exp(eta))); AIC = -2 l + 2(m + p); BIC = -2 l + log(n)(m + p), with n the included observations
+    Loglkd -2693.9879655622267  AIC 5597.9759311244534  BIC 6330.8940127255792
+
+[V10.17] CONFIRMED: variance$beta is the inverse Schur complement and variance$gamma_i = 1/I_ii + J_i' S^-1 J_i, computed with p clamped to [1e-10, 1 - 1e-10]
+    max rel diff: gamma 7.76e-16, beta 4.46e-16
+
+[V10.18] CONFIRMED: logis_fe help says backtrack defaults to FALSE and refers to 'iter.max'; the code default is backtrack = TRUE and the argument is max.iter (D-02)
+    formals: backtrack = TRUE, max.iter = 10000
+    help mentions 'The default is FALSE': TRUE
+    help mentions 'iter.max': TRUE
+
+Done.

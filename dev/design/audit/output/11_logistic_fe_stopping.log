@@ -1,0 +1,85 @@
+==============================================================================
+11: logis_fe stopping rule and threads
+==============================================================================
+pprof loaded from: <PPROF_REF_LIB>/pprof 
+Run at: 2026-10-02 17:13:05 UTC 
+
+R version 4.4.0 (2024-04-24 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 22621)
+
+Matrix products: default
+
+
+locale:
+[1] LC_COLLATE=English_United States.utf8 
+[2] LC_CTYPE=English_United States.utf8   
+[3] LC_MONETARY=English_United States.utf8
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.utf8    
+
+time zone: America/New_York
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] pprof_1.0.3
+
+loaded via a namespace (and not attached):
+ [1] gtable_0.3.6         ggplot2_4.0.3        recipes_1.4.0       
+ [4] lattice_0.23-1       vctrs_0.7.3          tools_4.4.0         
+ [7] Rdpack_2.6.6         generics_0.1.4       goftest_1.2-3       
+[10] stats4_4.4.0         parallel_4.4.0       tibble_3.3.1        
+[13] pkgconfig_2.0.3      ModelMetrics_1.2.2.2 Matrix_1.7-6        
+[16] data.table_1.18.6.1  RColorBrewer_1.1-3   S7_0.2.2            
+[19] RcppParallel_6.2.1   lifecycle_1.0.5      compiler_4.4.0      
+[22] farver_2.1.2         stringr_1.6.0        codetools_0.2-20    
+[25] carData_3.0-6        class_7.3-24         Formula_1.2-6       
+[28] prodlim_2026.03.11   pillar_1.11.1        car_3.1-5           
+[31] nloptr_2.2.1         MASS_7.3-66          gower_1.0.2         
+[34] reformulas_0.4.4     iterators_1.0.14     abind_1.4-8         
+[37] rpart_4.1.27         boot_1.3-32          foreach_1.5.2       
+[40] nlme_3.1-171         parallelly_1.48.0    lava_1.9.3          
+[43] nortest_1.0-4        tidyselect_1.2.1     digest_0.6.39       
+[46] stringi_1.8.9        future_1.76.0        poibin_1.6          
+[49] olsrr_0.7.0          dplyr_1.2.1          reshape2_1.4.5      
+[52] purrr_1.2.2          listenv_1.0.0        splines_4.4.0       
+[55] grid_4.4.0           cli_3.6.6            magrittr_2.0.5      
+[58] survival_3.8-12      future.apply_1.20.2  withr_3.0.3         
+[61] scales_1.4.0         lubridate_1.9.5      timechange_0.4.0    
+[64] globals_0.19.1       nnet_7.3-21          lme4_2.0-6          
+[67] gridExtra_2.3.1      timeDate_4052.112    rbibutils_2.4.1     
+[70] hardhat_1.4.3        caret_7.0-1          rlang_1.3.0         
+[73] Rcpp_1.1.2           glue_1.8.1           pROC_1.19.1         
+[76] ipred_0.9-16         minqa_1.2.8          R6_2.6.1            
+[79] plyr_1.8.9          
+
+
+[V11.1] CONFIRMED: Under the default stop = 'or', tol = 1e-5, SerBIN stops as soon as relch or ratch falls below tol, before the estimates settle to tol. Errors are against a tight fit (stop = 'beta', tol = 1e-12); gamma errors exclude no-event and all-event providers
+             scale       n    m iter_default iter_port iter_tight stop_crit_beta
+    1 example-size    8093  100            5         5          8   2.631797e-05
+    2       medium   80131 1000            6         6         12   1.133366e-06
+    3        large  299740 3000            5         5         12   6.145949e-06
+    4   very large 1201106 6000            4         4          7   1.236030e-03
+      stop_crit_relch stop_crit_ratch max_abs_beta_err max_abs_gamma_err
+    1    9.178410e-07    3.300089e-06     2.055241e-07      2.293981e-03
+    2    4.414217e-06    1.736347e-05     1.800282e-07      3.339137e-07
+    3    1.812182e-06    7.454348e-06     4.963491e-08      1.629613e-03
+    4    5.876979e-06    2.504143e-05     4.180092e-06      3.976969e-02
+      max_abs_var_beta_rel n_extreme seconds_default
+    1         0.0018459117         0            0.06
+    2         0.0040158606         2            0.72
+    3         0.0003382430         1            2.64
+    4         0.0004444893         0           12.84
+
+[V11.1a] NOTE: Reading the table: beta errors stay below tol, but provider effects can be far from converged. The likelihood criteria are relative to |l|, which grows with n, so a large fit can stop while individual providers still move; the size of the gap depends on the data (it is not monotone in n here)
+    largest gamma error 0.0398 at n = 1201106 after 4 iterations (last beta step 0.00124)
+
+[V11.2] CONFIRMED: SerBIN with threads = 2 computes the beta information block with element-wise OpenMP dot products instead of one BLAS product; results differ from threads = 1 at rounding level and are reproducible for a fixed thread count (D-20)
+    simulated (n = 80131): iterations 1 thread 6, 2 threads 6; max rel diff beta 2.13e-16, gamma 1.41e-15
+    simulated: two runs with 2 threads identical: TRUE
+    ExampleDataBinary: iterations 8 vs 8; max rel diff beta 0, gamma 3.64e-16
+
+Done.
