@@ -104,4 +104,24 @@ report("V16.6", "NOTE",
                  paste(uses("group_by|cross_join|summarise|arrange\\("), collapse = ", ")),
          sprintf("%%>%%: %s", paste(uses("%>%"), collapse = ", "))))
 
+# --- V16.7: bundled data -----------------------------------------------------------------------------------------
+eb_sizes <- table(eb$ProvID)
+eb_events <- tapply(eb$Y, eb$ProvID, sum)
+el <- new.env(); utils::data("ExampleDataLinear", package = "pprof", lib.loc = ref_lib, envir = el)
+ee <- new.env(); utils::data("ecls_data", package = "pprof", lib.loc = ref_lib, envir = ee)
+schools <- table(ee$ecls_data$School_ID)
+rd_bin <- tools::Rd_db("pprof", lib.loc = ref_lib)[["ExampleDataBinary.Rd"]]
+rd_bin_text <- paste(utils::capture.output(tools::Rd2txt(rd_bin, options = list(underline_titles = FALSE))), collapse = " ")
+report("V16.7", if (length(eb$Y) == 7944 && grepl("7994", rd_bin_text)) "CONFIRMED" else "NOTE",
+       "Bundled data: ExampleDataBinary has 7,944 observations while its help says 7994 (D-35)",
+       c(sprintf("ExampleDataBinary: n = %d, providers = %d, sizes %d-%d, class(ProvID) = %s, no-event providers = %s, all-event providers = %d",
+                 length(eb$Y), length(eb_sizes), min(eb_sizes), max(eb_sizes), class(eb$ProvID),
+                 paste(names(eb_events)[eb_events == 0], collapse = ", "), sum(eb_events == eb_sizes)),
+         sprintf("help mentions '7994': %s", grepl("7994", rd_bin_text)),
+         sprintf("ExampleDataLinear: n = %d, providers = %d, sizes %d-%d", length(el$ExampleDataLinear$Y),
+                 length(table(el$ExampleDataLinear$ProvID)), min(table(el$ExampleDataLinear$ProvID)), max(table(el$ExampleDataLinear$ProvID))),
+         sprintf("ecls_data: class %s, %d rows, %d schools, %d of size 1, %d of size >= 10, Child_Sex levels %s",
+                 paste(class(ee$ecls_data), collapse = "/"), nrow(ee$ecls_data), length(schools), sum(schools == 1),
+                 sum(schools >= 10), paste(levels(ee$ecls_data$Child_Sex), collapse = ", "))))
+
 cat("\nDone.\n")

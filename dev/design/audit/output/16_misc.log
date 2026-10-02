@@ -2,7 +2,7 @@
 16: data_check, plots, package-level behavior, dependencies
 ==============================================================================
 pprof loaded from: <PPROF_REF_LIB>/pprof 
-Run at: 2026-10-02 17:15:44 UTC 
+Run at: 2026-10-02 17:44:13 UTC 
 
 R version 4.4.0 (2024-04-24 ucrt)
 Platform: x86_64-w64-mingw32/x64
@@ -135,5 +135,11 @@ loaded via a namespace (and not attached):
     RcppParallel (R side): 
     dplyr verbs (group_by/mutate/cross_join/arrange/summarise): bar_plot, linear_cre, logis_cre, plot.linear_fe, plot.logis_fe
     %>%: bar_plot, linear_cre, logis_cre, plot.linear_fe, plot.logis_fe, ppfunnel_linear, ppfunnel_logis
+
+[V16.7] CONFIRMED: Bundled data: ExampleDataBinary has 7,944 observations while its help says 7994 (D-35)
+    ExampleDataBinary: n = 7944, providers = 100, sizes 50-103, class(ProvID) = numeric, no-event providers = 40, 49, 81, all-event providers = 0
+    help mentions '7994': TRUE
+    ExampleDataLinear: n = 7901, providers = 100, sizes 54-99
+    ecls_data: class tbl_df/tbl/data.frame, 9101 rows, 2275 schools, 1195 of size 1, 334 of size >= 10, Child_Sex levels 1, 2
 
 Done.
