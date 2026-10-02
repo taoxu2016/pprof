@@ -1,15 +1,15 @@
 # Equivalence report: package under test versus the pprof 1.0.3 reference
 
-Generated 2026-10-02 20:18:09 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
-Package under test: pprof 1.0.3 from the working tree at commit bca46b6.
-Fixtures: core set generated at a593a09, full set generated at a593a09.
+Generated 2026-10-02 21:13:19 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Package under test: pprof 1.0.3 from the working tree at commit 0639e2b.
+Fixtures: core set generated at 0639e2b, full set generated at 0639e2b.
 
 ## Summary
 
-- Cases: 266 (core 234, full 32).
-- Compared and matching: 266; failing: 0; skipped: 0.
+- Cases: 272 (core 240, full 32).
+- Compared and matching: 272; failing: 0; skipped: 0.
 - Largest absolute difference over all compared values: 0; largest relative difference: 0.
-- Long double vectors stored as signatures: 703; bitwise identical (same checksum of every value's bits): 703.
+- Long double vectors stored as signatures: 731; bitwise identical (same checksum of every value's bits): 731.
 - Reference errors reproduced: 26.
 
 ## Providers within tolerance of a flag threshold
@@ -93,6 +93,10 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `linear_cre-missing` | linear_cre | lme4 | value |  | 0 | 0 |  | compared |
 | core | `logis_cre-binary` | logis_cre | lme4 | value |  | 0 | 0 | 14 of 14 | compared |
 | core | `logis_cre-extreme` | logis_cre | lme4 | value |  | 0 | 0 |  | compared |
+| core | `linear_re-linear-control` | linear_re | lme4 | value |  | 0 | 0 | 13 of 13 | compared |
+| core | `logis_re-extreme-control` | logis_re | lme4 | value |  | 0 | 0 |  | compared |
+| core | `linear_cre-linear-control` | linear_cre | lme4 | value |  | 0 | 0 | 15 of 15 | compared |
+| core | `logis_cre-extreme-control` | logis_cre | lme4 | value |  | 0 | 0 |  | compared |
 | core | `test-binary-exact-two.sided` | test | iterative | value |  | 0 | 0 |  | compared |
 | core | `test-binary-bootstrap-two.sided` | test | iterative | value |  | 0 | 0 |  | compared |
 | core | `test-binary-score-two.sided` | test | iterative | value |  | 0 | 0 |  | compared |
@@ -108,6 +112,8 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `test-binary-score-less` | test | iterative | value |  | 0 | 0 |  | compared |
 | core | `test-binary-score-standard-less` | test | iterative | value |  | 0 | 0 |  | compared |
 | core | `test-binary-wald-less` | test | iterative | value |  | 0 | 0 |  | compared |
+| core | `test-binary-bootstrap-two.sided-seed2` | test | iterative | value |  | 0 | 0 |  | compared |
+| core | `test-binary-bootstrap-two.sided-seed3` | test | iterative | value |  | 0 | 0 |  | compared |
 | core | `test-binary-exact-null0` | test | iterative | value |  | 0 | 0 |  | compared |
 | core | `test-binary-exact-null-negative` | test | iterative | value |  | 0 | 0 |  | compared |
 | core | `test-binary-exact-null-integer` | test | iterative | value |  | 0 | 0 |  | compared |
