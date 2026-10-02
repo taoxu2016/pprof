@@ -35,3 +35,4 @@
 ^\.claude$
 ^dev$
 ^validation$
+^\.gitattributes$

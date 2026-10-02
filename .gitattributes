@@ -1,0 +1,3 @@
+# Fixture and data files are binary; never convert line endings.
+*.rds binary
+*.rda binary
