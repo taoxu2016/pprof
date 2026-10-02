@@ -29,3 +29,9 @@
 
 # Exclude vignettes folder
 ^vignettes/
+# Rewrite workspace (not part of the package)
+^CLAUDE\.md$
+^CLAUDE\.local\.md$
+^\.claude$
+^dev$
+^validation$
