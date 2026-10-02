@@ -1,0 +1,946 @@
+{
+  "purpose": "Isolated library holding the pprof reference implementation for fixture generation (DEC-002, DEC-017).",
+  "created": "2026-10-02 18:33:54 UTC",
+  "snapshot": "https://packagemanager.posit.co/cran/2026-10-01",
+  "archive_installs": [
+    "Deriv_4.2.0.tar.gz"
+  ],
+  "pprof": {
+    "version": "1.0.3",
+    "source": "CRAN tarball",
+    "md5": "6fa1344f4a265811059d27a105d06d6b",
+    "git_commit": "5260838"
+  },
+  "r_version": "R version 4.4.0 (2024-04-24 ucrt)",
+  "platform": "x86_64-w64-mingw32",
+  "compiler": "g++",
+  "blas": "",
+  "lapack": "",
+  "lapack_version": "3.12.0",
+  "packages": [
+    {
+      "package": "abind",
+      "version": "1.4-8",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "backports",
+      "version": "1.5.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "base64enc",
+      "version": "0.1-6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "boot",
+      "version": "1.3-32",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "broom",
+      "version": "1.0.13",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "bslib",
+      "version": "0.12.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "cachem",
+      "version": "1.1.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "car",
+      "version": "3.1-5",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "carData",
+      "version": "3.0-6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "caret",
+      "version": "7.0-1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "class",
+      "version": "7.3-24",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "cli",
+      "version": "3.6.6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "clock",
+      "version": "0.7.4",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "codetools",
+      "version": "0.2-20",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "colorspace",
+      "version": "2.1-3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "commonmark",
+      "version": "2.0.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "cowplot",
+      "version": "1.2.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "cpp11",
+      "version": "0.5.5",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "data.table",
+      "version": "1.18.6.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "Deriv",
+      "version": "4.2.0",
+      "built": "4.4.0",
+      "repository": "CRAN",
+      "source": "CRAN Archive (built from source)"
+    },
+    {
+      "package": "diagram",
+      "version": "1.6.5",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "digest",
+      "version": "0.6.39",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "doBy",
+      "version": "4.7.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "dplyr",
+      "version": "1.2.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "e1071",
+      "version": "1.7-17",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "farver",
+      "version": "2.1.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "fastmap",
+      "version": "1.2.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "fontawesome",
+      "version": "0.5.3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "foreach",
+      "version": "1.5.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "forecast",
+      "version": "9.0.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "Formula",
+      "version": "1.2-6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "fracdiff",
+      "version": "1.5-4",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "fs",
+      "version": "2.1.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "future",
+      "version": "1.76.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "future.apply",
+      "version": "1.20.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "generics",
+      "version": "0.1.4",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "ggplot2",
+      "version": "4.0.3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "globals",
+      "version": "0.19.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "glue",
+      "version": "1.8.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "goftest",
+      "version": "1.2-3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "gower",
+      "version": "1.0.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "gridExtra",
+      "version": "2.3.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "gtable",
+      "version": "0.3.6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "hardhat",
+      "version": "1.4.3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "htmltools",
+      "version": "0.5.9",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "httpuv",
+      "version": "1.6.17",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "ipred",
+      "version": "0.9-16",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "isoband",
+      "version": "0.3.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "iterators",
+      "version": "1.0.14",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "jquerylib",
+      "version": "0.1.4",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "jsonlite",
+      "version": "2.0.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "KernSmooth",
+      "version": "2.23-27",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "labeling",
+      "version": "0.4.3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "later",
+      "version": "1.4.8",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "lattice",
+      "version": "0.23-1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "lava",
+      "version": "1.9.3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "lifecycle",
+      "version": "1.0.5",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "listenv",
+      "version": "1.0.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "lme4",
+      "version": "2.0-6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "lmtest",
+      "version": "0.9-40",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "lubridate",
+      "version": "1.9.5",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "magrittr",
+      "version": "2.0.5",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "MASS",
+      "version": "7.3-66",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "Matrix",
+      "version": "1.7-6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "MatrixModels",
+      "version": "0.5-4",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "memoise",
+      "version": "2.0.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "mgcv",
+      "version": "1.9-4",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "mime",
+      "version": "0.13",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "minqa",
+      "version": "1.2.8",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "ModelMetrics",
+      "version": "1.2.2.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "modelr",
+      "version": "0.1.11",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "nlme",
+      "version": "3.1-171",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "nloptr",
+      "version": "2.2.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "nnet",
+      "version": "7.3-21",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "nortest",
+      "version": "1.0-4",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "numDeriv",
+      "version": "2016.8-1.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "olsrr",
+      "version": "0.7.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "otel",
+      "version": "0.2.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "parallelly",
+      "version": "1.48.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "pbkrtest",
+      "version": "0.5.5",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "pillar",
+      "version": "1.11.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "pkgconfig",
+      "version": "2.0.3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "plyr",
+      "version": "1.8.9",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "poibin",
+      "version": "1.6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "pprof",
+      "version": "1.0.3",
+      "built": "4.4.0",
+      "repository": "CRAN",
+      "source": "CRAN tarball (built from source)"
+    },
+    {
+      "package": "pROC",
+      "version": "1.19.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "prodlim",
+      "version": "2026.03.11",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "progressr",
+      "version": "1.0.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "promises",
+      "version": "1.5.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "proxy",
+      "version": "0.4-29",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "purrr",
+      "version": "1.2.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "quantreg",
+      "version": "6.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "R6",
+      "version": "2.6.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "rappdirs",
+      "version": "0.3.4",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "rbibutils",
+      "version": "2.4.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "RColorBrewer",
+      "version": "1.1-3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "Rcpp",
+      "version": "1.1.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "RcppArmadillo",
+      "version": "15.6.0-1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "RcppEigen",
+      "version": "0.3.4.0.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "RcppParallel",
+      "version": "6.2.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "Rdpack",
+      "version": "2.6.6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "recipes",
+      "version": "1.4.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "reformulas",
+      "version": "0.4.4",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "reshape2",
+      "version": "1.4.5",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "rlang",
+      "version": "1.3.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "rpart",
+      "version": "4.1.27",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "S7",
+      "version": "0.2.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "sass",
+      "version": "0.4.10",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "scales",
+      "version": "1.4.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "shape",
+      "version": "1.4.6.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "shiny",
+      "version": "1.14.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "sourcetools",
+      "version": "0.1.7-2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "SparseM",
+      "version": "1.84-2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "sparsevctrs",
+      "version": "0.3.6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "SQUAREM",
+      "version": "2026.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "stringi",
+      "version": "1.8.9",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "stringr",
+      "version": "1.6.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "survival",
+      "version": "3.8-12",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "tibble",
+      "version": "3.3.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "tidyr",
+      "version": "1.3.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "tidyselect",
+      "version": "1.2.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "timechange",
+      "version": "0.4.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "timeDate",
+      "version": "4052.112",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "tzdb",
+      "version": "0.5.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "urca",
+      "version": "1.3-4",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "utf8",
+      "version": "1.2.6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "vctrs",
+      "version": "0.7.3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "viridisLite",
+      "version": "0.4.3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "withr",
+      "version": "3.0.3",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "xplorerr",
+      "version": "0.2.0",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "xtable",
+      "version": "1.8-8",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "zoo",
+      "version": "1.9-1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    }
+  ]
+}

@@ -23,3 +23,5 @@ CLAUDE.local.md
 .claude/settings.local.json
 # R CMD check output
 *.Rcheck/
+# Isolated reference library for fixture generation (dev/reference/setup_reference_library.R)
+dev/reference/lib/
