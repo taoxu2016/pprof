@@ -7,7 +7,9 @@
 #   - every other type matches exactly;
 #   - signatures of long vectors (reference_signature()) match when their counts and
 #     checksums of non-double data are identical and their double summaries are within
-#     the tolerance implied by the elementwise rule.
+#     the tolerance implied by the elementwise rule; at the exact tier (atol and rtol 0),
+#     the checksums of the bits of every double must also be identical, since summaries
+#     can absorb a change in one element.
 # Flag columns in provider-test tables follow the boundary rule (brief §3.4): a flag may
 # differ only for a provider whose p-value lies within the probability tolerance of the
 # decision threshold; such rows are returned with kind "flag_boundary" and are reported,
@@ -39,12 +41,14 @@ reference_compare_double <- function(a, b, tol, path) {
   bad <- diff > bound
   if (!any(bad)) return(NULL)
   worst <- which.max(diff - bound)
-  reference_mismatch(path, "numeric", sprintf("%d of %d values outside tolerance (atol %g, rtol %g); worst: actual %.17g, reference %.17g",
-                                              sum(bad), length(diff), tol$atol, tol$rtol, a[fin][worst], b[fin][worst]))
+  detail <- sprintf("%d of %d values outside tolerance (atol %g, rtol %g); worst: actual %.17g, reference %.17g",
+                    sum(bad), length(diff), tol$atol, tol$rtol, a[fin][worst], b[fin][worst])
+  reference_mismatch(path, "numeric", detail)
 }
 
 reference_compare_signature <- function(a, b, tol, path) {
-  exact_fields <- setdiff(names(b), c("sum", "abs_sum", "min", "max", "sample", "bits_md5", "dimnames", "names", "attributes"))
+  special_fields <- c("sum", "abs_sum", "min", "max", "sample", "bits_md5", "dimnames", "names", "attributes")
+  exact_fields <- setdiff(names(b), special_fields)
   out <- NULL
   for (f in exact_fields) {
     if (!identical(a[[f]], b[[f]])) out <- rbind(out, reference_mismatch(paste0(path, "#", f), "signature", "differs"))
@@ -54,6 +58,9 @@ reference_compare_signature <- function(a, b, tol, path) {
   }
   if (identical(b$type, "double")) {
     n <- b$length
+    if (tol$atol == 0 && tol$rtol == 0 && !identical(a$bits_md5, b$bits_md5)) {
+      out <- rbind(out, reference_mismatch(paste0(path, "#bits_md5"), "signature", "values are not bitwise identical"))
+    }
     if (!isTRUE(abs(a$sum - b$sum) <= n * tol$atol + tol$rtol * b$abs_sum)) {
       out <- rbind(out, reference_mismatch(paste0(path, "#sum"), "signature",
                                            sprintf("sum %.17g versus %.17g", a$sum, b$sum)))
@@ -61,7 +68,8 @@ reference_compare_signature <- function(a, b, tol, path) {
     for (f in c("abs_sum", "min", "max")) {
       scale <- if (f == "abs_sum") n else 1
       if (!isTRUE(abs(a[[f]] - b[[f]]) <= scale * tol$atol + tol$rtol * abs(b[[f]]))) {
-        out <- rbind(out, reference_mismatch(paste0(path, "#", f), "signature", sprintf("%.17g versus %.17g", a[[f]], b[[f]])))
+        detail <- sprintf("%.17g versus %.17g", a[[f]], b[[f]])
+        out <- rbind(out, reference_mismatch(paste0(path, "#", f), "signature", detail))
       }
     }
     out <- rbind(out, reference_compare_double(a$sample, b$sample, tol, paste0(path, "#sample")))
@@ -102,8 +110,8 @@ reference_compare_flags <- function(a, b, tol, path, alpha) {
                                                  paste(rownames(b)[differ][near], collapse = ", "), alpha)))
   }
   if (any(!near)) {
-    out <- rbind(out, reference_mismatch(paste0(path, "$flag"), "flag",
-                                         sprintf("flags differ for providers %s", paste(rownames(b)[differ][!near], collapse = ", "))))
+    detail <- sprintf("flags differ for providers %s", paste(rownames(b)[differ][!near], collapse = ", "))
+    out <- rbind(out, reference_mismatch(paste0(path, "$flag"), "flag", detail))
   }
   out
 }
@@ -111,7 +119,8 @@ reference_compare_flags <- function(a, b, tol, path, alpha) {
 reference_compare <- function(a, b, tol, path = "", alpha = NULL) {
   if (identical(a, b)) return(NULL)
   if (!identical(class(a), class(b))) {
-    return(reference_mismatch(path, "class", sprintf("%s versus %s", paste(class(a), collapse = "/"), paste(class(b), collapse = "/"))))
+    detail <- sprintf("%s versus %s", paste(class(a), collapse = "/"), paste(class(b), collapse = "/"))
+    return(reference_mismatch(path, "class", detail))
   }
   if (inherits(b, "pprof_reference_signature")) return(reference_compare_signature(a, b, tol, path))
   out <- reference_compare_attributes(a, b, tol, path)
@@ -136,15 +145,19 @@ reference_compare <- function(a, b, tol, path = "", alpha = NULL) {
     return(out)
   }
   if (is.list(b)) {
-    if (length(a) != length(b)) return(rbind(out, reference_mismatch(path, "length", sprintf("%d versus %d", length(a), length(b)))))
+    if (length(a) != length(b)) {
+      return(rbind(out, reference_mismatch(path, "length", sprintf("%d versus %d", length(a), length(b)))))
+    }
     for (k in seq_along(b)) {
       label <- if (!is.null(names(b)) && nzchar(names(b)[k])) names(b)[k] else sprintf("[[%d]]", k)
-      out <- rbind(out, reference_compare(a[[k]], b[[k]], tol, paste0(path, if (nzchar(path)) "$" else "", label), alpha))
+      child <- paste0(path, if (nzchar(path)) "$" else "", label)
+      out <- rbind(out, reference_compare(a[[k]], b[[k]], tol, child, alpha))
     }
     return(out)
   }
   if (!identical(typeof(a), typeof(b)) || length(a) != length(b)) {
-    return(rbind(out, reference_mismatch(path, "type", sprintf("%s[%d] versus %s[%d]", typeof(a), length(a), typeof(b), length(b)))))
+    detail <- sprintf("%s[%d] versus %s[%d]", typeof(a), length(a), typeof(b), length(b))
+    return(rbind(out, reference_mismatch(path, "type", detail)))
   }
   if (is.double(b)) {
     va <- as.vector(a)
@@ -152,8 +165,8 @@ reference_compare <- function(a, b, tol, path = "", alpha = NULL) {
     return(rbind(out, reference_compare_double(va, vb, tol, path)))
   }
   if (!identical(as.vector(unclass(a)), as.vector(unclass(b)))) {
-    out <- rbind(out, reference_mismatch(path, "value", sprintf("%d of %d values differ", sum(as.vector(unclass(a)) != as.vector(unclass(b)), na.rm = TRUE),
-                                                                length(b))))
+    differing <- sum(as.vector(unclass(a)) != as.vector(unclass(b)), na.rm = TRUE)
+    out <- rbind(out, reference_mismatch(path, "value", sprintf("%d of %d values differ", differing, length(b))))
   }
   out
 }
