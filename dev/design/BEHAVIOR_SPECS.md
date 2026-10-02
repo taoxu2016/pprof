@@ -266,7 +266,7 @@ Signature: `data_check(Y, Z, ProvID)`. Builds `as.data.frame(cbind(Y, ProvID, Z)
 
 The compatibility wrappers (ARCHITECTURE §I) return these shapes exactly, because user scripts index them:
 
-- Model objects: the field names and nesting of §2 to §6, including matrix shapes and dimnames, `data_include` with its indicator columns, `char_list`, and for RE/CRE the merMod in `attr(, "model")`.
+- Model objects: the field names and nesting of §2 to §6, including matrix shapes and dimnames, `data_include` with its indicator columns, `char_list`, and for RE/CRE the merMod in `attr(, "model")`. Verified in Phase 2 by rebuilding `data_include` from the data layer for all 87 fit fixtures that return a value (`tests/testthat/helper-reference-data.R`): FE fits build it with `data.frame(Y, ProvID, Z)` (response and provider columns named after the input's variables or `Y` and `ProvID`, design names passed through `make.names()`, the input's row names in their stored type); RE fits with `as.data.frame(cbind(Y, ProvID, model.matrix(fit)))`, so every column is coerced to one type (character when the provider IDs are), with the input's row names, or the positions 1..n for a tibble input; CRE fits with the positions 1..n, because their data pass through dplyr; the CRE `char_list` records formula terms, not design column names.
 - `test()` results: data frames with provider row names, column names `flag`, `p value`, `stat`, `Std.Error`, factor flags, and the `"provider size"` attribute.
 - `SM_output()` results: the list names and matrix column names of §8.
 - `confint()` results: the data frame column names and attributes of §9, including the D-33 inconsistencies.

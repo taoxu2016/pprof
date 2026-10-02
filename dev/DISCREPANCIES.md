@@ -37,7 +37,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-15 | `test` methods | Presentation | verified | Flags are factors whose levels depend on the data |
 | D-16 | `test.linear_fe` | none (made explicit) | verified | Reference distribution chosen by a hidden attribute |
 | D-17 | `data_check` | C | verified | Stops on any missing value; fits delete incomplete rows |
-| D-18 | FE formula interface | A | verified | Transformed and interaction terms fail; factor levels with spaces break the design matrix |
+| D-18 | FE formula interface | A | verified; fixed in the data layer (Phase 2) | Transformed and interaction terms fail; factor levels with spaces break the design matrix |
 | D-19 | `confint.logis_fe(option = "SM")` | A | verified | Non-numeric IDs misalign intervals with providers (61 of 100 in the example) |
 | D-20 | `logis_fe(threads > 1)` | none (tolerance) | verified | Element-wise OpenMP information block differs from BLAS at 1e-15 relative |
 | D-21 | thread counts | A (DEC-001) | verified | `threads = 4` hard-coded in logistic RE/CRE intervals; 2 by default in `SM_output()` |
@@ -354,8 +354,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: parse with `terms()`, `model.frame()`, and `model.matrix()`; keep design-matrix column names as `model.matrix()` produces them.
 - Recommendation: fix in the data layer. Inputs that work today produce the same design matrix, column names, and contrasts (checked by fixtures); inputs that failed now work, which is a fix of a Class A crash.
 - Decision owner: project lead.
-- Status: verified (V10.12).
-- Regression test: planned, synthetic edge-case suite (transformed terms, interactions, factor levels with spaces).
+- Status: verified (V10.12); fixed in the data layer in Phase 2 (`data_prepare()` parses formulas with `terms()` and keeps `model.matrix()` names); the fits use it from Phase 3.
+- Regression test: `tests/testthat/test-data-prepare.R` (transformed terms, interactions, and factor levels with spaces on the fixture datasets `syn_terms` and `syn_factors`); fit-level tests from Phase 3.
 
 ### D-19: SM intervals misaligned for non-numeric provider IDs
 
