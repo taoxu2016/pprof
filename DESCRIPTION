@@ -23,6 +23,7 @@ Imports:
     Rcpp, 
     RcppParallel,
     stats,
+    utils,
     caret,
     olsrr,
     pROC,
