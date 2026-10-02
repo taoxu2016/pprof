@@ -162,3 +162,70 @@ The Phase 0 decisions below were proposed in the Phase 0 design and accepted whe
 - Decision: Do not commit roxygen-only reformatting while `R/` is unchanged. Adopt roxygen2 8.1.0 (or later) at the start of Phase 2, in one commit that contains only the regenerated files, and record the version in CI.
 - Alternatives considered: Installing roxygen2 7.3.3 locally (keeps old formatting but pins an outdated tool).
 - Consequences: Phase 1 gate checks restore the two files after `document()` as Phase 0 did, or Phase 2 adopts 8.x first.
+
+---
+
+Phase 1 decisions below were made under the Phase 1 plan approved on 2026-10-02 and are proposed for confirmation at the Phase 1 gate. DEC-019 changes an approved tolerance and needs explicit sign-off.
+
+### DEC-017: Pinned, isolated reference library
+
+- Date: 2026-10-02
+- Status: proposed (Phase 1 plan approved)
+- Context: Brief §3.1 requires fixtures from the pinned reference in an isolated library, with lme4 and Matrix pinned.
+- Decision: `dev/reference/setup_reference_library.R` builds `dev/reference/lib` (gitignored) with pprof 1.0.3 from the MD5-checked CRAN tarball, built from source against the pinned Rcpp, RcppArmadillo, and RcppParallel headers, and its whole dependency closure (131 packages) from the Posit Package Manager CRAN snapshot of 2026-10-01. The snapshot's `Deriv` requires R ≥ 4.5, so `Deriv` comes from the CRAN Archive: the newest archived version that builds on R 4.4.0, which is 4.2.0 (4.3.0 fails to compile because it calls `Rf_allocLang`, which R 4.4.0 lacks). `dev/reference/library-lock.json` records every package, version, and source. The generator runs fixtures in child sessions whose library path is only this library plus base R, under `LC_COLLATE=C`, the collation testthat 3e uses for tests, because provider order depends on collation (D-34), and under `OMP_THREAD_LIMIT=1`, so one thread runs even where the reference hard-codes more (D-21).
+- Alternatives considered: A snapshot at the reference's release date (2026-02-10): historically closer, but the rewrite is developed and tested against current versions, and lme4 comparisons are only meaningful under the same versions. Using the user library: not isolated and not pinned.
+- Consequences: On this machine every numerically relevant version in the reference library equals the user library's, so tests run in the same environment as the fixtures. Installing pprof 1.0.3 on R < 4.5 now depends on an archived package (through `olsrr` → `car` → `pbkrtest` → `doBy` → `Deriv`), which strengthens DEC-009 (remove `olsrr`).
+
+### DEC-018: Fixture design
+
+- Date: 2026-10-02
+- Status: proposed (Phase 1 plan approved)
+- Context: Brief §3.1 and §6; the plan's budget of at most 5 MB and about 60 s for shipped fixtures.
+- Decision: Two fixture sets with the same format: core (`tests/testthat/fixtures/reference`, shipped, 234 cases, 3.6 MB) and full (`validation/fixtures/reference`, build-ignored, 32 cases, about 6.6 MB, mostly one 80,000-row dataset). One case runner (`tests/testthat/helper-reference-cases.R`) is used by the generator and the tests, so a case is executed and processed identically on both sides. Values are stored processed: vectors and data frames longer than 5,000 elements become signatures (counts, sums, extremes, a 25-point sample, an exact checksum); lme4 fits become their extracted components (fixef, ranef with conditional variances, VarCorr, theta, logLik, vcov, fitted, convergence messages); ggplot objects become their layers' data, compared by position. Intermediate quantities (brief §3.1) are the ones the reference returns: `data_include` with its screening columns, fitted values and linear predictors, the observed and expected tables of `SM_output()` (`OE`), variances, and variance components; provider sizes and event counts are not stored as separate fields, but `data_include` fixes them exactly. Iteration counts of logistic FE and Firth fits are parsed from the C++ log; for `message = FALSE` calls a probe with `message = TRUE` recovers the count and must reproduce the estimates bitwise. Generated datasets are stored with the fixtures. Slow cases are marked `heavy` and skip on CRAN.
+- Alternatives considered: Full objects everywhere (the core set would exceed the budget several times over); a separate test-side runner (two implementations of "run a case" could drift); extracting further intermediates by re-running internal steps of the reference (new code computing quantities the reference does not expose, which would itself need validation).
+- Consequences: The runner is part of the fixture definition: changing it can change fixtures and therefore needs the regeneration procedure (approval and a diff report). Two independent generations were identical.
+
+### DEC-019: Relative component of the root-finding tolerance
+
+- Date: 2026-10-02
+- Status: proposed; needs the project lead's sign-off (tolerances change only with sign-off, brief §3.4)
+- Context: ARCHITECTURE §G.4 approved `tol_root` as atol 2.5e-4, rtol 0, applied to provider-effect limits, with measure limits compared "after propagating through the measure". Interval tables mix effect-scale values (gamma, scale about 1) with ratio and rate limits (rates in percent, scale up to 100).
+- Decision: `tol_root` uses atol 2.5e-4 and rtol 2.5e-4 for every value of a root-based interval table, so that the absolute bound on the effect scale carries over to ratio and rate limits in proportion to their size, instead of a per-measure propagation.
+- Alternatives considered: Per-measure propagation through the derivative of each measure (more code in the comparison layer, harder to audit); rtol 0 (would reject rate limits that differ only through the effect-scale root tolerance).
+- Consequences: On this machine every interval matches bitwise (validation report), so the choice matters only across platforms. ARCHITECTURE §G.4 is updated to match.
+
+### DEC-020: lme4-backed comparisons only under the pinned versions
+
+- Date: 2026-10-02
+- Status: proposed (Phase 1 plan approved)
+- Context: Brief §3.1: for lme4-backed models the oracle is the pinned pprof plus pinned lme4 and Matrix; version sensitivity must be documented, not hidden by tolerances.
+- Decision: Characterization tests of lme4-backed cases (tier `lme4`) run only when the installed lme4 and Matrix versions equal the manifest's; otherwise they skip with a message naming both sets of versions, and the validation report lists them as skipped.
+- Alternatives considered: Comparing anyway with a wider tolerance (hides version sensitivity); failing on any version difference (breaks every check after an lme4 release).
+- Consequences: A CI job that pins the manifest's versions is needed for these cases (Phase 2, with the CI work).
+
+### DEC-021: Partial-matching warnings in the reference harness
+
+- Date: 2026-10-02
+- Status: proposed (Phase 1 plan approved)
+- Context: Brief §5.5 requires tests to run with partial-matching warnings enabled, and the project's test rules treat those warnings as failures, but the reference relies on two partial matches (D-08).
+- Decision: The reference harness enables `warnPartialMatchDollar`, `warnPartialMatchArgs`, and `warnPartialMatchAttr` while it replays a case, allows exactly the two D-08 messages, and fails on any other partial match. The legacy tests (the reference's own suite, 30 `test_that()` blocks, unchanged from `5260838`) run without these options, because some of them call functions that contain the D-08 matches (for example `summary()` on a `linear_re` fit).
+- Alternatives considered: Enabling the options globally (the legacy tests would report D-08 warnings on every run).
+- Consequences: Each allowlist entry is removed once the code containing that match has been replaced: `obs` (`SM_output.logis_fe`, logistic RE and CRE `confint()`) and `data_includ` (`summary()` for `linear_re` and `linear_cre`).
+
+### DEC-022: What the characterization tests compare
+
+- Date: 2026-10-02
+- Status: proposed (Phase 1 plan approved)
+- Context: Brief §3.2: messages, warnings, and print formatting may change; numbers, flags, and inclusion may not.
+- Decision: Tests compare the outcome type (value or error), every element of the processed value with the case's tolerance tier (structure, names, dimensions, and non-double values exactly; flags exactly except at the decision threshold), the iteration count exactly, and, where the reference needed a probe, that the probe reproduced the estimates. Messages, warnings, printed output, and error messages are stored in the fixtures for reference but not compared.
+- Alternatives considered: Comparing messages too (would fail on every permitted wording change).
+- Consequences: A Class A fix that turns a reference error into a result fails that case's test. Such fixes will need a per-case expectation that cites the register entry, added with the first such fix.
+
+### DEC-023: Benchmark measurement and regression rule
+
+- Date: 2026-10-02
+- Status: proposed
+- Context: Brief §3.6 sets a target of no regression worse than about 10% in time or memory. In a trial baseline with one timed run per call over 1 s, that run differed from the first run by up to 59%. With repeated runs, timings of some tasks are bimodal (some runs include an expensive garbage collection): 8 of the 47 measured tasks have a median of at least 0.05 s that is more than 10% above their fastest run, by up to 50%.
+- Decision: Each task runs in a fresh process on the pinned reference library (`dev/bench/run_reference.R`), with at least 5 timed runs for calls under 10 s and 3 otherwise; the baseline records the median, fastest, and slowest run, R allocations (calls under 10 s), and peak process memory. A later run regresses in time when both its median and its fastest run are more than 10% slower than the baseline's and the median is at least 0.05 s slower; when only one of the two is more than 10% slower, the task is rerun before it counts either way. It regresses in memory when its peak is more than 10% and at least 50 MB higher. Comparisons run on the machine that produced the baseline.
+- Alternatives considered: The median alone (flips between modes, so identical code can show a 30–50% change); the fastest run alone (hides slowdowns that come from more allocation and garbage collection); dropping runs that include garbage collection (`filter_gc = TRUE`, which hides a real cost).
+- Consequences: The baseline is regenerated on any new benchmark machine, which the pinned reference library allows at any time (about 30 minutes). From Phase 3 the gate measures the rewrite with the same measurement code (the harness needs a mode that runs the working tree instead of the reference library, added then) and runs the comparison.

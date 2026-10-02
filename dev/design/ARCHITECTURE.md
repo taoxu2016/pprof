@@ -419,11 +419,11 @@ The full grid is enumerated in `cases.R`; the expected order of magnitude is a f
 
 ### G.3 Equivalence test plan
 
-1. **Phase 1.** Characterization tests compare the current code (still the reference) with the fixtures: they must pass at Tier 0 everywhere, which proves the fixtures are reproducible on the generating platform and shows the cross-platform differences on CI.
+1. **Phase 1.** Characterization tests compare the current code (still the reference) with the fixtures: they must pass at Tier 0 everywhere, which proves the fixtures are reproducible on the generating platform and shows the cross-platform differences on CI. Implemented in Phase 1: the tests apply each case's tier, and `validation/equivalence-report.md` records each case's largest difference and whether its long double vectors are bitwise identical, which shows whether Tier 0 holds.
 2. **Phase 3 onward.** The same suite runs against the new code twice: through the compatibility wrappers (old shapes, field by field) and through the new API (results matched by `provider_id` and coefficient name).
 3. **Live comparison during migration.** Because old and new names differ, both implementations can be called in one session; tests compare them on cases the fixtures do not cover. Fixtures remain the authority.
-4. **Comparison helper.** `expect_equivalent(actual, expected, tolerance = tol_<name>)` applies |a − b| ≤ atol + rtol·|b| elementwise and reports the worst element.
-5. **Flag boundary rule.** A helper lists providers whose p-value lies within the applicable tolerance of a decision threshold (α/2, 1 − α/2, α); flags must match exactly for all others, and the listed providers go in the equivalence report (`validation/equivalence-report.md`, generated at each gate from Phase 3 on).
+4. **Comparison helper.** `expect_equivalent(actual, expected, tolerance = tol_<name>)` applies |a − b| ≤ atol + rtol·|b| elementwise and reports the worst element. Implemented in Phase 1 as `reference_compare()` (`tests/testthat/helper-equivalence.R`), called by `expect_reference_case()` with the tolerance `pprof_tolerances$<tier>` (tiers `exact`, `closed_form`, `iterative`, `probability`, `root`, `lme4`).
+5. **Flag boundary rule.** A helper lists providers whose p-value lies within the applicable tolerance of a decision threshold (α/2, 1 − α/2, α); flags must match exactly for all others, and the listed providers go in the equivalence report (`validation/equivalence-report.md`, generated at each gate from Phase 3 on). Implemented in Phase 1 on the reported p-value with the threshold α = 1 − level. This is equivalent, because in every family the reported two-sided p-value is 2·min(p, 1 − p) of the upper tail probability p that the flag compares with α/2 and 1 − α/2, and the reported one-sided p-value is the tail that the flag compares with α.
 6. **Discrepancies.** Every Class A fix gets a regression test; every Class B item is reproduced in the wrappers and, if signed off, implemented in the new API with its own fixture-difference report.
 
 ### G.4 Tolerances (proposed `tests/testthat/helper-tolerances.R`)
@@ -434,10 +434,12 @@ The full grid is enumerated in `cases.R`; the expected order of magnitude is a f
 | `tol_closed_form` | 1 | 1e-12 | 1e-10 | O/E and measures, variances given the estimates, Wald statistics, linear FE estimates | recomputation with a different summation order differs by at most 1.1e-14 relative in Phase 0 (V10.17, V13.12, V14.1, B2); four orders of magnitude of margin for BLAS and compiler differences, to be checked on every CI platform |
 | `tol_iterative_path` | 2 | 1e-12 | 1e-10 | SerBIN, BAN, Firth estimates when the iteration count matches | ports with identical paths differ by at most 2e-15 (V10.1, V10.2, V12.1); same margin argument |
 | `tol_probability` | 1 | 1e-14 | 1e-10 | p-values and tail probabilities | probabilities near 0 need an absolute floor; 1e-14 is above the observed recomputation noise (V13.4: 2.7e-15 in statistics) |
-| `tol_root` | 3 | 2.5e-4 | 0 | provider-effect interval limits; measure limits after propagating through the measure | twice the default `uniroot()` tolerance (1.22e-4). With function values reproduced to rounding, roots matched bitwise in Phase 0 (V13.15), so this is a fallback for platform differences |
+| `tol_root` | 3 | 2.5e-4 | 0; 2.5e-4 proposed (DEC-019) | provider-effect interval limits; measure limits after propagating through the measure | twice the default `uniroot()` tolerance (1.22e-4). With function values reproduced to rounding, roots matched bitwise in Phase 0 (V13.15), so this is a fallback for platform differences |
 | `tol_lme4` | 4 | 1e-10 | 1e-8 | lme4-backed estimates under pinned lme4 and Matrix | identical calls give identical results (V15.1); the margin covers optimizer sensitivity to rounding across platforms and must be validated per quantity |
 
 Rules: each tolerance changes only with sign-off; a failing comparison is never fixed by loosening it (brief §3.3). If the iteration count differs (Tier 2 path not reproduced), the comparison falls back to the brief's procedure: quantify the divergence at default settings and at `tol = 1e-10` on both implementations, then justify a case-specific tolerance in the equivalence report.
+
+Phase 1 implements this table in `tests/testthat/helper-tolerances.R` as `pprof_tolerances`, with the names shortened to `exact`, `closed_form`, `iterative`, `probability`, `root`, and `lme4`. Its `root` entry applies the relative component that DEC-019 proposes to every value of a root-based interval table, which awaits sign-off.
 
 ### G.5 Independent references (Suggests, skipped when absent)
 

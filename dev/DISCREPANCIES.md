@@ -57,6 +57,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-35 | bundled data docs | C | verified | `ExampleDataBinary` has 7,944 observations, documented as 7,994 |
 | D-36 | messages and side effects | Presentation | verified | `linear_fe`, `linear_re`, `logis_re` always print messages; attaching pprof prints a `car` message; `bar_plot()` triggers a ggplot2 deprecation warning |
 | D-37 | vignettes | C | verified | Describe a different clamp, nonexistent functions, and calls that now fail |
+| D-38 | `logis_fe` with collinear covariates | C | verified | Unidentified estimates with variances near 7e13 and no rank-deficiency warning |
 
 ---
 
@@ -628,3 +629,17 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: project lead.
 - Status: verified by reading the vignettes against the code and the audit results (V10.2, V13.21, BEHAVIOR_SPECS §9).
 - Regression test: vignettes are built during `R CMD check` from Phase 7 on.
+
+### D-38: Collinear covariates give unidentified estimates without a rank-deficiency warning
+
+- Component: `logis_fe` (SerBIN step `src/Fixed_effect.cpp:395-399`, variance `:660`).
+- Class (proposed): C (a message is missing; the numbers are reproduced)
+- Description: When covariates are exactly collinear (x3 = x1 + x2), the information matrix is singular in exact arithmetic, but `arma::solve(..., likely_sympd)` and `inv_sympd()` succeed numerically. The fit returns arbitrary coefficients for the collinear set with variances near 7e13 and no warning or message about it; the only warning is the routine screening count ("0 out of 20 providers considered small and filtered out!"). A constant covariate or a factor level that never occurs (an all-zero design column) instead makes the variance step fail with "inv_sympd(): matrix is singular or not positive definite" after the fit has iterated.
+- Minimal reproducible example: fixture `logis_fe-collinear` (dataset `syn_collinear`): beta = (0.268, 0.038, 0.373), every entry of variance$beta about ±7.04e13; fixtures `logis_fe-constant` and `logis_fe-factors-unused-columns` for the error.
+- Affected outputs: all outputs of such fits.
+- Statistical impact: the coefficients of the collinear set and every Wald quantity based on them are meaningless; provider effects and fitted values are identified and unaffected in exact arithmetic.
+- Options: (1) reproduce the numbers and add a classed warning (`pprof_warning_rank_deficient`) when the design is rank deficient; (2) stop with a classed error (Class B: a result becomes an error); (3) drop aliased columns as `glm()` does (Class B).
+- Recommendation: (1). Methodology owners may prefer (3); recorded as part of question M-17.
+- Decision owner: project lead for (1); methodology owner for (2) or (3).
+- Status: verified (Phase 1 fixtures, 2026-10-02).
+- Regression test: the fixtures above; the warning is tested from Phase 3.

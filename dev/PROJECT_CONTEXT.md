@@ -386,18 +386,21 @@ Points that changed on verification:
 
 | Item | Location or rule |
 |---|---|
-| Branch | `rewrite/v2`; one pull request per phase; stop at each gate |
+| Branch | `rewrite/v2`; each phase on a branch off it (Phase 1: `rewrite/phase-1`) with one pull request into `rewrite/v2`; stop at each gate |
 | Design document | `dev/design/ARCHITECTURE.md` (sections A–M) |
 | Behavior specifications | `dev/design/BEHAVIOR_SPECS.md` |
 | Phase 0 audit scripts and logs | `dev/design/audit/` (evidence IDs `Vxx.y`, `Bx`) |
 | Naming convention | `dev/NAMING.md` |
 | Decision records | `dev/DECISIONS.md` |
-| Discrepancy register | `dev/DISCREPANCIES.md` (D-01 to D-37 after Phase 0) |
-| Reference generator | `dev/reference/` (script plus isolated library setup) |
-| Fixtures | `tests/testthat/fixtures/reference/` with `manifest.json` |
-| Large validation suites | `validation/` (build-ignored), run in a dedicated CI job |
-| Tolerances | `tests/testthat/helper-tolerances.R`, one justification per entry |
-| Benchmarks | `dev/bench/` |
+| Discrepancy register | `dev/DISCREPANCIES.md` (D-01 to D-37 after Phase 0; D-38 added in Phase 1) |
+| Reference library | `dev/reference/lib/` (gitignored), built by `dev/reference/setup_reference_library.R`; recorded in `dev/reference/library-lock.json` (DEC-017) |
+| Reference generator | `dev/reference/`: `datasets.R`, `cases.R`, `generate_fixtures.R`, `compare_fixtures.R` (diff report); see `dev/reference/README.md` |
+| Case runner | `tests/testthat/helper-reference-cases.R`, shared by the generator and the tests (DEC-018) |
+| Fixtures | Core set (shipped): `tests/testthat/fixtures/reference/` with `manifest.json` and `datasets/`; full set: `validation/fixtures/reference/` |
+| Characterization tests | `tests/testthat/test-reference-*.R`, with helpers `helper-fixtures.R` and `helper-equivalence.R` |
+| Large validation suites | `validation/` (build-ignored): the full fixture set, `run-reference.R`, and `equivalence-report.md`; a dedicated CI job from Phase 2 |
+| Tolerances | `tests/testthat/helper-tolerances.R`, one justification per entry (the `root` entry's relative part awaits sign-off, DEC-019) |
+| Benchmarks | `dev/bench/`: `scenarios.R`, `run_reference.R`, `compare_to_baseline.R`; baselines in `dev/bench/results/` |
 | Naming | `dev/NAMING.md` (approved with the Phase 0 gate; authoritative) |
 | C++ layout constraints | `Rcpp::compileAttributes()` scans only top-level `src/`, so Rcpp adapter files stay there. Sources in subdirectories must be listed explicitly in `OBJECTS` in both `Makevars` and `Makevars.win` (no `$(wildcard ...)`, which would reintroduce the GNU make requirement) |
 
@@ -415,6 +418,17 @@ rcmdcheck::rcmdcheck(args = c("--as-cran", "--no-manual"))
 covr::package_coverage()
 tools::package_dependencies("pprof", reverse = TRUE)
 options(warnPartialMatchDollar = TRUE, warnPartialMatchArgs = TRUE)  # set in test helpers
+```
+
+Reference capture and validation, from the repository root (`Rscript` on this machine needs the R and Rtools `bin` directories on the PATH):
+
+```sh
+Rscript dev/reference/setup_reference_library.R     # build the pinned reference library, once per machine
+Rscript dev/reference/generate_fixtures.R --out-core <tmp>/core --out-full <tmp>/full   # regenerate, only with approval
+Rscript dev/reference/compare_fixtures.R tests/testthat/fixtures/reference <tmp>/core --report <tmp>/core-diff.md
+Rscript validation/run-reference.R                  # both fixture sets; writes validation/equivalence-report.md
+Rscript dev/bench/run_reference.R                   # benchmark baseline on the reference library
+Rscript dev/bench/compare_to_baseline.R dev/bench/results/<baseline>.csv <new>.csv --report <report>.md
 ```
 
 Rules: at most 2 threads in examples and tests; seeds set explicitly in any test that uses randomness; fixtures never regenerated without approval; heavy validation behind `skip_on_cran()`.
@@ -437,6 +451,12 @@ The current list is M-1 to M-16 in `dev/design/ARCHITECTURE.md` §M, each with a
 | 8. Minimum R version, release timeline, deprecation window | M-12 |
 
 New in Phase 0: M-4 (default stopping rule, D-24), M-7 (the "standard" score test, D-26), M-8 (linear FE interval distribution, D-32), M-9 (exact funnel limits, D-07), M-10 (logistic RE/CRE p-values above 1, D-31), M-11 (locale-independent provider order, D-34), M-15 (α versus α/2 for extreme providers' intervals, K-90), M-16 (who signs off).
+
+Added after Phase 0:
+
+| ID | Question | Proposed default | Related |
+|---|---|---|---|
+| M-17 | With exactly collinear covariates the logistic FE fit returns unidentified coefficients with variances near 7e13 and no warning about the rank deficiency. Should the rewrite warn (numbers unchanged), stop with an error, or drop aliased columns as `glm()` does? | reproduce the numbers and add a classed warning | D-38 |
 
 ---
 
