@@ -22,7 +22,7 @@ Only these abbreviations may appear in names. Anything else is spelled out.
 | `fe` | fixed effects | `fit_logistic_fe()` |
 | `re` | random effects | `fit_linear_re()` |
 | `cre` | correlated random effects (Mundlak within-between) | `fit_logistic_cre()` |
-| `se` | standard error | `provider_effect_se` |
+| `se` | standard error | `provider_estimate_se()`, `std_error` column |
 | `ci` | confidence interval | only in internal helpers such as `ci_from_roots()`; exported results say `lower`/`upper` |
 | `id` | identifier | `provider_id` |
 | `vcov` | variance-covariance matrix | the `stats::vcov()` generic |
@@ -51,7 +51,7 @@ Not carried over: `logis`, `SM`, `stdz`, `Y.char`, `Z.char`, `ProvID`, `ProvID.c
 | Covariate-level tests (Wald, LR, score) | verb | `test_coefficients()` |
 | Data diagnostics | verb | `check_data()` |
 | Plots | `plot_<kind>()` | `plot_funnel()`, `plot_caterpillar()`, `plot_flags()` |
-| Model-contract generics for extension developers | noun | `provider_effect_se()`, `linear_predictor()`, `expected_outcome()`, `null_effect()`, `inference_capabilities()` (documented in the developer guide, exported with `@keywords internal`) |
+| Model-contract generics for extension developers | noun | `provider_table()`, `provider_index()`, `linear_predictor()`, `observed_outcome()`, `expected_outcome()`, `null_effect()`, `profile_spec()`, `inference_capabilities()`, `provider_estimates()`, `provider_estimate_se()`, `provider_test()`, `refit_without()` (ARCHITECTURE §E.1; documented in the developer guide, exported with `@keywords internal`). They return plain vectors and tables; the user-facing `provider_effects()` builds its result object from them |
 
 Standard generics keep their base-R names and meanings: `print`, `summary`, `coef`, `vcov`, `confint`, `predict`, `fitted`, `residuals`, `nobs`, `logLik`, `formula`, `plot`, and `tidy`, `glance`, `augment` from `generics`.
 

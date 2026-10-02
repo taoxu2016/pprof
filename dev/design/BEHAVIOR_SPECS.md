@@ -256,7 +256,7 @@ Signature: `data_check(Y, Z, ProvID)`. Builds `as.data.frame(cbind(Y, ProvID, Z)
 
 ## 15. Bundled data
 
-| Object | Content (verified) | Notes |
+| Object | Content (verified, V16.7) | Notes |
 |---|---|---|
 | `ExampleDataBinary` | list `Y` (7,944 binary), `ProvID` (numeric, 100 providers of 50–103), `Z` (data frame `z1`–`z5`) | 3 no-event providers (IDs 40, 49, 81), none all-event. Help says 7,994 observations (D-35) |
 | `ExampleDataLinear` | list `Y` (7,901), `ProvID` (100 providers of 54–99), `Z` (`z1`–`z5`) | |

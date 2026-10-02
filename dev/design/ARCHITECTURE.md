@@ -17,7 +17,7 @@ This is the Phase 0 design document required by brief §10. Its companions:
 ## Summary
 
 - **The reference is confirmed.** The CRAN tarball of pprof 1.0.3 (MD5 `6fa1344f…`) is identical to commit `5260838` in `R/`, `src/`, `tests/`, `data/`, `man/`, and `NAMESPACE`; `DESCRIPTION` differs only by `R CMD build` normalization. No CRAN package depends on pprof in any field.
-- **The static audit holds up.** 75 runtime checks confirmed or refined every hypothesis in PROJECT_CONTEXT §6; none was refuted. They also found 15 new discrepancies (D-22 to D-36). The most serious are silent: Firth with `threads > 1` stops after 1 to 5 iterations with beta off by up to 0.57 (D-05); interval tables attach intervals to the wrong providers when IDs are not numeric (D-19, 61 of 100 providers in the example); invalid `threads` or `backtrack` values return unfitted estimates (D-22, D-23); and the default stopping rule can leave provider effects 0.04 logit units from convergence at n = 1.2M (D-24).
+- **The static audit holds up.** 76 runtime checks confirmed or refined every hypothesis in PROJECT_CONTEXT §6; none was refuted. They also found 16 new discrepancies (D-22 to D-37). The most serious are silent: Firth with `threads > 1` stops after 1 to 5 iterations with beta off by up to 0.57 (D-05); interval tables attach intervals to the wrong providers when IDs are not numeric (D-19, 61 of 100 providers in the example); invalid `threads` or `backtrack` values return unfitted estimates (D-22, D-23); and the default stopping rule can leave provider effects 0.04 logit units from convergence at n = 1.2M (D-24).
 - **Reproducing the reference is feasible.** Line-by-line R ports of SerBIN, BAN, and Firth reproduce the C++ results with the same iteration counts (beta bitwise, gamma within 2e-15), including clamping and backtracking, so the conventions register is complete for the engines and the brief's preferred Tier 2 strategy (reproduce the iteration path) works.
 - **Architecture.** Five layers with one-way dependencies; S3 classes prefixed `pprof_`; a model contract of a few generics plus declared inference capabilities; profiling written once against a per-family specification that keeps the families' different semantics explicit; an Rcpp-free C++ core in `namespace pprof` with one information-block routine; one lme4 adapter.
 - **R/C++ boundary, measured.** Keep the logistic engines in C++ (1.6–2.3× faster than an equivalent R port, with far less memory). Move linear FE to direct demeaning in R: the dense centering matrices allocate 4.35 GB for 20 providers of 1,000 observations, while demeaning needs 1.8 MB and agrees to 1.5e-14.
@@ -298,7 +298,7 @@ The inference and profiling layers rely on these generics only:
 | Generic | Returns | Used by |
 |---|---|---|
 | `provider_table(model)` | provider data frame (§D.1) | everything provider-level |
-| `provider_effects(model)` | named effect estimates | profiling, Wald tests and intervals |
+| `provider_estimates(model)` | named effect estimates (γ̂ or α̂) in provider order | profiling, Wald tests and intervals |
 | `provider_index(model)` | integer index per observation | provider sums |
 | `linear_predictor(model)` | covariate linear predictor per observation | expected outcomes |
 | `observed_outcome(model)` | outcome per observation | tests, standardization |
@@ -306,7 +306,7 @@ The inference and profiling layers rely on these generics only:
 | `null_effect(model, null)` | the numeric null value for a `null` choice | tests, standardization |
 | `profile_spec(model)` | the family specification of §B.4 | profiling |
 | `inference_capabilities(model)` | character vector of supported inference | capability checks |
-| `provider_effect_se(model)` | standard errors of the effects (when Wald inference is declared) | Wald tests and intervals |
+| `provider_estimate_se(model)` | standard errors of the effects (when Wald inference is declared) | Wald tests and intervals |
 | `provider_test(model, test, ...)` | per-provider probabilities and statistics for a declared test | `test_providers()` |
 | `refit_without(model, covariates, data)` | null fit for covariate LR and score tests (when declared) | `test_coefficients()` |
 
@@ -355,7 +355,7 @@ Target model: logistic (or linear) provider fixed effects with a group lasso pen
 5. **Object.** `c("pprof_logistic_grouplasso", "pprof_model")` with the shared fields plus `lambda` (length L), `coefficient_path` (p × L, original scale), `provider_effect_path` (m × L), `df` per λ (group degrees of freedom), `deviance` per λ, `convergence` per λ, and `selected` (the index of the selected λ, initially NULL).
 6. **Coefficient paths.** `coef(fit)` returns the p × L path; `coef(fit, lambda = x)` returns the solution at a grid value, or refits at an off-grid value from the nearest warm start. There is no interpolation, so every reported number is an actual solution.
 7. **Selection.** `select_lambda(fit, criterion = c("cv", "bic", "aic"), folds = NULL)` sets `selected` and stores the linear predictor at that λ. The fold design (observations stratified within providers, so every provider effect stays estimable) is a methodology decision for that phase.
-8. **Provider profiling at the selected λ.** The contract methods read the selected solution: `provider_effects()` is γ̂(λ_sel), `linear_predictor()` is Zβ̂(λ_sel), and `expected_outcome()` reuses the logistic implementation. `profile_spec()` is the logistic FE row of §B.4. Standardized measures, exact and bootstrap tests, the modified score test, and exact and score intervals then work unchanged, conditional on the selected covariate fit. Calling them before a λ is selected raises `pprof_error_invalid_input`.
+8. **Provider profiling at the selected λ.** The contract methods read the selected solution: `provider_estimates()` is γ̂(λ_sel), `linear_predictor()` is Zβ̂(λ_sel), and `expected_outcome()` reuses the logistic implementation. `profile_spec()` is the logistic FE row of §B.4. Standardized measures, exact and bootstrap tests, the modified score test, and exact and score intervals then work unchanged, conditional on the selected covariate fit. Calling them before a λ is selected raises `pprof_error_invalid_input`.
 9. **Inference that is not available.** Penalization and selection invalidate the information-based variances, so the model does not declare `coef_wald`, `coef_lr`, `coef_score`, `provider_wald`, `interval_wald`, or `provider_score_standard`. Asking for them raises `pprof_error_unsupported_inference`. Whether the conditional provider tests of step 8 should be offered at all, or flagged as ignoring selection, is decided by the methodology owners when the model is designed; the capability table is where that decision is recorded.
 10. **Files added.** `R/model-logistic-grouplasso.R` (fit, constructor, contract methods, capabilities), `R/model-grouplasso-path.R` (`coef`, `select_lambda`, path accessors), `R/plot-coefficient-path.R` (presentation), `src/penalized/group_lasso.h`, `src/penalized/group_lasso.cpp`, `src/rcpp_penalized.cpp`, two `OBJECTS` lines in `Makevars` and `Makevars.win`, `tests/testthat/test-model-logistic-grouplasso.R`, and a developer-guide entry. No existing R file changes. A linear variant adds `R/model-linear-grouplasso.R` with a Gaussian loss in the same engine.
 
@@ -581,7 +581,7 @@ How the rewrite carries the conventions:
 
 ## L. Initial discrepancy register
 
-See [DISCREPANCIES.md](../DISCREPANCIES.md). All 21 candidates from the static audit were verified by running code (D-03 and D-20 needed nuance; none was refuted), and 15 new entries were added (D-22 to D-36). Classes: 16 A, 7 B (each awaiting sign-off and reproduced in the meantime), 8 C, 3 presentation-only, 2 with no class (behavior preserved). Three entries are both silent and severe for users who hit them: D-05, D-19, and D-22/D-23. One, D-24, affects every default fit on large data.
+See [DISCREPANCIES.md](../DISCREPANCIES.md). All 21 candidates from the static audit were verified by running code (D-03 and D-20 needed nuance; none was refuted), and 16 new entries were added (D-22 to D-37). Classes: 16 A, 7 B (each awaiting sign-off and reproduced in the meantime), 9 C, 3 presentation-only, 2 with no class (behavior preserved). Three entries are both silent and severe for users who hit them: D-05, D-19, and D-22/D-23. One, D-24, affects every default fit on large data.
 
 ---
 
