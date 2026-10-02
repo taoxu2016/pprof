@@ -2,7 +2,7 @@
 
 Living reference for the `pprof` rewrite. Requirements live in `pprof_rewrite_brief.md`; this file holds facts, conventions, and status. Section 5 began as a static read of `main` at commit `5260838`; Phase 0 verified it by running the reference (`dev/design/audit/`), and §5.7 is now the verified conventions register. The Phase 0 findings moved from §6 to `dev/DISCREPANCIES.md`.
 
-Last updated: 2026-10-02. Status: Phase 0 (audit and design) deliverables complete on branch `rewrite/v2`; awaiting gate approval. Next step: Phase 1 (reference capture) after approval.
+Last updated: 2026-10-02. Status: Phase 0 gate approved (2026-10-02). Phase 1 (reference capture) started: plan awaiting approval.
 
 ---
 
@@ -398,7 +398,7 @@ Points that changed on verification:
 | Large validation suites | `validation/` (build-ignored), run in a dedicated CI job |
 | Tolerances | `tests/testthat/helper-tolerances.R`, one justification per entry |
 | Benchmarks | `dev/bench/` |
-| Naming | `dev/NAMING.md` (proposed in Phase 0; authoritative once the gate is approved) |
+| Naming | `dev/NAMING.md` (approved with the Phase 0 gate; authoritative) |
 | C++ layout constraints | `Rcpp::compileAttributes()` scans only top-level `src/`, so Rcpp adapter files stay there. Sources in subdirectories must be listed explicitly in `OBJECTS` in both `Makevars` and `Makevars.win` (no `$(wildcard ...)`, which would reintroduce the GNU make requirement) |
 
 ---
@@ -449,3 +449,4 @@ Update this section at the end of every phase. Move verified findings from Secti
 | 2026-10-01 | Static audit of `main` at `5260838`; brief v2 drafted; this file created. Phase 0 not started |
 | 2026-10-02 | Local setup on `rewrite/v2` (branched from `5260838`). Windows 11 Enterprise 10.0.22621; R 4.4.0 (ucrt) with Rtools44, GCC 13.3.0; OpenMP yes (`-fopenmp`). `main` is at `5260838` on both `upstream` and `origin` (fork). `devtools::test()`: 173 passed, 0 failed, 0 skipped, 0 warnings (`test-plots.R` is empty). `R CMD check --as-cran --no-manual`: 0 errors, 1 warning (CRAN incoming: version 1.0.3 already on CRAN, Date field over a month old), 5 notes (unable to verify current time; pandoc not installed; new `NEWS.md` has no versioned entry; GNU make in SystemRequirements; six logistic RE/CRE examples over 5 s). Phase 0 not started |
 | 2026-10-02 | Phase 0 (audit and design) complete; awaiting gate approval. Reference confirmed: the CRAN 1.0.3 tarball is identical to `5260838` (DEC-002); no reverse dependencies. Audit (`dev/design/audit/`): 76 runtime checks against the reference installed from CRAN into an isolated library; no static-audit hypothesis refuted; R ports of SerBIN, BAN, and Firth reproduce the C++ paths with the same iteration counts (beta bitwise, gamma within 2e-15). Registers: D-01 to D-21 verified, D-22 to D-37 added (16 A, 7 B awaiting sign-off, 9 C, 3 presentation-only, 2 without class); §5.7 rewritten as the verified register (69 entries, K-01 to K-130). Design: `dev/design/ARCHITECTURE.md` (A–M), `dev/design/BEHAVIOR_SPECS.md`, `dev/NAMING.md`, all proposed; decisions DEC-002 to DEC-016 proposed; open questions M-1 to M-16. Gate checks: `devtools::document()` with roxygen2 8.1.0 rewrote the formatting of `NAMESPACE` and `DESCRIPTION` only (parsed namespace identical, `man/` unchanged; both files restored, DEC-016); `devtools::test()` 173 passed, 0 failed, 0 skipped, 0 warnings; `R CMD check --as-cran --no-manual` 0 errors, 1 warning, 5 notes, the same as the setup baseline, except that the slow-examples note now lists nine logistic RE/CRE examples (elapsed 5.7–7.8 s) instead of six. On this machine `Rscript` is not on the Bash tool's PATH; prefix the R and Rtools `bin` directories. Next step: gate approval and designation of the methodology owners (M-16), then Phase 1 (reference capture) |
+| 2026-10-02 | Phase 0 gate approved by the project lead. The proposed decisions DEC-002 to DEC-016, the naming convention (`dev/NAMING.md`), and the design (`dev/design/ARCHITECTURE.md`) are recorded as accepted with the gate. Open questions M-1 to M-16 remain open; no methodology owner is designated yet (M-16), so the seven Class B items stay reproduced and awaiting sign-off. Phase 1 (reference capture) started; first step is a plan for approval. Next step: plan approval, then the pinned reference library and the fixture generator |

@@ -1,6 +1,6 @@
 # Naming convention
 
-Status: proposed in Phase 0 (2026-10-02), awaiting approval at the Phase 0 gate. Once approved, this file is authoritative for every name in the rewrite (brief §5.4). Example names elsewhere in the brief and in `PROJECT_CONTEXT.md` are illustrative only.
+Status: approved with the Phase 0 gate (2026-10-02). This file is authoritative for every name in the rewrite (brief §5.4). Example names elsewhere in the brief and in `PROJECT_CONTEXT.md` are illustrative only.
 
 The reference names that this convention replaces are listed in [ARCHITECTURE.md §I](design/ARCHITECTURE.md#i-migration-strategy), with the compatibility wrapper that keeps each one working.
 

@@ -1,6 +1,6 @@
 # pprof 2.0: architecture and design (Phase 0)
 
-Status: proposed for approval at the Phase 0 gate. Date: 2026-10-02. Branch: `rewrite/v2`.
+Status: approved with the Phase 0 gate on 2026-10-02. Branch: `rewrite/v2`. Open questions (§M) remain open until the methodology owners answer them.
 
 This is the Phase 0 design document required by brief §10. Its companions:
 
