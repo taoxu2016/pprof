@@ -11,7 +11,10 @@
 # Flag columns in provider-test tables follow the boundary rule (brief §3.4): a flag may
 # differ only for a provider whose p-value lies within the probability tolerance of the
 # decision threshold; such rows are returned with kind "flag_boundary" and are reported,
-# not treated as failures.
+# not treated as failures. In every family the reported p-value of a two-sided test is
+# 2 * min(p, 1 - p), where p is the upper tail probability that the flag compares with
+# alpha/2 and 1 - alpha/2, and that of a one-sided test is the tail the flag compares with
+# alpha, so every threshold corresponds to alpha = 1 - level on the reported p-value.
 
 reference_mismatch <- function(path, kind, detail) {
   data.frame(path = if (nzchar(path)) path else "<root>", kind = kind, detail = detail, stringsAsFactors = FALSE)
