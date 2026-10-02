@@ -399,7 +399,7 @@ Points that changed on verification:
 | Fixtures | Core set (shipped): `tests/testthat/fixtures/reference/` with `manifest.json` and `datasets/`; full set: `validation/fixtures/reference/` |
 | Characterization tests | `tests/testthat/test-reference-*.R`, with helpers `helper-fixtures.R` and `helper-equivalence.R` |
 | Large validation suites | `validation/` (build-ignored): the full fixture set, `run-reference.R`, and `equivalence-report.md`; a dedicated CI job from Phase 2 |
-| Tolerances | `tests/testthat/helper-tolerances.R`, one justification per entry (the `root` entry's relative part awaits sign-off, DEC-019) |
+| Tolerances | `tests/testthat/helper-tolerances.R`, one justification per entry (the `root` entry's relative part is DEC-019, signed off 2026-10-02) |
 | Benchmarks | `dev/bench/`: `scenarios.R`, `run_reference.R`, `compare_to_baseline.R`; baselines in `dev/bench/results/` |
 | Naming | `dev/NAMING.md` (approved with the Phase 0 gate; authoritative) |
 | C++ layout constraints | `Rcpp::compileAttributes()` scans only top-level `src/`, so Rcpp adapter files stay there. Sources in subdirectories must be listed explicitly in `OBJECTS` in both `Makevars` and `Makevars.win` (no `$(wildcard ...)`, which would reintroduce the GNU make requirement) |

@@ -434,12 +434,12 @@ The full grid is enumerated in `cases.R`; the expected order of magnitude is a f
 | `tol_closed_form` | 1 | 1e-12 | 1e-10 | O/E and measures, variances given the estimates, Wald statistics, linear FE estimates | recomputation with a different summation order differs by at most 1.1e-14 relative in Phase 0 (V10.17, V13.12, V14.1, B2); four orders of magnitude of margin for BLAS and compiler differences, to be checked on every CI platform |
 | `tol_iterative_path` | 2 | 1e-12 | 1e-10 | SerBIN, BAN, Firth estimates when the iteration count matches | ports with identical paths differ by at most 2e-15 (V10.1, V10.2, V12.1); same margin argument |
 | `tol_probability` | 1 | 1e-14 | 1e-10 | p-values and tail probabilities | probabilities near 0 need an absolute floor; 1e-14 is above the observed recomputation noise (V13.4: 2.7e-15 in statistics) |
-| `tol_root` | 3 | 2.5e-4 | 0; 2.5e-4 proposed (DEC-019) | provider-effect interval limits; measure limits after propagating through the measure | twice the default `uniroot()` tolerance (1.22e-4). With function values reproduced to rounding, roots matched bitwise in Phase 0 (V13.15), so this is a fallback for platform differences |
+| `tol_root` | 3 | 2.5e-4 | 2.5e-4 (DEC-019; 0 before Phase 1) | every value of a root-based interval table: provider-effect limits and ratio and rate limits (DEC-019) | twice the default `uniroot()` tolerance (1.22e-4). With function values reproduced to rounding, roots matched bitwise in Phase 0 (V13.15), so this is a fallback for platform differences |
 | `tol_lme4` | 4 | 1e-10 | 1e-8 | lme4-backed estimates under pinned lme4 and Matrix | identical calls give identical results (V15.1); the margin covers optimizer sensitivity to rounding across platforms and must be validated per quantity |
 
 Rules: each tolerance changes only with sign-off; a failing comparison is never fixed by loosening it (brief §3.3). If the iteration count differs (Tier 2 path not reproduced), the comparison falls back to the brief's procedure: quantify the divergence at default settings and at `tol = 1e-10` on both implementations, then justify a case-specific tolerance in the equivalence report.
 
-Phase 1 implements this table in `tests/testthat/helper-tolerances.R` as `pprof_tolerances`, with the names shortened to `exact`, `closed_form`, `iterative`, `probability`, `root`, and `lme4`. Its `root` entry applies the relative component that DEC-019 proposes to every value of a root-based interval table, which awaits sign-off.
+Phase 1 implements this table in `tests/testthat/helper-tolerances.R` as `pprof_tolerances`, with the names shortened to `exact`, `closed_form`, `iterative`, `probability`, `root`, and `lme4`. Its `root` entry applies the relative component of DEC-019 (signed off on 2026-10-02) to every value of a root-based interval table.
 
 ### G.5 Independent references (Suggests, skipped when absent)
 

@@ -165,7 +165,7 @@ The Phase 0 decisions below were proposed in the Phase 0 design and accepted whe
 
 ---
 
-The Phase 1 decisions below were made under the Phase 1 plan approved on 2026-10-02 and accepted when the project lead approved the Phase 1 gate on 2026-10-02, except DEC-019, which changes an approved tolerance and still awaits explicit sign-off.
+The Phase 1 decisions below were made under the Phase 1 plan approved on 2026-10-02 and accepted when the project lead approved the Phase 1 gate on 2026-10-02; DEC-019, which changes an approved tolerance, was signed off separately by the project lead on 2026-10-02.
 
 ### DEC-017: Pinned, isolated reference library
 
@@ -188,7 +188,7 @@ The Phase 1 decisions below were made under the Phase 1 plan approved on 2026-10
 ### DEC-019: Relative component of the root-finding tolerance
 
 - Date: 2026-10-02
-- Status: proposed; needs the project lead's sign-off (tolerances change only with sign-off, brief §3.4)
+- Status: accepted; signed off by the project lead on 2026-10-02 (tolerances change only with sign-off, brief §3.4)
 - Context: ARCHITECTURE §G.4 approved `tol_root` as atol 2.5e-4, rtol 0, applied to provider-effect limits, with measure limits compared "after propagating through the measure". Interval tables mix effect-scale values (gamma, scale about 1) with ratio and rate limits (rates in percent, scale up to 100).
 - Decision: `tol_root` uses atol 2.5e-4 and rtol 2.5e-4 for every value of a root-based interval table, so that the absolute bound on the effect scale carries over to ratio and rate limits in proportion to their size, instead of a per-measure propagation.
 - Alternatives considered: Per-measure propagation through the derivative of each measure (more code in the comparison layer, harder to audit); rtol 0 (would reject rate limits that differ only through the effect-scale root tolerance).
