@@ -1,8 +1,8 @@
 # pprof rewrite: project context
 
-Living reference for the `pprof` rewrite. Requirements live in `pprof_rewrite_brief.md`; this file holds facts, conventions, and status. Sections 5 and 6 come from a static read of `main` at commit `5260838`. Nothing in them has been executed yet, so treat each item as a hypothesis to confirm in Phase 0.
+Living reference for the `pprof` rewrite. Requirements live in `pprof_rewrite_brief.md`; this file holds facts, conventions, and status. Section 5 began as a static read of `main` at commit `5260838`; Phase 0 verified it by running the reference (`dev/design/audit/`), and §5.7 is now the verified conventions register. The Phase 0 findings moved from §6 to `dev/DISCREPANCIES.md`.
 
-Last updated: 2026-10-02. Status: local setup complete on branch rewrite/v2; Phase 0 not started.
+Last updated: 2026-10-02. Status: Phase 0 (audit and design) deliverables complete on branch `rewrite/v2`; awaiting gate approval. Next step: Phase 1 (reference capture) after approval.
 
 ---
 
@@ -16,8 +16,8 @@ Last updated: 2026-10-02. Status: local setup complete on branch rewrite/v2; Pha
 | Authors | Xiaohan Liu (maintainer), Lingfeng Luo, Yubo Shao, Xiangeng Fang, Wenbo Wu, Kevin He |
 | Repository | https://github.com/UM-KevinHe/pprof (MIT license) |
 | CRAN | 1.0.3 published 2026-02-10; 1.0.2 published 2025-06-20; first release December 2024 |
-| Reverse dependencies | None reported (R Observatory, August 2026). Confirm with `tools::package_dependencies("pprof", reverse = TRUE)`. If confirmed, breaking changes affect user scripts only |
-| Reference oracle | 1.0.3, believed to be `main` at `5260838` (2026-02-09, "debug for cran"). Confirm by diffing against the CRAN tarball |
+| Reverse dependencies | None: `tools::package_dependencies("pprof", reverse = TRUE)` over Depends, Imports, LinkingTo, Suggests, and Enhances of the CRAN index returned nothing (2026-10-02). Breaking changes affect user scripts only |
+| Reference oracle | 1.0.3 = `main` at `5260838` (2026-02-09, "debug for cran"), confirmed 2026-10-02: the CRAN tarball (MD5 `6fa1344f4a265811059d27a105d06d6b`, matching the CRAN index) is identical to the commit in `R/`, `src/`, `tests/`, `data/`, `man/`, and `NAMESPACE`; `DESCRIPTION` differs only by `R CMD build` normalization (DEC-002, `dev/design/audit/output/01_cran_identity.log`) |
 | Other refs | Tag `v1.0.2` is `20adc5d`. Branches `CRAN`, `SMR`, `Lingfeng`, `Xiaohan`, `Yubo`, and `JOSS` are stale side branches (several declare `Version: 1.3`); none of them is the reference |
 | R requirement | R >= 4.1.0 |
 
@@ -154,7 +154,7 @@ Linear FE:
 
 - Provider tests: z test when γ variance is `"simplified"` (σ²/n_i, the default) or t test with df n − m − p when `"full"`. The choice is driven by an attribute on `fit$variance$gamma`, not by an argument of `test()`. `null` is `"median"`, `"mean"` (size-weighted), or a number.
 - Standardized measures: indirect and direct standardized differences.
-- Intervals and `summary`: t-based with df n − m − p.
+- `summary`: t-based with df n − m − p. Intervals: t-based with df n − m − p for the `"simplified"` variance but normal for `"full"`, the reverse of the tests (D-32).
 
 Random-effect and CRE models:
 
@@ -192,37 +192,141 @@ All are exported to R through `// [[Rcpp::export]]` (internal wrappers in `R/Rcp
 | `info_beta_tbb` (`Info_beta` worker) | `Fixed_effect.cpp` | Nowhere | The only use of RcppParallel |
 | `modString` | `header.cpp` | Nowhere | Rcpp template leftover |
 
-### 5.7 Numerical conventions register (preserve; verify each)
+### 5.7 Numerical conventions register (verified in Phase 0)
 
-| Convention | Where | Value |
-|---|---|---|
-| Initial values | `logis_fe`, `logis_firth` | γ_i = logit(ȳ) for every provider; β = 0 |
-| Provider-effect bound | SerBIN, BAN, Firth, every iteration | γ clamped to [median(γ) − bound, median(γ) + bound]; `bound = 10` |
-| Weight floor in fitting | SerBIN, BAN, `Modified_score` (full model) | p(1 − p) == 0 replaced by 1e-20 |
-| Weight floor in Firth | `logis_firth_prov`, `Loglkd_firth` | p(1 − p) == 0 replaced by 1e-10 |
-| Probability clamp for variance | `logis_fe_var`, `wald_covar` | p in [1e-10, 1 − 1e-10] |
-| Probability clamp in tests | Exact and modified score tests, `summary` score test | p in [1e-10, 1 − 1e-10] |
-| Armijo backtracking | SerBIN, BAN | s = 0.01, t = 0.6 (the commented-out R version of BAN used t = 0.8) |
-| Stopping rules | SerBIN, BAN, Firth | `beta`: max abs change in β; `relch`: abs(Δℓ / ℓ_new); `ratch`: abs(Δℓ / (ℓ_new − ℓ_0)); `all`: max of the three; `or`: min of the three |
-| Default stopping rule | `logis_fe` / Firth | `"or"` / `"beta"`. Because `"or"` stops when any criterion falls below `tol`, a large-data fit may stop while coefficients still move by much more than `tol` (verify empirically); equivalence therefore requires reproducing the iteration path |
-| Iteration limits | | `logis_fe` 10,000 (SerBIN can run max + 1); Firth 1,000 |
-| Thread defaults | `SM_output` for `logis_fe`, `logis_re`, `logis_cre` | `threads = 2` by default, while fits and `test` default to 1 and RE/CRE `confint` hard-codes 4 (D-21). The fixture generator must pass `threads = 1` explicitly; the rewrite's uniform default of 1 is a recorded decision |
-| Log-likelihood | C++ and R | Σ[(γ + Zβ)y − log(1 + exp(γ + Zβ))]; overflows for linear predictors above about 709 |
-| Screening | `logis_fe`, `logis_firth` | Included if n_i >= `cutoff` (default 10); no-event and all-event providers flagged but kept |
-| Provider ordering | All fits | Data sorted by `factor(ProvID)` levels; outputs keyed by those levels |
-| Missing data | All fits | Listwise deletion on the columns used. CRE computes provider means with `na.rm = TRUE` before deletion |
-| Design matrix | FE fits | `model.matrix(reformulate(Z.char), data)[, -1]`, so contrasts follow `options("contrasts")` |
-| Linear FE residual variance | `linear_fe` | SSR / (n − m − p) |
-| Linear FE γ variance | `linear_fe` | `"simplified"`: σ²/n_i; `"full"`: σ²(1/n_i + z̄_i'(Z'QZ)⁻¹z̄_i) |
-| Two-sided p-values | Tests | 2·min(p, 1 − p) |
-| Rates | Logistic `SM_output` | Ratio × population rate (%), clipped to [0, 100] |
-| AUC | `logis_fe`, `logis_firth` | `pROC::auc` on fitted probabilities |
+This is the verified register: the single list of numerical conventions the rewrite must preserve. Each row was confirmed in Phase 0 either by running the reference (evidence IDs such as `V10.1` point to `dev/design/audit/output/`) or, where running adds nothing, by reading the code at `5260838` (marked "code"). The behavior specifications (`dev/design/BEHAVIOR_SPECS.md`) cite these IDs, and the rewrite gives each constant a name in `R/constants.R` or `src/core/constants.h` (ARCHITECTURE §K).
+
+Notation: γ provider effects (fixed effects), α provider effects (random effects), β covariate coefficients, Zβ the covariate linear predictor (Xβ including the intercept for RE models), m providers, n observations, p covariates, ℓ the log-likelihood, α_sig = 1 − level the significance level.
+
+#### Data handling
+
+| ID | Convention | Where | Value or rule | Evidence |
+|---|---|---|---|---|
+| K-01 | Input formats and precedence | FE fits | formula and data (`id()` term); else data with `Y.char`, `Z.char`, `ProvID.char`; else vectors `Y`, `Z`, `ProvID`. Results identical across formats | V10.11 |
+| K-02 | Formula parsing | FE fits; RE fits | Response = first variable of `terms()`. FE provider = text inside `id(...)` by regex; other term labels must be column names. RE provider = text after the term's `|`, trimmed | V10.12, code |
+| K-03 | Missing data | all fits | Listwise deletion over the response, provider, and covariate columns only. CRE: provider means computed before deletion (K-54) | V10.14, V15.10 |
+| K-04 | Design matrix | FE fits | `model.matrix(reformulate(Z.char), data)[, -1, drop = FALSE]`; factor coding follows `options("contrasts")`; the vector interface first passes `Z` through `data.frame()` (name checking) | V10.13 |
+| K-05 | Provider order | all fits | Rows sorted by `order(factor(ProvID))` (stable within provider). Provider order = `factor()` levels: numeric IDs numerically, character IDs by the session's collation locale | V10.10 |
+| K-06 | Screening | `logis_fe`, `logis_firth` | Included iff n_i ≥ `cutoff` (default 10). Excluded providers are dropped from every output, including `data_include`. Among included providers, no-events (Σy = 0) and all-events (Σy = n_i) are flagged per observation and kept | V10.8, V10.9 |
+| K-07 | No screening | `linear_fe`, RE, CRE | Every provider is kept, whatever its size | code |
+
+#### Logistic fixed effects: SerBIN and BAN (`src/Fixed_effect.cpp`)
+
+| ID | Convention | Where | Value or rule | Evidence |
+|---|---|---|---|---|
+| K-10 | Initial values | `logis_fe`, `logis_firth` | γ_i = log(ȳ / (1 − ȳ)) for every provider, ȳ over included observations; β = 0 | V10.5 |
+| K-11 | Log-likelihood | C++ and R | ℓ = Σ[(γ_i + z'β)y − log(1 + exp(γ_i + z'β))], computed directly (overflows to −Inf above η ≈ 709) | V10.16 |
+| K-12 | SerBIN Newton step | `logis_BIN_fe_prov` | Block inverse with D_i = Σ_j w_ij (floored), cross block B_i = Σ_j z_ij p(1 − p) (unfloored), I_ββ = Z' diag(w) Z (floored), Schur complement S = I_ββ − B D⁻¹ B' solved with `arma::solve(…, likely_sympd)`; d_γ = D⁻¹U_γ + D⁻¹B'S⁻¹(BD⁻¹U_γ − U_β), d_β = S⁻¹(U_β − BD⁻¹U_γ) | V10.1 |
+| K-13 | Weight floor, fitting | SerBIN (γ and β blocks), BAN (γ step only), `Modified_score` (full-model γ block only) | w = p(1 − p); entries exactly 0 replaced by 1e-20 | V10.1, V10.2, code |
+| K-14 | Armijo backtracking | SerBIN, BAN when `backtrack` | s = 0.01, t = 0.6. Accept step v when ℓ(θ + v d) − ℓ(θ) ≥ s·v·λ with λ = U'd; otherwise v ← t·v, with no lower limit. SerBIN searches γ and β jointly on unclamped γ; BAN searches the γ step (β fixed) and then the β step (new γ, old Zβ as the reference ℓ) | V10.3 |
+| K-15 | Provider-effect clamp | SerBIN, BAN, Firth, every iteration | After each γ update, γ ← min(max(γ, median(γ) − bound), median(γ) + bound), with the median of the updated, unclamped γ; `bound = 10` | V10.2 |
+| K-16 | Stopping criteria | SerBIN, BAN | Δℓ = ℓ(after the update and the clamp) − ℓ_old, with ℓ_old at the start of the iteration and ℓ_init at the starting values. `beta` = max|v·d_β| (BAN: v of the β step; BAN without backtracking: max|d_β|); `relch` = |Δℓ / (Δℓ + ℓ_old)|; `ratch` = |Δℓ / (Δℓ + ℓ_old − ℓ_init)|; `all` = max of the three; `or` = min. Criterion starts at 100; the loop stops when criterion < tol, checked at the top of each iteration | V10.1 |
+| K-17 | Iteration limits and defaults | `logis_fe` | SerBIN `while (iter <= max_iter)` (up to max_iter + 1 iterations); BAN `while (iter < max_iter)`. Defaults `method = "SerBIN"`, `max.iter = 10000`, `tol = 1e-5`, `stop = "or"`, `backtrack = TRUE`, `bound = 10`, `cutoff = 10`. BAN treats `backtrack` as an integer and runs no iterations unless it is 0 or 1 (D-23) | V10.4, V10.6 |
+| K-18 | Threads in SerBIN | `logis_BIN_fe_prov` | `threads > 1`: element-wise OpenMP dot products for I_ββ; `threads == 1`: one BLAS product; `threads < 1`: uninitialized (D-22). The two valid paths agree to about 1e-15 relative | V11.2, V10.7 |
+| K-19 | Default stop = "or" stops early | `logis_fe` | On large data the fit stops while provider effects still move (0.04 logit error at n = 1.2M); β is within 4e-6 of a tight fit. Equivalence therefore requires reproducing the iteration path, not only the optimum (D-24) | V11.1 |
+| K-20 | Variance | `logis_fe_var` | p clamped to [1e-10, 1 − 1e-10] (no 1e-20 floor). Var(β) = S⁻¹ via `inv_sympd`; Var(γ_i) = 1/D_i + J_i'S⁻¹J_i with J_i = B_i / D_i | V10.17 |
+| K-21 | Information criteria | `logis_fe`, `logis_firth` | AIC = −2ℓ + 2(m + p); BIC = −2ℓ + log(n)(m + p); n = included observations | V10.16 |
+| K-22 | AUC | `logis_fe`, `logis_firth` | `pROC::auc(y, fitted)`, equal to the Mann–Whitney estimate with ties counted one half | V10.15 |
+| K-23 | Fitted values | `logis_fe`, `logis_firth` | plogis(γ_i + z'β), unclamped | code |
+
+#### Firth correction (`src/Firth.cpp`)
+
+| ID | Convention | Where | Value or rule | Evidence |
+|---|---|---|---|---|
+| K-30 | Penalized log-likelihood | `logis_firth_prov` | ℓ* = ℓ + ½ log det I; log det I = Σ_i log(max(D_i, 1e-12)) + 2 Σ log diag(chol((S + S')/2)), retrying with ridge 1e-8·I if Cholesky fails, then erroring | V12.1 |
+| K-31 | Weight floor | Firth | w = p(1 − p); entries exactly 0 replaced by 1e-10, in every block | V12.1, code |
+| K-32 | Firth step | Firth | Modified residual y − p + h(½ − p), with hat value h_ij = w_ij x_ij' I⁻¹ x_ij from the block inverse; full Newton step d = I⁻¹U* without line search; clamp (K-15) after the γ update; information recomputed after the clamp | V12.1 |
+| K-33 | Firth stopping | Firth | Criterion = max|d_β| only (rule fixed to "beta", not exposed); continue while iter < max_iter and criterion > tol (criterion starts at 1e9). Defaults `max.iter = 1000`, `tol = 1e-5`, `bound = 10`, `cutoff = 10` | V12.1, V12.4 |
+| K-34 | Firth outputs | `logis_firth` | Class `logis_fe`; variance, Loglkd, AIC, BIC are the unpenalized quantities at the Firth estimates (D-12) | V12.2 |
+
+#### Linear fixed effects (`R/linear_fe.R`)
+
+| ID | Convention | Where | Value or rule | Evidence |
+|---|---|---|---|---|
+| K-40 | Estimates | `linear_fe` | β = (Z'QZ)⁻¹Z'Qy with Q = blockdiag(I − 11'/n_i) built densely with `Matrix::bdiag`; γ_i = ȳ_i − z̄_i'β. Agrees with `lm()` on provider indicators to 2e-14 | V14.1 |
+| K-41 | Residual variance | `linear_fe` | σ² = SSR / (n − m − p); Var(β) = σ²(Z'QZ)⁻¹ | V14.1, V14.2 |
+| K-42 | Provider-effect variance | `linear_fe` | `"simplified"` (default): σ²/n_i; `"full"`: σ²(1/n_i + z̄_i'(Z'QZ)⁻¹z̄_i). Accepted values: "simplified", "s", "full", "f" | V14.2, V14.7 |
+| K-43 | Log-likelihood and criteria | `linear_fe` | ℓ = −(n/2)log(2π) − (n/2)log(SSR/n) − n/2; AIC = −2ℓ + 2(m + p + 1); BIC = −2ℓ + (m + p + 1)log(n) | V14.2 |
+
+#### Random and correlated random effects (lme4)
+
+| ID | Convention | Where | Value or rule | Evidence |
+|---|---|---|---|---|
+| K-50 | Engine calls | `linear_re`, `logis_re`, CRE | `lmer(formula, data, ...)` (REML by default); `glmer(formula, data, family = binomial(link = "logit"), ...)` (Laplace, nAGQ = 1). Data sorted by provider first. Column interface formula: `Y ~ (1| ProvID) + z1 + …`; CRE formula: `Y ~ <within> + <between> + <other> + (1 | ProvID)` | V15.1 |
+| K-51 | Variance component | RE, CRE | (first row of `VarCorr` `sdcor`)² in `linear_re`, `logis_re`, `linear_cre`; `vcov` in `logis_cre` (equal on the example data) | V15.2 |
+| K-52 | Effects | RE, CRE | `fixef()` (with intercept); `ranef()` conditional modes, row names reset to the provider order of K-05 | V15.13 |
+| K-53 | Linear predictor and fitted | RE, CRE | linear_pred = Xβ including the intercept; fitted = lme4 `fitted()` (including α_i) | code |
+| K-54 | CRE decomposition | `linear_cre`, `logis_cre` | x_bar = provider mean with `na.rm = TRUE` over every row of the input data; x_within = x − x_bar; then column selection and complete-case filtering (D-13) | V15.10 |
+
+#### Provider tests
+
+| ID | Convention | Where | Value or rule | Evidence |
+|---|---|---|---|---|
+| K-60 | Null value | all `test`, `SM_output`, `confint` | Logistic FE: `"median"` = median(γ̂) over included providers, or a number. Linear FE: also `"mean"` = Σn_iγ̂_i / n. RE/CRE: a number, default 0. Integer null accepted only by `test.logis_fe` (D-14) | V13.9, V14.3 |
+| K-61 | Significance level | everywhere | α_sig = 1 − level, computed in floating point (1 − 0.95 = 0.050000000000000044); quantiles use α_sig/2 and 1 − α_sig/2 from that value | V13.15 |
+| K-62 | Exact Poisson-binomial test | `test.logis_fe` (default) | p0 = plogis(γ0 + Zβ) clamped to [1e-10, 1 − 1e-10]; o = provider event count; F, f = `poibin::ppoibin`, `dpoibin`. Two-sided: upper mid-p = 1 − F(o) + ½f(o), p-value = 2 min(p, 1 − p), statistic = qnorm(p, lower.tail = FALSE). Greater: p = 1 − F(o − 1) (1 when o = 0), statistic qnorm(p, lower.tail = FALSE). Less: p = F(o), statistic qnorm(p) | V13.1, V13.2 |
+| K-63 | Flag rule | all provider tests | With prob = upper-tail probability: two-sided flag 1 if prob < α_sig/2, 0 if prob ≤ 1 − α_sig/2, else −1 (RE/CRE write the same rule as "−1 if prob > 1 − α_sig/2"); greater: 1 if p < α_sig else 0; less: −1 if p < α_sig else 0, where Wald-type tests use p = 1 − prob | V13.1, V13.7, V15.14 |
+| K-64 | Bootstrap test | `test.logis_fe(test = "exact.bootstrap")` | Providers in K-05 order; for each, `colSums(matrix(rbinom(n_i·n, 1, rep(p0, n)), ncol = n))` with clamped p0; two-sided p = (#{S > o} + ½#{S = o})/n; greater #{S ≥ o}/n; less #{S ≤ o}/n; default n = 10000; draws from the user's RNG stream | V13.3 |
+| K-65 | Modified score test | `test.logis_fe(test = "score")` (default `score_modified = TRUE`) | z_i = Σ(y − p0) / sqrt(Σ p0(1 − p0)), p0 clamped, unrestricted β | V13.4 |
+| K-66 | "Standard" score test | `Modified_score` | No refit: full-model γ̂_(−i) and β̂; p0 for provider i unclamped; V = I_αα − I_αβ (I_ββ* − I_βγ I_γγ⁻¹ I_γβ)⁻¹ I_βα with I_ββ* using null weights for provider i; full-model γ block floored at 1e-20, cross block unfloored; `inv_sympd`. Non-finite statistics dropped (D-04) | V13.5, V13.6 |
+| K-67 | Wald provider test, logistic FE | `test.logis_fe(test = "wald")` | z = (γ̂ − γ0)/sqrt(Var γ̂) with K-20 variances; always warns | V13.7 |
+| K-68 | Linear FE test | `test.linear_fe` | z = (γ̂ − γ0)/se; normal reference with the simplified variance, t(n − m − p) with the full variance | V14.3 |
+| K-69 | Linear RE test | `test.linear_re` | se = sqrt(R_i σ²/n_i), R_i = σ²_α / (σ²_α + σ²/n_i), equal to lme4's conditional SD to 4e-16 | V15.3 |
+| K-70 | Other RE/CRE tests | `test.logis_re`, `test.logis_cre`, `test.linear_cre` | se = sqrt(postVar) from `ranef(condVar = TRUE)`; z = (α̂ − null)/se | V15.3, V15.14 |
+
+#### Standardized measures
+
+| ID | Convention | Where | Value or rule | Evidence |
+|---|---|---|---|---|
+| K-80 | Logistic FE indirect | `SM_output.logis_fe` | O_i = Σy; E_i = Σ plogis(γ0 + Zβ) (unclamped); Var_i = Σ E(1 − E); ratio O_i/E_i; rate = min(max(ratio × r, 0), 100) with population rate r = 100 Σy / n over included observations | V13.12 |
+| K-81 | Logistic FE direct | `SM_output.logis_fe` | E_i = Σ_j over all observations of plogis(γ̂_i + z_j'β) (`computeDirectExp`); ratio E_i / Σy; rate as K-80 | V13.12 |
+| K-82 | Logistic RE/CRE | `SM_output.logis_re`, `.logis_cre` | Indirect: Σ fitted (including α_i) / Σ plogis(Xβ), predicted over expected; direct: Σ_j plogis(α̂_i + x_j'β) / Σy; rates as K-80 | V15.4 |
+| K-83 | Linear FE | `SM_output.linear_fe` | Indirect difference (O_i − E_i)/n_i with E_i = Σ(γ0 + Zβ); direct difference (Σ_j(γ̂_i + z_j'β) − Σ_j(γ0 + z_j'β))/n. Both equal γ̂_i − γ0 up to rounding | V14.5 |
+| K-84 | Linear RE/CRE | `SM_output.linear_re`, `.linear_cre` | Indirect (Σ fitted − ΣXβ)/n_i; direct (Σ_j(α̂_i + x_j'β) − Σy)/n | V15.5 |
+| K-85 | Direct expectations threading | `computeDirectExp` | Results identical for 1 and 2 threads | V13.14 |
+
+#### Intervals
+
+| ID | Convention | Where | Value or rule | Evidence |
+|---|---|---|---|---|
+| K-90 | Logistic FE provider-effect intervals | `confint.logis_fe(option = "gamma")` | Test inversion with `uniroot()` at its defaults (tol = `.Machine$double.eps^0.25`, maxiter 1000). Upper limit bracket γ̂ + [5k, 5(k + 1)], lower γ̂ − [5(k + 1), 5k], k = 0, 1, 2, else ±Inf. Exact: the mid-p functions of K-62 set to α_sig/2. Score: (o − Σp)/sqrt(Σp(1 − p)) ± qnorm(α_sig/2, lower.tail = FALSE). No-event providers: (−Inf, U] with bracket (10 + max|Zβ|)·[−k, k], k = 1, 2, 3, solving ½∏(1 − p) = α_sig (exact) or z_α − Σp/sqrt(Σp(1 − p)) = 0 (score). All-event providers: [L, Inf) with ½∏p = α_sig (exact) or Σ(1 − p)/sqrt(Σw) − z_α = 0 with w floored at 1e-20 (score). Wald: γ̂ ± qnorm(1 − α_sig/2)·se | V13.15, code |
+| K-91 | Logistic FE measure intervals | `confint.logis_fe(option = "SM")` | Indirect: [Σ plogis(γ_L + Zβ)/E_i, Σ plogis(γ_U + Zβ)/E_i]; no-event lower 0 (upper n_i/E_i when `greater`); all-event upper n_i/E_i (lower 0 when `less`). Direct: the same with sums over all observations and denominator Σy; no-event `greater` upper n/Σy; all-event upper n/Σy. Rates clipped as K-80 | code |
+| K-92 | Linear FE intervals | `confint.linear_fe` | γ̂ ± c·se with c = qt(·, n − m − p) for the simplified variance and qnorm(·) for the full variance (D-32); measure intervals shift by the same amount | V14.4 |
+| K-93 | RE/CRE intervals | `confint` for RE/CRE | α̂ ± qnorm(·)·se (se as K-69/K-70); logistic measure intervals map limits through plogis sums; linear through sums | V15.14, code |
+| K-94 | One-sided intervals | all `confint` | Critical value qnorm(1 − α_sig) (or qt); the open side is ±Inf, or 0 and n_i/E_i for logistic measures | code |
+
+#### Covariate summaries
+
+| ID | Convention | Where | Value or rule | Evidence |
+|---|---|---|---|---|
+| K-100 | Logistic FE Wald | `summary.logis_fe` | p = 2(1 − pnorm(|z|)) returned as `format.pval(p, digits = 7, eps = 1e-10)` strings; interval β ± qnorm(1 − α_sig/2)·se | V13.20 |
+| K-101 | Logistic FE LR | `summary.logis_fe(test = "lr")` | −2ℓ with γ clamped to median ± 10 in both models; null model refit by `logis_fe` with default settings; statistic −2ℓ_null − (−2ℓ_full); p = pchisq(·, 1, lower.tail = FALSE); `null` must be 0 (D-10, D-30) | V13.19 |
+| K-102 | Logistic FE score | `summary.logis_fe(test = "score")` | Null refit as K-101; p clamped to [1e-10, 1 − 1e-10]; efficient information for the added covariate from the block inverse; statistic U²/I; chi-square(1) p-value | code, V13.19 |
+| K-103 | Linear FE | `summary.linear_fe` | t test, df n − p − m; interval β ± qt(1 − α_sig/2, n − p − m)·se; p as strings | V14.6 |
+| K-104 | Linear RE/CRE | `summary.linear_re`, `.linear_cre` | t p-values with df n − p_FE − m + 1; intervals from `lme4::confint(method = "Wald")` (normal) | V15.7 |
+| K-105 | Logistic RE/CRE | `summary.logis_re`, `.logis_cre` | p = 2(1 − pnorm(z)) without `abs()` (D-31); intervals from `lme4::confint(method = "Wald")` | V15.6 |
+
+#### Plots and diagnostics
+
+| ID | Convention | Where | Value or rule | Evidence |
+|---|---|---|---|---|
+| K-110 | Logistic funnel (score) | `plot.logis_fe` | precision = E_i²/Var_i (K-80); limits target ± qnorm(1 − α/2)·sqrt(1/precision) with the user's `alpha` used directly, lower limit clipped at 0; flags from the modified score test at level 1 − alpha[1] | V13.21, code |
+| K-111 | Linear funnel | `plot.linear_fe` | precision = n_i; limits target ± qnorm(1 − α/2)·σ/sqrt(n_i); flags from `test.linear_fe` | V14.8, code |
+| K-112 | Caterpillar flags | `caterpillar_plot` | Higher if lower limit > reference, lower if upper limit < reference; reference 0 (differences), 1 (ratios), the population rate (rates) | V16.2, code |
+| K-113 | Flag bar plot | `bar_plot` | Provider-size groups from `quantile(size, (0:g)/g)` breaks with `include.lowest = TRUE`, default g = 4, plus "Overall" | V16.2, code |
+| K-120 | Data checks | `data_check` | Stop on any missing value; `caret::nearZeroVar(saveMetrics = TRUE)` defaults (freqCut 95/5, uniqueCut 10): zero variance stops, near-zero warns; |r| > 0.9 warns; `olsrr::ols_vif_tol` VIF ≥ 10 warns | V16.1, code |
+
+#### Thread counts
+
+| ID | Convention | Where | Value or rule | Evidence |
+|---|---|---|---|---|
+| K-130 | Reference thread defaults | everywhere | Fits and `test` default to 1; logistic `SM_output` defaults to 2 and is called with that default by `confint.logis_fe`, `plot.logis_fe`, and the RE/CRE intervals; RE/CRE direct intervals hard-code 4 (D-21). The fixture generator passes `threads = 1` explicitly; the rewrite defaults to 1 everywhere (DEC-001) | V15.11 |
 
 ### 5.8 Bundled data
 
-- `ExampleDataBinary`: list of `Y`, `ProvID`, `Z`; simulated; 7,994 observations, 100 providers, 5 continuous covariates.
-- `ExampleDataLinear`: same structure; simulated; 7,901 observations, 100 providers, 5 continuous covariates.
-- `ecls_data`: data frame of 9,101 children in 2,275 schools (Early Childhood Longitudinal Study) with `Child_ID`, `School_ID`, `Math_Score`, `Income` (18 ordinal levels treated as numeric), and `Child_Sex` (categorical). Many very small schools, so it exercises screening and factor handling.
+- `ExampleDataBinary`: list of `Y`, `ProvID`, `Z`; simulated; 7,944 observations (its help says 7,994, D-35), 100 providers of 50–103 observations, 5 continuous covariates; 3 no-event providers (IDs 40, 49, 81) and no all-event provider. `ProvID` is numeric.
+- `ExampleDataLinear`: same structure; simulated; 7,901 observations, 100 providers of 54–99, 5 continuous covariates.
+- `ecls_data`: tibble of 9,101 children in 2,275 schools (Early Childhood Longitudinal Study) with `Child_ID`, `School_ID` (numeric), `Math_Score`, `Income` (18 ordinal levels treated as numeric), and `Child_Sex` (factor with levels "1", "2"). 1,195 schools have one child and only 334 have at least 10, so it exercises screening and factor handling.
 
 None of these contains the extreme cases the validation suite needs, so the edge-case suite must be synthetic.
 
@@ -257,55 +361,24 @@ None of these contains the extreme cases the validation suite needs, so the edge
 
 ---
 
-## 6. Preliminary audit findings (verify in Phase 0)
+## 6. Audit findings (verified in Phase 0)
 
-### 6.1 Candidate discrepancies
+The static-audit candidates that used to be listed here were all checked by running the reference in Phase 0. None was refuted; several were sharpened, and 16 new findings were added.
 
-Proposed classes follow the brief: A may be fixed with a regression test, B needs sign-off, C means fixing docs or messages.
+| Former content | Now in |
+|---|---|
+| §6.1 candidate discrepancies D-01 to D-21 | `dev/DISCREPANCIES.md`, verified entries D-01 to D-21, plus new entries D-22 to D-37 |
+| §6.2 structural problems | `dev/design/ARCHITECTURE.md` §A.2 to §A.6 |
+| §6.3 performance hot spots | `dev/design/ARCHITECTURE.md` §A.7 and §F, with measurements B1 to B5 |
 
-| ID | Where | Finding | Proposed class |
-|---|---|---|---|
-| D-01 | `logis_fe`, `logis_firth` | Inclusion uses n_i >= cutoff, but the warning counts n_i <= cutoff as filtered out | C |
-| D-02 | `logis_fe` docs | `backtrack` documented as default FALSE; code default is TRUE. The `stop` docs refer to `iter.max` instead of `max.iter` | C |
-| D-03 | C++ fitters | SerBIN allows max_iter + 1 iterations, BAN max_iter; both print "converged" even when the limit is hit; no convergence status is returned | Preserve iteration semantics; add diagnostics (additive) |
-| D-04 | `Modified_score` | Non-finite z-scores are dropped, so one bad provider shortens the result and breaks alignment with provider IDs (likely an error when the result data frame is built) | A |
-| D-05 | `logis_firth_prov`, `threads > 1` | `d_beta` is thread-private, assigned in one `omp single` block and read in a later one that may run on a different thread, where it is empty (norm 0), which can stop the algorithm early. `Rcout`, `Rcpp::stop`, and throwing Armadillo calls also run inside the parallel region | A (nondeterministic); fixtures use threads = 1 |
-| D-06 | `test.logis_fe` | `"robust_wald"` passes validation but the branch tests `"robust wald"`, so the call returns `NULL` | A |
-| D-07 | `plot.logis_fe(test = "exact")` | Reaches `qpoibin` through rlang's `.data` pronoun outside a data mask, which errors; the path is untested | A |
-| D-08 | `SM_output.logis_fe` | Uses `fit$obs`, which works only through partial matching of `fit$observation` | A (fragile) |
-| D-09 | `print.logis_cre` | Defined but not registered, so printing likely dumps the whole `lme4` fit | A |
-| D-10 | `summary.logis_fe` | LR and score tests refit with default settings rather than the original fit's `method`, `tol`, `bound`, `cutoff`, and `stop`; hard-code bound 10; refit twice per covariate. Wald p-values are returned as formatted character strings | B (refit settings); presentation |
-| D-11 | `linear_re`, `logis_re` | The vector interface uses `cbind()`, which coerces mixed-type covariates to character; a missing final `else stop()` leads to an obscure error | A |
-| D-12 | `logis_firth` | Returns class `logis_fe` with unpenalized variance, log-likelihood, AIC, and BIC | B (methodology question) |
-| D-13 | CRE models | Provider means computed with `na.rm = TRUE` before complete-case filtering | B (methodology question) |
-| D-14 | Several | `null` validated with `is.numeric()` in `test.logis_fe` but `class(null) == "numeric"` in `SM_output` and plots, so integer values are accepted in one place and rejected in another | A/C |
-| D-15 | `test` methods | Flags are factors whose levels depend on which flags occur in the data | Presentation |
-| D-16 | `test.linear_fe` | Test distribution chosen by a hidden attribute set at fit time | Preserve; make explicit |
-| D-17 | `data_check` vs fits | `data_check` stops on any missing value, while fits silently delete rows | C (document) |
-| D-18 | FE fits, formula path | Terms that are not plain column names (for example `log(x)` or `x1:x2`) fail the column-existence check with a misleading message. Dummy names that are not syntactic (factor levels with spaces) are likely broken because `data.frame()` rewrites column names | A |
-| D-19 | `confint.logis_fe(option = "SM")` | Results are reordered with `order(as.numeric(colnames(...)))`, which assumes numeric provider IDs | A |
-| D-20 | `logis_fe(threads > 1)` | Element-wise OpenMP information matrix differs slightly from the BLAS product used with one thread | Expected; tolerance |
-| D-21 | `confint.logis_re`, `confint.logis_cre` | `threads = 4` hard-coded, ignoring the user and conflicting with the CRAN two-core limit | A |
+Points that changed on verification:
 
-### 6.2 Structural problems
-
-- Input parsing, screening, and data preparation are duplicated across all seven fitting functions; `logis_firth` repeats about 150 lines of `logis_fe` verbatim.
-- The block information computation is reimplemented at least five times: SerBIN, `logis_fe_var`, `wald_covar`, `Modified_score`, Firth (twice), plus an R version in `summary.logis_fe`.
-- p-value and flag logic for the three alternatives is copied roughly 30 times across `test`, `confint`, and `summary` files.
-- Post-estimation methods re-derive provider sizes and sums from `data_include` with `split()` on every call.
-- Metadata is stringly typed: `char_list`, attributes such as `"provider size"`, `"description"`, `"model"`, and `"population_rate"`.
-- `if (!class(x) %in% ...)` checks would break for multi-class objects (a length-greater-than-one condition errors in R >= 4.2).
-- Messaging is inconsistent: a `warning()` gated by the `message` argument, C++ printing through `Rcout`, and `pROC` printing its own messages.
-- About 755 lines of commented-out code, including a pure-R SerBIN/BAN implementation in `logis_fe.R`. It could serve as a slow independent reference after reconciling its differences (t = 0.8 in BAN, `> cutoff` rather than `>= cutoff`).
-- C++ files use `using namespace` for Rcpp, RcppParallel, std, and arma at global scope, and mix two parallel frameworks.
-
-### 6.3 Performance hot spots (benchmark before acting)
-
-- `linear_fe` multiplies by `bdiag()` of dense n_i × n_i centering blocks, which is O(Σ n_i²) in memory and time. One provider with 50,000 observations alone needs about 20 GB. Direct demeaning is O(np) and mathematically equivalent. The product Z'QZ is also recomputed up to three times.
-- `confint.logis_fe(option = "SM")` calls the γ-interval routine once per provider, and each call re-splits the whole dataset, which is roughly O(m·n).
-- `summary.logis_fe` LR and score tests run two full refits per covariate.
-- Exact tests and interval routines loop over providers in R with `by()` and `sapply()`.
-- The log-likelihood is recomputed in R after the C++ fit.
+- D-05 is worse than suspected: with two threads, Firth stopped after 1 to 5 iterations and beta was off by up to 0.57 (V12.3).
+- D-19 misaligns intervals for every provider after the first no-event provider when IDs are not numeric: 61 of 100 in the example (V13.16).
+- The `stop = "or"` concern (now D-24) holds for provider effects (up to 0.04 logit units at n = 1.2M) but not for beta, which stayed within 4.2e-6 of a tight fit (V11.1).
+- D-20 (threads > 1 in SerBIN) is a rounding-level difference, at most 1.4e-15 relative, and deterministic (V11.2).
+- D-09 is presentation-only, and the registered RE print methods also print the whole object.
+- `summary.logis_fe` LR and score tests also fail with one or two covariates (D-30), and D-10 also breaks when the fit used `cutoff < 10`.
 
 ---
 
@@ -314,16 +387,18 @@ Proposed classes follow the brief: A may be fixed with a regression test, B need
 | Item | Location or rule |
 |---|---|
 | Branch | `rewrite/v2`; one pull request per phase; stop at each gate |
-| Design document | `dev/design/ARCHITECTURE.md` |
+| Design document | `dev/design/ARCHITECTURE.md` (sections A–M) |
+| Behavior specifications | `dev/design/BEHAVIOR_SPECS.md` |
+| Phase 0 audit scripts and logs | `dev/design/audit/` (evidence IDs `Vxx.y`, `Bx`) |
 | Naming convention | `dev/NAMING.md` |
 | Decision records | `dev/DECISIONS.md` |
-| Discrepancy register | `dev/DISCREPANCIES.md` (seed it from Section 6.1) |
+| Discrepancy register | `dev/DISCREPANCIES.md` (D-01 to D-37 after Phase 0) |
 | Reference generator | `dev/reference/` (script plus isolated library setup) |
 | Fixtures | `tests/testthat/fixtures/reference/` with `manifest.json` |
 | Large validation suites | `validation/` (build-ignored), run in a dedicated CI job |
 | Tolerances | `tests/testthat/helper-tolerances.R`, one justification per entry |
 | Benchmarks | `dev/bench/` |
-| Naming direction | snake_case; S3 classes prefixed `pprof_`; descriptive verbs such as `fit_logistic_fe()` (illustrative only until Phase 0); C++ in `namespace pprof` |
+| Naming | `dev/NAMING.md` (proposed in Phase 0; authoritative once the gate is approved) |
 | C++ layout constraints | `Rcpp::compileAttributes()` scans only top-level `src/`, so Rcpp adapter files stay there. Sources in subdirectories must be listed explicitly in `OBJECTS` in both `Makevars` and `Makevars.win` (no `$(wildcard ...)`, which would reintroduce the GNU make requirement) |
 
 ---
@@ -348,14 +423,20 @@ Rules: at most 2 threads in examples and tests; seeds set explicitly in any test
 
 ## 9. Open questions for the methodology owners
 
-1. Which components are validated, and by what evidence? (The CRE models were added in August 2025 and the Firth correction in February 2026.)
-2. Firth: keep the `logis_fe` class with unpenalized variance, log-likelihood, AIC, and BIC (D-12)?
-3. CRE: should provider means be computed before or after complete-case filtering (D-13)?
-4. Is the "predicted over expected" numerator for RE indirect measures the intended estimand?
-5. Should `summary.logis_fe` LR and score refits inherit the original fit's settings (D-10)? This is a Class B change if yes.
-6. Should screening (`cutoff`) remain specific to the logistic FE models?
-7. Which input interfaces survive: formula, data plus column names, separate vectors and matrices?
-8. Minimum R version, release timeline, and deprecation window.
+The current list is M-1 to M-16 in `dev/design/ARCHITECTURE.md` §M, each with a proposed default that reproduces the reference. After Phase 0, new questions are added here.
+
+| Earlier question | Now |
+|---|---|
+| 1. Which components are validated, and by what evidence? | M-1 |
+| 2. Firth: keep the `logis_fe` class with unpenalized variance, log-likelihood, AIC, and BIC? | M-2 (D-12) |
+| 3. CRE: provider means before or after complete-case filtering? | M-3 (D-13) |
+| 4. Is the "predicted over expected" numerator of RE indirect measures intended? | M-14 |
+| 5. Should LR and score refits inherit the original fit's settings? | M-5 (D-10) |
+| 6. Should screening remain specific to the logistic FE models? | M-13 |
+| 7. Which input interfaces survive? | M-6 (DEC-003) |
+| 8. Minimum R version, release timeline, deprecation window | M-12 |
+
+New in Phase 0: M-4 (default stopping rule, D-24), M-7 (the "standard" score test, D-26), M-8 (linear FE interval distribution, D-32), M-9 (exact funnel limits, D-07), M-10 (logistic RE/CRE p-values above 1, D-31), M-11 (locale-independent provider order, D-34), M-15 (α versus α/2 for extreme providers' intervals, K-90), M-16 (who signs off).
 
 ---
 
@@ -367,3 +448,4 @@ Update this section at the end of every phase. Move verified findings from Secti
 |---|---|
 | 2026-10-01 | Static audit of `main` at `5260838`; brief v2 drafted; this file created. Phase 0 not started |
 | 2026-10-02 | Local setup on `rewrite/v2` (branched from `5260838`). Windows 11 Enterprise 10.0.22621; R 4.4.0 (ucrt) with Rtools44, GCC 13.3.0; OpenMP yes (`-fopenmp`). `main` is at `5260838` on both `upstream` and `origin` (fork). `devtools::test()`: 173 passed, 0 failed, 0 skipped, 0 warnings (`test-plots.R` is empty). `R CMD check --as-cran --no-manual`: 0 errors, 1 warning (CRAN incoming: version 1.0.3 already on CRAN, Date field over a month old), 5 notes (unable to verify current time; pandoc not installed; new `NEWS.md` has no versioned entry; GNU make in SystemRequirements; six logistic RE/CRE examples over 5 s). Phase 0 not started |
+| 2026-10-02 | Phase 0 (audit and design) complete; awaiting gate approval. Reference confirmed: the CRAN 1.0.3 tarball is identical to `5260838` (DEC-002); no reverse dependencies. Audit (`dev/design/audit/`): 76 runtime checks against the reference installed from CRAN into an isolated library; no static-audit hypothesis refuted; R ports of SerBIN, BAN, and Firth reproduce the C++ paths with the same iteration counts (beta bitwise, gamma within 2e-15). Registers: D-01 to D-21 verified, D-22 to D-37 added (16 A, 7 B awaiting sign-off, 9 C, 3 presentation-only, 2 without class); §5.7 rewritten as the verified register (69 entries, K-01 to K-130). Design: `dev/design/ARCHITECTURE.md` (A–M), `dev/design/BEHAVIOR_SPECS.md`, `dev/NAMING.md`, all proposed; decisions DEC-002 to DEC-016 proposed; open questions M-1 to M-16. Gate checks: `devtools::document()` with roxygen2 8.1.0 rewrote the formatting of `NAMESPACE` and `DESCRIPTION` only (parsed namespace identical, `man/` unchanged; both files restored, DEC-016); `devtools::test()` 173 passed, 0 failed, 0 skipped, 0 warnings; `R CMD check --as-cran --no-manual` 0 errors, 1 warning, 5 notes, the same as the setup baseline, except that the slow-examples note now lists nine logistic RE/CRE examples (elapsed 5.7–7.8 s) instead of six. On this machine `Rscript` is not on the Bash tool's PATH; prefix the R and Rtools `bin` directories. Next step: gate approval and designation of the methodology owners (M-16), then Phase 1 (reference capture) |
