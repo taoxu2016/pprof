@@ -139,13 +139,15 @@ Every class starts with `pprof_`. Model classes have at most one intermediate cl
 | `pprof_summary` | `summary.pprof_model()` |
 | `pprof_data_check` | `check_data()` |
 
+Every result class also has the common class `pprof_result` (for example `c("pprof_measures", "pprof_result")`), which shared methods such as `tidy()` use (added in Phase 2, DEC-027).
+
 Fields of model and result objects are snake_case nouns. Shared fields use the same names across classes:
 
 | Field | Meaning |
 |---|---|
 | `call`, `formula`, `terms` | as in base R models |
 | `spec` | the model specification: family, method, settings |
-| `providers` | provider table: `provider_id`, `n_obs`, `n_events` (binary outcomes), `included`, `no_events`, `all_events` |
+| `providers` | provider table: `provider_id`, `provider_value` (the ID as it appears in the data, keeping its type; DEC-028), `n_obs`, `n_events` (binary outcomes), `included`, `no_events`, `all_events` |
 | `coefficients` | covariate coefficients, named numeric vector |
 | `provider_effects` | provider effects (gamma for FE, alpha for RE), named by provider ID |
 | `vcov` | covariance matrix of `coefficients` |
@@ -158,7 +160,7 @@ Fields of model and result objects are snake_case nouns. Shared fields use the s
 | `n_obs`, `n_providers` | dimensions after screening |
 | `package_version` | version of pprof that built the object |
 
-Result tables (the `table` field of result objects, and what `tidy()` returns) use these column names: `provider_id`, `n_obs`, `observed`, `expected`, `estimate`, `std_error`, `statistic`, `p_value`, `lower`, `upper`, `flag`. Flags are integers -1, 0, 1 with documented meaning (lower than expected, as expected, higher than expected), never factors whose levels depend on the data.
+Result tables (the `table` field of result objects, and what `tidy()` returns) use these column names: `provider_id`, `n_obs`, `observed`, `expected`, `estimate`, `std_error`, `statistic`, `p_value`, `lower`, `upper`, `flag`. Tables keyed by something other than the provider use `term` (coefficients), `variable` (data checks), `standardization` and `measure` (measures, one row per provider, standardization, and measure), or `level` and `precision` (funnel limits) (added in Phase 2, DEC-027). Flags are integers -1, 0, 1 with documented meaning (lower than expected, as expected, higher than expected), never factors whose levels depend on the data.
 
 ## 6. Conditions
 

@@ -4,7 +4,7 @@
 # file must have a layer.
 local_strict_mode()
 
-architecture_shared_files <- c("constants.R", "conditions.R", "messages.R", "validate.R", "results.R")
+architecture_shared_files <- c("pprof-package.R", "constants.R", "conditions.R", "messages.R", "validate.R", "results.R")
 
 # R/ at the reference commit 5260838. Remove a file from this list when it is deleted.
 architecture_legacy_files <- c(

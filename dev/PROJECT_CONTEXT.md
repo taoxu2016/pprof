@@ -401,6 +401,10 @@ Points that changed on verification:
 | Large validation suites | `validation/` (build-ignored): the full fixture set, `run-reference.R`, and `equivalence-report.md`; a dedicated CI job from Phase 2 |
 | Tolerances | `tests/testthat/helper-tolerances.R`, one justification per entry (the `root` entry's relative part is DEC-019, signed off 2026-10-02) |
 | Benchmarks | `dev/bench/`: `scenarios.R`, `run_reference.R`, `compare_to_baseline.R`; baselines in `dev/bench/results/` |
+| Rewrite code (Phase 2 on) | `R/<layer>-<topic>.R` (NAMING.md §8): shared utilities `R/constants.R`, `R/conditions.R`, `R/messages.R`, `R/validate.R`, `R/results.R`; data layer `R/data-*.R`; model infrastructure `R/model-*.R`. The reference's files stay until replaced |
+| Tests of the rewrite | `tests/testthat/test-<layer>-<topic>.R`, in strict mode (`helper-strict.R`, DEC-030); data layer against the fixtures: `test-data-reference.R` with `helper-reference-data.R`; extension proof: `test-extension-toy-model.R` with `helper-toy-model.R`; layer rules: `test-architecture.R` |
+| Lint configuration | `.lintr` (DEC-031) |
+| CI | `.github/workflows/rewrite-check.yaml`, `rewrite-reference.yaml`, `rewrite-coverage.yaml` (DEC-026); GitHub Actions must be enabled on the fork |
 | Naming | `dev/NAMING.md` (approved with the Phase 0 gate; authoritative) |
 | C++ layout constraints | `Rcpp::compileAttributes()` scans only top-level `src/`, so Rcpp adapter files stay there. Sources in subdirectories must be listed explicitly in `OBJECTS` in both `Makevars` and `Makevars.win` (no `$(wildcard ...)`, which would reintroduce the GNU make requirement) |
 
@@ -429,6 +433,7 @@ Rscript dev/reference/compare_fixtures.R tests/testthat/fixtures/reference <tmp>
 Rscript validation/run-reference.R                  # both fixture sets; writes validation/equivalence-report.md
 Rscript dev/bench/run_reference.R                   # benchmark baseline on the reference library
 Rscript dev/bench/compare_to_baseline.R dev/bench/results/<baseline>.csv <new>.csv --report <report>.md
+Rscript -e 'lintr::lint_package()'               # lint the rewrite code (.lintr, DEC-031)
 ```
 
 Rules: at most 2 threads in examples and tests; seeds set explicitly in any test that uses randomness; fixtures never regenerated without approval; heavy validation behind `skip_on_cran()`.

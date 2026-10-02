@@ -248,7 +248,7 @@ The Phase 2 decisions below were approved by the project lead with the Phase 2 p
 - Date: 2026-10-02
 - Status: accepted with the Phase 2 plan (2026-10-02)
 - Context: ARCHITECTURE §K places named conventions in `R/constants.R` and `src/core/constants.h`. In Phase 2 no C++ code is rewritten.
-- Decision: Phase 2 creates `R/constants.R` with the conventions the R code uses. `src/core/constants.h` is created in Phase 3 together with the C++ core that uses it.
+- Decision: Phase 2 creates `R/constants.R` with the R-side conventions of ARCHITECTURE §K, including those whose code comes in later phases. `src/core/constants.h` is created in Phase 3 together with the C++ core that uses it.
 - Alternatives considered: Creating the header in Phase 2 (unused code until Phase 3).
 - Consequences: Each constant still gets its name, contract comment, and test in the phase that introduces the code using it.
 
@@ -260,3 +260,50 @@ The Phase 2 decisions below were approved by the project lead with the Phase 2 p
 - Decision: Phase 2 adds three workflows that run on pushes and pull requests to `rewrite/**` branches: an `R CMD check` matrix (Linux with R release, devel, and oldrel; macOS and Windows with R release), a reference-equivalence job that runs `validation/run-reference.R` on Linux with lme4 and Matrix pinned to the fixture manifest's versions (DEC-020), and a coverage job that reports in the job log, without an upload service. The sanitizer and benchmark jobs come in Phase 3 with the C++ core. The legacy workflows (`test-pprof-package.yml`, `rhub.yaml`) are left unchanged.
 - Alternatives considered: Uploading coverage to Codecov (needs an account and a token; can be added later).
 - Consequences: GitHub Actions must be enabled on the fork for the workflows to run.
+
+The Phase 2 decisions below were made while implementing the approved plan and are proposed for confirmation at the Phase 2 gate.
+
+### DEC-027: Result types are shared utilities
+
+- Date: 2026-10-02
+- Status: proposed
+- Context: The Phase 2 plan and ARCHITECTURE §B.2 put the result constructors in `R/profile-results.R`, in the profiling layer. But coefficient tests are built in the inference layer, summaries by the model layer's `summary()` method, and data checks by the diagnostics; under the layer rules (§B.1) none of them may call profiling code.
+- Decision: The result types live in `R/results.R`, among the shared utilities that every layer may use. Every result is a list of class `c("<result class>", "pprof_result")` with a `table` and named settings (DEC-012). Each class has a schema (key columns, required columns, required settings) that later phases extend when they add the function that builds the result. Validators check structure and types, never the range of a value, because the reference produces values outside their mathematical range that the rewrite reproduces until sign-off (D-31).
+- Alternatives considered: Results in the profiling layer (layer violations for inference and model results); one result file per layer (the same structure written several times).
+- Consequences: ARCHITECTURE §B.2 and NAMING.md §5 are updated: the common class `pprof_result` and the key columns `term` (coefficient tables), `variable` (data checks), `standardization` and `measure` (measures in long format), and `level` and `precision` (funnel limits).
+
+### DEC-028: The data layer's object
+
+- Date: 2026-10-02
+- Status: proposed
+- Context: ARCHITECTURE §B.2 and §D.1 describe the data layer's output and the provider table without fixing every detail.
+- Decision: `data_prepare()` returns a `pprof_data` object. Its provider table lists every provider of the complete observations, in provider order, including excluded ones, with `provider_id` (the factor level, character), `provider_value` (the ID as it appears in the data, keeping its type, which the compatibility wrappers need to rebuild the reference's outputs), `n_obs`, `included`, and, for binary outcomes, `n_events`, `no_events`, and `all_events`. `provider_index` gives each observation's row of that table, so there is one index space; observations of excluded providers are dropped. The CRE columns keep the reference's names `<variable>_within` and `<variable>_bar`, so coefficient names do not change. `data_prepare()` gives no messages or warnings; the fit functions raise `pprof_warning_screening` (DEC-008) from Phase 3. Fixed-effect formulas must keep their intercept (`- 1` is rejected), because factors are coded against a reference level as in the reference. Rows whose transformed variables are missing are dropped, as `na.omit()` does; this applies only to inputs the reference could not handle (D-18). `data_prepare()`, `new_pprof_model()`, `validate_pprof_model()`, and the contract generics are exported with `@keywords internal` for model developers.
+- Alternatives considered: An index into the included providers only (two index spaces); renaming `_bar` to `_between` (changes coefficient names and needs a mapping in the wrappers); warnings from the data layer (every caller would inherit them, including the wrappers that reproduce the reference's messages).
+- Consequences: NAMING.md §5 gains `provider_value`. The 87 fit fixtures that return a value confirm that the object reproduces the reference's processed data exactly.
+
+### DEC-029: The exact tier requires bitwise identity of long vectors
+
+- Date: 2026-10-02
+- Status: proposed
+- Context: Long double vectors in fixtures are stored as signatures (DEC-018), compared through their sums, extremes, and a sample. At the exact tier a change in one element can be absorbed by the sum and missed by the sample: a 1-ulp change in one value of a 7,944-row design column passed the comparison.
+- Decision: At the exact tier (atol and rtol 0), the checksum of every value's bits (`bits_md5`) must also match. Other tiers are unchanged.
+- Alternatives considered: Storing long vectors in full (the size budget, DEC-018).
+- Consequences: No tolerance changes. No exact-tier case of the characterization suite stores a long double vector; the data-layer comparison relies on the stricter check, which then detected every deliberate corruption tried.
+
+### DEC-030: Strict mode in the tests of the rewrite
+
+- Date: 2026-10-02
+- Status: proposed
+- Context: The test rules ask for partial-matching warnings to be on and treated as failures; DEC-021 keeps the legacy tests out of this.
+- Decision: Each test file of the rewrite calls `local_strict_mode()` (`helper-strict.R`) at its top: partial matching of `$`, arguments, and attributes is reported, and `warn = 2` turns every warning a test does not expect into an error; expected warnings are caught with `expect_warning()`. testthat restores the options at the end of the file, which was checked by running every test file separately.
+- Alternatives considered: Converting only partial-matching warnings (needs a global calling handler, which testthat's handlers prevent).
+- Consequences: A new warning in rewrite code fails the tests until it is expected explicitly.
+
+### DEC-031: Lint configuration
+
+- Date: 2026-10-02
+- Status: proposed
+- Context: Brief §9 asks for the tidyverse style guide enforced with lintr; the repository had no lint configuration, and lintr's defaults (80-character lines, 30-character names) conflict with the long names that NAMING.md requires, such as `validate_pprof_coefficient_tests`.
+- Decision: `.lintr` uses the tidyverse defaults with lines up to 120 characters and names up to 40, and turns off `object_usage_linter`, which checks against the installed package (the reference version here) and whose job R CMD check does with the package being checked. The reference's files, its vignettes, and the fixture case runner (a generator input, whose changes follow the regeneration procedure) are excluded. The check is `lintr::lint_package()`.
+- Alternatives considered: 80-character lines (wraps most error messages); no configuration (the defaults flag NAMING.md's names).
+- Consequences: Phase 2 code lints clean; files are removed from the exclusions as the reference's code is replaced.
