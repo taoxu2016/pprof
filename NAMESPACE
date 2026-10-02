@@ -42,89 +42,103 @@ export(logis_firth)
 export(logis_re)
 export(test)
 importFrom(Matrix,bdiag)
-importFrom(Rcpp,evalCpp)
-importFrom(Rcpp,sourceCpp)
+importFrom(Rcpp,
+  evalCpp,
+  sourceCpp
+)
 importFrom(RcppParallel,RcppParallelLibs)
 importFrom(caret,nearZeroVar)
-importFrom(dplyr,across)
-importFrom(dplyr,arrange)
-importFrom(dplyr,bind_rows)
-importFrom(dplyr,cross_join)
-importFrom(dplyr,filter)
-importFrom(dplyr,group_by)
-importFrom(dplyr,mutate)
-importFrom(dplyr,n)
-importFrom(dplyr,select)
-importFrom(dplyr,summarise)
-importFrom(dplyr,ungroup)
-importFrom(ggplot2,aes)
-importFrom(ggplot2,element_blank)
-importFrom(ggplot2,element_line)
-importFrom(ggplot2,element_rect)
-importFrom(ggplot2,element_text)
-importFrom(ggplot2,expansion)
-importFrom(ggplot2,geom_bar)
-importFrom(ggplot2,geom_errorbar)
-importFrom(ggplot2,geom_errorbarh)
-importFrom(ggplot2,geom_hline)
-importFrom(ggplot2,geom_line)
-importFrom(ggplot2,geom_point)
-importFrom(ggplot2,geom_text)
-importFrom(ggplot2,geom_vline)
-importFrom(ggplot2,ggplot)
-importFrom(ggplot2,guide_legend)
-importFrom(ggplot2,guides)
-importFrom(ggplot2,labs)
-importFrom(ggplot2,margin)
-importFrom(ggplot2,position_stack)
-importFrom(ggplot2,scale_color_manual)
-importFrom(ggplot2,scale_fill_manual)
-importFrom(ggplot2,scale_linetype_manual)
-importFrom(ggplot2,scale_shape_manual)
-importFrom(ggplot2,scale_x_continuous)
-importFrom(ggplot2,scale_x_discrete)
-importFrom(ggplot2,scale_y_continuous)
-importFrom(ggplot2,scale_y_discrete)
-importFrom(ggplot2,theme)
-importFrom(ggplot2,theme_bw)
-importFrom(ggplot2,theme_classic)
-importFrom(ggplot2,theme_minimal)
+importFrom(dplyr,
+  across,
+  arrange,
+  bind_rows,
+  cross_join,
+  filter,
+  group_by,
+  mutate,
+  n,
+  select,
+  summarise,
+  ungroup
+)
+importFrom(ggplot2,
+  aes,
+  element_blank,
+  element_line,
+  element_rect,
+  element_text,
+  expansion,
+  geom_bar,
+  geom_errorbar,
+  geom_errorbarh,
+  geom_hline,
+  geom_line,
+  geom_point,
+  geom_text,
+  geom_vline,
+  ggplot,
+  guide_legend,
+  guides,
+  labs,
+  margin,
+  position_stack,
+  scale_color_manual,
+  scale_fill_manual,
+  scale_linetype_manual,
+  scale_shape_manual,
+  scale_x_continuous,
+  scale_x_discrete,
+  scale_y_continuous,
+  scale_y_discrete,
+  theme,
+  theme_bw,
+  theme_classic,
+  theme_minimal
+)
 importFrom(globals,globalsByName)
-importFrom(lme4,fixef)
-importFrom(lme4,glmer)
-importFrom(lme4,lmer)
-importFrom(lme4,ranef)
+importFrom(lme4,
+  fixef,
+  glmer,
+  lmer,
+  ranef
+)
 importFrom(magrittr,"%>%")
 importFrom(olsrr,ols_vif_tol)
 importFrom(pROC,auc)
-importFrom(poibin,dpoibin)
-importFrom(poibin,ppoibin)
+importFrom(poibin,
+  dpoibin,
+  ppoibin
+)
 importFrom(rlang,.data)
-importFrom(scales,percent)
-importFrom(scales,percent_format)
-importFrom(stats,as.formula)
-importFrom(stats,binomial)
-importFrom(stats,complete.cases)
-importFrom(stats,confint)
-importFrom(stats,fitted)
-importFrom(stats,lm)
-importFrom(stats,logLik)
-importFrom(stats,median)
-importFrom(stats,model.matrix)
-importFrom(stats,pchisq)
-importFrom(stats,plogis)
-importFrom(stats,pnorm)
-importFrom(stats,pt)
-importFrom(stats,qnorm)
-importFrom(stats,qt)
-importFrom(stats,quantile)
-importFrom(stats,rbinom)
-importFrom(stats,reformulate)
-importFrom(stats,reorder)
-importFrom(stats,residuals)
-importFrom(stats,setNames)
-importFrom(stats,terms)
-importFrom(stats,uniroot)
+importFrom(scales,
+  percent,
+  percent_format
+)
+importFrom(stats,
+  as.formula,
+  binomial,
+  complete.cases,
+  confint,
+  fitted,
+  lm,
+  logLik,
+  median,
+  model.matrix,
+  pchisq,
+  plogis,
+  pnorm,
+  pt,
+  qnorm,
+  qt,
+  quantile,
+  rbinom,
+  reformulate,
+  reorder,
+  residuals,
+  setNames,
+  terms,
+  uniroot
+)
 importFrom(tibble,tibble)
 importFrom(tidyselect,all_of)
 useDynLib(pprof, .registration = TRUE)
