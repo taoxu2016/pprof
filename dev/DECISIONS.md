@@ -229,3 +229,34 @@ The Phase 1 decisions below were made under the Phase 1 plan approved on 2026-10
 - Decision: Each task runs in a fresh process on the pinned reference library (`dev/bench/run_reference.R`), with at least 5 timed runs for calls under 10 s and 3 otherwise; the baseline records the median, fastest, and slowest run, R allocations (calls under 10 s), and peak process memory. A later run regresses in time when both its median and its fastest run are more than 10% slower than the baseline's and the median is at least 0.05 s slower; when only one of the two is more than 10% slower, the task is rerun before it counts either way. It regresses in memory when its peak is more than 10% and at least 50 MB higher. Comparisons run on the machine that produced the baseline.
 - Alternatives considered: The median alone (flips between modes, so identical code can show a 30–50% change); the fastest run alone (hides slowdowns that come from more allocation and garbage collection); dropping runs that include garbage collection (`filter_gc = TRUE`, which hides a real cost).
 - Consequences: The baseline is regenerated on any new benchmark machine, which the pinned reference library allows at any time (about 30 minutes). From Phase 3 the gate measures the rewrite with the same measurement code (the harness needs a mode that runs the working tree instead of the reference library, added then) and runs the comparison.
+
+---
+
+The Phase 2 decisions below were approved by the project lead with the Phase 2 plan on 2026-10-02.
+
+### DEC-024: Scope of the Phase 2 extension proof
+
+- Date: 2026-10-02
+- Status: accepted with the Phase 2 plan (2026-10-02)
+- Context: Brief §5.3 requires a Phase 2 extension proof with a test-only toy model. ARCHITECTURE §E.4 describes the proof as `test_providers()`, `standardize_providers()`, `profile_providers()`, and `plot_funnel()` working on the toy model, but those functions arrive in Phases 3, 5, and 6.
+- Decision: The Phase 2 proof covers the layers that exist: a toy model in `tests/testthat/helper-toy-model.R` builds its data with `data_prepare()`, its object with `new_pprof_model()`, registers its contract methods and capabilities with `.S3method()` from test code as a downstream package would, and works with the contract generics and capability checks without any edit to core files; an undeclared capability raises `pprof_error_unsupported_inference`. Each later phase that adds a profiling or plotting function extends `test-extension-toy-model.R` with it, and the extended test must pass without changes to core files.
+- Alternatives considered: Writing the profiling functions in Phase 2 against the toy model only (they would be designed before the first real model and the reference fixtures could not check them).
+- Consequences: The extension property is tested from Phase 2 on and grows with the API.
+
+### DEC-025: C++ constants come with the C++ core
+
+- Date: 2026-10-02
+- Status: accepted with the Phase 2 plan (2026-10-02)
+- Context: ARCHITECTURE §K places named conventions in `R/constants.R` and `src/core/constants.h`. In Phase 2 no C++ code is rewritten.
+- Decision: Phase 2 creates `R/constants.R` with the conventions the R code uses. `src/core/constants.h` is created in Phase 3 together with the C++ core that uses it.
+- Alternatives considered: Creating the header in Phase 2 (unused code until Phase 3).
+- Consequences: Each constant still gets its name, contract comment, and test in the phase that introduces the code using it.
+
+### DEC-026: CI scope from Phase 2
+
+- Date: 2026-10-02
+- Status: accepted with the Phase 2 plan (2026-10-02)
+- Context: CI was deferred from Phase 1 to Phase 2 (Phase 1 plan). Brief §9 asks for a check matrix, coverage, a reference-equivalence job, a sanitizer job, and a benchmark job.
+- Decision: Phase 2 adds three workflows that run on pushes and pull requests to `rewrite/**` branches: an `R CMD check` matrix (Linux with R release, devel, and oldrel; macOS and Windows with R release), a reference-equivalence job that runs `validation/run-reference.R` on Linux with lme4 and Matrix pinned to the fixture manifest's versions (DEC-020), and a coverage job that reports in the job log, without an upload service. The sanitizer and benchmark jobs come in Phase 3 with the C++ core. The legacy workflows (`test-pprof-package.yml`, `rhub.yaml`) are left unchanged.
+- Alternatives considered: Uploading coverage to Codecov (needs an account and a token; can be added later).
+- Consequences: GitHub Actions must be enabled on the fork for the workflows to run.
