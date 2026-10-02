@@ -7,27 +7,34 @@
 pprof_tolerances <- list(
   exact = list(
     tier = 0, atol = 0, rtol = 0,
-    why = "Discrete outputs (inclusion, sizes, event counts, screening indicators, ordering, dimensions, iteration counts, flags) must match exactly."
+    why = paste("Discrete outputs (inclusion, sizes, event counts, screening indicators, ordering, dimensions,",
+                "iteration counts, flags) must match exactly.")
   ),
   closed_form = list(
     tier = 1, atol = 1e-12, rtol = 1e-10,
-    why = "Closed-form recomputations with a different summation order differed by at most 1.1e-14 relative in Phase 0 (V10.17, V13.12, V14.1, B2); four orders of margin for BLAS and compiler differences."
+    why = paste("Closed-form recomputations with a different summation order differed by at most 1.1e-14 relative",
+                "in Phase 0 (V10.17, V13.12, V14.1, B2); four orders of margin for BLAS and compiler differences.")
   ),
   iterative = list(
     tier = 2, atol = 1e-12, rtol = 1e-10,
-    why = "Iterative estimates reproduce the reference iteration path (same iteration count); ports with identical paths differed by at most 2e-15 (V10.1, V10.2, V12.1)."
+    why = paste("Iterative estimates reproduce the reference iteration path (same iteration count); ports with",
+                "identical paths differed by at most 2e-15 (V10.1, V10.2, V12.1).")
   ),
   probability = list(
     tier = 1, atol = 1e-14, rtol = 1e-10,
-    why = "p-values need an absolute floor near 0; 1e-14 is above the recomputation noise observed in Phase 0 (V13.4: 2.7e-15 in statistics)."
+    why = paste("p-values need an absolute floor near 0; 1e-14 is above the recomputation noise observed in Phase 0",
+                "(V13.4: 2.7e-15 in statistics).")
   ),
   root = list(
     tier = 3, atol = 2.5e-4, rtol = 2.5e-4,
-    why = "Twice the default uniroot() tolerance (1.22e-4) on the provider-effect scale, also applied relatively so it carries over to ratio and rate limits (DEC-019); roots matched bitwise in Phase 0 (V13.15)."
+    why = paste("Twice the default uniroot() tolerance (1.22e-4) on the provider-effect scale, also applied",
+                "relatively so it carries over to ratio and rate limits (DEC-019); roots matched bitwise in Phase 0",
+                "(V13.15).")
   ),
   lme4 = list(
     tier = 4, atol = 1e-10, rtol = 1e-8,
-    why = "lme4-backed results under the pinned lme4 and Matrix versions; identical calls gave identical results in Phase 0 (V15.1), and the margin covers optimizer sensitivity to rounding across platforms."
+    why = paste("lme4-backed results under the pinned lme4 and Matrix versions; identical calls gave identical",
+                "results in Phase 0 (V15.1), and the margin covers optimizer sensitivity to rounding across platforms.")
   )
 )
 

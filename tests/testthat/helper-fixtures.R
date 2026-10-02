@@ -146,9 +146,9 @@ expect_reference_case <- function(id, set = "core") {
   boundary <- if (!is.null(diffs)) diffs[diffs$kind == "flag_boundary", , drop = FALSE] else NULL
   failures <- if (!is.null(diffs)) diffs[diffs$kind != "flag_boundary", , drop = FALSE] else NULL
   if (!is.null(boundary) && nrow(boundary)) assign(id, boundary, envir = reference_boundary_log)
+  details <- paste(sprintf("  %s [%s] %s", failures$path, failures$kind, failures$detail), collapse = "\n")
   testthat::expect(is.null(failures) || nrow(failures) == 0,
-                   sprintf("Case %s differs from the reference (tier %s):\n%s", id, case$tier,
-                           paste(sprintf("  %s [%s] %s", failures$path, failures$kind, failures$detail), collapse = "\n")))
+                   sprintf("Case %s differs from the reference (tier %s):\n%s", id, case$tier, details))
   invisible(diffs)
 }
 
