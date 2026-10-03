@@ -344,7 +344,7 @@ The Phase 3 decisions below were made while implementing the approved plan; they
 ### DEC-035: Armadillo configuration of the compiled code
 
 - Date: 2026-10-02
-- Status: proposed
+- Status: accepted with the Phase 3 gate (2026-10-03)
 - Context: The C++ core must not include Rcpp headers (brief §5.6), so it cannot include Armadillo through RcppArmadillo, which configures Armadillo to print through Rcpp's streams and, on Windows, turns on Armadillo's own OpenMP. The reference compiled its numerical code with `#define ARMA_DONT_USE_OPENMP` (`src/Fixed_effect.cpp:5`, `src/Firth.cpp:5`); with Armadillo's OpenMP on, large sums would be accumulated in another order. Until Phase 4, `Firth.cpp`, the remaining part of `Fixed_effect.cpp`, and the generated `RcppExports.cpp` still include RcppArmadillo. The linker keeps one copy of each Armadillo template that several files instantiate, so a core routine can run a copy compiled in an old file: the first build of the core printed Armadillo's `solve()` warnings through Rcpp from core code, which inside a parallel region would call the R API from a worker thread.
 - Decision: The core includes Armadillo only through `src/core/armadillo.h`, which reproduces RcppArmadillo's numerically relevant settings (BLAS and LAPACK called directly, 32-bit index words) without Rcpp, turns Armadillo's own OpenMP off as the reference does, turns Armadillo's warnings off, and sends Armadillo's output to a stream that discards it. `src/Makevars` and `Makevars.win` set `ARMA_DONT_USE_OPENMP` and `ARMA_WARN_LEVEL=0` for every file of the package, so every copy of a shared template is compiled with the same settings. In Armadillo 15.6 the warning level gates only messages and the symmetry check that `inv_sympd()` runs before its message, so no computation changes; the live comparison of the new routines with the old ones (bitwise identical) and the fixture tests confirm it.
 - Alternatives considered: including RcppArmadillo in the core (forbidden by brief §5.6); keeping Armadillo's warnings in the core and routing them to R as warnings (needs a stream that is safe inside parallel regions, and the core reports its own conditions instead: non-convergence, rank deficiency, failed inversions).
@@ -353,7 +353,7 @@ The Phase 3 decisions below were made while implementing the approved plan; they
 ### DEC-036: Shapes of the profiling API
 
 - Date: 2026-10-02
-- Status: proposed
+- Status: accepted with the Phase 3 gate (2026-10-03)
 - Context: The plan names the profiling functions (`provider_effects()`, `test_providers()`, `standardize_providers()`, `profile_providers()`, `funnel_limits()`) and ARCHITECTURE §B.4 and §E.1 say how family differences reach them, but not their exact arguments and results. The reference's `confint(option = "gamma")` allows only two-sided intervals; its funnel plot pairs score-test limits with flags from the modified score test at the first alpha (K-110); ARCHITECTURE §I.1 has `plot_funnel()` take either `profile_providers()` or `funnel_limits()`; and the toy model of the extension proof (DEC-024) has no `provider_test()` method but must run `test_providers()`.
 - Decision:
   - Arguments follow NAMING §4. `null = NULL` means the family's default (`"median"` for fixed effects, 0 for random effects later), so one signature serves every family. `providers` selects by ID compared as character and rejects IDs the model does not include; the compatibility wrappers drop unknown IDs first, as the reference does.
@@ -368,7 +368,7 @@ The Phase 3 decisions below were made while implementing the approved plan; they
 ### DEC-037: When Wald inference warns
 
 - Date: 2026-10-02
-- Status: proposed
+- Status: accepted with the Phase 3 gate (2026-10-03)
 - Context: The reference warns on every Wald provider test and Wald interval of logistic fixed effects: "Wald test fails for datasets with providers having all or no events. Score test or exact test are recommended." (K-67), whether or not such providers are present, and once per provider in measure intervals. Brief §3.2 allows the wording of warnings to change.
 - Decision: The new API warns once per call, with class `pprof_warning_wald_unreliable`, when the providers reported include providers with no events or only events, and says how many. Families opt in through `wald_caution` in their specification; linear and random-effect families, which the reference does not warn for, do not. The compatibility wrappers give the reference's message on every Wald call, once per call rather than once per provider.
 - Alternatives considered: warning on every call, as the reference does (a warning that does not depend on the data teaches users to ignore it).
@@ -377,7 +377,7 @@ The Phase 3 decisions below were made while implementing the approved plan; they
 ### DEC-038: Flagged benchmark tasks are re-measured against the reference in the same session
 
 - Date: 2026-10-03
-- Status: proposed
+- Status: accepted with the Phase 3 gate (2026-10-03)
 - Context: DEC-023 compares a run of the working tree with the baseline recorded at the Phase 1 gate. At the Phase 3 gate, timings of unchanged code drifted with the machine's state: the full working-tree run flagged `logis_re` on `bin-1e5-m1000-p5` (+17%) and `logis_cre` on `bin-1e4-m100-p5` (+16%), whose code the rewrite has not touched, and within one session the reference's own `confint(option = "gamma")` on `bin-1e4-m100-p5` took 2.55 s and then 1.96 s. A rule against an old baseline alone would report drift as regressions.
 - Decision: A task the comparison with the baseline flags (regression or rerun) is measured again by `dev/bench/run_paired.R`, in fresh processes that alternate the pinned reference and the working tree (reference, working tree, reference, working tree), with the measurement of `run_reference.R` (shared in `dev/bench/harness.R`); an unchanged legacy function is measured the same way as a control for the noise of the session. The task counts as a regression in time only when, in every round, both the median and the fastest run of the working tree are more than 10% slower than the reference's and the median is at least 0.05 s slower (DEC-023's rule applied to the paired reference), and in memory only when, in every round, its peak is more than 10% and 50 MB higher. The gate's benchmark report gives the paired measurements of every flagged task.
 - Alternatives considered: regenerating the whole baseline at every gate (about 30 minutes per run, and the drift within an hour is as large as the threshold); a dedicated quiet benchmark machine (not available).
@@ -386,7 +386,7 @@ The Phase 3 decisions below were made while implementing the approved plan; they
 ### DEC-039: Benchmark exception: the old methods rebuild the model on every call
 
 - Date: 2026-10-03
-- Status: proposed
+- Status: accepted with the Phase 3 gate (2026-10-03)
 - Context: Under DEC-032, every method of an old `logis_fe` object (`test`, `SM_output`, `confint`, `summary`, `plot`) rebuilds a `pprof_logistic_fe` model from the object, at a cost linear in the number of observations. At the Phase 3 gate the rebuild went through `data_prepare()` and took about 0.36 s at n = 1e5, so that `summary(test = "wald")` took 0.33 s against the reference's 0.0006 s; the gate's changes (the data built directly from `data_include`, integer provider factors) brought it to 0.021 s at n = 1e5 and 0.19 s at n = 1e6 (m = 1000, p = 5). Methods the reference runs in under a millisecond, or without touching the data, remain slower on old objects: at n = 1e6, `test(test = "wald")` 0.20 s against 0.022 s, `summary(test = "wald")` 0.19 s against 0.0005 s, `SM_output(stdz = "indirect")` 0.32 s against 0.12 s, `test(test = "score")` 0.31 s against 0.17 s. At the benchmark suite's sizes (methods at n = 1e4 and 1e5) every difference stays under the 0.05 s floor of DEC-023. On a `fit_logistic_fe()` model the new functions do not rebuild anything: at n = 1e6, `test_providers(test = "wald")` takes 0.0014 s, `test_coefficients()` 0.0005 s, `standardize_providers()` 0.12 s, and `test_providers(test = "score")` 0.11 s.
 - Decision: Accept the rebuild cost as a documented exception to brief §3.6 for the compatibility methods on old objects, stated in `NEWS.md`, and revisit it when the wrappers are finalized in Phase 8 (DEC-033).
 - Alternatives considered: keeping the model in an attribute of the old object (rejected in DEC-032: it doubles the stored data and goes stale when users edit the object); caching rebuilt models in a package environment keyed by the object (R objects have no stable identity, so a cache can return a stale model); a fast path per method that reads the old fields directly (brings back the old code paths the wrappers replace, so two implementations of each method to keep equal).
