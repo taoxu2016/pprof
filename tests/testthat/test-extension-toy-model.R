@@ -91,6 +91,14 @@ test_that("the profiling functions work on it unchanged (Phase 3)", {
   expect_identical(profile$funnel, funnel)
 })
 
+test_that("the plot functions work on its results unchanged (Phase 3)", {
+  fit <- toy_fit(y ~ 1, toy_model_data(), "hospital")
+  funnel <- plot_funnel(profile_providers(fit))
+  expect_identical(funnel$layers[[3]]$data$estimate, funnel_limits(fit)$providers$estimate)
+  expect_s3_class(ggplot2::ggplot_build(funnel), "ggplot_built")
+  expect_s3_class(ggplot2::ggplot_build(plot_flags(test_providers(fit), group_count = 2)), "ggplot_built")
+})
+
 test_that("profiling requests it does not declare raise pprof_error_unsupported_inference", {
   fit <- toy_fit(y ~ 1, toy_model_data(), "hospital")
   expect_error(test_providers(fit, "wald"), class = "pprof_error_unsupported_inference")
