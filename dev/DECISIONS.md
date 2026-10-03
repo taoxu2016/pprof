@@ -391,3 +391,30 @@ The Phase 3 decisions below were made while implementing the approved plan; they
 - Decision: Accept the rebuild cost as a documented exception to brief §3.6 for the compatibility methods on old objects, stated in `NEWS.md`, and revisit it when the wrappers are finalized in Phase 8 (DEC-033).
 - Alternatives considered: keeping the model in an attribute of the old object (rejected in DEC-032: it doubles the stored data and goes stale when users edit the object); caching rebuilt models in a package environment keyed by the object (R objects have no stable identity, so a cache can return a stale model); a fast path per method that reads the old fields directly (brings back the old code paths the wrappers replace, so two implementations of each method to keep equal).
 - Consequences: users of the old interface on large data see the methods slower by about 0.2 µs per observation per call; the new interface is as fast as the reference or faster. The benchmark report of the Phase 3 gate lists the measurements.
+
+### DEC-040: Phase 4 builds the remaining models; Phase 5 adds their inference
+
+- Date: 2026-10-03
+- Status: accepted with the Phase 4 plan (2026-10-03)
+- Context: Brief §4 gives Phase 4 the remaining models (linear fixed effects, Firth, and the random-effect and CRE models through a single lme4 adapter) and Phase 5 all tests, confidence intervals, standardized measures, and flags for every family, routed through the shared layers. In Phase 3 the vertical slice did both for logistic fixed effects.
+- Decision: Phase 4 delivers, for linear FE, Firth, and linear and logistic RE and CRE, the fit functions, model objects, model-contract accessors, standard methods (`coef`, `vcov`, `nobs`, `logLik`, `fitted`, `residuals`, `predict`, `formula`, `print`), the lme4 adapter, Firth in the C++ core, and the six fit wrappers, which return the reference's objects exactly. Phase 5 delivers their inference: `profile_spec()` rows, capability declarations, provider tests, intervals, measures, flags, covariate tests (`summary()`, `confint()`), and the wrappers of the old methods. Until then the reference's method files stay and run on the objects the wrappers return, which the method fixtures check. Firth inherits the logistic FE inference through its class (DEC-004) and is complete in Phase 4. The plan is `dev/design/PHASE4_PLAN.md`.
+- Alternatives considered: a vertical slice per family in Phase 4 (merges Phases 4 and 5 into one very large gate); switching no wrapper until Phase 5 (keeps the old fit code a phase longer, and checks the new objects against the method fixtures only then).
+- Consequences: between the phases, the profiling functions, `summary()`, and `confint()` raise `pprof_error_unsupported_inference` on the new linear FE, RE, and CRE models.
+
+### DEC-041: logistf as the independent reference for Firth
+
+- Date: 2026-10-03
+- Status: accepted with the Phase 4 plan (2026-10-03)
+- Context: Brief §6 E names `logistf` with provider indicators as the independent check for Firth; DEC-009 lists it in Suggests. It is not installed on the development machine, and agreement with the old pprof alone does not prove correctness.
+- Decision: Phase 4 adds `logistf` to Suggests and installs it from CRAN on the development machine. Its tests compare `fit_logistic_firth()` with `logistf` on small data without extreme providers (V12.5: agreement to 2e-11) and skip when the package is absent.
+- Alternatives considered: no independent check for Firth.
+- Consequences: one more suggested package; CI jobs that install suggested packages run the check.
+
+### DEC-042: The RE wrappers pass the user's formula to lme4 unchanged
+
+- Date: 2026-10-03
+- Status: accepted with the Phase 4 plan (2026-10-03)
+- Context: The reference's `linear_re()` and `logis_re()` pass the user's formula to `lmer()` or `glmer()` unchanged, so any lme4 syntax in it reaches the engine; their column and vector interfaces build `Y ~ (1| ProvID) + z1 + …` (K-02, K-50, BEHAVIOR_SPECS §5). DEC-003 gives the new fits a formula of fixed-effect terms and a `provider` argument.
+- Decision: The lme4 adapter takes a complete lme4 formula and the data frame to pass. The RE wrappers pass the user's formula unchanged (formula interface) or the reference's constructed formula (column and vector interfaces), with the reference's data (the used columns, complete cases, sorted by provider), so their calls are the reference's. `fit_linear_re()`, `fit_logistic_re()`, and the CRE fits build `response ~ <fixed terms> + (1 | provider)` and fit random intercepts only.
+- Alternatives considered: translating every wrapper formula into the new interface (would reject or change lme4 syntax the reference accepts).
+- Consequences: the wrappers reproduce the reference even for formulas beyond random intercepts; the new API documents random intercepts by provider as its model.
