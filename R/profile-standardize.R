@@ -39,7 +39,8 @@
 #'   provider's expected number in the population, and `variance` is missing.
 #' @examples
 #' data(ExampleDataBinary)
-#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+#'                       ExampleDataBinary$Z)
 #' fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
 #' measures <- standardize_providers(fit, measure = "ratio", interval = "score", providers = 1:5)
 #' measures$table

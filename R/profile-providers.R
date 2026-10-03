@@ -18,7 +18,8 @@
 #'   `interval`.
 #' @examples
 #' data(ExampleDataBinary)
-#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+#'                       ExampleDataBinary$Z)
 #' fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
 #' profile <- profile_providers(fit)
 #' head(profile$table)

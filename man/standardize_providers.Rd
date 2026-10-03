@@ -72,7 +72,8 @@ provider with no events has lower limit 0 and one with only events upper limit n
 }
 \examples{
 data(ExampleDataBinary)
-example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+                      ExampleDataBinary$Z)
 fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
 measures <- standardize_providers(fit, measure = "ratio", interval = "score", providers = 1:5)
 measures$table

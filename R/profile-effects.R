@@ -23,7 +23,8 @@
 #'   `lower` and `upper` with an interval) and the settings `interval` and `level`.
 #' @examples
 #' data(ExampleDataBinary)
-#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+#'                       ExampleDataBinary$Z)
 #' fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
 #' head(provider_effects(fit, interval = "score", providers = 1:5)$table)
 #' @export
