@@ -7,8 +7,11 @@ test_that("constants keep the reference values", {
   expect_identical(root_bracket_width, 5)                          # K-90
   expect_identical(root_bracket_attempts, 3L)                      # K-90
   expect_identical(extreme_bracket_base, 10)                       # K-90
+  expect_identical(score_weight_floor, 1e-20)                      # K-90
   expect_identical(root_tolerance, .Machine$double.eps^0.25)       # K-90: uniroot() default
   expect_identical(root_max_iter, 1000L)                           # K-90: uniroot() default
+  expect_identical(data_match_atol, 1e-12)                         # DEC-005: the closed-form tier
+  expect_identical(data_match_rtol, 1e-10)
   expect_identical(p_value_display_digits, 7L)                     # K-100, K-103 to K-105
   expect_identical(p_value_display_eps, 1e-10)
   expect_identical(lr_effect_clamp, 10)                            # K-101
