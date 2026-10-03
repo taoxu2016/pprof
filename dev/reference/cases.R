@@ -74,6 +74,10 @@ reference_cases <- function() {
   }
   add("logis_fe-screening-onecov", "logis_fe", c(columns("syn_screening", "x1"), threads = 1), "iterative", notes = "D-30 parent")
   add("logis_fe-screening-twocov", "logis_fe", c(columns("syn_screening", c("x1", "x2")), threads = 1), "iterative", notes = "D-30 parent")
+  # The null model of x1 in summary(logis_fe-screening-twocov, test = "lr"): the expected
+  # result of the D-30 fix comes from this fit and logis_fe-screening-onecov (Phase 3).
+  add("logis_fe-screening-x2", "logis_fe", c(columns("syn_screening", "x2"), threads = 1), "iterative",
+      notes = "D-30 expected result")
   FX <- "logis_fe-extreme"
   add(FX, "logis_fe", c(columns("syn_extreme", c("x1", "x2", "x3")), threads = 1), "iterative", notes = "K-06, K-15")
   add("logis_fe-extreme-chr", "logis_fe", c(columns("syn_extreme_chr", c("x1", "x2", "x3")), threads = 1), "iterative", notes = "K-05, D-34")
@@ -87,11 +91,25 @@ reference_cases <- function() {
   add("logis_fe-constant", "logis_fe", c(columns("syn_constant", c("x1", "x2", "xc")), threads = 1), "iterative")
   add("logis_fe-factors-spaces-formula", "logis_fe",
       list(formula = ref_formula("Y ~ x1 + grp + id(ProvID)"), data = ref_dataset("syn_factors"), threads = 1), "iterative", notes = "D-18")
+  # The same model with level names without spaces: the expected result of the D-18 fix for
+  # the case above (Phase 3).
+  add("logis_fe-factors-nospaces-formula", "logis_fe",
+      list(formula = ref_formula("Y ~ x1 + grp + id(ProvID)"), data = ref_dataset("syn_factors_nospaces"), threads = 1),
+      "iterative", notes = "D-18 expected result")
   add("logis_fe-factors-unused-columns", "logis_fe", c(columns("syn_factors", c("x1", "grp2")), threads = 1), "iterative")
   for (term in c("log(w)", "z1:z2", "I(z1^2)")) {
     add(paste0("logis_fe-terms-", gsub("[^a-z0-9]", "", term)), "logis_fe",
         list(formula = ref_formula(sprintf("Y ~ z1 + z2 + %s + id(ProvID)", term)), data = ref_dataset("syn_terms"), threads = 1),
         "iterative", notes = "D-18")
+  }
+  # The same models with the terms computed as columns: the expected results of the D-18
+  # fix for the three cases above (Phase 3).
+  column_terms <- c(logw = "logw", z1z2 = "z1z2", z12 = "z1sq")
+  for (tag in names(column_terms)) {
+    add(paste0("logis_fe-terms-", tag, "-columns"), "logis_fe",
+        list(formula = ref_formula(sprintf("Y ~ z1 + z2 + %s + id(ProvID)", column_terms[[tag]])),
+             data = ref_dataset("syn_terms_columns"), threads = 1),
+        "iterative", notes = "D-18 expected result")
   }
   add("logis_fe-missing-formula", "logis_fe",
       list(formula = ref_formula("Y ~ x1 + x2 + id(ProvID)"), data = ref_dataset("syn_missing"), threads = 1), "iterative", notes = "K-03")
@@ -290,6 +308,8 @@ reference_cases <- function() {
   add("plot-binary-score-two-levels", "plot", list(x = ref_fit(F1), alpha = c(0.05, 0.01)), "iterative")
   add("plot-binary-exact", "plot", list(x = ref_fit(F1), test = "exact"), "exact", notes = "D-07")
   add("plot-binary-null-integer", "plot", list(x = ref_fit(F1), null = 0L), "exact", notes = "D-14")
+  # The same plot with a double null: the expected result of the D-14 fix (Phase 3).
+  add("plot-binary-null0", "plot", list(x = ref_fit(F1), null = 0), "iterative", notes = "D-14 expected result")
 
   # --- linear_fe methods ------------------------------------------------------------------
   for (fit_id in c(L1, L2)) {

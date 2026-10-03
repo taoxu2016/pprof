@@ -87,12 +87,22 @@ reference_datasets <- function(ref_lib, include_full = FALSE) {
   fac$grp2 <- factor(sample(c("a", "b"), nrow(fac), replace = TRUE), levels = c("a", "b", "unused"))
   fac$ProvID <- sprintf("H%02d", fac$ProvID)
   ds$syn_factors <- fac
+  # The same data with the level names of grp written without spaces, in the same level
+  # order: the reference fits it with a formula, which gives the expected result of the
+  # D-18 fix for syn_factors (Phase 3, per-case expectations). No random numbers are drawn.
+  fac_nospaces <- fac
+  levels(fac_nospaces$grp) <- gsub(" ", "_", levels(fac_nospaces$grp), fixed = TRUE)
+  ds$syn_factors_nospaces <- fac_nospaces
 
   # Transformed and interaction terms (D-18).
   trm <- simulate_binary_providers(rep(30, 20), beta = c(0.5, -0.3), seed = 110)
   trm$w <- abs(trm$x1) + 1
   names(trm)[names(trm) %in% c("x1", "x2")] <- c("z1", "z2")
   ds$syn_terms <- trm
+  # The same data with the transformed and interaction terms computed as columns, as
+  # model.matrix() computes them: the reference fits it with plain column names, which gives
+  # the expected results of the D-18 fix for syn_terms (Phase 3, per-case expectations).
+  ds$syn_terms_columns <- transform(trm, logw = log(w), z1z2 = z1 * z2, z1sq = z1^2)
 
   # Missing values in the response, a covariate, and the provider; plus an all-NA column
   # that no model uses.
