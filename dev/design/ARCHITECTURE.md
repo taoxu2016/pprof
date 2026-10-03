@@ -158,20 +158,24 @@ src/
                              cpp_logistic_score_standard(), cpp_logistic_direct_expected()
   RcppExports.cpp            generated
   core/
+    armadillo.h              the one Armadillo configuration of the core: BLAS and LAPACK, 32-bit words,
+                             Armadillo's own OpenMP and warnings off, output to a discarding stream (DEC-035)
     constants.h              named conventions (§K): weight floors, clamps, Armijo constants, initial criteria
-    types.h                  ProviderLayout, FitSettings, FitResult, Status, StopRule
+    types.h                  StopRule, IterationCriteria, FitSettings, FitResult
     provider_layout.{h,cpp}  offsets from provider sizes; per-provider sums
-    information_blocks.{h,cpp}  diagonal, cross block, beta block, Schur complement, block-inverse
-                             solves, and the variance diagonal; weights passed in by the caller
+    information_blocks.{h,cpp}  diagonal, cross block, beta block, Schur complement, and the variance
+                             diagonal; weights passed in by the caller
     loglik.{h,cpp}           logistic log-likelihood (K-11)
     clamp.h                  provider-effect clamp (K-15)
-    line_search.{h,cpp}      Armijo backtracking (K-14)
+    line_search.h            Armijo backtracking (K-14), a template over the gain function
     convergence.{h,cpp}      stopping criteria and rules (K-16)
-    parallel.h               OpenMP helpers; no R API; thread count from the caller
   logistic/
-    serbin.{h,cpp}  ban.{h,cpp}  firth.{h,cpp}  score_test.{h,cpp}  direct_expected.{h,cpp}
-  Makevars, Makevars.win     every subdirectory object listed in OBJECTS; OpenMP flags; no $(shell ...)
+    serbin.{h,cpp}  ban.{h,cpp}  variance.{h,cpp}  score_test.{h,cpp}  direct_expected.{h,cpp}
+    (firth.{h,cpp} in Phase 4)
+  Makevars, Makevars.win     every subdirectory object listed in OBJECTS; OpenMP flags
 ```
+
+As built in Phase 3, OpenMP regions are written in place with `num_threads(threads)` clauses rather than through a `parallel.h`, the RcppParallel `$(shell ...)` line stays in `Makevars` until `Firth.cpp` is rewritten in Phase 4, and the engines report a failed solve or inversion by throwing outside any parallel region: Rcpp's generated wrappers turn the exception into an R error, which the model layer reclasses as `pprof_error_convergence` (`logistic_fe_engine_call()`). Inside parallel regions only bool-returning Armadillo functions are used, and a failure sets a flag (the standard score test's `failed`).
 
 Contracts of the core:
 
@@ -194,6 +198,8 @@ The profiling layer is written once and reads a family specification returned by
 | Linear CRE | α | number (0) | predicted Σ fitted | ΣXβ | difference | Σy | difference | Wald (conditional SD, K-70) | Wald |
 
 Sources: K-60, K-68 to K-70, K-80 to K-84, K-92, K-93. The rows differ where the reference differs, including in places that look like accidents (linear RE uses a closed-form SD where linear CRE uses lme4's; D-31 and D-32 are reproduced in the compatibility layer and flagged for sign-off).
+
+As built in Phase 3 (logistic FE; NAMING §5 lists the fields): `profile_spec()` returns a list with `family`, `effect`, `null_default`, `null_options`, `indirect_numerator`, and `measures`, and, where a family supports them, `mean_function` and `variance_function` (measure intervals and the null variance of indirect standardization), `direct_expected` (a function of the effects, the linear predictor, and the thread count; the C++ direct expectations for logistic models), `funnel` (`measure`, `target`, `floor`, `test`, and the functions `precision` and `half_width`, so that the logistic funnel's E²/V and sqrt(1/w) and the linear funnel's n_i and σ/sqrt(n_i) are both data), and `wald_caution` (DEC-037). The exact, bootstrap, modified score, and Wald provider tests are computed by the profiling layer from the contract; `provider_test()` serves the tests that need a model's internals, such as the standard score test (DEC-036).
 
 ### B.5 A fit and a profile, step by step
 

@@ -392,19 +392,19 @@ Points that changed on verification:
 | Phase 0 audit scripts and logs | `dev/design/audit/` (evidence IDs `Vxx.y`, `Bx`) |
 | Naming convention | `dev/NAMING.md` |
 | Decision records | `dev/DECISIONS.md` |
-| Discrepancy register | `dev/DISCREPANCIES.md` (D-01 to D-37 after Phase 0; D-38 added in Phase 1) |
+| Discrepancy register | `dev/DISCREPANCIES.md` (D-01 to D-37 after Phase 0; D-38 added in Phase 1; D-39 to D-41 in Phase 3) |
 | Reference library | `dev/reference/lib/` (gitignored), built by `dev/reference/setup_reference_library.R`; recorded in `dev/reference/library-lock.json` (DEC-017) |
 | Reference generator | `dev/reference/`: `datasets.R`, `cases.R`, `generate_fixtures.R`, `compare_fixtures.R` (diff report); see `dev/reference/README.md` |
 | Case runner | `tests/testthat/helper-reference-cases.R`, shared by the generator and the tests (DEC-018) |
 | Fixtures | Core set (shipped): `tests/testthat/fixtures/reference/` with `manifest.json` and `datasets/`; full set: `validation/fixtures/reference/` |
-| Characterization tests | `tests/testthat/test-reference-*.R`, with helpers `helper-fixtures.R` and `helper-equivalence.R` |
-| Large validation suites | `validation/` (build-ignored): the full fixture set, `run-reference.R`, and `equivalence-report.md`; a dedicated CI job from Phase 2 |
+| Characterization tests | `tests/testthat/test-reference-*.R`, with helpers `helper-fixtures.R` and `helper-equivalence.R`; per-case expectations of Class A fixes in `helper-reference-overrides.R` (DEC-022, Phase 3) |
+| Large validation suites | `validation/` (build-ignored): the full fixture set, `run-reference.R` and `equivalence-report.md`, and from Phase 3 `run-differential.R` and `differential-report.md` |
 | Tolerances | `tests/testthat/helper-tolerances.R`, one justification per entry (the `root` entry's relative part is DEC-019, signed off 2026-10-02) |
-| Benchmarks | `dev/bench/`: `scenarios.R`, `run_reference.R`, `compare_to_baseline.R`; baselines in `dev/bench/results/` |
-| Rewrite code (Phase 2 on) | `R/<layer>-<topic>.R` (NAMING.md §8): shared utilities `R/constants.R`, `R/conditions.R`, `R/messages.R`, `R/validate.R`, `R/results.R`; data layer `R/data-*.R`; model infrastructure `R/model-*.R`. The reference's files stay until replaced |
+| Benchmarks | `dev/bench/`: `scenarios.R`, `run_reference.R` (with `--working-tree` from Phase 3), `compare_to_baseline.R`; baselines in `dev/bench/results/` |
+| Rewrite code (Phase 2 on) | `R/<layer>-<topic>.R` (NAMING.md §8): shared utilities `R/constants.R`, `R/conditions.R`, `R/messages.R`, `R/validate.R`, `R/results.R`; data layer `R/data-*.R`; models `R/model-*.R`; inference `R/inference-*.R`; profiling `R/profile-*.R`; presentation `R/present-*.R` and `R/plot-*.R`; compatibility wrappers `R/compat-*.R` (Phase 3); the C++ core in `src/core/` and `src/logistic/` with the adapter `src/rcpp_logistic.cpp`. The reference's files stay until replaced (logistic FE replaced in Phase 3) |
 | Tests of the rewrite | `tests/testthat/test-<layer>-<topic>.R`, in strict mode (`helper-strict.R`, DEC-030); data layer against the fixtures: `test-data-reference.R` with `helper-reference-data.R`; extension proof: `test-extension-toy-model.R` with `helper-toy-model.R`; layer rules: `test-architecture.R` |
 | Lint configuration | `.lintr` (DEC-031) |
-| CI | `.github/workflows/rewrite-check.yaml`, `rewrite-reference.yaml`, `rewrite-coverage.yaml` (DEC-026); GitHub Actions must be enabled on the fork |
+| CI | `.github/workflows/rewrite-check.yaml`, `rewrite-reference.yaml`, `rewrite-coverage.yaml` (DEC-026), and from Phase 3 `rewrite-sanitizers.yaml` and `rewrite-bench.yaml`; GitHub Actions must be enabled on the fork |
 | Naming | `dev/NAMING.md` (approved with the Phase 0 gate; authoritative) |
 | C++ layout constraints | `Rcpp::compileAttributes()` scans only top-level `src/`, so Rcpp adapter files stay there. Sources in subdirectories must be listed explicitly in `OBJECTS` in both `Makevars` and `Makevars.win` (no `$(wildcard ...)`, which would reintroduce the GNU make requirement) |
 

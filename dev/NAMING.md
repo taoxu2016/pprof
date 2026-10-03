@@ -196,7 +196,7 @@ Conditions carry classes so that tests and callers can match them without parsin
 | Namespace | everything in `pprof`, one sub-namespace per module | `pprof::core`, `pprof::logistic`, `pprof::linear` |
 | Types | PascalCase | `InformationBlocks`, `FitResult`, `StopRule` |
 | Functions and variables | snake_case | `compute_information_blocks()`, `provider_offsets` |
-| Constants | `k` + PascalCase, `constexpr`, each with a comment stating its contract and the reference location | `kFitWeightFloor = 1e-20`, `kArmijoSufficientDecrease = 0.01` |
+| Constants | `k` + PascalCase, `constexpr`, each with a comment stating its contract and the reference location | `kFitWeightFloor = 1e-20`, `kArmijoSufficientIncrease = 0.01` |
 | Files | snake_case, named after their main content; `.h` for headers | `src/core/information_blocks.h`, `src/logistic/serbin.cpp` |
 | Rcpp adapters | top-level `src/` files named `rcpp_<module>.cpp`; exported functions named `cpp_<module>_<action>` and never exported from the R package | `src/rcpp_logistic.cpp`, `cpp_logistic_fe_serbin()` |
 

@@ -97,8 +97,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: fix the documentation.
 - Recommendation: fix; the new help is generated from the argument vocabulary in `NAMING.md`.
 - Decision owner: project lead.
-- Status: verified (V10.18).
-- Regression test: not applicable (documentation); the new documentation is checked against `formals()` in a test.
+- Status: verified (V10.18); fixed in the help of the `logis_fe()` wrapper (Phase 3): `backtrack` defaults to TRUE and the `stop` description names `max.iter`.
+- Regression test: not applicable (documentation); a check of the help against `formals()` is planned with the documentation of Phase 8.
 
 ### D-03: No convergence status; "converged" printed at the iteration limit
 
@@ -187,8 +187,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) raise `pprof_error_unsupported_inference` for exact funnel limits; (2) implement exact limits in the profiling layer from the code's evident intent, validated independently, with methodology sign-off.
 - Recommendation: (1) until a methodology owner approves (2). Recorded as open question M-9.
 - Decision owner: methodology owner for (2); project lead for (1).
-- Status: verified (V13.21); option (1) approved with the Phase 3 plan (2026-10-02). The new `funnel_limits()` computes the score-test limits of K-110 only; the wrapper will raise `pprof_error_unsupported_inference` for `test = "exact"` when it replaces `plot.logis_fe()`.
-- Regression test: planned, with the wrapper.
+- Status: verified (V13.21); option (1) approved with the Phase 3 plan (2026-10-02). The new `funnel_limits()` computes the score-test limits of K-110 only, and `plot.logis_fe(test = "exact")` raises `pprof_error_unsupported_inference` (Phase 3, step 5); the fixture `plot-binary-exact` records an error, as before.
+- Regression test: `tests/testthat/test-compat-logis-fe.R` (the error class).
 
 ### D-08: Reliance on partial matching of `$`
 
@@ -392,8 +392,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: none needed.
 - Recommendation: the rewrite must agree with `threads = 1` within the Tier 2 tolerance for every thread count and be deterministic for a fixed count.
 - Decision owner: project lead.
-- Status: verified (V11.2).
-- Regression test: planned, thread-consistency test.
+- Status: verified (V11.2). The new core keeps the element-wise beta block for `threads > 1` (Phase 3), so results match the reference at the same thread count and `threads = 1` within the Tier 2 tolerance.
+- Regression test: `tests/testthat/test-model-logistic-fe.R` (two threads against one) and `tests/testthat/test-cpp-logistic-engines.R` (the engine with one and two threads).
 
 ### D-21: Hard-coded and inconsistent thread counts
 
@@ -406,8 +406,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: one `threads` argument, default 1, passed everywhere.
 - Recommendation: DEC-001.
 - Decision owner: project lead.
-- Status: verified (V15.11, V13.14).
-- Regression test: planned, thread-consistency test.
+- Status: verified (V15.11, V13.14). Logistic FE: the new API takes `threads` with default 1, the `SM_output.logis_fe()` wrapper keeps its default of 2, and the direct expectations do not depend on the thread count (Phase 3). The logistic RE and CRE part follows in Phase 5.
+- Regression test: `tests/testthat/test-profile-api.R` (the standard score test and the direct expectations with one and two threads); RE and CRE in Phase 5.
 
 ### D-22: SerBIN with `threads < 1` uses an uninitialized matrix
 
@@ -448,8 +448,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) preserve the default and reproduce the iteration path exactly (required for equivalence); add diagnostics that report every criterion and warn when the coefficient criterion is far above `tol` at stop; (2) change the default to `"all"` or `"coefficients"` (Class B).
 - Recommendation: (1) now; put (2) to the methodology owners (question M-4).
 - Decision owner: methodology owner.
-- Status: verified (V11.1); awaiting sign-off for any default change.
-- Regression test: planned; fixtures at default settings and at `tol = 1e-10`, as the brief's Tier 2 requires.
+- Status: verified (V11.1); awaiting sign-off for any default change. Preserved in Phase 3: `stop_rule = "any"` is the default of `fit_logistic_fe()`, whose object keeps the criteria of every iteration so that an early stop can be seen, and the help explains the rule.
+- Regression test: the fixtures at default settings and at `tol = 1e-10` (`logis_fe-binary-serbin-tight`, `-ban-tight`) and the full set's 80,000-row default fit (`logis_fe-medium-default`).
 
 ### D-25: `logis_firth` help states the wrong `max.iter` default
 
@@ -476,7 +476,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: document what is computed.
 - Recommendation: document it as "score test with nuisance-parameter variance adjustment, using unrestricted estimates" and ask question M-7.
 - Decision owner: project lead (docs); methodology owner (question).
-- Status: verified (V13.5).
+- Status: verified (V13.5); the documentation is fixed (Phase 3): the help of `test_providers()` and of the `test.logis_fe()` wrapper describes the variance adjustment at the unrestricted estimates; question M-7 stays open.
 - Regression test: fixture for `score_modified = FALSE`.
 
 ### D-27: Integer provider IDs cannot be selected with `parm`
@@ -574,7 +574,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: fix the labels.
 - Recommendation: result objects carry the level as a number in a named field, not as a string attribute; the wrappers reproduce the old attributes.
 - Decision owner: project lead.
-- Status: verified (V15.12).
+- Status: verified (V15.12). New result objects carry the level as a number (Phase 3); the logistic FE wrapper reproduces the old attributes (its fixtures pass); RE and CRE follow in Phase 5.
 - Regression test: wrapper fixtures.
 
 ### D-34: Provider order depends on the collation locale

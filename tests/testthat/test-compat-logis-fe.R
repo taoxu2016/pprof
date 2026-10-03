@@ -132,3 +132,8 @@ test_that("summary() fails, as the reference does, for coefficient positions it 
   expect_error(summary(old, parm = 9, test = "score"), class = "pprof_error_invalid_input")
   expect_identical(rownames(summary(old, parm = -1)), paste0("z", 2:5))
 })
+
+test_that("the exact funnel plot raises a classed error (D-07)", {
+  old <- compat_columns(compat_example(), message = FALSE)
+  expect_error(plot(old, test = "exact"), class = "pprof_error_unsupported_inference")
+})
