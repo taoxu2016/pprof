@@ -92,3 +92,19 @@ test_that("the layer check detects a call to a higher layer", {
   expect_identical(architecture_layer("R/logis_fe.R"), NA_integer_)
   expect_identical(architecture_layer("R/results.R"), 0L)
 })
+
+test_that("package code calls no function that only a test helper defines", {
+  # devtools::test() loads the test helpers into the package's namespace, so such a call
+  # passes the tests and fails in the installed package (found at the Phase 3 gate).
+  r_dir <- test_path("..", "..", "R")
+  skip_if_not(dir.exists(r_dir), "package sources not available")
+  files <- list.files(r_dir, pattern = "[.]R$", full.names = TRUE)
+  package_functions <- unlist(lapply(files, architecture_definitions))
+  helpers <- list.files(test_path(), pattern = "^helper-.*[.]R$", full.names = TRUE)
+  helper_only <- setdiff(unlist(lapply(helpers, architecture_definitions)), package_functions)
+  calls <- unlist(lapply(files, function(file) {
+    used <- intersect(architecture_symbols(file), helper_only)
+    if (length(used)) sprintf("%s calls %s", basename(file), used) else character()
+  }))
+  expect_identical(calls, character())
+})

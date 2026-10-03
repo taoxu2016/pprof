@@ -33,6 +33,11 @@ compat_with_wald_warning <- function(expr, message) {
   withCallingHandlers(expr, pprof_warning_wald_unreliable = function(w) invokeRestart("muffleWarning"))
 }
 
+# The rows of a measures table for one standardization and measure.
+compat_measure_rows <- function(table, standardization, measure) {
+  table[table$standardization == standardization & table$measure == measure, , drop = FALSE]
+}
+
 # The type of the reference's sums of the response: integer for integer or logical
 # responses, double otherwise.
 compat_typed_sum <- function(values, response) {
@@ -230,8 +235,8 @@ SM_output.logis_fe <- function(fit, parm, stdz = "indirect", measure = c("rate",
   oe_list <- list()
   matrix_of <- function(values, column) matrix(values, ncol = 1L, dimnames = list(ids, column))[ind, , drop = FALSE]
   if (indirect) {
-    ratio <- profile_measure_rows(measures, "indirect", "ratio")
-    rate <- profile_measure_rows(measures, "indirect", "rate")
+    ratio <- compat_measure_rows(measures, "indirect", "ratio")
+    rate <- compat_measure_rows(measures, "indirect", "rate")
     oe <- data.frame(Obs_provider = compat_typed_sum(ratio$observed, response),
                      Exp.indirect_provider = ratio$expected, Var.indirect_provider = ratio$variance)
     rownames(oe) <- ids
@@ -240,8 +245,8 @@ SM_output.logis_fe <- function(fit, parm, stdz = "indirect", measure = c("rate",
     if ("rate" %in% measure) return_list$indirect.rate <- matrix_of(rate$estimate, "Indirect_standardized.rate")
   }
   if (direct) {
-    ratio <- profile_measure_rows(measures, "direct", "ratio")
-    rate <- profile_measure_rows(measures, "direct", "rate")
+    ratio <- compat_measure_rows(measures, "direct", "ratio")
+    rate <- compat_measure_rows(measures, "direct", "rate")
     oe <- data.frame(Obs_all = compat_typed_sum(ratio$observed, response), Exp.direct_all = ratio$expected)
     rownames(oe) <- ids
     oe_list$OE_direct <- oe[ind, ]
@@ -366,8 +371,8 @@ confint.logis_fe <- function(object, parm, level = 0.95, test = "exact", option 
   }
   return_list <- list()
   for (method in c("indirect", "direct")[c(indirect, direct)]) {
-    ratio <- profile_measure_rows(result$table, method, "ratio")
-    rate <- profile_measure_rows(result$table, method, "rate")
+    ratio <- compat_measure_rows(result$table, method, "ratio")
+    rate <- compat_measure_rows(result$table, method, "rate")
     title <- paste0(toupper(substr(method, 1L, 1L)), substring(method, 2L))
     if ("ratio" %in% measure) {
       ratios <- data.frame(ratio$estimate, ratio$lower, ratio$upper, row.names = ratio$provider_id)
