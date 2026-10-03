@@ -28,7 +28,8 @@ test_that("an integer null is used as the equal double (D-14)", {
   measures <- standardize_providers(fit, c("indirect", "direct"), null = 0L)
   expect_profile_measures(measures, reference_fixture("SM_output-binary-null0")$result$value, "iterative")
   expect_identical(test_providers(fit, null = 0L)$table, test_providers(fit, null = 0)$table)
-  expect_identical(funnel_limits(fit, null = 0L), funnel_limits(fit, null = 0))
+  expect_profile_funnel(funnel_limits(fit, level = 1 - 0.05, null = 0L),
+                        reference_fixture("plot-binary-null0")$result$value, 0.05, "iterative")
 })
 
 test_that("a non-finite standard score statistic keeps its place with a missing p-value and flag (D-04)", {

@@ -60,9 +60,10 @@ test_that("with two covariates the likelihood-ratio test refits each one-covaria
   table <- test_coefficients(model$fit, "lr", data = args$data)$table
   expect_identical(table$term, c("x1", "x2"))
   expect_true(all(is.finite(table$statistic) & table$statistic >= 0))
-  # The null model for x2 fits x1 alone to the same observations with the default
-  # settings, which is the reference's fit logis_fe-screening-onecov, so the x2 statistic
-  # is K-101 computed with the reference's expression from the two fixtures.
+  # Each null model fits the other covariate alone to the same observations with the
+  # default settings, which are the reference's fits logis_fe-screening-x2 (for x1) and
+  # logis_fe-screening-onecov (for x2), so each statistic is K-101 computed with the
+  # reference's expression from the fixtures.
   prepared <- model_prepared_data(model$fit, args$data)
   sizes <- prepared$providers$n_obs[prepared$providers$included]
   neg2_loglik <- function(value, design) {
@@ -71,10 +72,12 @@ test_that("with two covariates the likelihood-ratio test refits each one-covaria
     eta <- gamma_obs + design %*% value$coefficient$beta
     -2 * sum(eta * prepared$response - log(1 + exp(eta)))
   }
-  expected <- neg2_loglik(reference_fixture("logis_fe-screening-onecov")$result$value,
-                          prepared$design[, "x1", drop = FALSE]) -
-    neg2_loglik(model$fixture$result$value, prepared$design)
-  expect_reference_value(table$statistic[2], expected, "iterative", "x2 statistic")
+  full <- neg2_loglik(model$fixture$result$value, prepared$design)
+  expected <- c(
+    neg2_loglik(reference_fixture("logis_fe-screening-x2")$result$value, prepared$design[, "x2", drop = FALSE]),
+    neg2_loglik(reference_fixture("logis_fe-screening-onecov")$result$value, prepared$design[, "x1", drop = FALSE])
+  ) - full
+  expect_reference_value(table$statistic, expected, "iterative", "statistics")
 })
 
 test_that("a null model that its default screening would shrink fails with a classed error (D-10)", {

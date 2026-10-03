@@ -148,6 +148,24 @@ test_that("transformed terms, interactions, and factor levels with spaces are fi
   expect_identical(names(fit$coefficients), c("x1", "grplevel three", "grplevel two"))
 })
 
+test_that("the fits the reference cannot make equal its fits of the same models with plain columns (D-18)", {
+  # The reference fails on transformed terms, interactions, and factor levels with spaces;
+  # it fits the same models with the terms computed as columns and the levels renamed
+  # (logis_fe-terms-*-columns, logis_fe-factors-nospaces-formula).
+  expect_reference_fit <- function(fit, id) {
+    expected <- reference_fixture(id)$result$value$coefficient
+    expect_reference_value(unname(fit$coefficients), as.numeric(expected$beta), "iterative", paste(id, "beta"))
+    expect_reference_value(unname(fit$provider_effects), as.numeric(expected$gamma), "iterative", paste(id, "gamma"))
+  }
+  terms_data <- fixture_dataset("syn_terms")
+  for (pair in list(c("log(w)", "logw"), c("z1:z2", "z1z2"), c("I(z1^2)", "z12"))) {
+    fit <- fit_logistic_fe(stats::reformulate(c("z1", "z2", pair[1]), "Y"), terms_data, "ProvID")
+    expect_reference_fit(fit, paste0("logis_fe-terms-", pair[2], "-columns"))
+  }
+  withr::with_collate("C", fit <- fit_logistic_fe(Y ~ x1 + grp, fixture_dataset("syn_factors"), "ProvID"))
+  expect_reference_fit(fit, "logis_fe-factors-nospaces-formula")
+})
+
 test_that("two threads give the same fit as one, up to rounding (D-20)", {
   data <- example_data()
   one <- fit_logistic_fe(example_formula, data, "hospital")

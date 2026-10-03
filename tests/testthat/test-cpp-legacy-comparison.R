@@ -118,3 +118,21 @@ test_that("variances, standard score statistics, and direct expectations reprodu
     }
   }
 })
+
+test_that("the standard score statistics of the D-04 fit's other providers reproduce the reference routine (D-04)", {
+  # The reference fails on this fit because one statistic is not finite, and it cannot
+  # select the other providers because their IDs are integers (D-27), so no fixture holds
+  # their values; the reference's routine gives them while it is in the package.
+  parent <- model_case_fit("logis_fe-d04")
+  args <- model_case_arguments(parent$fixture$case, reference_datasets_for(parent$fixture$case, "core"))
+  fit <- parent$fit
+  tests <- suppressWarnings(test_providers(fit, "score", score_type = "standard", data = args$data))$table
+  prepared <- model_prepared_data(fit, args$data)
+  sizes <- as.integer(fit$providers$n_obs[fit$providers$included])
+  old <- Modified_score(as.numeric(fit$response), prepared$design, sizes, unname(fit$provider_effects),
+                        unname(fit$coefficients), unname(stats::median(fit$provider_effects)), length(sizes),
+                        seq_along(sizes) - 1L, 1L)
+  finite <- is.finite(tests$statistic)
+  expect_identical(sum(!finite), 1L)
+  expect_identical(tests$statistic[finite], as.numeric(old))
+})
