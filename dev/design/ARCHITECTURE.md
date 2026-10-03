@@ -529,7 +529,7 @@ R version: keep `R (>= 4.1.0)`, the current requirement, which the native pipe n
 ### I.2 How the wrappers work
 
 - They live only in `R/compat-*.R` and contain translation logic only (brief §8).
-- A wrapper fit translates arguments (including `id()` and `(1 | id)` formulas, `Y.char`-style names, and the vector interface), calls the new fit with `keep_data = TRUE`, and converts the result into the exact old shape (BEHAVIOR_SPECS §16), storing the new model object in `attr(, "pprof_model")`. Old methods (`test.logis_fe` and so on) take the model from that attribute, call the new API, and convert the results back to the old shapes.
+- A wrapper fit translates arguments (including `id()` and `(1 | id)` formulas, `Y.char`-style names, and the vector interface), calls the new fit with `keep_data = TRUE`, and converts the result into the exact old shape (BEHAVIOR_SPECS §16), without an attribute. Old methods (`test.logis_fe` and so on) rebuild the new model from the old object's fields, call the new API, and convert the results back to the old shapes, so they also work on old objects from code not yet replaced and on fits saved with pprof 1.0.3 (DEC-032, which replaced the earlier design of storing the model in `attr(, "pprof_model")`).
 - They reproduce the reference including the Class B items awaiting sign-off (D-10, D-12, D-13, D-24, D-31, D-32, D-34), the presentation details (factor flags, character p-values, string attributes), and messages. Class A fixes apply (a crash becomes a result or a classed error) and are listed in the migration guide.
 - Each wrapper warns once per session with class `pprof_deprecated`, through a small internal helper (no `lifecycle` dependency).
 - They are tested against the fixtures field by field.

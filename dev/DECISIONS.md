@@ -130,7 +130,7 @@ The Phase 0 decisions below were proposed in the Phase 0 design and accepted whe
 ### DEC-013: Compatibility wrappers reproduce the reference, including items awaiting sign-off
 
 - Date: 2026-10-02
-- Status: accepted with the Phase 0 gate (2026-10-02)
+- Status: accepted with the Phase 0 gate (2026-10-02); the `attr(, "pprof_model")` clause is amended by DEC-032
 - Context: Brief §8 requires wrappers that return the old output shapes, warn once per session, and stay for at least one minor release.
 - Decision: Wrappers live in `R/compat-*.R`, translate arguments, call the new API with `keep_data = TRUE`, convert results to the exact old shapes (BEHAVIOR_SPECS §16), and keep the new model in `attr(, "pprof_model")` for the old methods. They reproduce every Class B behavior awaiting sign-off (D-10, D-12, D-13, D-24, D-31, D-32, D-34) and apply Class A fixes. Deprecation warnings use an internal once-per-session helper with class `pprof_deprecated`, without a `lifecycle` dependency.
 - Alternatives considered: Wrappers returning new objects (would break user scripts).
@@ -307,3 +307,34 @@ The Phase 2 decisions below were made while implementing the approved plan and a
 - Decision: `.lintr` uses the tidyverse defaults with lines up to 120 characters and names up to 40, and turns off `object_usage_linter`, which checks against the installed package (the reference version here) and whose job R CMD check does with the package being checked. The reference's files, its vignettes, and the fixture case runner (a generator input, whose changes follow the regeneration procedure) are excluded. The check is `lintr::lint_package()`.
 - Alternatives considered: 80-character lines (wraps most error messages); no configuration (the defaults flag NAMING.md's names).
 - Consequences: Phase 2 code lints clean; files are removed from the exclusions as the reference's code is replaced.
+
+---
+
+The Phase 3 decisions below were approved by the project lead with the Phase 3 plan on 2026-10-02.
+
+### DEC-032: Compatibility methods rebuild the model from the old object
+
+- Date: 2026-10-02
+- Status: accepted with the Phase 3 plan (2026-10-02)
+- Context: ARCHITECTURE §I.2 and DEC-013 have the wrapper attach the new model as `attr(, "pprof_model")` for the old methods to use. Five fixture cases run the logistic FE methods on fits from the old `logis_firth()`, which stays until Phase 4 and returns class `logis_fe` without that attribute; fits saved with pprof 1.0.3 have none either. The attribute would also store the design matrix and the per-observation vectors a second time next to `data_include`, against the brief's memory target (§3.6). And the reference's methods read the old fields, so edits a user makes to an old object take effect.
+- Decision: `logis_fe()` returns exactly the reference's object, without an attribute. The old methods for class `logis_fe` (`test`, `SM_output`, `confint`, `summary`, `plot`) rebuild a `pprof_logistic_fe` model from `coefficient`, `variance`, `linear_pred`, `data_include`, and `char_list` (`R/compat-convert.R`), call the new API, and convert its results to the old shapes. The wrapper still fits with `keep_data = TRUE` (DEC-005), to build `data_include`, and then drops the new model.
+- Alternatives considered: the attribute design, which needs the old method code kept for objects without the attribute until Phase 4 and stores the data twice.
+- Consequences: amends ARCHITECTURE §I.2 and DEC-013 on this point. A model rebuilt from an old object has no record of the fit's settings, which the methods do not need (the covariate refits use the reference defaults, D-10). Rebuilding costs O(n + m) per call; the reference re-splits `data_include` on every call.
+
+### DEC-033: Deprecation warnings start in Phase 8
+
+- Date: 2026-10-02
+- Status: accepted with the Phase 3 plan (2026-10-02)
+- Context: Brief §8 requires each wrapper to warn once per session. During Phases 3 to 7 the new API covers only some model families.
+- Decision: The wrappers call `warn_deprecated()` (Phase 2, `R/conditions.R`) from Phase 8 on, when the new API covers every family. Until then they do not warn.
+- Alternatives considered: warning from Phase 3 (users would be told to move half a workflow, and the legacy tests and examples would gain warnings during the migration).
+- Consequences: Phase 8 adds the calls and tests the once-per-session behavior on every wrapper.
+
+### DEC-034: Plot functions in Phase 3
+
+- Date: 2026-10-02
+- Status: accepted with the Phase 3 plan (2026-10-02)
+- Context: Brief §4 puts plots in the Phase 3 slice and ggplot2 plotting for every family in Phase 6. `plot.logis_fe()` belongs to the logistic FE class; `caterpillar_plot()` and `bar_plot()` take the old outputs of every family.
+- Decision: Phase 3 turns `plot.logis_fe()` into a wrapper over the new `funnel_limits()` that rebuilds the reference's ggplot layer by layer, because the fixtures compare layer data. The new `plot_funnel()`, `plot_caterpillar()`, and `plot_flags()` are written against result objects. `caterpillar_plot()` and `bar_plot()` stay as reference code until Phase 6; they keep working because the wrappers return the reference's shapes.
+- Alternatives considered: replacing all three old plot functions in Phase 3 (the other two would need translations for families still on the old code).
+- Consequences: the fixtures `caterpillar-*` and `bar_plot-*` exercise the logistic FE wrappers' outputs through the reference plot code until Phase 6.
