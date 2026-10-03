@@ -184,6 +184,93 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_logistic_fe_serbin
+Rcpp::List cpp_logistic_fe_serbin(Rcpp::NumericVector response, Rcpp::NumericMatrix design, Rcpp::IntegerVector provider_sizes, Rcpp::NumericVector gamma, Rcpp::NumericVector beta, int max_iter, double tol, double effect_bound, bool backtrack, std::string stop_rule, int threads);
+RcppExport SEXP _pprof_cpp_logistic_fe_serbin(SEXP responseSEXP, SEXP designSEXP, SEXP provider_sizesSEXP, SEXP gammaSEXP, SEXP betaSEXP, SEXP max_iterSEXP, SEXP tolSEXP, SEXP effect_boundSEXP, SEXP backtrackSEXP, SEXP stop_ruleSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type response(responseSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type design(designSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type provider_sizes(provider_sizesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< double >::type effect_bound(effect_boundSEXP);
+    Rcpp::traits::input_parameter< bool >::type backtrack(backtrackSEXP);
+    Rcpp::traits::input_parameter< std::string >::type stop_rule(stop_ruleSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_logistic_fe_serbin(response, design, provider_sizes, gamma, beta, max_iter, tol, effect_bound, backtrack, stop_rule, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_logistic_fe_ban
+Rcpp::List cpp_logistic_fe_ban(Rcpp::NumericVector response, Rcpp::NumericMatrix design, Rcpp::IntegerVector provider_sizes, Rcpp::NumericVector gamma, Rcpp::NumericVector beta, int max_iter, double tol, double effect_bound, bool backtrack, std::string stop_rule, int threads);
+RcppExport SEXP _pprof_cpp_logistic_fe_ban(SEXP responseSEXP, SEXP designSEXP, SEXP provider_sizesSEXP, SEXP gammaSEXP, SEXP betaSEXP, SEXP max_iterSEXP, SEXP tolSEXP, SEXP effect_boundSEXP, SEXP backtrackSEXP, SEXP stop_ruleSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type response(responseSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type design(designSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type provider_sizes(provider_sizesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< int >::type max_iter(max_iterSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< double >::type effect_bound(effect_boundSEXP);
+    Rcpp::traits::input_parameter< bool >::type backtrack(backtrackSEXP);
+    Rcpp::traits::input_parameter< std::string >::type stop_rule(stop_ruleSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_logistic_fe_ban(response, design, provider_sizes, gamma, beta, max_iter, tol, effect_bound, backtrack, stop_rule, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_logistic_variance
+Rcpp::List cpp_logistic_variance(Rcpp::NumericMatrix design, Rcpp::IntegerVector provider_sizes, Rcpp::NumericVector gamma, Rcpp::NumericVector beta);
+RcppExport SEXP _pprof_cpp_logistic_variance(SEXP designSEXP, SEXP provider_sizesSEXP, SEXP gammaSEXP, SEXP betaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type design(designSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type provider_sizes(provider_sizesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type beta(betaSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_logistic_variance(design, provider_sizes, gamma, beta));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_logistic_score_standard
+Rcpp::List cpp_logistic_score_standard(Rcpp::NumericVector response, Rcpp::NumericMatrix design, Rcpp::IntegerVector provider_sizes, Rcpp::NumericVector gamma, Rcpp::NumericVector beta, double gamma_null, Rcpp::IntegerVector providers, int threads);
+RcppExport SEXP _pprof_cpp_logistic_score_standard(SEXP responseSEXP, SEXP designSEXP, SEXP provider_sizesSEXP, SEXP gammaSEXP, SEXP betaSEXP, SEXP gamma_nullSEXP, SEXP providersSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type response(responseSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type design(designSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type provider_sizes(provider_sizesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma_null(gamma_nullSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type providers(providersSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_logistic_score_standard(response, design, provider_sizes, gamma, beta, gamma_null, providers, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_logistic_direct_expected
+Rcpp::NumericVector cpp_logistic_direct_expected(Rcpp::NumericVector effects, Rcpp::NumericVector linear_predictor, int threads);
+RcppExport SEXP _pprof_cpp_logistic_direct_expected(SEXP effectsSEXP, SEXP linear_predictorSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type effects(effectsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type linear_predictor(linear_predictorSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_logistic_direct_expected(effects, linear_predictor, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_pprof_logdet_info", (DL_FUNC) &_pprof_logdet_info, 2},
@@ -196,6 +283,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_pprof_Modified_score", (DL_FUNC) &_pprof_Modified_score, 9},
     {"_pprof_compute_profilkd_linear", (DL_FUNC) &_pprof_compute_profilkd_linear, 4},
     {"_pprof_logis_fe_var", (DL_FUNC) &_pprof_logis_fe_var, 5},
+    {"_pprof_cpp_logistic_fe_serbin", (DL_FUNC) &_pprof_cpp_logistic_fe_serbin, 11},
+    {"_pprof_cpp_logistic_fe_ban", (DL_FUNC) &_pprof_cpp_logistic_fe_ban, 11},
+    {"_pprof_cpp_logistic_variance", (DL_FUNC) &_pprof_cpp_logistic_variance, 4},
+    {"_pprof_cpp_logistic_score_standard", (DL_FUNC) &_pprof_cpp_logistic_score_standard, 8},
+    {"_pprof_cpp_logistic_direct_expected", (DL_FUNC) &_pprof_cpp_logistic_direct_expected, 3},
     {NULL, NULL, 0}
 };
 

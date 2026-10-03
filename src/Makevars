@@ -1,15 +1,21 @@
-
-## With R 3.1.0 or later, you can uncomment the following line to tell R to
-## enable compilation with C++11 (where available)
-##
-## Also, OpenMP support in Armadillo prefers C++11 support. However, for wider
-## availability of the package we do not yet enforce this here.  It is however
-## recommended for client packages to set it.
-##
-## And with R 3.4.0, and RcppArmadillo 0.7.960.*, we turn C++11 on as OpenMP
-## support within Armadillo prefers / requires it
-
-#CXX_STD = CXX11
+# Build settings for the compiled code (keep in step with Makevars.win).
+#
+# The C++ core lives in subdirectories (src/core, src/logistic), and R compiles sources in
+# subdirectories only when OBJECTS lists them, so every object file is listed explicitly: a
+# wildcard would need GNU make. The RcppParallel line goes when Firth.cpp is rewritten.
+#
+# Every translation unit gets Armadillo without its own OpenMP and without warnings: the old
+# files (Firth.cpp, Fixed_effect.cpp) and the generated RcppExports.cpp include RcppArmadillo,
+# the core includes src/core/armadillo.h, and the linker keeps one copy of each Armadillo
+# template they share. With the same settings in every file, no copy can print from inside
+# the core or use Armadillo's OpenMP. Neither setting changes a computation (DEC-035).
+CXX_STD = CXX17
+PKG_CPPFLAGS = -I. -DARMA_DONT_USE_OPENMP= -DARMA_WARN_LEVEL=0
 PKG_CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS)
 PKG_LIBS     += $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 PKG_LIBS     += $(shell ${R_HOME}/bin/Rscript -e "RcppParallel::RcppParallelLibs()")
+
+OBJECTS = RcppExports.o Firth.o Fixed_effect.o header.o rcpp_logistic.o \
+          core/convergence.o core/information_blocks.o core/loglik.o core/provider_layout.o \
+          logistic/ban.o logistic/direct_expected.o logistic/score_test.o logistic/serbin.o \
+          logistic/variance.o

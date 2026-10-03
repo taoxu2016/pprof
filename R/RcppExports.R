@@ -41,3 +41,23 @@ logis_fe_var <- function(Y, Z, n_prov, gamma, beta) {
     .Call(`_pprof_logis_fe_var`, Y, Z, n_prov, gamma, beta)
 }
 
+cpp_logistic_fe_serbin <- function(response, design, provider_sizes, gamma, beta, max_iter, tol, effect_bound, backtrack, stop_rule, threads) {
+    .Call(`_pprof_cpp_logistic_fe_serbin`, response, design, provider_sizes, gamma, beta, max_iter, tol, effect_bound, backtrack, stop_rule, threads)
+}
+
+cpp_logistic_fe_ban <- function(response, design, provider_sizes, gamma, beta, max_iter, tol, effect_bound, backtrack, stop_rule, threads) {
+    .Call(`_pprof_cpp_logistic_fe_ban`, response, design, provider_sizes, gamma, beta, max_iter, tol, effect_bound, backtrack, stop_rule, threads)
+}
+
+cpp_logistic_variance <- function(design, provider_sizes, gamma, beta) {
+    .Call(`_pprof_cpp_logistic_variance`, design, provider_sizes, gamma, beta)
+}
+
+cpp_logistic_score_standard <- function(response, design, provider_sizes, gamma, beta, gamma_null, providers, threads) {
+    .Call(`_pprof_cpp_logistic_score_standard`, response, design, provider_sizes, gamma, beta, gamma_null, providers, threads)
+}
+
+cpp_logistic_direct_expected <- function(effects, linear_predictor, threads) {
+    .Call(`_pprof_cpp_logistic_direct_expected`, effects, linear_predictor, threads)
+}
+
