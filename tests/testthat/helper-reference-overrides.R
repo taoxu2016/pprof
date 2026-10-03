@@ -88,16 +88,19 @@ override_lr_two_covariates <- function(fixture) {
 }
 
 # D-04: the reference fails; the wrapper keeps every provider, with a missing p-value and
-# flag where the statistic is not finite. No fixture holds the other providers' values,
-# because the reference cannot select integer IDs (D-27); the legacy comparison checks them
-# against the reference's routine.
+# flag where the statistic is not finite (provider 5), and gives the other providers the
+# values the reference computes when it is asked only for them, which it can do with the
+# same data and double IDs (test-d04-score-standard-others; D-27).
 override_check_d04 <- function(actual) {
   value <- actual$value
   undefined <- !is.finite(value$stat)
+  others <- reference_fixture("test-d04-score-standard-others")$result$value
   ok <- identical(actual$outcome, "value") && nrow(value) == 30L && identical(rownames(value)[undefined], "5") &&
     is.na(value[["p value"]][undefined]) && is.na(value$flag[undefined]) &&
-    !anyNA(value[["p value"]][!undefined]) && !anyNA(value$flag[!undefined])
-  if (ok) NULL else "the standard score test of the D-04 fit does not keep provider 5 in place with a missing p-value"
+    identical(rownames(value)[!undefined], rownames(others)) && identical(value$stat[!undefined], others$stat) &&
+    identical(value[["p value"]][!undefined], others[["p value"]]) &&
+    identical(as.character(value$flag[!undefined]), as.character(others$flag))
+  if (ok) NULL else "the D-04 standard score test does not match the reference's values with provider 5 in place"
 }
 
 reference_overrides <- list(

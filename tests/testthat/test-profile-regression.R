@@ -43,8 +43,11 @@ test_that("a non-finite standard score statistic keeps its place with a missing 
   expect_true(all(is.na(table$p_value[undefined]) & is.na(table$flag[undefined])))
   expect_false(anyNA(table$p_value[!undefined]) || anyNA(table$flag[!undefined]))
   others <- test_providers(parent$fit, "score", score_type = "standard", providers = table$provider_id[!undefined],
-                           data = parent$data)$table
-  expect_identical(others, table[!undefined, , drop = FALSE], ignore_attr = "row.names")
+                           data = parent$data)
+  expect_identical(others$table, table[!undefined, , drop = FALSE], ignore_attr = "row.names")
+  # The reference computes the other providers' statistics when it is asked only for them,
+  # which it can do with the same data and double IDs (D-27).
+  expect_profile_tests(others, reference_fixture("test-d04-score-standard-others")$result$value, "exact")
 })
 
 # The reference orders the limits of character IDs by as.numeric(ID), which is NA for every
