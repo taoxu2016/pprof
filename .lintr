@@ -5,7 +5,7 @@ linters: linters_with_defaults(
   )
 exclusions: list(
     "vignettes",
-    "tests/testthat/helper-reference-cases.R",
+    "tests/testthat/helper-reference-cases.R", "tests/testthat/helper-audit-ports.R",
     "R/Data.R", "R/RcppExports.R", "R/SM_output.R", "R/SM_output.linear_cre.R", "R/SM_output.linear_fe.R",
     "R/SM_output.linear_re.R", "R/SM_output.logis_cre.R", "R/SM_output.logis_fe.R", "R/SM_output.logis_re.R",
     "R/bar_plot.R", "R/caterpillar_plot.R", "R/confint.linear_cre.R", "R/confint.linear_fe.R",
