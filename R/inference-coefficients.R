@@ -146,7 +146,7 @@ infer_coefficient_score <- function(model, terms, null, data) {
   response <- observed_outcome(model)
   index <- provider_index(model)
   providers <- which(provider_table(model)$included)
-  rows <- split(seq_along(index), factor(index, levels = providers))
+  rows <- split(seq_along(index), data_provider_factor(index, providers))
   statistic <- vapply(terms, function(term) {
     null_model <- refit_without(model, term, data)
     z_null <- design[, setdiff(colnames(design), term), drop = FALSE]

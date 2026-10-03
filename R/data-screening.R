@@ -17,7 +17,7 @@ data_screen_providers <- function(providers, min_provider_size) {
 # them, sapply(split(y, provider), sum) == 0 for no events and the same sum of 1 - y for
 # only events, so that the indicators agree for any numeric response.
 data_event_indicators <- function(providers, response, codes) {
-  groups <- factor(codes, levels = seq_len(nrow(providers)))
+  groups <- data_provider_factor(codes, seq_len(nrow(providers)))
   providers$n_events <- vapply(split(response, groups), sum, numeric(1), USE.NAMES = FALSE)
   non_events <- vapply(split(1 - response, groups), sum, numeric(1), USE.NAMES = FALSE)
   providers$no_events <- providers$included & providers$n_events == 0

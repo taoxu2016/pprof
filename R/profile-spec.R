@@ -82,7 +82,7 @@ profile_positions <- function(model, rows) {
 # The observations of each provider in `rows`, in their stored order.
 profile_observations <- function(model, rows) {
   index <- provider_index(model)
-  unname(split(seq_along(index), factor(index, levels = rows)))
+  unname(split(seq_along(index), data_provider_factor(index, rows)))
 }
 
 # Whether each provider in `rows` has events and non-events ("finite"), no events, or only

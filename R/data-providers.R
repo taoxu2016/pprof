@@ -31,6 +31,14 @@ data_provider_table <- function(levels, codes, values) {
 # double and differs in the last bit. Sums of integers or logicals are exact and returned
 # as doubles.
 data_provider_sums <- function(x, index, providers) {
-  vapply(split(x, factor(index, levels = providers)), function(values) as.double(sum(values)), numeric(1),
+  vapply(split(x, data_provider_factor(index, providers)), function(values) as.double(sum(values)), numeric(1),
          USE.NAMES = FALSE)
+}
+
+# factor(index, levels = levels) for integer provider rows, built with an integer match():
+# factor() first converts every value to a string, which took most of the time of the
+# per-provider sums on large data (Phase 3 gate). Values not in `levels` are NA, as with
+# factor(), so split() drops them.
+data_provider_factor <- function(index, levels) {
+  structure(match(index, levels), levels = as.character(levels), class = "factor")
 }

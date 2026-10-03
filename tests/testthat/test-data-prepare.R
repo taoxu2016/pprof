@@ -210,3 +210,13 @@ test_that("printing a pprof_data object is compact", {
     "Design: 3 columns (x, fb, fc)"
   ))
 })
+
+test_that("the provider factor is factor() of the provider rows", {
+  withr::local_seed(3)
+  index <- sample(8L, 200L, replace = TRUE)
+  for (levels in list(seq_len(8L), c(2L, 5L, 7L), 8:1, integer(0), c(3, 6))) {
+    expect_identical(data_provider_factor(index, levels), factor(index, levels = levels))
+    expect_identical(split(seq_along(index), data_provider_factor(index, levels)),
+                     split(seq_along(index), factor(index, levels = levels)))
+  }
+})
