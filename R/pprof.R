@@ -6,6 +6,7 @@
 #' @useDynLib pprof, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
 #' @importFrom globals globalsByName
+#' @importFrom stats plogis
 #'
 #' @noRd
 

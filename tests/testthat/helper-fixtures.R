@@ -116,9 +116,12 @@ reference_boundary_log <- new.env(parent = emptyenv())
 expect_reference_case <- function(id, set = "core") {
   fixture <- reference_fixture(id, set)
   case <- fixture$case
-  expected <- fixture$result
+  # Class A fixes have per-case expectations (helper-reference-overrides.R, DEC-022).
+  override <- reference_overrides[[id]]
+  expected <- reference_expected_result(id, set)
+  tier <- reference_case_tier(id, set)
   if (isTRUE(case$heavy)) testthat::skip_on_cran()
-  if (identical(case$tier, "lme4")) {
+  if (identical(tier, "lme4")) {
     versions <- reference_lme4_matches(set)
     if (!versions$ok) testthat::skip(paste("lme4-backed fixture not comparable:", versions$detail))
   }
@@ -129,9 +132,18 @@ expect_reference_case <- function(id, set = "core") {
   partial <- grep("partial match", res$warnings, value = TRUE, fixed = TRUE)
   testthat::expect(length(partial) == 0,
                    sprintf("Case %s triggered partial matching: %s", id, paste(unique(partial), collapse = "; ")))
+  if (!is.null(override$check)) {
+    problem <- override$check(actual)
+    testthat::expect(is.null(problem), sprintf("Case %s (%s): %s", id, override$entry, problem))
+    return(invisible(NULL))
+  }
   testthat::expect(identical(actual$outcome, expected$outcome),
                    sprintf("Case %s: outcome '%s', reference '%s'%s", id, actual$outcome, expected$outcome,
                            if (!is.null(actual$error)) paste0(" (", actual$error$message, ")") else ""))
+  if (!is.null(override$error_class) && identical(actual$outcome, "error")) {
+    testthat::expect(override$error_class %in% actual$error$class,
+                     sprintf("Case %s (%s): the error is not of class %s", id, override$entry, override$error_class))
+  }
   if (!identical(expected$outcome, "value") || !identical(actual$outcome, "value")) return(invisible(NULL))
 
   if (!is.na(expected$iterations)) {
@@ -142,13 +154,13 @@ expect_reference_case <- function(id, set = "core") {
     testthat::expect(isTRUE(actual$probe_identical), sprintf("Case %s: message = TRUE changed the estimates", id))
   }
   level <- if (!is.null(case$args$level)) case$args$level else 0.95
-  diffs <- reference_compare(actual$value, expected$value, reference_tolerance(case$tier), alpha = 1 - level)
+  diffs <- reference_compare(actual$value, expected$value, reference_tolerance(tier), alpha = 1 - level)
   boundary <- if (!is.null(diffs)) diffs[diffs$kind == "flag_boundary", , drop = FALSE] else NULL
   failures <- if (!is.null(diffs)) diffs[diffs$kind != "flag_boundary", , drop = FALSE] else NULL
   if (!is.null(boundary) && nrow(boundary)) assign(id, boundary, envir = reference_boundary_log)
   details <- paste(sprintf("  %s [%s] %s", failures$path, failures$kind, failures$detail), collapse = "\n")
   testthat::expect(is.null(failures) || nrow(failures) == 0,
-                   sprintf("Case %s differs from the reference (tier %s):\n%s", id, case$tier, details))
+                   sprintf("Case %s differs from the reference (tier %s):\n%s", id, tier, details))
   invisible(diffs)
 }
 

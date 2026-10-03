@@ -187,10 +187,6 @@ importFrom(lme4,
 importFrom(magrittr,"%>%")
 importFrom(olsrr,ols_vif_tol)
 importFrom(pROC,auc)
-importFrom(poibin,
-  dpoibin,
-  ppoibin
-)
 importFrom(rlang,.data)
 importFrom(scales,
   percent,
@@ -209,7 +205,6 @@ importFrom(stats,
   median,
   model.matrix,
   nobs,
-  pchisq,
   plogis,
   pnorm,
   predict,
@@ -217,13 +212,11 @@ importFrom(stats,
   qnorm,
   qt,
   quantile,
-  rbinom,
   reformulate,
   reorder,
   residuals,
   setNames,
   terms,
-  uniroot,
   vcov
 )
 importFrom(tibble,tibble)

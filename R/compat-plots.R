@@ -1,14 +1,24 @@
+# Compatibility wrapper for the funnel plot of pprof 1.0.3 (DEC-034): the plot data are
+# built from the new API (indirect ratios, score-test flags, and the funnel limits of
+# profile_funnel_limits() at the user's alpha, K-110), in the reference's layout, and drawn
+# by the reference's ggplot code, so that every layer is the reference's.
+
 #' Get funnel plot from a fitted `logis_fe` object for institutional comparisons
 #'
 #' Creates a funnel plot from a logistic fixed effect model to compare provider performance.
+#' This is the interface of pprof 1.0.3, kept for existing code; see [plot_funnel()] and
+#' [funnel_limits()] for the new interface.
 #'
 #' @param x a model fitted from \code{logis_fe}.
-#' @param null a character string or a number specifying null hypotheses of fixed provider effects. The default is \code{"median"}.
-#' @param test a character string specifying the type of testing methods to be conducted. The default is "score".
+#' @param null a character string or a number specifying null hypotheses of fixed provider effects. The default is
+#'   \code{"median"}.
+#' @param test a character string specifying the type of testing methods to be conducted.
+#'   The default and only supported value is "score"; `"exact"` raises an error.
 #' @param target a numeric value representing the target outcome. The default value is 1.
 #' @param alpha a number or a vector of significance levels. The default is 0.05.
 #' @param labels a vector of labels for the plot.
-#' @param point_colors a vector of colors representing different provider flags. The default is \code{c("#E69F00", "#56B4E9", "#009E73")}.
+#' @param point_colors a vector of colors representing different provider flags. The default is \code{c("#E69F00",
+#'   "#56B4E9", "#009E73")}.
 #' @param point_shapes a vector of shapes representing different provider flags. The default is \code{c(15, 17, 19)}.
 #' @param point_size size of the points. The default is 2.
 #' @param point_alpha transparency level of the points. The default is 0.8.
@@ -17,9 +27,11 @@
 #' @param \dots additional arguments that can be passed to the function.
 #'
 #' @details
-#' This function generates a funnel plot from a logistic fixed-effect model. Currently, it only supports the indirect standardized ratio.
+#' This function generates a funnel plot from a logistic fixed-effect model. Currently, it only supports the
+#'   indirect standardized ratio.
 #' The parameter `alpha` is a vector used to calculate control limits at different significance levels.
-#' The first value in the vector is used as the significance level for flagging each provider, utilizing the \code{\link{test.logis_fe}} function.
+#' The first value in the vector is used as the significance level for flagging each provider, utilizing the
+#'   \code{\link{test.logis_fe}} function.
 #'
 #' @seealso \code{\link{logis_fe}}, \code{\link{SM_output.linear_re}}, \code{\link{test.logis_fe}}
 #'
@@ -33,155 +45,75 @@
 #' fit_fe <- logis_fe(Y = outcome, Z = covar, ProvID = ProvID)
 #' plot(fit_fe)
 #'
-#' @importFrom dplyr filter arrange cross_join mutate select
-#' @importFrom magrittr %>%
-#' @importFrom poibin ppoibin dpoibin
-#' @importFrom stats plogis
-#' @importFrom tibble tibble
-#' @importFrom rlang .data
-#'
 #' @references
-#' Wu, W., Kuriakose, J. P., Weng, W., Burney, R. E., & He, K. (2023). Test-specific funnel plots for healthcare provider profiling leveraging
-#' individual- and summary-level information. \emph{Health Services and Outcomes Research Methodology}, \strong{23(1)}, 45-58.
+#' Wu, W., Kuriakose, J. P., Weng, W., Burney, R. E., & He, K. (2023). Test-specific funnel plots for healthcare
+#'   provider profiling leveraging
+#' individual- and summary-level information. \emph{Health Services and Outcomes Research Methodology},
+#'   \strong{23(1)}, 45-58.
 #' \cr
 #'
+#' @importFrom dplyr arrange cross_join mutate select
+#' @importFrom magrittr %>%
+#' @importFrom tibble tibble
+#' @importFrom rlang .data
 #' @exportS3Method plot logis_fe
-
 plot.logis_fe <- function(x, null = "median", test = "score", target = 1, alpha = 0.05,
                           labels = c("lower", "expected", "higher"),
                           point_colors = c("#E69F00", "#56B4E9", "#009E73"),
                           point_shapes = c(15, 17, 19),
                           point_size = 2, point_alpha = 0.8,
                           line_size = 0.8,
-                          target_line_type = "longdash", ...
-) {
-  if (missing(x)) stop ("Argument 'x' is required!", call.=F)
-  if (!class(x) %in% c("logis_fe")) stop("Object 'x' is not of the classes 'logis_fe'!", call.=F)
-  if (!(test %in% c("exact", "score"))) stop("Argument 'test' NOT as required!", call.=F)
-
-  # Indicator
-  SM <- SM_output(x, null = null, stdz = "indirect", measure = "ratio")
-  processed_data <- cbind(SM$indirect.ratio, SM$OE$OE_indirect)
-  colnames(processed_data) <- c("indicator", "Obs", "Exp", "Var")
-  processed_data$precision <- processed_data$Exp^2/processed_data$Var
-
-  data <- x$data_include
-  Z_beta <- x$linear_pred
-  prov <- data[ ,x$char_list$ProvID.char]
-  gamma <- x$coefficient$gamma
-  gamma.null <- ifelse(null=="median", median(gamma),
-                       ifelse(class(null)=="numeric", null[1],
-                              stop("Argument 'null' NOT as required!", call.=F)))
-  probs_all <- as.numeric(plogis(gamma.null + Z_beta)) # expected prob of events under null
-  probs_list <- split(probs_all, prov)
-  n.prov <- sapply(split(data[, x$char_list$Y.char], data[, x$char_list$ProvID.char]), length)
-
-  if (test == "exact") {
-    flagging <- test(x, level = 1-alpha[1], test = "exact.poisbinom", null = null)
-    processed_data <- cbind(processed_data, flagging)
-
-    cl_lower <- function(probs_list, alpha) {
-      # lower CL for obs
-      # o_lower <- qpoibin(alpha / 2, E/n)
-      o_lower <- sapply(probs_list, .data$qpoibin, qq = alpha/2)
-      # o_lower <- ifelse(ppoibin(o_lower - 1, E/n) + 0.5 * dpoibin(o_lower, E/n) >= alpha / 2, o_lower, o_lower + 1)
-      o_lower <- sapply(1:length(probs_list), function(i){
-        ifelse(ppoibin(o_lower[i] - 1, probs_list[[i]]) + 0.5 * dpoibin(o_lower[i], probs_list[[i]]) >= alpha / 2,
-               o_lower[i], o_lower[i] + 1)})
-      # lambda_lower <- (dpoibin(o_lower, E/n) + 2 * ppoibin(o_lower - 1, E/n) - alpha) / (dpoibin(o_lower, E/n) + dpoibin(o_lower - 1, E/n))
-      lambda_lower <- sapply(1:length(probs_list), function(i){
-        (dpoibin(o_lower[i], probs_list[[i]]) + 2 * ppoibin(o_lower[i] - 1, probs_list[[i]]) - alpha) /
-          (dpoibin(o_lower[i], probs_list[[i]]) + dpoibin(o_lower[i] - 1, probs_list[[i]]))
-      })
-      lower <- pmax(o_lower - lambda_lower, 0)
-      return(lower)
-    }
-
-    cl_upper <- function(probs_list, alpha) {
-      # upper CL for obs
-      o_upper <- sapply(probs_list, .data$qpoibin, qq = 1-alpha/2) # qpoibin(1 - alpha / 2, E)
-      o_upper <- sapply(1:length(probs_list), function(i){
-        ifelse(ppoibin(o_upper[i] - 1, probs_list[[i]]) + 0.5 * dpoibin(o_upper[i], probs_list[[i]]) >= 1-alpha / 2,
-               o_upper[i], o_upper[i] + 1)})
-      # ifelse(ppoibin(o_upper - 1, E) + 0.5 * dpoibin(o_upper, E) >= 1 - alpha / 2, o_upper, o_upper + 1)
-      lambda_upper <- sapply(1:length(probs_list), function(i){
-        (dpoibin(o_upper[i], probs_list[[i]]) + 2 * ppoibin(o_upper[i] - 1, probs_list[[i]]) - 2 + alpha) /
-          (dpoibin(o_upper[i], probs_list[[i]]) + dpoibin(o_upper[i] - 1, probs_list[[i]]))
-      })# (dpoibin(o_upper, E) + 2 * ppoibin(o_upper - 1, E) - 2 + alpha) / (dpoibin(o_upper - 1, E) + dpoibin(o_upper, E))
-      upper <- o_upper - lambda_upper
-      return(upper)
-    }
-
-    alpha_sort <- sort(alpha)
-
-    cl <- lapply(alpha_sort, function(alpha){
-      res <- cbind(cl_lower(probs_list,alpha),
-            cl_upper(probs_list,alpha))
-      colnames(res) <- c("lower", "upper")
-      return(res)
-    })
-    CL_res <- NULL
-    for (i in 1:length(alpha_sort)) {
-      CL_res <- rbind(CL_res, cl[[i]])
-    }
-
-    plot_data <- processed_data %>%
-      cross_join(tibble(alpha = alpha)) %>%
-      arrange(alpha) %>%
-      cbind(CL_res) %>%
-      # mutate(
-      #   lower = cl_lower(probs_list, alpha) / Exp,
-      #   upper = cl_upper(probs_list, alpha) / Exp
-      # ) %>%
-      select(.data$precision, .data$indicator, .data$Exp, .data$flag, alpha, .data$lower, .data$upper) %>%
-      mutate(
-        alpha = factor(alpha),
-        lower = pmax(.data$lower/.data$Exp, 0),
-        upper = .data$upper/.data$Exp
-      ) %>% arrange(.data$precision)
+                          target_line_type = "longdash", ...) {
+  compat_check_fit(x, missing(x), "x")
+  if (!(is.character(test) && length(test) == 1L && test %in% c("exact", "score"))) {
+    abort_invalid_input("Argument 'test' NOT as required!", arg = "test")
   }
-  else if (test == "score") {
-    flagging <- test(x, level = 1-alpha[1], test = "score", null = null)
-    processed_data <- cbind(processed_data, flagging)
-    plot_data <- processed_data %>%
-      arrange(.data$precision) %>%
-      cross_join(tibble(alpha = alpha)) %>%
-      mutate(
-        lower = target - qnorm(1 - alpha / 2) * sqrt(1 / .data$precision),
-        upper = target + qnorm(1 - alpha / 2) * sqrt(1 / .data$precision)
-      ) %>%
-      select(.data$precision, .data$indicator, .data$Exp, .data$flag, alpha, .data$lower, .data$upper) %>%
-      mutate(
-        alpha = factor(alpha),
-        lower = pmax(.data$lower, 0)
-      )
+  model <- compat_model_from_logis_fe(x)
+  if (identical(test, "exact")) {
+    # D-07: the reference's exact funnel limits call a function that does not exist.
+    abort_unsupported_inference(model, "exact funnel limits")
   }
-
-
-  plot <- ppfunnel_logis(plot_data,
-                             target,
-                             alpha,
-                             labels,
-                             point_colors,
-                             point_shapes,
-                             point_size,
-                             point_alpha,
-                             line_size,
-                             target_line_type
-  )
-
-  return(plot)
+  null_value <- compat_null(null)
+  measures <- standardize_providers(model, "indirect", "ratio", null = null_value)$table
+  flags <- test.logis_fe(x, level = 1 - alpha[1], test = "score", null = null)
+  funnel <- profile_spec(model)$funnel
+  processed_data <- data.frame(indicator = measures$estimate,
+                               Obs = compat_typed_sum(measures$observed, x$observation),
+                               Exp = measures$expected, Var = measures$variance,
+                               row.names = rownames(x$coefficient$gamma))
+  processed_data$precision <- funnel$precision(processed_data$Exp, processed_data$Var)
+  processed_data <- cbind(processed_data, flags)
+  plot_data <- processed_data |>
+    arrange(.data$precision) |>
+    cross_join(tibble(alpha = alpha))
+  plot_data$lower <- NA_real_
+  plot_data$upper <- NA_real_
+  for (value in unique(alpha)) {
+    rows <- plot_data$alpha == value
+    limits <- profile_funnel_limits(plot_data$precision[rows], value, target, funnel)
+    plot_data$lower[rows] <- limits$lower
+    plot_data$upper[rows] <- limits$upper
+  }
+  plot_data <- plot_data |>
+    select(c("precision", "indicator", "Exp", "flag", "alpha", "lower", "upper")) |>
+    mutate(alpha = factor(alpha))
+  compat_funnel_plot(plot_data, target, alpha, labels, point_colors, point_shapes, point_size, point_alpha, line_size,
+                     target_line_type)
 }
 
-
-
+# The reference's funnel plot builder (R/plot.logis_fe.R:184-311 in pprof 1.0.3), unchanged.
 #' @importFrom stats setNames
 #' @importFrom dplyr filter bind_rows
 #' @importFrom magrittr %>%
 #' @importFrom tibble tibble
 #' @importFrom rlang .data
-#' @importFrom ggplot2 ggplot scale_x_continuous scale_y_continuous geom_point aes scale_shape_manual scale_color_manual scale_linetype_manual geom_line geom_hline guides guide_legend theme labs theme_classic element_text element_rect
-ppfunnel_logis <- function(plot_data,
+#' @importFrom ggplot2 ggplot scale_x_continuous scale_y_continuous geom_point aes scale_shape_manual
+#'   scale_color_manual scale_linetype_manual geom_line geom_hline guides guide_legend theme labs theme_classic
+#'   element_text element_rect
+#' @noRd
+# The reference's code is kept unchanged (DEC-034), so it is not linted.
+# nolint start
+compat_funnel_plot <- function(plot_data,
                            target,
                            alpha,
                            labels,
@@ -309,3 +241,4 @@ ppfunnel_logis <- function(plot_data,
 
   return(plot)
 }
+# nolint end
