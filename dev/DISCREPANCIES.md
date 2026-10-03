@@ -683,7 +683,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) accept rounding-level differences and compare the AUC at the closed-form tier; (2) reimplement pROC's ROC-curve integration in base R to match it bitwise; (3) keep pROC.
 - Recommendation: (1). The Mann-Whitney formula is the definition the conventions register states (K-22) and the easier one to audit. DEC-009 asked for an equality test proving identical results; the tests show equality to the last bit (tie-heavy data and both directions in `test-model-logistic-fe.R`, all 59 fits in `test-model-logistic-fe-reference.R`).
 - Decision owner: project lead.
-- Status: verified (2026-10-02); awaiting the project lead's decision.
+- Status: verified (2026-10-02); awaiting the project lead's decision. The differential test (2026-10-03, `validation/differential-report.md`) found the same pattern on new data: in 9 of 90 fits the AUC differs from the reference's in the last bit, and it is the only value of those fits that is not bitwise identical.
 - Regression test: the two tests above.
 
 ### D-41: `logis_fe` and `logis_firth` fail with factor provider IDs when screening excludes a provider
