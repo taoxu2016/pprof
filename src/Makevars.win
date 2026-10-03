@@ -18,5 +18,5 @@ PKG_LIBS     += $(shell "${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe" -e "RcppParalle
 
 OBJECTS = RcppExports.o Firth.o Fixed_effect.o header.o rcpp_logistic.o \
           core/convergence.o core/information_blocks.o core/loglik.o core/provider_layout.o \
-          logistic/ban.o logistic/direct_expected.o logistic/score_test.o logistic/serbin.o \
-          logistic/variance.o
+          logistic/ban.o logistic/direct_expected.o logistic/firth.o logistic/score_test.o \
+          logistic/serbin.o logistic/variance.o

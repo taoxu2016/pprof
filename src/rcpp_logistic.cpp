@@ -17,6 +17,7 @@
 #include "core/types.h"
 #include "logistic/ban.h"
 #include "logistic/direct_expected.h"
+#include "logistic/firth.h"
 #include "logistic/score_test.h"
 #include "logistic/serbin.h"
 #include "logistic/variance.h"
@@ -101,6 +102,23 @@ Rcpp::List fit_result_list(const FitResult& result) {
                             Rcpp::Named("converged") = result.converged, Rcpp::Named("history") = history);
 }
 
+Rcpp::List firth_result_list(const pprof::logistic::FirthResult& result) {
+  const int n = static_cast<int>(result.history.size());
+  Rcpp::NumericMatrix history(n, 2);
+  for (int k = 0; k < n; ++k) {
+    history(k, 0) = result.history[k].coefficients;
+    history(k, 1) = result.history[k].penalized_loglik;
+  }
+  history.attr("dimnames") =
+      Rcpp::List::create(R_NilValue, Rcpp::CharacterVector::create("coefficients", "penalized_loglik"));
+  return Rcpp::List::create(Rcpp::Named("gamma") = Rcpp::NumericVector(result.gamma.begin(), result.gamma.end()),
+                            Rcpp::Named("beta") = Rcpp::NumericVector(result.beta.begin(), result.beta.end()),
+                            Rcpp::Named("iterations") = result.iterations,
+                            Rcpp::Named("converged") = result.converged, Rcpp::Named("criterion") = result.criterion,
+                            Rcpp::Named("penalized_loglik_initial") = result.penalized_loglik_initial,
+                            Rcpp::Named("penalized_loglik") = result.penalized_loglik, Rcpp::Named("history") = history);
+}
+
 }  // namespace
 
 // SerBIN (src/logistic/serbin.h) from the starting values gamma and beta. Observations are
@@ -128,6 +146,36 @@ Rcpp::List cpp_logistic_fe_ban(Rcpp::NumericVector response, Rcpp::NumericMatrix
   const FitSettings settings = settings_of(max_iter, tol, effect_bound, backtrack, stop_rule, threads);
   return fit_result_list(
       pprof::logistic::fit_ban(view(response), view(design), layout, view(gamma), view(beta), settings));
+}
+
+// The Firth fit (src/logistic/firth.h) from the starting values gamma and beta, with the
+// arguments of cpp_logistic_fe_serbin() that apply: the stopping rule is fixed and there is
+// no line search.
+// [[Rcpp::export]]
+Rcpp::List cpp_logistic_firth(Rcpp::NumericVector response, Rcpp::NumericMatrix design,
+                              Rcpp::IntegerVector provider_sizes, Rcpp::NumericVector gamma, Rcpp::NumericVector beta,
+                              int max_iter, double tol, double effect_bound, int threads) {
+  const ProviderLayout layout = layout_of(provider_sizes);
+  check_model(layout, response, design, gamma, beta);
+  require(threads >= 1, "threads must be at least 1");
+  pprof::logistic::FirthSettings settings;
+  settings.max_iter = max_iter;
+  settings.tol = tol;
+  settings.effect_bound = effect_bound;
+  settings.threads = threads;
+  settings.before_iteration = [] { Rcpp::checkUserInterrupt(); };
+  return firth_result_list(
+      pprof::logistic::fit_firth(view(response), view(design), layout, view(gamma), view(beta), settings));
+}
+
+// The log-determinant of the information from its provider diagonal and Schur complement
+// (K-30, src/logistic/firth.h). The Firth fit inverts the Schur complement before it
+// computes the log-determinant, so a fit cannot reach the ridge retry or the failure of the
+// factorization; the tests reach them through this adapter.
+// [[Rcpp::export]]
+double cpp_logistic_firth_log_determinant(Rcpp::NumericVector diagonal, Rcpp::NumericMatrix schur) {
+  require(schur.nrow() == schur.ncol(), "the Schur complement must be square");
+  return pprof::logistic::information_log_determinant(view(diagonal), view(schur));
 }
 
 // Variances of the estimates (src/logistic/variance.h): the covariance matrix of beta and

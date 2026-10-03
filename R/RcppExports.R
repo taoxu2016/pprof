@@ -33,6 +33,14 @@ cpp_logistic_fe_ban <- function(response, design, provider_sizes, gamma, beta, m
     .Call(`_pprof_cpp_logistic_fe_ban`, response, design, provider_sizes, gamma, beta, max_iter, tol, effect_bound, backtrack, stop_rule, threads)
 }
 
+cpp_logistic_firth <- function(response, design, provider_sizes, gamma, beta, max_iter, tol, effect_bound, threads) {
+    .Call(`_pprof_cpp_logistic_firth`, response, design, provider_sizes, gamma, beta, max_iter, tol, effect_bound, threads)
+}
+
+cpp_logistic_firth_log_determinant <- function(diagonal, schur) {
+    .Call(`_pprof_cpp_logistic_firth_log_determinant`, diagonal, schur)
+}
+
 cpp_logistic_variance <- function(design, provider_sizes, gamma, beta) {
     .Call(`_pprof_cpp_logistic_variance`, design, provider_sizes, gamma, beta)
 }
