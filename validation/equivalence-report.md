@@ -1,13 +1,13 @@
 # Equivalence report: package under test versus the pprof 1.0.3 reference
 
-Generated 2026-10-03 21:16:06 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
-Package under test: pprof 1.0.3 from the working tree at commit 8593951.
-Fixtures: core set generated at 03a7b90, full set generated at 03a7b90.
+Generated 2026-10-03 22:36:10 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Package under test: pprof 1.0.3 from the working tree at commit e3c2d69.
+Fixtures: core set generated at 56701e6, full set generated at 56701e6.
 
 ## Summary
 
-- Cases: 278 (core 246, full 32).
-- Compared and matching: 278; failing: 0; skipped: 0.
+- Cases: 280 (core 248, full 32).
+- Compared and matching: 280; failing: 0; skipped: 0.
 - Largest absolute difference over all compared values: 1.11e-16; largest relative difference: 1.57e-16.
 - Long double vectors stored as signatures: 718; bitwise identical (same checksum of every value's bits): 718.
 - Reference errors reproduced: 15.
@@ -75,6 +75,7 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `logis_fe-rare` | logis_fe | iterative | value |  | 6 | 0 | 0 |  | compared |
 | core | `logis_fe-common` | logis_fe | iterative | value |  | 6 | 0 | 0 |  | compared |
 | core | `logis_fe-d04` | logis_fe | iterative | value |  | 4 | 0 | 0 |  | compared |
+| core | `logis_fe-d04-double` | logis_fe | iterative | value |  | 4 | 0 | 0 |  | compared |
 | core | `logis_fe-cutoff5` | logis_fe | iterative | value |  | 4 | 0 | 0 |  | compared |
 | core | `logis_firth-binary-columns` | logis_firth | iterative | value |  | 16 | 0 | 0 | 13 of 13 | compared |
 | core | `logis_firth-small-tight` | logis_firth | iterative | value |  | 10 | 0 | 0 |  | compared |
@@ -138,6 +139,7 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `test-extreme-chr-exact-parm` | test | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `test-extreme-int-parm` | test | iterative | value | D-27 |  | 0 | 0 |  | compared |
 | core | `test-d04-score-standard` | test | exact | error | D-04 |  |  |  |  | compared |
+| core | `test-d04-score-standard-others` | test | exact | value |  |  | 0 | 0 |  | compared |
 | core | `test-firth-exact` | test | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `test-firth-wald` | test | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `SM_output-binary-default` | SM_output | iterative | value |  |  | 0 | 0 |  | compared |
