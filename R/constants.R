@@ -59,7 +59,7 @@ p_value_display_eps <- 1e-10
 lr_effect_clamp <- 10
 
 # K-80 to K-82, K-91: standardized rates are percentages: the population rate is
-# rate_scale * sum(y) / n, and rates are clipped to rate_limits.
+# sum(y) / n * rate_scale, computed in that order, and rates are clipped to rate_limits.
 # Reference: R/SM_output.logis_fe.R:101-102, :133-134.
 rate_scale <- 100
 rate_limits <- c(0, 100)

@@ -376,10 +376,23 @@ null_effect.pprof_logistic_fe <- function(model, null = "median", ...) {
 
 #' @export
 profile_spec.pprof_logistic_fe <- function(model) {
+  # ARCHITECTURE §B.4. The direct expectation runs in C++, as the reference's
+  # computeDirectExp() does (K-81); the funnel is K-110; Wald inference warns about providers
+  # with no events or only events (K-67).
   list(
     family = "logistic_fe", effect = "gamma", null_default = "median", null_options = "median",
     indirect_numerator = "observed", measures = c("ratio", "rate"), mean_function = stats::plogis,
-    variance_function = function(mean) mean * (1 - mean)
+    variance_function = function(mean) mean * (1 - mean),
+    direct_expected = function(effects, linear_predictor, threads) {
+      logistic_fe_engine_call("direct expectation",
+                              cpp_logistic_direct_expected(effects, linear_predictor, as.integer(threads)))
+    },
+    funnel = list(
+      measure = "ratio", target = 1, floor = 0, test = "score",
+      precision = function(expected, variance) expected^2 / variance,
+      half_width = function(critical, precision) critical * sqrt(1 / precision)
+    ),
+    wald_caution = TRUE
   )
 }
 

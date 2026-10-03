@@ -66,6 +66,18 @@ warn_unknown_providers <- function(message, ..., call = NULL) {
   warn_pprof("pprof_warning_unknown_providers", message, ..., call = call)
 }
 
+# A provider test statistic is not finite for some providers, so their p-values and flags
+# are missing (D-04).
+warn_undefined_statistics <- function(message, ..., call = NULL) {
+  warn_pprof("pprof_warning_undefined_statistics", message, ..., call = call)
+}
+
+# Wald tests or intervals were computed for providers with no events or only events, whose
+# effect estimates sit at the effect bound (K-67).
+warn_wald_unreliable <- function(message, ..., call = NULL) {
+  warn_pprof("pprof_warning_wald_unreliable", message, ..., call = call)
+}
+
 # Deprecation warnings of the compatibility wrappers are given once per session and per
 # `id` (DEC-013). The registry is an argument so that tests can use their own.
 deprecation_registry <- new.env(parent = emptyenv())

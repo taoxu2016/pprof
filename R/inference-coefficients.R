@@ -55,7 +55,8 @@ test_coefficients <- function(model, test = "wald", parm = NULL, level = 0.95, n
 #' Confidence intervals for the covariate coefficients
 #'
 #' Wald intervals beta -/+ qnorm(1 - alpha / 2) se with alpha = 1 - `level`, as the
-#' summary of pprof 1.0.3 reports them.
+#' summary of pprof 1.0.3 reports them. Intervals for provider effects and standardized
+#' measures come from [provider_effects()] and [standardize_providers()].
 #'
 #' @param object A logistic fixed-effect model.
 #' @param parm The coefficients, by name or position; all when missing.

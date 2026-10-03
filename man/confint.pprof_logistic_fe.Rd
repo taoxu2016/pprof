@@ -20,5 +20,6 @@ A matrix with one row per coefficient and the lower and upper limits.
 }
 \description{
 Wald intervals beta -/+ qnorm(1 - alpha / 2) se with alpha = 1 - \code{level}, as the
-summary of pprof 1.0.3 reports them.
+summary of pprof 1.0.3 reports them. Intervals for provider effects and standardized
+measures come from \code{\link[=provider_effects]{provider_effects()}} and \code{\link[=standardize_providers]{standardize_providers()}}.
 }
