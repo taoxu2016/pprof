@@ -24,7 +24,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-02 | `logis_fe` help | C | verified | `backtrack` documented default FALSE (code TRUE); `stop` help refers to `iter.max` |
 | D-03 | C++ fitters | C (message); loop bounds preserved | verified | No convergence status; "converged" printed at the iteration limit; SerBIN can run `max_iter + 1` |
 | D-04 | `test.logis_fe(score_modified = FALSE)` | A | verified | Non-finite statistics are dropped, so the result no longer aligns with providers and `test()` errors |
-| D-05 | `logis_firth(threads > 1)` | A | verified | Data race on `d_beta` stops the iteration after 1 to 5 steps; beta off by up to 0.57 |
+| D-05 | `logis_firth(threads > 1)` | A | verified; fixed in the C++ engine (Phase 4) | Data race on `d_beta` stops the iteration after 1 to 5 steps; beta off by up to 0.57 |
 | D-06 | `test.logis_fe(test = "robust_wald")` | A | verified | Passes validation, returns NULL |
 | D-07 | `plot.logis_fe(test = "exact")` | A | verified | Always errors (`.data` pronoun outside a data mask) |
 | D-08 | several methods | A | verified | Rely on partial matching of `$` (`fit$obs`, `object$data_includ`) |
@@ -59,8 +59,9 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-37 | vignettes | C | verified | Describe a different clamp, nonexistent functions, and calls that now fail |
 | D-38 | `logis_fe` with collinear covariates | C | verified | Unidentified estimates with variances near 7e13 and no rank-deficiency warning |
 | D-39 | `logis_fe` inputs | A | decided (fix) | Non-binary outcomes, `max.iter` <= 0, `tol` <= 0, and `bound` <= 0 return meaningless or unfitted results without a warning |
-| D-40 | AUC without pROC | none (tolerance) | verified; awaiting decision | The Mann-Whitney AUC equals pROC's bitwise in 57 of 59 fits and differs in the last bit in 2 |
+| D-40 | AUC without pROC | none (tolerance) | verified; decided (option 1, Phase 3 gate) | The Mann-Whitney AUC equals pROC's bitwise in 57 of 59 fits and differs in the last bit in 2 |
 | D-41 | `logis_fe`, `logis_firth` with factor IDs | A | verified | Fail when screening excludes a provider: the excluded factor levels become empty provider blocks |
+| D-42 | `logis_firth` with singular information | A | verified; fixed in the C++ engine (Phase 4) | Terminates the R session when the Schur complement of the information cannot be inverted |
 
 ---
 
@@ -159,8 +160,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) restructure the parallel loop so the criterion is computed from shared state, with no R API calls or exceptions inside the region; (2) run Firth single-threaded only.
 - Recommendation: (1). Results with `threads > 1` must then match `threads = 1` within the Tier 2 tolerance. Fixtures are generated with `threads = 1`, which the reference computes correctly (V12.1).
 - Decision owner: project lead.
-- Status: verified (V12.3).
-- Regression test: planned, `test-model-logistic-firth.R` compares `threads = 2` with `threads = 1` (runs where OpenMP is available; on CRAN at most 2 threads).
+- Status: verified (V12.3); fixed in the C++ engine (Phase 4, step 1, 2026-10-03). `cpp_logistic_firth()` (`src/logistic/firth.cpp`) computes each provider's part in parallel into its own slots and adds every sum over providers in provider order, as the reference does with one thread. Its results with 2 threads are bitwise identical to those with 1 thread, which are bitwise identical to the reference's single-threaded routine. Its parallel regions contain no R API call, and no exception leaves them. `fit_logistic_firth()` and `logis_firth()` use it from steps 2 and 3.
+- Regression test: `tests/testthat/test-cpp-firth.R` ("two threads give results identical to one thread, and repeated runs agree (D-05)": bitwise, on four datasets). Step 2 adds the same check for `fit_logistic_firth()` in `test-model-logistic-firth.R` (runs where OpenMP is available; on CRAN at most 2 threads).
 
 ### D-06: `test = "robust_wald"` returns NULL
 
@@ -707,3 +708,27 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: project lead.
 - Status: verified (2026-10-02); fixed in `fit_logistic_fe()`; `logis_firth()` follows in Phase 4.
 - Regression test: `tests/testthat/test-model-logistic-fe.R` ("factor provider IDs work when screening excludes providers").
+
+### D-42: `logis_firth` terminates R when the information is singular
+
+- Component: `logis_firth_prov` (`src/Firth.cpp:194` and `:337`, `inv_sympd()`; `:41`, `Rcpp::stop()` in `logdet_info()`), called inside the OpenMP parallel region `:133-399`.
+- Class (proposed): A
+- Description: The routine inverts the Schur complement of the information with the throwing form of `inv_sympd()` inside an `omp single` block of its parallel region, with any number of threads. When the matrix is singular or not positive definite, the exception cannot leave the region, and the C++ runtime terminates the process: the R session ends, losing unsaved work. The `Rcpp::stop()` that `logdet_info()` calls when the Cholesky factorization fails even with a ridge sits in the same region; in practice `inv_sympd()` fails first on the same matrix. D-05 noted that the region contains routines that can throw; this entry records the confirmed consequence, which does not depend on the thread count.
+- Minimal reproducible example (run it with `Rscript` in a separate process):
+  ```r
+  data(ExampleDataBinary)
+  d <- data.frame(Y = ExampleDataBinary$Y, ProvID = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+  d$zero <- 0
+  logis_firth(data = d, Y.char = "Y", Z.char = c("z1", "zero"), ProvID.char = "ProvID", threads = 1,
+              message = FALSE)
+  #> terminate called after throwing an instance of 'std::runtime_error'
+  #>   what():  inv_sympd(): matrix is singular or not positive definite
+  ```
+  `Rscript` exits with status 127 (2026-10-03, reference library `dev/reference/lib`).
+- Affected outputs: the R session, whenever the Schur complement cannot be inverted at the starting values or after an iteration. Verified for a covariate that is constant at 0; other inputs that make the matrix singular, or non-finite, reach the same call (not run).
+- Statistical impact: none on results; the session is lost.
+- Options: report the failure as an R error.
+- Recommendation: fix. The new engine inverts outside its parallel regions and throws there; the adapter turns the exception into an R error, and the model layer reclasses it as `pprof_error_convergence`, as for logistic fixed effects.
+- Decision owner: project lead.
+- Status: verified (2026-10-03); fixed in the C++ engine (Phase 4, step 1): `cpp_logistic_firth()` raises an R error. `fit_logistic_firth()` and `logis_firth()` follow in steps 2 and 3.
+- Regression test: `tests/testthat/test-cpp-firth.R` ("a singular information matrix ends the fit with an error, where the reference terminated R (D-42)").
