@@ -29,6 +29,7 @@ Imports:
     pROC,
     poibin,
     dplyr, 
+    generics,
     ggplot2, 
     Matrix,
     lme4,
