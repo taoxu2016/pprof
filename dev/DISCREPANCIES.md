@@ -83,8 +83,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) fix the count in the message; (2) also change inclusion to `>` to match the message (Class B, not proposed).
 - Recommendation: (1). The new provider table keeps excluded providers with `included = FALSE` and the screening notice reports the true count.
 - Decision owner: project lead.
-- Status: verified (V10.8).
-- Regression test: the inclusion rule (n_i >= `min_provider_size`, including a provider of exactly that size) in `tests/testthat/test-data-prepare.R` (Phase 2); the warning and its count with the fits (Phase 3).
+- Status: verified (V10.8); option (1) fixed: `fit_logistic_fe()` warns with `pprof_warning_screening` and the true count (Phase 3, step 2), and the `logis_fe()` wrapper keeps the reference's wording with the true count (Phase 3, step 5).
+- Regression test: the inclusion rule (n_i >= `min_provider_size`, including a provider of exactly that size) in `tests/testthat/test-data-prepare.R` (Phase 2); the wrapper's warning and its count in `tests/testthat/test-compat-logis-fe.R`.
 
 ### D-02: `logis_fe` help states wrong defaults
 
@@ -118,8 +118,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) keep the loop bounds, add diagnostics (iterations, converged flag, final criterion, stop rule) and warn with `pprof_warning_not_converged` when the limit is reached; (2) also change SerBIN to `iter < max_iter` (Class B, not proposed).
 - Recommendation: (1). Diagnostics are additive (brief §5.2).
 - Decision owner: project lead.
-- Status: verified (V10.4).
-- Regression test: planned, `test-model-logistic-fe.R` checks that `max_iter = 3` yields 4 SerBIN iterations, `converged = FALSE`, and the warning class.
+- Status: verified (V10.4); option (1) fixed: `fit_logistic_fe()` keeps the convergence diagnostics and warns with `pprof_warning_not_converged` (Phase 3, step 2); the `logis_fe()` wrapper prints "not converged after N iterations!" and passes the warning on (Phase 3, step 5).
+- Regression test: `tests/testthat/test-model-logistic-fe.R` (4 SerBIN iterations for `max_iter = 3`, `converged = FALSE`, the warning class) and `tests/testthat/test-compat-logis-fe.R` (the wrapper's message and warning).
 
 ### D-04: Standard score test drops non-finite statistics
 
@@ -139,7 +139,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) keep non-finite statistics in place and report them as `NaN`/`Inf` with `p_value = NA` and `flag = NA`, plus a warning; (2) error with a classed condition naming the providers.
 - Recommendation: (1), so that the other providers' results are still returned and aligned.
 - Decision owner: project lead.
-- Status: verified (V13.6); option (1) approved with the Phase 3 plan (2026-10-02). Fixed in `test_providers()` (Phase 3, step 3): every requested provider keeps its place, and a non-finite statistic gets a missing p-value and flag and a `pprof_warning_undefined_statistics` warning that names the providers. The wrapper follows when it replaces `test.logis_fe()`.
+- Status: verified (V13.6); option (1) approved with the Phase 3 plan (2026-10-02). Fixed in `test_providers()` (Phase 3, step 3): every requested provider keeps its place, and a non-finite statistic gets a missing p-value and flag and a `pprof_warning_undefined_statistics` warning that names the providers. The wrapper applies it from the switch (Phase 3, step 5; per-case expectation in `tests/testthat/helper-reference-overrides.R`).
 - Regression test: `tests/testthat/test-profile-regression.R` (the `logis_fe-d04` fit). No fixture can hold the reference's values for the other 29 providers, because `syn_d04` stores provider IDs as integers, which the reference cannot select (D-27); `tests/testthat/test-cpp-legacy-comparison.R` checked them against the reference's `Modified_score()` bitwise until that routine was removed at the switch (Phase 3, 2026-10-03). A derived dataset with double IDs would give a permanent fixture (question for the project lead, Phase 3 step 4).
 
 ### D-05: Firth with `threads > 1` stops early because of a data race
@@ -173,7 +173,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reject the value with `pprof_error_invalid_input`; (2) implement a robust Wald test (a new method; out of scope, brief §2.2).
 - Recommendation: (1).
 - Decision owner: project lead.
-- Status: verified (V13.8); option (1) approved with the Phase 3 plan (2026-10-02). `test_providers()` accepts only `"exact"`, `"bootstrap"`, `"score"`, and `"wald"`, so other values raise `pprof_error_invalid_input` (Phase 3, step 3). The wrapper follows when it replaces `test.logis_fe()`.
+- Status: verified (V13.8); option (1) approved with the Phase 3 plan (2026-10-02). `test_providers()` accepts only `"exact"`, `"bootstrap"`, `"score"`, and `"wald"`, so other values raise `pprof_error_invalid_input` (Phase 3, step 3). The wrapper applies it from the switch (Phase 3, step 5; per-case expectation in `tests/testthat/helper-reference-overrides.R`).
 - Regression test: `tests/testthat/test-profile-regression.R`.
 
 ### D-07: Exact funnel plot always errors
@@ -301,7 +301,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: accept any finite numeric scalar everywhere.
 - Recommendation: validate once in the inference layer; numeric (double or integer) scalars are accepted, and the value is used as a double, so results are identical to passing the double.
 - Decision owner: project lead.
-- Status: verified (V13.9); the recommendation was approved with the Phase 3 plan (2026-10-02). Fixed in the profiling functions (Phase 3, step 3): `null` is checked once, and a numeric scalar, double or integer, is used as a double. The wrappers follow when they replace the logistic FE methods.
+- Status: verified (V13.9); the recommendation was approved with the Phase 3 plan (2026-10-02). Fixed in the profiling functions (Phase 3, step 3): `null` is checked once, and a numeric scalar, double or integer, is used as a double. The wrappers apply it from the switch (Phase 3, step 5).
 - Regression test: `tests/testthat/test-profile-regression.R` (`null = 0L` gives the `SM_output-binary-null0` values, the same tests as `null = 0`, and the funnel of the `plot-binary-null0` fixture, added in Phase 3).
 
 ### D-15: Flags are factors whose levels depend on the data
@@ -378,7 +378,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: key every intermediate result by provider ID.
 - Recommendation: fix. For numeric IDs the reference is correct and the rewrite reproduces it exactly.
 - Decision owner: project lead.
-- Status: verified (V13.16); fixed in `provider_effects()` and `standardize_providers()` (Phase 3, step 3): results are keyed by `provider_id` in provider order, and each provider's measure limits come from its own effect limits. The wrapper follows when it replaces `confint.logis_fe()`.
+- Status: verified (V13.16); fixed in `provider_effects()` and `standardize_providers()` (Phase 3, step 3): results are keyed by `provider_id` in provider order, and each provider's measure limits come from its own effect limits. The wrapper applies it from the switch (Phase 3, step 5; per-case expectation in `tests/testthat/helper-reference-overrides.R`).
 - Regression test: `tests/testthat/test-profile-regression.R` (the `confint-extreme-chr-*` fixtures with rows matched by ID and the measure limits re-paired, a re-pairing that leaves the numeric-ID case unchanged) and `tests/testthat/test-profile-api.R` (storing IDs as integers, characters, or factors changes no result).
 
 ### D-20: SerBIN with `threads > 1` differs at rounding level
@@ -420,8 +420,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: validate `threads` as a positive integer.
 - Recommendation: fix with `pprof_error_invalid_input`.
 - Decision owner: project lead.
-- Status: verified (V10.7).
-- Regression test: planned, error class test.
+- Status: verified (V10.7); fixed: `threads` must be at least 1 (`pprof_error_invalid_input`) in `fit_logistic_fe()` and the `logis_fe()` wrapper (Phase 3).
+- Regression test: `tests/testthat/test-model-logistic-fe.R` and `tests/testthat/test-compat-logis-fe.R`.
 
 ### D-23: BAN with an out-of-range `backtrack` runs no iterations
 
@@ -434,8 +434,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: validate `backtrack` as a single logical.
 - Recommendation: fix with `pprof_error_invalid_input`.
 - Decision owner: project lead.
-- Status: verified (V10.6).
-- Regression test: planned.
+- Status: verified (V10.6); fixed: `backtrack` must be `TRUE` or `FALSE` in `fit_logistic_fe()`, and the `logis_fe()` wrapper accepts 0 and 1 for BAN and any number for SerBIN, as the reference reads them (Phase 3).
+- Regression test: `tests/testthat/test-compat-logis-fe.R` and the per-case expectation of `logis_fe-binary-ban-backtrack2`.
 
 ### D-24: Default stopping rule can stop before provider effects converge
 
@@ -490,7 +490,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: match providers by their character representation.
 - Recommendation: `providers` arguments are matched as character against provider IDs (NAMING.md §4).
 - Decision owner: project lead.
-- Status: verified (V13.11); fixed in the profiling functions (Phase 3, step 3): `providers` is compared as character with the provider IDs. The wrappers follow when they replace the logistic FE methods.
+- Status: verified (V13.11); fixed in the profiling functions (Phase 3, step 3): `providers` is compared as character with the provider IDs. The wrappers apply it from the switch (Phase 3, step 5).
 - Regression test: `tests/testthat/test-profile-regression.R` (rows 1 to 3 of `test-extreme-exact` for the integer-ID fit) and `tests/testthat/test-profile-api.R`.
 
 ### D-28: Factor provider IDs break exact and score intervals
@@ -504,7 +504,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: key by provider ID as character.
 - Recommendation: fix.
 - Decision owner: project lead.
-- Status: verified (V13.18); fixed in `provider_effects()` (Phase 3, step 3). The wrapper follows when it replaces `confint.logis_fe()`.
+- Status: verified (V13.18); fixed in `provider_effects()` (Phase 3, step 3). The wrapper applies it from the switch (Phase 3, step 5; per-case expectation in `tests/testthat/helper-reference-overrides.R`).
 - Regression test: `tests/testthat/test-profile-regression.R` (the `confint-extreme-gamma-exact` values for the factor-ID fit) and `tests/testthat/test-profile-api.R`.
 
 ### D-29: Direct SM intervals require a column named `ProvID`
@@ -518,7 +518,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: use the stored provider column.
 - Recommendation: fix.
 - Decision owner: project lead.
-- Status: verified (V13.17); fixed in `standardize_providers()` (Phase 3, step 3). The wrapper follows when it replaces `confint.logis_fe()`.
+- Status: verified (V13.17); fixed in `standardize_providers()` (Phase 3, step 3). The wrapper applies it from the switch (Phase 3, step 5; per-case expectation in `tests/testthat/helper-reference-overrides.R`).
 - Regression test: `tests/testthat/test-profile-regression.R` (the direct tables of `confint-extreme-sm-exact` for a provider column named `hospital`).
 
 ### D-30: LR and score covariate tests fail with one or two covariates
@@ -532,7 +532,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: build the null data frame by name; for one covariate, the null model is the provider-effects-only model.
 - Recommendation: fix for two covariates by building the null data by name (the null model is well defined and the reference algorithm applies unchanged). For one covariate, raise a classed error (`pprof_error_unsupported_inference`) until a provider-effects-only null fit is specified and validated, because no reference value exists for it.
 - Decision owner: project lead.
-- Status: verified (V13.19); the recommendation was approved with the Phase 3 plan (2026-10-02), and the expected value of `summary-screening-twocov-lr` comes from reference fits (the per-case expectations). Fixed in `test_coefficients()` (Phase 3, step 3): the null model is built from the design by column name, so two covariates work, and a model with one covariate raises `pprof_error_unsupported_inference`. The wrapper follows when it replaces `summary.logis_fe()`.
+- Status: verified (V13.19); the recommendation was approved with the Phase 3 plan (2026-10-02), and the expected value of `summary-screening-twocov-lr` comes from reference fits (the per-case expectations). Fixed in `test_coefficients()` (Phase 3, step 3): the null model is built from the design by column name, so two covariates work, and a model with one covariate raises `pprof_error_unsupported_inference`. The wrapper applies it from the switch (Phase 3, step 5; per-case expectation in `tests/testthat/helper-reference-overrides.R`).
 - Regression test: `tests/testthat/test-inference-coefficients.R` (both statistics of a two-covariate fit against K-101 from the reference's one-covariate fits, `logis_fe-screening-x2`, added in Phase 3, and `logis_fe-screening-onecov`; the classed error with one covariate).
 
 ### D-31: Logistic RE/CRE summaries report p-values above 1
@@ -669,7 +669,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reject the values with `pprof_error_invalid_input`; (2) reproduce them in the compatibility wrapper (Class B).
 - Recommendation: (1). `fit_logistic_fe()` requires a binary outcome and positive `max_iter`, `tol`, and `effect_bound` (NAMING.md §4), so the wrapper rejects these values too. The wrapper keeps the cases that work: it passes `min_provider_size = max(1, ceiling(cutoff))`, which includes the same providers, and truncates `max.iter` as Rcpp does. Two inputs that already failed fail earlier and with a classed condition: an outcome with a single value (the reference fails after fitting, in pROC: "'response' must have two levels") gives `pprof_error_data`, and an infinite covariate (the reference's solve fails: "solve(): solution not found") gives `pprof_error_invalid_input`.
 - Decision owner: project lead.
-- Status: decided (fix) with the Phase 3 plan; fixed in `fit_logistic_fe()` (Phase 3, step 2); the wrapper follows when it replaces `logis_fe()`.
+- Status: decided (fix) with the Phase 3 plan; fixed in `fit_logistic_fe()` (Phase 3, step 2); the `logis_fe()` wrapper applies it from the switch (Phase 3, step 5).
 - Regression test: `tests/testthat/test-model-logistic-fe.R` ("fit_logistic_fe() rejects invalid settings", "the outcome must be binary with both values").
 
 ### D-40: The AUC computed without pROC differs from pROC's in the last bit for some fits
