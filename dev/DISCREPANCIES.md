@@ -238,8 +238,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) preserve: refit with the reference defaults (the rewrite reproduces this exactly, including the double refit's identical result, which can be computed once); (2) refit with the original fit's settings (Class B).
 - Recommendation: preserve (1) until sign-off; propose (2) to the methodology owners (question M-5). Computing each null fit once is a pure performance change with identical results. The `cutoff < 10` failure is reproduced as an error with a classed condition until (2) is decided.
 - Decision owner: methodology owner.
-- Status: verified (V13.19); awaiting sign-off.
-- Regression test: planned, fixtures for `summary(test = "lr")` and `(test = "score")`.
+- Status: verified (V13.19); awaiting sign-off. Option (1) is reproduced in `test_coefficients()` (Phase 3, step 3): `refit_without()` refits with the reference defaults, once per covariate, and raises `pprof_error_data` when the default `min_provider_size` would exclude providers the model includes.
+- Regression test: `tests/testthat/test-inference-coefficients.R` (the `summary-binary-lr` and `summary-binary-score` fixtures, and the classed error on the `logis_fe-cutoff5` fit).
 
 ### D-11: RE vector interface coerces inputs and has no final `else`
 
@@ -532,8 +532,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: build the null data frame by name; for one covariate, the null model is the provider-effects-only model.
 - Recommendation: fix for two covariates by building the null data by name (the null model is well defined and the reference algorithm applies unchanged). For one covariate, raise a classed error (`pprof_error_unsupported_inference`) until a provider-effects-only null fit is specified and validated, because no reference value exists for it.
 - Decision owner: project lead.
-- Status: verified (V13.19).
-- Regression test: planned.
+- Status: verified (V13.19); the recommendation was approved with the Phase 3 plan (2026-10-02), and the expected value of `summary-screening-twocov-lr` comes from reference fits (the per-case expectations). Fixed in `test_coefficients()` (Phase 3, step 3): the null model is built from the design by column name, so two covariates work, and a model with one covariate raises `pprof_error_unsupported_inference`. The wrapper follows when it replaces `summary.logis_fe()`.
+- Regression test: `tests/testthat/test-inference-coefficients.R` (the x2 statistic of a two-covariate fit against the reference's one-covariate fit; the classed error with one covariate).
 
 ### D-31: Logistic RE/CRE summaries report p-values above 1
 
