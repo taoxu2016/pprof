@@ -120,7 +120,9 @@ logistic_fe_check_data <- function(prepared) {
   if (ncol(prepared$design) == 0L) {
     abort_invalid_input("`formula` must have at least one covariate.", arg = "formula")
   }
-  if (!all(is.finite(prepared$design))) {
+  # range() is not finite exactly when some value is not (NA, NaN, or infinite), without the
+  # logical matrix of is.finite(design).
+  if (!all(is.finite(range(prepared$design)))) {
     abort_invalid_input("The covariates must be finite.", arg = "formula")
   }
   invisible(prepared)
@@ -150,7 +152,14 @@ logistic_fe_report_screening <- function(prepared, min_provider_size, verbose) {
 # warns, naming the columns that QR with pivoting finds dependent on the others.
 logistic_fe_check_rank <- function(prepared) {
   design <- prepared$design
-  within <- design - apply(design, 2L, function(column) stats::ave(column, prepared$provider_index))
+  # Column by column and without dimnames, so that the within-provider matrix is the only
+  # n-by-p copy made besides the one qr() takes (apply() held two more, and qr() copies its
+  # result to name its columns; the largest memory peak of the fit at the Phase 3 gate). Each
+  # column is design[, j] - ave(design[, j], provider), as before, and the names come from
+  # the design.
+  within <- design
+  dimnames(within) <- NULL
+  for (j in seq_len(ncol(design))) within[, j] <- design[, j] - stats::ave(design[, j], prepared$provider_index)
   decomposition <- qr(within)
   if (decomposition$rank < ncol(design)) {
     aliased <- colnames(design)[decomposition$pivot[-seq_len(decomposition$rank)]]
