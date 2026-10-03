@@ -36,6 +36,26 @@ constexpr double kInitialCriterion = 100.0;
 // Reference: src/Fixed_effect.cpp:649.
 constexpr double kVarianceProbabilityClamp = 1e-10;
 
+// K-31: in the Firth routine, observation weights p(1 - p) that are exactly 0 are replaced
+// by kFirthWeightFloor, in every block of the information (diagonal, cross, and covariate
+// blocks), unlike the logistic fixed-effect engines (K-13).
+// Reference: src/Firth.cpp:165-167, :309-311.
+constexpr double kFirthWeightFloor = 1e-10;
+
+// K-30: the log-determinant of the information adds the logarithms of the provider
+// diagonal after raising entries below kFirthDiagonalFloor to it. When the Cholesky
+// factorization of the symmetrized Schur complement fails, it is retried once with
+// kFirthCholeskyRidge added to the diagonal; when that fails too, the computation fails.
+// Reference: src/Firth.cpp:29-43.
+constexpr double kFirthDiagonalFloor = 1e-12;
+constexpr double kFirthCholeskyRidge = 1e-8;
+
+// K-33: the Firth stopping criterion before the first iteration. The loop continues while
+// the criterion is above tol, so the first iteration always runs unless tol is at least
+// this value.
+// Reference: src/Firth.cpp:124, :138.
+constexpr double kFirthInitialCriterion = 1e9;
+
 }  // namespace core
 }  // namespace pprof
 

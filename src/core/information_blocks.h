@@ -24,6 +24,24 @@ namespace core {
 // K-13: replaces weights that are exactly 0 by kFitWeightFloor.
 void floor_zero_weights(arma::vec& weights);
 
+// Replaces weights that are exactly 0 by `floor` (K-31: kFirthWeightFloor in the Firth
+// routine).
+void floor_zero_weights(arma::vec& weights, double floor);
+
+// The blocks of one provider, from a copy of its rows of Z (z_rows) and of their weights,
+// as the reference's Firth routine forms them (src/Firth.cpp:174-182): the diagonal entry
+// D_i = sum(weights), the cross-block column B_i = the column sums of z_rows with each row
+// multiplied by its weight, and the provider's part of the covariate block,
+// C_i = z_rows' (z_rows with each row multiplied by its weight). The Firth routine adds the
+// terms C_i - J_i B_i', with J_i = B_i (1 / D_i), in provider order to form the Schur
+// complement (src/Firth.cpp:180-183).
+struct ProviderBlocks {
+  double diagonal;
+  arma::vec cross;
+  arma::mat covariate;
+};
+ProviderBlocks provider_blocks(const arma::mat& z_rows, const arma::vec& weights);
+
 // D as the sum of the weights over each provider's rows (SerBIN, BAN, and the standard
 // score test; src/Fixed_effect.cpp:376, :161, :535).
 arma::vec diagonal_sums(const arma::vec& weights, const ProviderLayout& layout);

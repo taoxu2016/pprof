@@ -9,9 +9,21 @@ namespace pprof {
 namespace core {
 
 void floor_zero_weights(arma::vec& weights) {
+  floor_zero_weights(weights, kFitWeightFloor);
+}
+
+void floor_zero_weights(arma::vec& weights, double floor) {
   if (arma::any(weights == 0)) {
-    weights.replace(0, kFitWeightFloor);
+    weights.replace(0, floor);
   }
+}
+
+ProviderBlocks provider_blocks(const arma::mat& z_rows, const arma::vec& weights) {
+  ProviderBlocks blocks;
+  blocks.diagonal = arma::sum(weights);
+  blocks.cross = arma::sum(z_rows.each_col() % weights).t();
+  blocks.covariate = z_rows.t() * (z_rows.each_col() % weights);
+  return blocks;
 }
 
 arma::vec diagonal_sums(const arma::vec& weights, const ProviderLayout& layout) {
