@@ -115,6 +115,28 @@ test_that("the model rebuilt from an old object is the model of the fit (DEC-032
   broken <- old
   broken$data_include <- broken$data_include[rev(seq_len(nrow(broken$data_include))), ]
   expect_error(compat_model_from_logis_fe(broken), class = "pprof_error_invalid_input")
+  broken <- old
+  broken$data_include$z2[5] <- NA
+  expect_error(compat_model_from_logis_fe(broken), class = "pprof_error_invalid_input")
+  broken <- old
+  broken$coefficient$gamma <- rbind(broken$coefficient$gamma, unused = 0)
+  expect_error(compat_model_from_logis_fe(broken), class = "pprof_error_invalid_input")
+})
+
+test_that("the data rebuilt from an old object are those data_prepare() gives for its data_include", {
+  old <- compat_columns(compat_example(), message = FALSE)
+  include <- old$data_include
+  frame <- data.frame(response = include$Y, provider = include$ProvID, include[paste0("z", 1:5)])
+  names(frame) <- c("response", "provider", sprintf("covariate_%d", 1:5))
+  expected <- data_prepare(response ~ covariate_1 + covariate_2 + covariate_3 + covariate_4 + covariate_5, frame,
+                           "provider", min_provider_size = 1, event_counts = TRUE)
+  colnames(expected$design) <- paste0("z", 1:5)
+  rebuilt <- compat_model_from_logis_fe(old)$data
+  fields <- setdiff(names(expected), c("formula", "terms"))
+  expect_identical(unclass(rebuilt)[fields], unclass(expected)[fields])
+  expect_identical(format(rebuilt$formula), format(expected$formula))
+  expect_identical(attributes(rebuilt$terms)[names(attributes(rebuilt$terms)) != ".Environment"],
+                   attributes(expected$terms)[names(attributes(expected$terms)) != ".Environment"])
 })
 
 test_that("the old methods read the old object's fields", {

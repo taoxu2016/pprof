@@ -52,9 +52,9 @@ compat_fe_inputs <- function(formula, data, Y.char, Z.char, ProvID.char, Y, Z, P
 # input's row names in their stored type, and the screening indicators.
 compat_data_include <- function(model, inputs) {
   prepared <- model$data
+  # data.frame() takes only the columns of the design, not its `assign` and `contrasts`
+  # attributes; removing them first would copy the design, which the model still holds.
   design <- prepared$design
-  attr(design, "assign") <- NULL
-  attr(design, "contrasts") <- NULL
   ids <- prepared$providers$provider_value[prepared$provider_index]
   out <- data.frame(prepared$response, ids, design)
   names(out) <- make.names(c(inputs$response_name, inputs$provider_name, colnames(design)), unique = TRUE)
@@ -109,18 +109,12 @@ compat_model_from_logis_fe <- function(fit) {
   gamma <- fit$coefficient$gamma
   ids <- data[[chars$ProvID.char]]
   provider_order <- rownames(gamma)
-  provider <- factor(as.character(ids), levels = provider_order)
-  if (anyNA(provider) || is.unsorted(as.integer(provider))) {
+  codes <- match(as.character(ids), provider_order)
+  if (anyNA(codes) || is.unsorted(codes) || any(tabulate(codes, nbins = length(provider_order)) == 0L)) {
     abort_invalid_input("The fit's `data_include` does not match its provider effects.", arg = "fit")
   }
-  design <- as.matrix(data[, 2L + seq_along(covariates), drop = FALSE])
-  internal <- sprintf("covariate_%d", seq_along(covariates))
-  frame <- data.frame(response = data[[chars$Y.char]], provider = provider, design)
-  names(frame) <- c("response", "provider", internal)
-  prepared <- data_prepare(stats::reformulate(internal, response = "response"), frame, "provider",
-                           min_provider_size = 1, event_counts = TRUE)
-  colnames(prepared$design) <- covariates
-  prepared$providers$provider_value <- unique(ids)
+  prepared <- compat_data_from_include(data[[chars$Y.char]], data[2L + seq_along(covariates)], covariates, ids,
+                                       provider_order, codes)
   estimates <- list(
     gamma = as.numeric(gamma), beta = as.numeric(fit$coefficient$beta),
     variances = list(beta = unname(fit$variance$beta), gamma = as.numeric(fit$variance$gamma)),
@@ -130,6 +124,33 @@ compat_model_from_logis_fe <- function(fit) {
   )
   spec <- list(family = "logistic_fe", method = NA_character_, keep_data = TRUE)
   new_pprof_logistic_fe(prepared, estimates, spec, keep_data = TRUE)
+}
+
+# The `pprof_data` of an old object's `data_include`, built directly rather than through
+# data_prepare(), whose model frame and sorting cost most of the old methods' run time
+# (Phase 3 gate). The rows are complete, sorted by provider, and all included, so the object
+# is the one data_prepare() returns for data.frame(response, provider, covariate_1, ...) with
+# min_provider_size = 1 and event counts: the same response, design (with `assign`),
+# provider table, and indices. `codes` give each row's provider in `provider_order`.
+compat_data_from_include <- function(response, columns, covariates, ids, provider_order, codes) {
+  design <- matrix(as.double(unlist(columns, use.names = FALSE)), ncol = length(covariates),
+                   dimnames = list(NULL, covariates))
+  if (anyNA(response) || anyNA(design)) abort_invalid_input("The fit's `data_include` has missing values.", arg = "fit")
+  attr(design, "assign") <- seq_along(covariates)
+  internal <- sprintf("covariate_%d", seq_along(covariates))
+  formula <- stats::reformulate(internal, response = "response")
+  terms <- stats::terms(formula)
+  providers <- data_provider_table(provider_order, codes, ids)
+  providers <- data_screen_providers(providers, 1)
+  providers <- data_event_indicators(providers, response, codes)
+  n <- length(response)
+  new_pprof_data(
+    formula = formula, terms = terms, xlevels = stats::.getXlevels(terms, stats::setNames(columns, internal)),
+    response_name = "response", provider_name = "provider", within_between = NULL, response = response,
+    design = design, providers = providers, provider_index = codes, row_index = seq_len(n),
+    settings = list(min_provider_size = 1, intercept = FALSE, event_counts = TRUE),
+    n_input = n, n_incomplete = 0L, n_excluded_obs = 0L
+  )
 }
 
 # The rows of an old object's providers selected by `parm`, as the reference's methods
