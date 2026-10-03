@@ -109,7 +109,10 @@ compat_model_from_logis_fe <- function(fit) {
   gamma <- fit$coefficient$gamma
   ids <- data[[chars$ProvID.char]]
   provider_order <- rownames(gamma)
-  codes <- match(as.character(ids), provider_order)
+  # match(as.character(ids), provider_order) through the distinct IDs, which converts only
+  # m IDs to strings rather than n.
+  keys <- unique(ids)
+  codes <- match(as.character(keys), provider_order)[match(ids, keys)]
   if (anyNA(codes) || is.unsorted(codes) || any(tabulate(codes, nbins = length(provider_order)) == 0L)) {
     abort_invalid_input("The fit's `data_include` does not match its provider effects.", arg = "fit")
   }
