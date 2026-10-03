@@ -5,12 +5,13 @@ The Phase 1 benchmark suite and the reference baseline (brief §3.6). The rewrit
 | File | Purpose |
 |---|---|
 | `scenarios.R` | Synthetic scenarios (n from 1e4 to 1e6, m from 100 to 100,000, p of 5, 20, 50, balanced and skewed provider sizes, event rates of 1%, 10%, 50%) and the task list (function by scenario) |
-| `run_reference.R` | Runs every task in a fresh R process on the pinned reference library and writes `results/reference-baseline-<date>-<platform>.csv` and a matching `.json` with the machine and settings |
+| `run_reference.R` | Runs every task in a fresh R process on the pinned reference library and writes `results/reference-baseline-<date>-<platform>.csv` and a matching `.json` with the machine and settings; with `--working-tree`, installs the working tree into a temporary library placed before the reference library and writes `working-tree-<date>-<platform>.csv` (Phase 3) |
 | `compare_to_baseline.R` | Compares a later run with the baseline and flags regressions: time when both the median and the fastest run are more than 10% slower (and the median at least 0.05 s slower), peak memory when more than 10% and at least 50 MB higher; a task where only one of the two timings is more than 10% slower is marked for a rerun (DEC-023) |
 | `results/` | Committed baselines |
 
 ```sh
 Rscript dev/bench/run_reference.R                       # the reference baseline
+Rscript dev/bench/run_reference.R --working-tree        # the same tasks on the working tree
 Rscript dev/bench/compare_to_baseline.R dev/bench/results/<baseline>.csv <new>.csv --report <report>.md
 ```
 

@@ -1,0 +1,53 @@
+# The package's tests under AddressSanitizer and UndefinedBehaviorSanitizer (DEC-026; brief
+# §5.6, §9), for the C++ core: R-devel built with both sanitizers (rocker/r-devel-san) runs
+# R CMD check, and the job fails when a sanitizer reports anything, even if the check passes.
+# Heavy reference cases skip, as on CRAN. Building every dependency from source makes this
+# job slow, so it runs on pull requests and on demand rather than on every push.
+name: rewrite-sanitizers
+
+on:
+  pull_request:
+    branches: ["rewrite/**"]
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  sanitizers:
+    runs-on: ubuntu-latest
+    container: rocker/r-devel-san:latest
+    env:
+      ASAN_OPTIONS: "detect_leaks=0:abort_on_error=0:halt_on_error=0"
+      UBSAN_OPTIONS: "print_stacktrace=1:halt_on_error=0"
+      OMP_THREAD_LIMIT: 2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the dependencies with the sanitized R
+        run: |
+          RDsan -e 'install.packages("remotes", repos = "https://cloud.r-project.org")'
+          RDsan -e 'remotes::install_deps(dependencies = TRUE, upgrade = "never", repos = "https://cloud.r-project.org")'
+
+      - name: Build
+        run: RDsan CMD build --no-build-vignettes --no-manual .
+
+      - name: Check with the sanitizers
+        run: RDsan CMD check --no-manual --ignore-vignettes pprof_*.tar.gz || true
+
+      - name: Fail on sanitizer reports or check errors
+        run: |
+          if grep -rEl "runtime error:|ERROR: AddressSanitizer|ERROR: LeakSanitizer" pprof.Rcheck; then
+            grep -rEh -A 20 "runtime error:|ERROR: AddressSanitizer" pprof.Rcheck | head -200
+            exit 1
+          fi
+          if grep -q "^Status: .*ERROR" pprof.Rcheck/00check.log; then
+            cat pprof.Rcheck/00check.log
+            exit 1
+          fi
+
+      - name: Upload the check directory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanitizer-check
+          path: pprof.Rcheck

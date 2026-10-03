@@ -1,0 +1,66 @@
+# Benchmarks of the working tree against the reference (DEC-023, DEC-026; brief §3.6, §9).
+#
+# Informational, on demand only: timings on shared runners vary too much for a 10% rule, so
+# the job never fails on a regression. It builds the pinned reference library on the runner,
+# measures the reference and the working tree with the same harness (dev/bench), and uploads
+# both result files and the comparison report. The gate's benchmark comparison is run on the
+# machine of the committed baseline instead.
+name: rewrite-bench
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Regular expression selecting tasks by scenario and task (empty for all)"
+        required: false
+        default: ""
+
+permissions: read-all
+
+jobs:
+  bench:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.4.0"
+          use-public-rspm: false
+
+      - name: Use the CRAN snapshot of the reference library
+        run: echo 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2026-10-01"))' >> ~/.Rprofile
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::bench, any::callr, any::jsonlite, any::ps
+          needs: check
+
+      - name: Build the reference library
+        run: Rscript dev/reference/setup_reference_library.R
+
+      - name: Measure the reference
+        run: |
+          if [ -n "${{ inputs.only }}" ]; then ONLY=(--only "${{ inputs.only }}"); else ONLY=(); fi
+          Rscript dev/bench/run_reference.R --out bench-results "${ONLY[@]}"
+
+      - name: Measure the working tree
+        run: |
+          if [ -n "${{ inputs.only }}" ]; then ONLY=(--only "${{ inputs.only }}"); else ONLY=(); fi
+          Rscript dev/bench/run_reference.R --working-tree --out bench-results "${ONLY[@]}"
+
+      - name: Compare
+        run: |
+          Rscript dev/bench/compare_to_baseline.R bench-results/reference-baseline-*.csv bench-results/working-tree-*.csv \
+            --report bench-results/comparison.md || true
+          cat bench-results/comparison.md || true
+
+      - name: Upload the results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-results
+          path: bench-results

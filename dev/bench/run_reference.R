@@ -1,7 +1,13 @@
-# Benchmark baseline for the reference implementation (brief §3.6).
+# Benchmark baseline for the reference implementation (brief §3.6), and the same measurements
+# of the working tree.
 #
 # Usage, from the repository root:
 #   Rscript dev/bench/run_reference.R [--lib dev/reference/lib] [--out dev/bench/results] [--only REGEX]
+#     [--working-tree]
+#
+# With --working-tree, the working tree is installed into a temporary library placed before
+# the reference library, and the results go to working-tree-<date>-<platform>.csv, for
+# compare_to_baseline.R (DEC-023).
 #
 # Every task (a function on a scenario from scenarios.R) runs in a fresh R process whose
 # library path puts the pinned reference library first, so pprof 1.0.3 and its whole
@@ -17,15 +23,35 @@
 # same process, outside the timing. Configurations that cannot run on this machine are
 # recorded as skipped with the reason, not dropped.
 
-opts <- list(lib = "dev/reference/lib", out = "dev/bench/results", only = NULL)
+opts <- list(lib = "dev/reference/lib", out = "dev/bench/results", only = NULL, working_tree = FALSE)
 args <- commandArgs(trailingOnly = TRUE)
-for (k in seq_len(length(args) %/% 2) * 2 - 1) {
+k <- 1L
+while (k <= length(args)) {
+  if (identical(args[[k]], "--working-tree")) {
+    opts$working_tree <- TRUE
+    k <- k + 1L
+    next
+  }
   switch(args[[k]], "--lib" = opts$lib <- args[[k + 1]], "--out" = opts$out <- args[[k + 1]],
          "--only" = opts$only <- args[[k + 1]], stop("Unknown argument: ", args[[k]], call. = FALSE))
+  k <- k + 2L
 }
 stopifnot(requireNamespace("callr", quietly = TRUE), requireNamespace("bench", quietly = TRUE),
           requireNamespace("jsonlite", quietly = TRUE))
 ref_lib <- normalizePath(opts$lib, winslash = "/")
+# With --working-tree, the package under test is the working tree, installed into a
+# temporary library placed before the reference library, so that every other package comes
+# from the same pinned versions as in the baseline (DEC-023); packages the reference does not
+# use (such as generics) come from the user library.
+pprof_lib <- ref_lib
+if (opts$working_tree) {
+  pprof_lib <- normalizePath(file.path(tempdir(), "bench-working-tree"), winslash = "/", mustWork = FALSE)
+  dir.create(pprof_lib, recursive = TRUE, showWarnings = FALSE)
+  status <- system2(file.path(R.home("bin"), "R"), c("CMD", "INSTALL", "--no-docs", "--no-multiarch",
+                                                       paste0("--library=", shQuote(pprof_lib)), "."))
+  if (!identical(status, 0L)) stop("Installing the working tree failed.", call. = FALSE)
+  pprof_lib <- normalizePath(pprof_lib, winslash = "/")
+}
 user_lib <- dirname(find.package("bench"))
 source("dev/bench/scenarios.R")
 scenarios <- bench_scenarios()
@@ -38,10 +64,10 @@ task_id <- function(t) {
 if (!is.null(opts$only)) tasks <- Filter(function(t) grepl(opts$only, paste(t$scenario, task_id(t))), tasks)
 dir.create(opts$out, recursive = TRUE, showWarnings = FALSE)
 
-run_task <- function(scenario, task) {
+run_task <- function(scenario, task, pprof_lib) {
   source("dev/bench/scenarios.R")
   suppressPackageStartupMessages(library(pprof))
-  if (!identical(as.character(utils::packageVersion("pprof")), "1.0.3")) stop("not the reference pprof")
+  if (!startsWith(normalizePath(find.package("pprof"), winslash = "/"), pprof_lib)) stop("pprof is not from ", pprof_lib)
   d <- bench_data(scenario)
   sizes <- as.integer(table(d$ProvID))
   info <- list(n = nrow(d), m = length(sizes), sum_sq = sum(as.numeric(sizes)^2))
@@ -88,7 +114,8 @@ for (k in seq_along(tasks)) {
   sc <- scenarios[[t$scenario]]
   started <- Sys.time()
   res <- tryCatch(
-    callr::r(run_task, args = list(scenario = sc, task = t), libpath = c(ref_lib, user_lib),
+    callr::r(run_task, args = list(scenario = sc, task = t, pprof_lib = pprof_lib),
+             libpath = unique(c(pprof_lib, ref_lib, user_lib)),
              env = c(callr::rcmd_safe_env(), OMP_THREAD_LIMIT = "1", OMP_NUM_THREADS = "1", LC_COLLATE = "C"),
              user_profile = FALSE, system_profile = FALSE, timeout = 1800),
     error = function(e) list(status = if (inherits(e, "callr_timeout_error")) "timeout" else "error",
@@ -111,7 +138,8 @@ for (k in seq_along(tasks)) {
 results <- do.call(rbind, rows)
 stamp <- format(Sys.Date(), "%Y%m%d")
 platform <- tolower(Sys.info()[["sysname"]])
-csv <- file.path(opts$out, sprintf("reference-baseline-%s-%s.csv", stamp, platform))
+csv <- file.path(opts$out, sprintf("%s-%s-%s.csv", if (opts$working_tree) "working-tree" else "reference-baseline",
+                                   stamp, platform))
 utils::write.csv(results, csv, row.names = FALSE)
 env <- list(
   created = format(Sys.time(), tz = "UTC", usetz = TRUE), r_version = R.version.string, platform = R.version$platform,
