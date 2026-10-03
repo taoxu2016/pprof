@@ -129,6 +129,10 @@ reference_datasets <- function(ref_lib, include_full = FALSE) {
   x[prov == 5] <- stats::rnorm(40, 45, 1)
   y <- stats::rbinom(length(prov), 1, stats::plogis(-1 + stats::rnorm(m, 0, 0.5)[prov] + x))
   ds$syn_d04 <- data.frame(Y = y, ProvID = prov, x1 = x)
+  # The same data with the provider IDs stored as doubles, which the reference's `parm` can
+  # select (D-27): its standard score test of the providers other than provider 5 gives the
+  # expected statistics of the D-04 fix for syn_d04 (Phase 3 gate). No random numbers are drawn.
+  ds$syn_d04_double <- transform(ds$syn_d04, ProvID = as.numeric(ProvID))
 
   # Small data for Firth (no extreme providers), as in V12.5.
   reference_set_seed(5)

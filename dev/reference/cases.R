@@ -118,6 +118,8 @@ reference_cases <- function() {
   add("logis_fe-rare", "logis_fe", c(columns("syn_rare", c("x1", "x2")), threads = 1), "iterative")
   add("logis_fe-common", "logis_fe", c(columns("syn_common", c("x1", "x2")), threads = 1), "iterative")
   add("logis_fe-d04", "logis_fe", c(columns("syn_d04", "x1"), threads = 1), "iterative", notes = "D-04 parent")
+  add("logis_fe-d04-double", "logis_fe", c(columns("syn_d04_double", "x1"), threads = 1), "iterative",
+      notes = "D-04 expected-result parent")
   add("logis_fe-cutoff5", "logis_fe", c(columns("syn_cutoff5", c("x1", "x2", "x3")), cutoff = 5, threads = 1), "iterative", notes = "D-10 parent")
 
   # --- logis_firth ------------------------------------------------------------------------
@@ -244,6 +246,10 @@ reference_cases <- function() {
   add("test-extreme-int-parm", "test", list(fit = ref_fit("logis_fe-extreme-int"), parm = 1:3, threads = 1), "exact", notes = "D-27")
   add("test-d04-score-standard", "test", list(fit = ref_fit("logis_fe-d04"), test = "score", score_modified = FALSE, threads = 1),
       "exact", notes = "D-04")
+  add("test-d04-score-standard-others", "test",
+      list(fit = ref_fit("logis_fe-d04-double"), parm = as.numeric(setdiff(1:30, 5)), test = "score", score_modified = FALSE,
+           threads = 1),
+      "exact", notes = "D-04 expected result: the providers other than provider 5")
   add("test-firth-exact", "test", list(fit = ref_fit(FF), threads = 1), "iterative")
   add("test-firth-wald", "test", list(fit = ref_fit(FF), test = "wald", threads = 1), "iterative")
 
