@@ -1,10 +1,10 @@
 {
   "fixture_set": "core",
   "format_version": 1,
-  "generated_at": "2026-10-02 21:09:07 UTC",
-  "generation_seconds": 61.1,
+  "generated_at": "2026-10-03 16:23:48 UTC",
+  "generation_seconds": 58.2,
   "generator": {
-    "git_commit": "0639e2b72248517ebc646ca5ee015ffde1723951",
+    "git_commit": "03a7b9074ba2e9ddcf87e72e7c5bf030bc2b659b",
     "dirty": false,
     "inputs": ["dev/reference/generate_fixtures.R", "dev/reference/cases.R", "dev/reference/datasets.R", "dev/reference/library-lock.json", "tests/testthat/helper-reference-cases.R"],
     "command": "Rscript dev/reference/generate_fixtures.R "
@@ -348,6 +348,14 @@
       "source": "dev/reference/datasets.R::reference_datasets()"
     },
     {
+      "name": "syn_factors_nospaces",
+      "file": "datasets/syn_factors_nospaces.rds",
+      "md5": "230843428ae56ce336b18adfa70dd19b",
+      "class": "data.frame",
+      "rows": 600,
+      "source": "dev/reference/datasets.R::reference_datasets()"
+    },
+    {
       "name": "syn_firth_small",
       "file": "datasets/syn_firth_small.rds",
       "md5": "85da98e7c4e4672e47f4a3c313077d8c",
@@ -415,6 +423,14 @@
       "name": "syn_terms",
       "file": "datasets/syn_terms.rds",
       "md5": "ce7399783b8a40bcda29493fc5aebb1c",
+      "class": "data.frame",
+      "rows": 600,
+      "source": "dev/reference/datasets.R::reference_datasets()"
+    },
+    {
+      "name": "syn_terms_columns",
+      "file": "datasets/syn_terms_columns.rds",
+      "md5": "79b9b20b887b4280e7f4ee29d47f85bf",
       "class": "data.frame",
       "rows": 600,
       "source": "dev/reference/datasets.R::reference_datasets()"
@@ -872,6 +888,23 @@
       "probe_identical": null
     },
     {
+      "id": "logis_fe-screening-x2",
+      "file": "logis_fe-screening-x2.rds",
+      "md5": "e881b0d190d40d2510a0e46e1355c797",
+      "fun": "logis_fe",
+      "call": "logis_fe(data = ref_dataset(\"syn_screening\"), Y.char = \"Y\", Z.char = \"x2\", ProvID.char = \"ProvID\", threads = 1)",
+      "parents": null,
+      "datasets": "syn_screening",
+      "seed": null,
+      "tier": "iterative",
+      "heavy": false,
+      "notes": "D-30 expected result",
+      "outcome": "value",
+      "error": null,
+      "iterations": 5,
+      "probe_identical": null
+    },
+    {
       "id": "logis_fe-extreme",
       "file": "logis_fe-extreme.rds",
       "md5": "5c78d7fe50cefe4c5ad208fd410fe6ec",
@@ -1025,6 +1058,23 @@
       "probe_identical": null
     },
     {
+      "id": "logis_fe-factors-nospaces-formula",
+      "file": "logis_fe-factors-nospaces-formula.rds",
+      "md5": "d794c18b355b448374d0b65e568815f3",
+      "fun": "logis_fe",
+      "call": "logis_fe(formula = ref_formula(\"Y ~ x1 + grp + id(ProvID)\"), data = ref_dataset(\"syn_factors_nospaces\"), threads = 1)",
+      "parents": null,
+      "datasets": "syn_factors_nospaces",
+      "seed": null,
+      "tier": "iterative",
+      "heavy": false,
+      "notes": "D-18 expected result",
+      "outcome": "value",
+      "error": null,
+      "iterations": 4,
+      "probe_identical": null
+    },
+    {
       "id": "logis_fe-factors-unused-columns",
       "file": "logis_fe-factors-unused-columns.rds",
       "md5": "404bfaebc1e96b2d40665d30b982cc8c",
@@ -1090,6 +1140,57 @@
       "outcome": "error",
       "error": "Formula contains variables not in the data or is incorrectly structured.",
       "iterations": null,
+      "probe_identical": null
+    },
+    {
+      "id": "logis_fe-terms-logw-columns",
+      "file": "logis_fe-terms-logw-columns.rds",
+      "md5": "75dedf1e1fd3342527e673803bc88dd5",
+      "fun": "logis_fe",
+      "call": "logis_fe(formula = ref_formula(\"Y ~ z1 + z2 + logw + id(ProvID)\"), data = ref_dataset(\"syn_terms_columns\"), threads = 1)",
+      "parents": null,
+      "datasets": "syn_terms_columns",
+      "seed": null,
+      "tier": "iterative",
+      "heavy": false,
+      "notes": "D-18 expected result",
+      "outcome": "value",
+      "error": null,
+      "iterations": 4,
+      "probe_identical": null
+    },
+    {
+      "id": "logis_fe-terms-z1z2-columns",
+      "file": "logis_fe-terms-z1z2-columns.rds",
+      "md5": "cd41ed8aea6204436b12253ae93a67d6",
+      "fun": "logis_fe",
+      "call": "logis_fe(formula = ref_formula(\"Y ~ z1 + z2 + z1z2 + id(ProvID)\"), data = ref_dataset(\"syn_terms_columns\"), threads = 1)",
+      "parents": null,
+      "datasets": "syn_terms_columns",
+      "seed": null,
+      "tier": "iterative",
+      "heavy": false,
+      "notes": "D-18 expected result",
+      "outcome": "value",
+      "error": null,
+      "iterations": 4,
+      "probe_identical": null
+    },
+    {
+      "id": "logis_fe-terms-z12-columns",
+      "file": "logis_fe-terms-z12-columns.rds",
+      "md5": "e1db114ff40f2edf767423a24e8c0e04",
+      "fun": "logis_fe",
+      "call": "logis_fe(formula = ref_formula(\"Y ~ z1 + z2 + z1sq + id(ProvID)\"), data = ref_dataset(\"syn_terms_columns\"), threads = 1)",
+      "parents": null,
+      "datasets": "syn_terms_columns",
+      "seed": null,
+      "tier": "iterative",
+      "heavy": false,
+      "notes": "D-18 expected result",
+      "outcome": "value",
+      "error": null,
+      "iterations": 4,
       "probe_identical": null
     },
     {
@@ -3061,6 +3162,23 @@
       "notes": "D-14",
       "outcome": "error",
       "error": "Argument 'null' NOT as required!",
+      "iterations": null,
+      "probe_identical": null
+    },
+    {
+      "id": "plot-binary-null0",
+      "file": "plot-binary-null0.rds",
+      "md5": "fdb4a6d6977152fb4799ce6598c89ead",
+      "fun": "plot",
+      "call": "plot(x = ref_fit(\"logis_fe-binary-columns\"), null = 0)",
+      "parents": "logis_fe-binary-columns",
+      "datasets": null,
+      "seed": null,
+      "tier": "iterative",
+      "heavy": false,
+      "notes": "D-14 expected result",
+      "outcome": "value",
+      "error": null,
       "iterations": null,
       "probe_identical": null
     },
