@@ -81,7 +81,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Recommendation: (1). The new provider table keeps excluded providers with `included = FALSE` and the screening notice reports the true count.
 - Decision owner: project lead.
 - Status: verified (V10.8).
-- Regression test: planned, `test-data-screening.R` (Phase 2) and `test-reference-logis-fe.R` (Phase 3).
+- Regression test: the inclusion rule (n_i >= `min_provider_size`, including a provider of exactly that size) in `tests/testthat/test-data-prepare.R` (Phase 2); the warning and its count with the fits (Phase 3).
 
 ### D-02: `logis_fe` help states wrong defaults
 
@@ -199,7 +199,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Recommendation: the rewrite never relies on partial matching; tests run with `warnPartialMatchDollar` and `warnPartialMatchArgs` and treat the warnings as failures.
 - Decision owner: project lead.
 - Status: verified (V13.13, V15.7).
-- Regression test: planned, test helper option settings.
+- Regression test: the rewrite's tests run in strict mode (`tests/testthat/helper-strict.R`, DEC-030), and the reference harness allows only the two D-08 matches (DEC-021).
 
 ### D-09: Print methods
 
@@ -285,7 +285,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Recommendation: preserve (1) explicitly in the data layer (`data_decompose_within_between()` runs before complete-case filtering, as an ordered, documented step), pending question M-3.
 - Decision owner: methodology owner.
 - Status: verified (V15.10); awaiting sign-off.
-- Regression test: planned, CRE fixture with missing values.
+- Regression test: the data layer reproduces it (`tests/testthat/test-data-prepare.R`, and the fixture `linear_cre-missing` in `test-data-reference.R`); fit-level fixture from Phase 4.
 
 ### D-14: Inconsistent validation of `null`
 
