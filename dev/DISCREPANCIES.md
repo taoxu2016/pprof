@@ -139,8 +139,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) keep non-finite statistics in place and report them as `NaN`/`Inf` with `p_value = NA` and `flag = NA`, plus a warning; (2) error with a classed condition naming the providers.
 - Recommendation: (1), so that the other providers' results are still returned and aligned.
 - Decision owner: project lead.
-- Status: verified (V13.6).
-- Regression test: planned, `test-inference-provider-tests.R` with the V13.6 data.
+- Status: verified (V13.6); option (1) approved with the Phase 3 plan (2026-10-02). Fixed in `test_providers()` (Phase 3, step 3): every requested provider keeps its place, and a non-finite statistic gets a missing p-value and flag and a `pprof_warning_undefined_statistics` warning that names the providers. The wrapper follows when it replaces `test.logis_fe()`.
+- Regression test: `tests/testthat/test-profile-regression.R` (the `logis_fe-d04` fit); reference values for the other 29 providers come with the fixture regeneration (Phase 3, step 4).
 
 ### D-05: Firth with `threads > 1` stops early because of a data race
 
@@ -173,8 +173,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reject the value with `pprof_error_invalid_input`; (2) implement a robust Wald test (a new method; out of scope, brief §2.2).
 - Recommendation: (1).
 - Decision owner: project lead.
-- Status: verified (V13.8).
-- Regression test: planned, error class test.
+- Status: verified (V13.8); option (1) approved with the Phase 3 plan (2026-10-02). `test_providers()` accepts only `"exact"`, `"bootstrap"`, `"score"`, and `"wald"`, so other values raise `pprof_error_invalid_input` (Phase 3, step 3). The wrapper follows when it replaces `test.logis_fe()`.
+- Regression test: `tests/testthat/test-profile-regression.R`.
 
 ### D-07: Exact funnel plot always errors
 
@@ -187,8 +187,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) raise `pprof_error_unsupported_inference` for exact funnel limits; (2) implement exact limits in the profiling layer from the code's evident intent, validated independently, with methodology sign-off.
 - Recommendation: (1) until a methodology owner approves (2). Recorded as open question M-9.
 - Decision owner: methodology owner for (2); project lead for (1).
-- Status: verified (V13.21).
-- Regression test: planned, error class test.
+- Status: verified (V13.21); option (1) approved with the Phase 3 plan (2026-10-02). The new `funnel_limits()` computes the score-test limits of K-110 only; the wrapper will raise `pprof_error_unsupported_inference` for `test = "exact"` when it replaces `plot.logis_fe()`.
+- Regression test: planned, with the wrapper.
 
 ### D-08: Reliance on partial matching of `$`
 
@@ -301,8 +301,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: accept any finite numeric scalar everywhere.
 - Recommendation: validate once in the inference layer; numeric (double or integer) scalars are accepted, and the value is used as a double, so results are identical to passing the double.
 - Decision owner: project lead.
-- Status: verified (V13.9).
-- Regression test: planned.
+- Status: verified (V13.9); the recommendation was approved with the Phase 3 plan (2026-10-02). Fixed in the profiling functions (Phase 3, step 3): `null` is checked once, and a numeric scalar, double or integer, is used as a double. The wrappers follow when they replace the logistic FE methods.
+- Regression test: `tests/testthat/test-profile-regression.R` (`null = 0L` gives the `SM_output-binary-null0` values and the same tests and funnel as `null = 0`).
 
 ### D-15: Flags are factors whose levels depend on the data
 
@@ -315,8 +315,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: integer flags; or a factor with fixed levels.
 - Recommendation: integer flags -1/0/1 in new result tables; compatibility wrappers reproduce the factor.
 - Decision owner: project lead.
-- Status: verified (V13.10).
-- Regression test: wrapper fixtures compare the factor exactly.
+- Status: verified (V13.10). New result tables have integer flags (Phase 3, step 3); the wrappers reproduce the factor.
+- Regression test: `tests/testthat/test-profile-reference.R` compares the integer flags with the labels of the reference's factor; the wrapper fixtures compare the factor exactly.
 
 ### D-16: Linear FE test distribution set by a hidden attribute
 
@@ -378,8 +378,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: key every intermediate result by provider ID.
 - Recommendation: fix. For numeric IDs the reference is correct and the rewrite reproduces it exactly.
 - Decision owner: project lead.
-- Status: verified (V13.16).
-- Regression test: planned; numeric-ID fixtures plus a metamorphic test (relabeling providers as characters must not change any provider's interval).
+- Status: verified (V13.16); fixed in `provider_effects()` and `standardize_providers()` (Phase 3, step 3): results are keyed by `provider_id` in provider order, and each provider's measure limits come from its own effect limits. The wrapper follows when it replaces `confint.logis_fe()`.
+- Regression test: `tests/testthat/test-profile-regression.R` (the `confint-extreme-chr-*` fixtures with rows matched by ID and the measure limits re-paired, a re-pairing that leaves the numeric-ID case unchanged) and `tests/testthat/test-profile-api.R` (storing IDs as integers, characters, or factors changes no result).
 
 ### D-20: SerBIN with `threads > 1` differs at rounding level
 
@@ -490,8 +490,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: match providers by their character representation.
 - Recommendation: `providers` arguments are matched as character against provider IDs (NAMING.md §4).
 - Decision owner: project lead.
-- Status: verified (V13.11).
-- Regression test: planned.
+- Status: verified (V13.11); fixed in the profiling functions (Phase 3, step 3): `providers` is compared as character with the provider IDs. The wrappers follow when they replace the logistic FE methods.
+- Regression test: `tests/testthat/test-profile-regression.R` (rows 1 to 3 of `test-extreme-exact` for the integer-ID fit) and `tests/testthat/test-profile-api.R`.
 
 ### D-28: Factor provider IDs break exact and score intervals
 
@@ -504,8 +504,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: key by provider ID as character.
 - Recommendation: fix.
 - Decision owner: project lead.
-- Status: verified (V13.18).
-- Regression test: planned, factor-ID metamorphic test.
+- Status: verified (V13.18); fixed in `provider_effects()` (Phase 3, step 3). The wrapper follows when it replaces `confint.logis_fe()`.
+- Regression test: `tests/testthat/test-profile-regression.R` (the `confint-extreme-gamma-exact` values for the factor-ID fit) and `tests/testthat/test-profile-api.R`.
 
 ### D-29: Direct SM intervals require a column named `ProvID`
 
@@ -518,8 +518,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: use the stored provider column.
 - Recommendation: fix.
 - Decision owner: project lead.
-- Status: verified (V13.17).
-- Regression test: planned.
+- Status: verified (V13.17); fixed in `standardize_providers()` (Phase 3, step 3). The wrapper follows when it replaces `confint.logis_fe()`.
+- Regression test: `tests/testthat/test-profile-regression.R` (the direct tables of `confint-extreme-sm-exact` for a provider column named `hospital`).
 
 ### D-30: LR and score covariate tests fail with one or two covariates
 

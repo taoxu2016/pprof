@@ -161,7 +161,11 @@ Fields of model and result objects are snake_case nouns. Shared fields use the s
 | `n_obs`, `n_providers` | dimensions after screening |
 | `package_version` | version of pprof that built the object |
 
-Result tables (the `table` field of result objects, and what `tidy()` returns) use these column names: `provider_id`, `n_obs`, `observed`, `expected`, `estimate`, `std_error`, `statistic`, `p_value`, `lower`, `upper`, `flag`. Tables keyed by something other than the provider use `term` (coefficients), `variable` (data checks), `standardization` and `measure` (measures, one row per provider, standardization, and measure), or `level` and `precision` (funnel limits) (added in Phase 2, DEC-027). Flags are integers -1, 0, 1 with documented meaning (lower than expected, as expected, higher than expected), never factors whose levels depend on the data.
+Result tables (the `table` field of result objects, and what `tidy()` returns) use these column names: `provider_id`, `n_obs`, `observed`, `expected`, `estimate`, `std_error`, `statistic`, `p_value`, `lower`, `upper`, `flag`. Tables keyed by something other than the provider use `term` (coefficients), `variable` (data checks), `standardization` and `measure` (measures, one row per provider, standardization, and measure), or `level` and `precision` (funnel limits) (added in Phase 2, DEC-027). Flags are integers -1, 0, 1 with documented meaning (lower than expected, as expected, higher than expected), never factors whose levels depend on the data. Measures tables also have `variance`, the null variance of a provider's observed count under indirect standardization (missing for direct standardization) (added in Phase 3).
+
+Settings of result objects use the argument names of §4 (`test`, `level`, `alternative`, `interval`, `standardization`, `measure`, `score_type`, `n_resamples`, `target`) and these names for derived values: `null_value` (the numeric null), `population_rate` (the rate that converts ratios to rates). `pprof_funnel` also holds `providers`, the funnel points (one row per provider with `precision`, `estimate`, and `flag`), and `pprof_profile` holds its component results as `effects`, `tests`, `measures`, and `funnel` (added in Phase 3, DEC-036).
+
+The family specification that `profile_spec()` returns (ARCHITECTURE §B.4) is a list with the fields `family`, `effect`, `null_default`, `null_options`, `indirect_numerator`, `measures`, and where the family supports them `mean_function`, `variance_function`, `direct_expected` (a function of the effects, the linear predictor, and the thread count), `funnel` (a list with `measure`, `target`, `floor`, `test`, `precision`, and `half_width`), and `wald_caution` (added in Phase 3, DEC-036).
 
 ## 6. Conditions
 
@@ -180,6 +184,8 @@ Conditions carry classes so that tests and callers can match them without parsin
 | `pprof_warning_screening` | providers were excluded by `min_provider_size` |
 | `pprof_warning_rank_deficient` | the covariates are linearly dependent within providers, so some coefficients are not identified (D-38; added in Phase 3) |
 | `pprof_warning_unknown_providers` | new data name providers that the model has no effect for (added in Phase 3) |
+| `pprof_warning_undefined_statistics` | a provider test statistic is not finite for some providers, whose p-values and flags are then missing (D-04; added in Phase 3) |
+| `pprof_warning_wald_unreliable` | Wald tests or intervals cover providers with no events or only events, whose estimates sit at the effect bound (K-67; added in Phase 3, DEC-037) |
 | `pprof_message` | parent class of every message from the verbosity helper |
 | `pprof_deprecated` | a compatibility wrapper was called (warned once per session) |
 
