@@ -38,7 +38,8 @@ test_that("the progress report follows the reference, with the corrected screeni
   expect_identical(output[1], "Implementing SerBIN algorithm (Rcpp) for fixed provider effects model ...")
   iterations <- length(output) - 2L
   expect_match(output[2], "^Iter 1: Minimum criterion across all checks is [0-9.]+e[-+][0-9]+;$")
-  expect_identical(output[length(output)], sprintf("serBIN (Rcpp) algorithm converged after %d iterations!", iterations))
+  expect_identical(output[length(output)],
+                   sprintf("serBIN (Rcpp) algorithm converged after %d iterations!", iterations))
   expect_identical(reference_parse_iterations(output), iterations)
 })
 
@@ -75,7 +76,8 @@ test_that("the three input formats give the same fit", {
 
 test_that("inputs the reference accepted without checking raise classed errors (D-22, D-23, D-39)", {
   data <- compat_example()
-  expect_error(compat_columns(data, method = "BAN", backtrack = 2, message = FALSE), class = "pprof_error_invalid_input")
+  expect_error(compat_columns(data, method = "BAN", backtrack = 2, message = FALSE),
+               class = "pprof_error_invalid_input")
   expect_error(compat_columns(data, max.iter = 0, message = FALSE), class = "pprof_error_invalid_input")
   expect_error(compat_columns(data, tol = 0, message = FALSE), class = "pprof_error_invalid_input")
   expect_error(compat_columns(data, bound = 0, message = FALSE), class = "pprof_error_invalid_input")
