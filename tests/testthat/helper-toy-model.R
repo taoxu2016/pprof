@@ -31,7 +31,7 @@ toy_effect_position <- function(model) {
 }
 
 toy_methods <- list(
-  inference_capabilities = function(model) c("provider_exact", "standardize_indirect"),
+  inference_capabilities = function(model) c("provider_exact", "provider_score", "standardize_indirect", "funnel"),
   expected_outcome = function(model, effect, ...) {
     effect <- if (length(effect) == 1L) rep(effect, length(pprof::provider_estimates(model))) else effect
     stats::plogis(effect[toy_effect_position(model)] + pprof::linear_predictor(model))
@@ -40,7 +40,13 @@ toy_methods <- list(
     if (identical(null, "median")) stats::median(pprof::provider_estimates(model)) else null
   },
   profile_spec = function(model) {
-    list(family = "toy", effect = "gamma", null_options = "median", indirect_numerator = "observed", measures = "ratio")
+    list(
+      family = "toy", effect = "gamma", null_default = "median", null_options = "median",
+      indirect_numerator = "observed", measures = "ratio", variance_function = function(mean) mean * (1 - mean),
+      funnel = list(measure = "ratio", target = 1, floor = 0, test = "score",
+                    precision = function(expected, variance) expected^2 / variance,
+                    half_width = function(critical, precision) critical / sqrt(precision))
+    )
   }
 )
 

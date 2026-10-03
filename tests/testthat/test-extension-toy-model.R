@@ -26,7 +26,7 @@ test_that("the shared contract accessors work on it", {
 
 test_that("core code dispatches to the methods it registers", {
   fit <- toy_fit(y ~ 1, toy_model_data(), "hospital")
-  expect_identical(inference_capabilities(fit), c("provider_exact", "standardize_indirect"))
+  expect_identical(inference_capabilities(fit), c("provider_exact", "provider_score", "standardize_indirect", "funnel"))
   expect_invisible(require_capability(fit, "provider_exact"))
   expect_identical(require_capability(fit, "standardize_indirect"), fit)
   null <- null_effect(fit, "median")
@@ -56,6 +56,48 @@ test_that("screening of the data layer carries over to the toy model", {
   expect_identical(fit$n_excluded_obs, 21L)
   expect_identical(names(provider_estimates(fit)), sprintf("hospital %d", 3:5))
   expect_identical(expected_outcome(fit, 0), rep(0.5, 39))
+})
+
+test_that("the profiling functions work on it unchanged (Phase 3)", {
+  fit <- toy_fit(y ~ 1, toy_model_data(), "hospital")
+  null <- stats::median(provider_estimates(fit))
+  events <- c(3, 5, 2, 8, 6)
+  sizes <- 10:14
+  # The exact test of each provider's events against plogis(null), as the inference layer
+  # computes it.
+  tests <- test_providers(fit)
+  expected <- vapply(1:5, function(i) {
+    infer_exact_poisson_binomial(events[i], rep(stats::plogis(null), sizes[i]), "two.sided")
+  }, numeric(2))
+  expect_identical(tests$table$provider_id, sprintf("hospital %d", 1:5))
+  expect_identical(tests$table$statistic, unname(expected["statistic", ]))
+  expect_identical(tests$table$p_value, unname(infer_decide(expected["probability", ], "two.sided", 0.95)$p_value))
+  # Indirect standardization: observed over expected events under the null.
+  measures <- standardize_providers(fit)
+  expect_identical(measures$table$measure, rep("ratio", 5))
+  expect_identical(measures$table$observed, events)
+  expect_equal(measures$table$expected, sizes * stats::plogis(null), tolerance = 1e-14)
+  expect_identical(measures$table$estimate, events / measures$table$expected)
+  # Effects without standard errors, which the toy model does not declare.
+  effects <- provider_effects(fit)
+  expect_identical(effects$table$estimate, unname(provider_estimates(fit)))
+  expect_null(effects$table$std_error)
+  # The funnel uses the family's precision and half-width, and the modified score test.
+  funnel <- funnel_limits(fit)
+  expect_identical(funnel$providers$precision, measures$table$expected^2 / measures$table$variance)
+  expect_identical(funnel$providers$flag, test_providers(fit, "score")$table$flag)
+  profile <- profile_providers(fit)
+  expect_identical(profile$tests, tests)
+  expect_identical(profile$funnel, funnel)
+})
+
+test_that("profiling requests it does not declare raise pprof_error_unsupported_inference", {
+  fit <- toy_fit(y ~ 1, toy_model_data(), "hospital")
+  expect_error(test_providers(fit, "wald"), class = "pprof_error_unsupported_inference")
+  expect_error(test_providers(fit, "bootstrap"), class = "pprof_error_unsupported_inference")
+  expect_error(test_providers(fit, "score", score_type = "standard"), class = "pprof_error_unsupported_inference")
+  expect_error(provider_effects(fit, "exact"), class = "pprof_error_unsupported_inference")
+  expect_error(standardize_providers(fit, "direct"), class = "pprof_error_unsupported_inference")
 })
 
 test_that("no file of pprof refers to the toy model", {
