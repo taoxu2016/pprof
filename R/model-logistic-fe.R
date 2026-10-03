@@ -394,3 +394,49 @@ inference_capabilities.pprof_logistic_fe <- function(model) {
 provider_estimate_se.pprof_logistic_fe <- function(model) {
   sqrt(model$provider_effect_variance)
 }
+
+# The settings of the null fits of the covariate likelihood-ratio and score tests: the
+# defaults of logis_fe(), whatever settings the model used, as the reference refits
+# (R/summary.logis_fe.R:147, :178; D-10, awaiting sign-off).
+logistic_fe_null_spec <- list(
+  family = "logistic_fe", method = "serbin", max_iter = 10000, tol = 1e-5, stop_rule = "any", backtrack = TRUE,
+  effect_bound = 10, min_provider_size = 10, keep_data = FALSE
+)
+
+#' @export
+refit_without.pprof_logistic_fe <- function(model, covariates, data = NULL, ...) {
+  prepared <- model_prepared_data(model, data)
+  keep <- setdiff(colnames(prepared$design), covariates)
+  if (length(keep) == 0L) {
+    # D-30: the reference has no null model without covariates.
+    abort_unsupported_inference(model, "a covariate test whose null model has no covariates")
+  }
+  sizes <- prepared$providers$n_obs[prepared$providers$included]
+  if (any(sizes < logistic_fe_null_spec$min_provider_size)) {
+    # D-10: the reference's null fit screens again at its default minimum provider size and
+    # then fails; reproduced as a classed error until the methodology owners decide.
+    abort_data(sprintf(paste("The null model is refit with min_provider_size = %d, which would exclude",
+                             "providers the model includes."), logistic_fe_null_spec$min_provider_size))
+  }
+  null_prepared <- prepared
+  null_prepared$design <- prepared$design[, keep, drop = FALSE]
+  estimates <- logistic_fe_estimate(null_prepared, logistic_fe_null_spec, threads = 1L)
+  new_pprof_logistic_fe(null_prepared, estimates, logistic_fe_null_spec)
+}
+
+#' @export
+provider_test.pprof_logistic_fe <- function(model, test, null, providers = NULL, data = NULL, threads = 1, ...) {
+  # K-66: the "standard" score test, from the full-model estimates without a refit. The
+  # other provider tests need only expected outcomes and are computed by the profiling
+  # layer.
+  if (!identical(test, "score_standard")) abort_unsupported_inference(model, sprintf("provider_test(\"%s\")", test))
+  prepared <- model_prepared_data(model, data)
+  sizes <- as.integer(model$providers$n_obs[model$providers$included])
+  positions <- if (is.null(providers)) seq_along(sizes) else as.integer(providers)
+  result <- logistic_fe_engine_call(
+    "standard score test",
+    cpp_logistic_score_standard(as.numeric(model$response), prepared$design, sizes, unname(model$provider_effects),
+                                unname(model$coefficients), null, positions, as.integer(threads))
+  )
+  list(statistic = result$statistic, failed = result$failed)
+}

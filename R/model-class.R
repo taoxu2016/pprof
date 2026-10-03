@@ -32,6 +32,32 @@ model_observation_effects <- function(model, effect) {
   effect[match(model$provider_index, included)]
 }
 
+# The prepared data of a model's fit, for methods that need the covariates (DEC-005): kept
+# in the model with keep_data = TRUE, or rebuilt from `data` with the model's formula and
+# data settings and checked against the fit, which needs the same observations in the same
+# order, the same providers, and the design times the coefficients equal to the stored
+# linear predictor within data_match_atol and data_match_rtol.
+model_prepared_data <- function(model, data = NULL) {
+  if (!is.null(model$data)) return(model$data)
+  if (is.null(data)) {
+    abort_data_required(
+      "This method needs the covariates: fit the model with keep_data = TRUE, or pass the data it was fit to as `data`."
+    )
+  }
+  spec <- model$data_spec
+  prepared <- data_prepare(model$formula, data, spec$provider_name, within_between = spec$within_between,
+                           min_provider_size = spec$min_provider_size, intercept = spec$intercept,
+                           event_counts = spec$event_counts)
+  rebuilt <- drop(prepared$design %*% model$coefficients)
+  stored <- model$linear_predictor
+  matches <- identical(prepared$row_index, model$row_index) &&
+    identical(prepared$provider_index, model$provider_index) &&
+    identical(prepared$providers$provider_id, model$providers$provider_id) &&
+    length(rebuilt) == length(stored) && all(abs(rebuilt - stored) <= data_match_atol + data_match_rtol * abs(stored))
+  if (!matches) abort_invalid_input("`data` is not the data the model was fit to.", arg = "data")
+  prepared
+}
+
 # Values per observation, in the order of the rows of the input data and named by those
 # rows (observations are stored sorted by provider).
 model_input_order <- function(model, values) {

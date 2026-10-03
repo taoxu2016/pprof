@@ -23,3 +23,14 @@ data_provider_table <- function(levels, codes, values) {
   providers$n_obs <- tabulate(codes, nbins = length(levels))
   providers
 }
+
+# The sum of x over the observations of each provider in `providers` (rows of the provider
+# table, in provider order), where `index` gives each observation's row. Each sum is sum()
+# of that provider's observations in their stored order, as the reference's
+# sapply(split(x, provider), sum) computes it (long double accumulation); rowsum() adds in
+# double and differs in the last bit. Sums of integers or logicals are exact and returned
+# as doubles.
+data_provider_sums <- function(x, index, providers) {
+  vapply(split(x, factor(index, levels = providers)), function(values) as.double(sum(values)), numeric(1),
+         USE.NAMES = FALSE)
+}

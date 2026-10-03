@@ -29,10 +29,22 @@ root_bracket_attempts <- 3L
 # test).
 extreme_bracket_base <- 10
 
+# K-90: in the score interval of a provider with only events, observation weights p(1 - p)
+# that are exactly 0 are replaced by score_weight_floor.
+# Reference: R/confint.logis_fe.R:187, in the score interval's equation.
+score_weight_floor <- 1e-20
+
 # K-90: the uniroot() defaults that the reference relies on, passed explicitly by the
 # rewrite so that the root-finder settings are visible.
 root_tolerance <- .Machine$double.eps^0.25
 root_max_iter <- 1000L
+
+# DEC-005: data passed to a method that needs the covariates must be the data of the fit.
+# The rebuilt design times the coefficients must equal the stored linear predictor within
+# |a - b| <= data_match_atol + data_match_rtol * |b|, the closed-form tolerance of the
+# equivalence tests (ARCHITECTURE §G.4), which allows for a different BLAS.
+data_match_atol <- 1e-12
+data_match_rtol <- 1e-10
 
 # K-100, K-103 to K-105: covariate p-values in summaries are formatted with
 # format.pval(p, digits = p_value_display_digits, eps = p_value_display_eps).
