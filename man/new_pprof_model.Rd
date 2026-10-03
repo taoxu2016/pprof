@@ -60,7 +60,8 @@ An object of class \code{c(class, "pprof_model")}.
 }
 \description{
 The constructor that every fit function uses to build its object (ARCHITECTURE §E.2). It
-takes the \code{\link[=data_prepare]{data_prepare()}} output and the estimates, fills the fields that all models share,
+takes the \code{\link[=data_prepare]{data_prepare()}} output and the estimates, fills the fields that all models share
+(among them \code{data_spec}, what is needed to build a design matrix for new data),
 adds the family's own fields from \code{...}, and checks the result with \code{validate_pprof_model()}.
 Objects are compact: they keep per-observation vectors (response, linear predictor,
 provider index, input row) but not the design matrix, unless \code{keep_data = TRUE}.

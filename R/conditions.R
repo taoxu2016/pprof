@@ -55,6 +55,17 @@ warn_screening <- function(message, ..., call = NULL) {
   warn_pprof("pprof_warning_screening", message, ..., call = call)
 }
 
+# The covariates are linearly dependent once provider effects are accounted for, so some
+# coefficients are not identified (D-38).
+warn_rank_deficient <- function(message, ..., call = NULL) {
+  warn_pprof("pprof_warning_rank_deficient", message, ..., call = call)
+}
+
+# New data name providers that the model has no effect for.
+warn_unknown_providers <- function(message, ..., call = NULL) {
+  warn_pprof("pprof_warning_unknown_providers", message, ..., call = call)
+}
+
 # Deprecation warnings of the compatibility wrappers are given once per session and per
 # `id` (DEC-013). The registry is an argument so that tests can use their own.
 deprecation_registry <- new.env(parent = emptyenv())

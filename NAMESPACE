@@ -6,6 +6,7 @@ S3method(SM_output,linear_re)
 S3method(SM_output,logis_cre)
 S3method(SM_output,logis_fe)
 S3method(SM_output,logis_re)
+S3method(coef,pprof_model)
 S3method(confint,linear_cre)
 S3method(confint,linear_fe)
 S3method(confint,linear_re)
@@ -13,24 +14,34 @@ S3method(confint,logis_cre)
 S3method(confint,logis_fe)
 S3method(confint,logis_re)
 S3method(expected_outcome,default)
+S3method(expected_outcome,pprof_logistic_fe)
 S3method(expected_outcome,pprof_model)
+S3method(fitted,pprof_logistic_fe)
+S3method(formula,pprof_model)
 S3method(inference_capabilities,default)
+S3method(inference_capabilities,pprof_logistic_fe)
 S3method(inference_capabilities,pprof_model)
 S3method(linear_predictor,default)
 S3method(linear_predictor,pprof_model)
+S3method(logLik,pprof_logistic_fe)
+S3method(nobs,pprof_model)
 S3method(null_effect,default)
+S3method(null_effect,pprof_logistic_fe)
 S3method(null_effect,pprof_model)
 S3method(observed_outcome,default)
 S3method(observed_outcome,pprof_model)
 S3method(plot,linear_fe)
 S3method(plot,logis_fe)
+S3method(predict,pprof_logistic_fe)
 S3method(print,linear_cre)
 S3method(print,linear_re)
 S3method(print,logis_re)
 S3method(print,pprof_data)
 S3method(profile_spec,default)
+S3method(profile_spec,pprof_logistic_fe)
 S3method(profile_spec,pprof_model)
 S3method(provider_estimate_se,default)
+S3method(provider_estimate_se,pprof_logistic_fe)
 S3method(provider_estimate_se,pprof_model)
 S3method(provider_estimates,default)
 S3method(provider_estimates,pprof_model)
@@ -42,6 +53,7 @@ S3method(provider_test,default)
 S3method(provider_test,pprof_model)
 S3method(refit_without,default)
 S3method(refit_without,pprof_model)
+S3method(residuals,pprof_logistic_fe)
 S3method(summary,linear_cre)
 S3method(summary,linear_fe)
 S3method(summary,linear_re)
@@ -54,12 +66,14 @@ S3method(test,linear_re)
 S3method(test,logis_cre)
 S3method(test,logis_fe)
 S3method(test,logis_re)
+S3method(vcov,pprof_model)
 export(SM_output)
 export(bar_plot)
 export(caterpillar_plot)
 export(data_check)
 export(data_prepare)
 export(expected_outcome)
+export(fit_logistic_fe)
 export(inference_capabilities)
 export(linear_cre)
 export(linear_fe)
@@ -157,16 +171,20 @@ importFrom(scales,
 importFrom(stats,
   as.formula,
   binomial,
+  coef,
   complete.cases,
   confint,
   fitted,
+  formula,
   lm,
   logLik,
   median,
   model.matrix,
+  nobs,
   pchisq,
   plogis,
   pnorm,
+  predict,
   pt,
   qnorm,
   qt,
@@ -177,7 +195,8 @@ importFrom(stats,
   residuals,
   setNames,
   terms,
-  uniroot
+  uniroot,
+  vcov
 )
 importFrom(tibble,tibble)
 importFrom(tidyselect,all_of)

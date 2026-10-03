@@ -2,16 +2,48 @@
 
 # Fields that new_pprof_model() fills for every model; subclasses add their own through `...`.
 model_shared_fields <- c(
-  "call", "formula", "terms", "spec", "providers", "coefficients", "vcov", "provider_effects",
+  "call", "formula", "terms", "data_spec", "spec", "providers", "coefficients", "vcov", "provider_effects",
   "provider_effect_variance", "response", "linear_predictor", "provider_index", "row_index",
   "convergence", "n_obs", "n_providers", "n_excluded_providers", "n_excluded_obs",
   "package_version", "data"
 )
 
+# What a model keeps of its data_prepare() call, so that a design matrix can be built again
+# for new data (predict()) or the original data rebuilt and checked (DEC-005): the response
+# and provider names, the decomposed covariates, the factor levels and contrasts of the
+# design, and the data layer's settings.
+model_data_spec <- function(data) {
+  list(
+    response_name = data$response_name, provider_name = data$provider_name, within_between = data$within_between,
+    xlevels = data$xlevels, contrasts = attr(data$design, "contrasts"), intercept = data$settings$intercept,
+    min_provider_size = data$settings$min_provider_size, event_counts = data$settings$event_counts
+  )
+}
+
+# One value per observation from one value per included provider, or a single value as
+# given, so that arithmetic with it is the same scalar arithmetic the reference uses.
+model_observation_effects <- function(model, effect) {
+  effect <- unname(effect)
+  if (length(effect) == 1L) return(effect)
+  included <- which(model$providers$included)
+  if (length(effect) != length(included)) {
+    abort_invalid_input("`effect` must be a single value or one value per included provider.", arg = "effect")
+  }
+  effect[match(model$provider_index, included)]
+}
+
+# Values per observation, in the order of the rows of the input data and named by those
+# rows (observations are stored sorted by provider).
+model_input_order <- function(model, values) {
+  input_order <- order(model$row_index)
+  stats::setNames(values[input_order], model$row_index[input_order])
+}
+
 #' Build a provider-profiling model object
 #'
 #' The constructor that every fit function uses to build its object (ARCHITECTURE §E.2). It
-#' takes the [data_prepare()] output and the estimates, fills the fields that all models share,
+#' takes the [data_prepare()] output and the estimates, fills the fields that all models share
+#' (among them `data_spec`, what is needed to build a design matrix for new data),
 #' adds the family's own fields from `...`, and checks the result with `validate_pprof_model()`.
 #' Objects are compact: they keep per-observation vectors (response, linear predictor,
 #' provider index, input row) but not the design matrix, unless `keep_data = TRUE`.
@@ -57,7 +89,8 @@ new_pprof_model <- function(data, coefficients, vcov, provider_effects, linear_p
   }
   providers <- data$providers
   shared <- list(
-    call = call, formula = data$formula, terms = data$terms, spec = spec, providers = providers,
+    call = call, formula = data$formula, terms = data$terms, data_spec = model_data_spec(data), spec = spec,
+    providers = providers,
     coefficients = coefficients, vcov = vcov, provider_effects = provider_effects,
     provider_effect_variance = provider_effect_variance, response = data$response,
     linear_predictor = linear_predictor, provider_index = data$provider_index,
@@ -81,6 +114,9 @@ validate_pprof_model <- function(x) {
   if (length(missing) > 0L) fail(sprintf("missing fields %s", paste(missing, collapse = ", ")))
   if (!is.list(x$spec) || !is.character(x$spec$family) || length(x$spec$family) != 1L) {
     fail("`spec` must be a list with a single string `family`")
+  }
+  if (!is.list(x$data_spec) || !is.character(x$data_spec$provider_name) || length(x$data_spec$provider_name) != 1L) {
+    fail("`data_spec` must be a list naming the provider column")
   }
   providers <- x$providers
   if (!is.data.frame(providers) || !all(c("provider_id", "n_obs", "included") %in% names(providers))) {
