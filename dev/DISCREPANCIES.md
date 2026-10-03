@@ -140,7 +140,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Recommendation: (1), so that the other providers' results are still returned and aligned.
 - Decision owner: project lead.
 - Status: verified (V13.6); option (1) approved with the Phase 3 plan (2026-10-02). Fixed in `test_providers()` (Phase 3, step 3): every requested provider keeps its place, and a non-finite statistic gets a missing p-value and flag and a `pprof_warning_undefined_statistics` warning that names the providers. The wrapper follows when it replaces `test.logis_fe()`.
-- Regression test: `tests/testthat/test-profile-regression.R` (the `logis_fe-d04` fit); reference values for the other 29 providers come with the fixture regeneration (Phase 3, step 4).
+- Regression test: `tests/testthat/test-profile-regression.R` (the `logis_fe-d04` fit). No fixture can hold the reference's values for the other 29 providers, because `syn_d04` stores provider IDs as integers, which the reference cannot select (D-27); until the switch, `tests/testthat/test-cpp-legacy-comparison.R` checks them against the reference's `Modified_score()` bitwise. A derived dataset with double IDs would give a permanent fixture (question for the project lead, Phase 3 step 4).
 
 ### D-05: Firth with `threads > 1` stops early because of a data race
 
@@ -302,7 +302,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Recommendation: validate once in the inference layer; numeric (double or integer) scalars are accepted, and the value is used as a double, so results are identical to passing the double.
 - Decision owner: project lead.
 - Status: verified (V13.9); the recommendation was approved with the Phase 3 plan (2026-10-02). Fixed in the profiling functions (Phase 3, step 3): `null` is checked once, and a numeric scalar, double or integer, is used as a double. The wrappers follow when they replace the logistic FE methods.
-- Regression test: `tests/testthat/test-profile-regression.R` (`null = 0L` gives the `SM_output-binary-null0` values and the same tests and funnel as `null = 0`).
+- Regression test: `tests/testthat/test-profile-regression.R` (`null = 0L` gives the `SM_output-binary-null0` values, the same tests as `null = 0`, and the funnel of the `plot-binary-null0` fixture, added in Phase 3).
 
 ### D-15: Flags are factors whose levels depend on the data
 
@@ -358,7 +358,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Recommendation: fix in the data layer. Inputs that work today produce the same design matrix, column names, and contrasts (checked by fixtures); inputs that failed now work, which is a fix of a Class A crash.
 - Decision owner: project lead.
 - Status: verified (V10.12); fixed in the data layer in Phase 2 (`data_prepare()` parses formulas with `terms()` and keeps `model.matrix()` names); the fits use it from Phase 3.
-- Regression test: `tests/testthat/test-data-prepare.R` (transformed terms, interactions, and factor levels with spaces on the fixture datasets `syn_terms` and `syn_factors`); fit-level tests from Phase 3.
+- Regression test: `tests/testthat/test-data-prepare.R` (transformed terms, interactions, and factor levels with spaces on the fixture datasets `syn_terms` and `syn_factors`) and `tests/testthat/test-model-logistic-fe.R` (the fits equal the reference's fits of the same models with the terms as columns and the levels renamed, the fixtures `logis_fe-terms-*-columns` and `logis_fe-factors-nospaces-formula`, added in Phase 3).
 
 ### D-19: SM intervals misaligned for non-numeric provider IDs
 
@@ -533,7 +533,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Recommendation: fix for two covariates by building the null data by name (the null model is well defined and the reference algorithm applies unchanged). For one covariate, raise a classed error (`pprof_error_unsupported_inference`) until a provider-effects-only null fit is specified and validated, because no reference value exists for it.
 - Decision owner: project lead.
 - Status: verified (V13.19); the recommendation was approved with the Phase 3 plan (2026-10-02), and the expected value of `summary-screening-twocov-lr` comes from reference fits (the per-case expectations). Fixed in `test_coefficients()` (Phase 3, step 3): the null model is built from the design by column name, so two covariates work, and a model with one covariate raises `pprof_error_unsupported_inference`. The wrapper follows when it replaces `summary.logis_fe()`.
-- Regression test: `tests/testthat/test-inference-coefficients.R` (the x2 statistic of a two-covariate fit against the reference's one-covariate fit; the classed error with one covariate).
+- Regression test: `tests/testthat/test-inference-coefficients.R` (both statistics of a two-covariate fit against K-101 from the reference's one-covariate fits, `logis_fe-screening-x2`, added in Phase 3, and `logis_fe-screening-onecov`; the classed error with one covariate).
 
 ### D-31: Logistic RE/CRE summaries report p-values above 1
 
