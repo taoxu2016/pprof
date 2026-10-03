@@ -41,3 +41,15 @@ test_that("the D-30 expectation applies K-101 to the reference's one-covariate f
   expect_true(all(result$value$stat > 0))
   expect_identical(result$value[["p value"]], stats::pchisq(result$value$stat, 1, lower.tail = FALSE))
 })
+
+test_that("the D-08 partial matches are allowed only where the reference code remains (DEC-021)", {
+  allowed <- function(id) reference_allowed_partial_matches(reference_fixture(id)$case)
+  expect_identical(allowed("SM_output-binary-default"), character())
+  expect_identical(allowed("confint-binary-sm-exact"), character())
+  expect_identical(allowed("caterpillar-logis-re-extreme"), character())
+  re_confint <- Filter(function(id) {
+    case <- reference_fixture(id)$case
+    identical(case$fun, "confint") && startsWith(reference_parent_ids(case)[1], "logis_re")
+  }, reference_case_ids("confint"))
+  expect_identical(allowed(re_confint[1]), "partial match of 'obs' to 'observation'")
+})

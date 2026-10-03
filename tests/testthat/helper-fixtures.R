@@ -10,12 +10,21 @@
 reference_cache <- new.env(parent = emptyenv())
 
 # Partial matching is reported while reference cases run (brief §5.5). The reference relies
-# on two partial matches (D-08); those are allowed until the code that contains them is
-# rewritten. Any other partial match fails the test.
-reference_allowed_partial_matches <- c(
-  "partial match of 'obs' to 'observation'",
-  "partial match of 'data_includ' to 'data_include'"
-)
+# on two partial matches (D-08), each allowed only in the cases that still run the reference
+# code containing it (DEC-021): `obs` in confint() for logistic RE and CRE fits (the logistic
+# FE method that also used it was replaced in Phase 3) and `data_includ` in summary() for
+# linear RE and CRE fits. Any other partial match fails the test.
+reference_allowed_partial_matches <- function(case) {
+  parent_funs <- vapply(reference_parent_ids(case), function(id) reference_fixture(id)$case$fun, character(1))
+  allowed <- character()
+  if (identical(case$fun, "confint") && any(parent_funs %in% c("logis_re", "logis_cre"))) {
+    allowed <- c(allowed, "partial match of 'obs' to 'observation'")
+  }
+  if (identical(case$fun, "summary") && any(parent_funs %in% c("linear_re", "linear_cre"))) {
+    allowed <- c(allowed, "partial match of 'data_includ' to 'data_include'")
+  }
+  allowed
+}
 
 # PPROF_REFERENCE_CORE and PPROF_REFERENCE_FULL override the fixture directories, for
 # checking a newly generated set before it is committed and for the validation runner.
@@ -95,7 +104,7 @@ reference_run <- function(id, set = "core") {
   on.exit(options(old), add = TRUE)
   withr::local_collate("C")
   res <- run_reference_case(case, reference_datasets_for(case, set), results,
-                            allowed_warnings = reference_allowed_partial_matches)
+                            allowed_warnings = reference_allowed_partial_matches(case))
   reference_cache[[key]] <- res
   res
 }
