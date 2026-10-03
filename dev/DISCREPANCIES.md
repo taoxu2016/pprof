@@ -140,7 +140,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Recommendation: (1), so that the other providers' results are still returned and aligned.
 - Decision owner: project lead.
 - Status: verified (V13.6); option (1) approved with the Phase 3 plan (2026-10-02). Fixed in `test_providers()` (Phase 3, step 3): every requested provider keeps its place, and a non-finite statistic gets a missing p-value and flag and a `pprof_warning_undefined_statistics` warning that names the providers. The wrapper follows when it replaces `test.logis_fe()`.
-- Regression test: `tests/testthat/test-profile-regression.R` (the `logis_fe-d04` fit). No fixture can hold the reference's values for the other 29 providers, because `syn_d04` stores provider IDs as integers, which the reference cannot select (D-27); until the switch, `tests/testthat/test-cpp-legacy-comparison.R` checks them against the reference's `Modified_score()` bitwise. A derived dataset with double IDs would give a permanent fixture (question for the project lead, Phase 3 step 4).
+- Regression test: `tests/testthat/test-profile-regression.R` (the `logis_fe-d04` fit). No fixture can hold the reference's values for the other 29 providers, because `syn_d04` stores provider IDs as integers, which the reference cannot select (D-27); `tests/testthat/test-cpp-legacy-comparison.R` checked them against the reference's `Modified_score()` bitwise until that routine was removed at the switch (Phase 3, 2026-10-03). A derived dataset with double IDs would give a permanent fixture (question for the project lead, Phase 3 step 4).
 
 ### D-05: Firth with `threads > 1` stops early because of a data race
 
