@@ -93,11 +93,34 @@ engine_random_inputs <- function(seed) {
 # case: there the reference ran no iterations because backtrack = 2 selects no branch of its
 # BAN loop, which the adapter's logical argument cannot express (the wrapper rejects the
 # value instead).
-engine_reference_ids <- function(set = "core") {
+engine_reference_ids <- function(set = "core", fun = "logis_fe") {
   manifest <- reference_manifest(set)
   if (is.null(manifest)) return(character())
   keep <- vapply(manifest$cases, function(entry) {
-    identical(entry[["fun"]], "logis_fe") && identical(entry[["outcome"]], "value")
+    identical(entry[["fun"]], fun) && identical(entry[["outcome"]], "value")
   }, logical(1))
   setdiff(vapply(manifest$cases[keep], `[[`, character(1), "id"), "logis_fe-binary-ban-backtrack2")
+}
+
+# --- Firth (Phase 4) ------------------------------------------------------------------------
+
+# Inputs of the Firth engine for a logis_firth() fixture case: the data and starting values
+# as logis_fe() prepares them (logis_firth() copies that code, BEHAVIOR_SPECS §3), and the
+# case's settings with the reference's Firth defaults (K-33: max.iter = 1000).
+firth_case_inputs <- function(case, datasets) {
+  inputs <- engine_case_inputs(case, datasets)
+  max_iter <- reference_resolve_args(case$args, datasets, list())[["max.iter"]]
+  inputs$max_iter <- as.integer(if (is.null(max_iter)) 1000 else max_iter)
+  inputs
+}
+
+firth_fit <- function(inputs, threads = inputs$threads, max_iter = inputs$max_iter, tol = inputs$tol,
+                      bound = inputs$bound) {
+  cpp_logistic_firth(inputs$response, inputs$design, inputs$sizes, inputs$gamma, inputs$beta, as.integer(max_iter),
+                     tol, bound, as.integer(threads))
+}
+
+# The criterion of every iteration as the reference printed it (see engine_log()).
+firth_log <- function(fit) {
+  formatC(fit$history[, "coefficients"], format = "e", digits = 3)
 }
