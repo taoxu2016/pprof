@@ -58,6 +58,9 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-36 | messages and side effects | Presentation | verified | `linear_fe`, `linear_re`, `logis_re` always print messages; attaching pprof prints a `car` message; `bar_plot()` triggers a ggplot2 deprecation warning |
 | D-37 | vignettes | C | verified | Describe a different clamp, nonexistent functions, and calls that now fail |
 | D-38 | `logis_fe` with collinear covariates | C | verified | Unidentified estimates with variances near 7e13 and no rank-deficiency warning |
+| D-39 | `logis_fe` inputs | A | decided (fix) | Non-binary outcomes, `max.iter` <= 0, `tol` <= 0, and `bound` <= 0 return meaningless or unfitted results without a warning |
+| D-40 | AUC without pROC | none (tolerance) | verified; awaiting decision | The Mann-Whitney AUC equals pROC's bitwise in 57 of 59 fits and differs in the last bit in 2 |
+| D-41 | `logis_fe`, `logis_firth` with factor IDs | A | verified | Fail when screening excludes a provider: the excluded factor levels become empty provider blocks |
 
 ---
 
@@ -643,3 +646,64 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: project lead for (1); methodology owner for (2) or (3).
 - Status: verified (Phase 1 fixtures, 2026-10-02).
 - Regression test: the fixtures above; the warning is tested from Phase 3.
+
+### D-39: `logis_fe` accepts inputs without checking them
+
+- Component: `logis_fe` (`R/logis_fe.R:125-312`, which validates no setting), `logis_BIN_fe_prov` and `logis_fe_prov` (`src/Fixed_effect.cpp`).
+- Class (proposed): A, like D-22 and D-23; approved as Class A with the Phase 3 plan (2026-10-02).
+- Description: The reference fits whatever it is given. Running it on `ExampleDataBinary` (2026-10-02) showed:
+  - an outcome other than 0 and 1: with the values 0 and 0.5 it returns a quasi-likelihood fit (first coefficient 0.482 instead of 1.093); with 0 and 2 the fit diverges and runs to the iteration limit (10,001 SerBIN iterations, provider effects between 14 and 34), and reports convergence;
+  - `max.iter` <= 0: SerBIN with 0 runs one iteration; BAN with 0, and both algorithms with a negative value, return the starting values (every coefficient 0, every provider effect -0.457), reported as converged;
+  - `tol` <= 0: the stopping rule is never met, so the fit runs `max.iter + 1` (SerBIN) or `max.iter` (BAN) iterations and reports convergence;
+  - `bound` = 0 sets every provider effect to their median (-0.874 for all 100 providers); a negative `bound` fails inside Armadillo ("clamp(): min_val must be less than max_val").
+  These inputs work as one would expect: a logical outcome (identical to 0 and 1), any `cutoff` (inclusion is n_i >= `cutoff`, so values <= 1 include every provider and 9.5 acts as 10), and a non-integer `max.iter` (Rcpp truncates it).
+- Minimal reproducible example:
+  ```r
+  data(ExampleDataBinary)
+  d <- data.frame(Y = ExampleDataBinary$Y, ProvID = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+  logis_fe(data = d, Y.char = "Y", Z.char = paste0("z", 1:5), ProvID.char = "ProvID", method = "BAN",
+           max.iter = 0, message = FALSE)$coefficient$beta   # all 0
+  ```
+- Affected outputs: everything from such fits.
+- Statistical impact: severe and silent where a result is returned.
+- Options: (1) reject the values with `pprof_error_invalid_input`; (2) reproduce them in the compatibility wrapper (Class B).
+- Recommendation: (1). `fit_logistic_fe()` requires a binary outcome and positive `max_iter`, `tol`, and `effect_bound` (NAMING.md §4), so the wrapper rejects these values too. The wrapper keeps the cases that work: it passes `min_provider_size = max(1, ceiling(cutoff))`, which includes the same providers, and truncates `max.iter` as Rcpp does. Two inputs that already failed fail earlier and with a classed condition: an outcome with a single value (the reference fails after fitting, in pROC: "'response' must have two levels") gives `pprof_error_data`, and an infinite covariate (the reference's solve fails: "solve(): solution not found") gives `pprof_error_invalid_input`.
+- Decision owner: project lead.
+- Status: decided (fix) with the Phase 3 plan; fixed in `fit_logistic_fe()` (Phase 3, step 2); the wrapper follows when it replaces `logis_fe()`.
+- Regression test: `tests/testthat/test-model-logistic-fe.R` ("fit_logistic_fe() rejects invalid settings", "the outcome must be binary with both values").
+
+### D-40: The AUC computed without pROC differs from pROC's in the last bit for some fits
+
+- Component: `fit_logistic_fe()` (`logistic_fe_auc()` in `R/model-logistic-fe.R`), which replaces `pROC::auc()` (`R/logis_fe.R:302-303`) under DEC-009.
+- Class (proposed): none (tolerance), like D-20.
+- Description: The rewrite computes the AUC of the fitted probabilities by the Mann-Whitney formula with ties counted one half, choosing the direction as `pROC::auc()` does by default (K-22). pROC integrates the ROC curve with the trapezoidal rule. The two agree in exact arithmetic. On the 59 `logis_fe` fit fixtures that return a value, the rewrite's AUC equals pROC's bitwise in 57 and differs by one unit in the last place in two (`logis_fe-binary-serbin-maxiter3`, 1.2e-16 relative; `logis_fe-medium-tight`, 1.4e-16), while pROC applied to the rewrite's fitted probabilities reproduces every fixture's AUC exactly.
+- Minimal reproducible example: the AUC of `fit_logistic_fe()` for the case `logis_fe-binary-serbin-maxiter3` against the fixture's `AUC`.
+- Affected outputs: `AUC` of logistic fixed-effect fits (and of Firth fits from Phase 4).
+- Statistical impact: none.
+- Options: (1) accept rounding-level differences and compare the AUC at the closed-form tier; (2) reimplement pROC's ROC-curve integration in base R to match it bitwise; (3) keep pROC.
+- Recommendation: (1). The Mann-Whitney formula is the definition the conventions register states (K-22) and the easier one to audit. DEC-009 asked for an equality test proving identical results; the tests show equality to the last bit (tie-heavy data and both directions in `test-model-logistic-fe.R`, all 59 fits in `test-model-logistic-fe-reference.R`).
+- Decision owner: project lead.
+- Status: verified (2026-10-02); awaiting the project lead's decision.
+- Regression test: the two tests above.
+
+### D-41: `logis_fe` and `logis_firth` fail with factor provider IDs when screening excludes a provider
+
+- Component: `logis_fe` (`R/logis_fe.R:214`, `n.prov <- sapply(split(data[, Y.char], data[, ProvID.char]), length)`), and the same code in `logis_firth` (`R/logis_firth.R`).
+- Class (proposed): A
+- Description: After screening, a factor provider column keeps the levels of the excluded providers, so `split()` returns empty groups and `n.prov` contains zeros. The C++ engines then address an empty block of rows and fail with "Col::subvec(): indices out of bounds or incorrectly used". With numeric or character IDs `split()` sees only the remaining values and the fit works; the fixtures with factor IDs (`logis_fe-extreme-fac`) exclude no provider. Found by the live comparison of `fit_logistic_fe()` with `logis_fe()` (Phase 3, step 2).
+- Minimal reproducible example:
+  ```r
+  data(ExampleDataBinary)
+  d <- data.frame(Y = ExampleDataBinary$Y, ProvID = factor(sprintf("P%03d", ExampleDataBinary$ProvID)),
+                  ExampleDataBinary$Z)
+  logis_fe(data = d, Y.char = "Y", Z.char = paste0("z", 1:5), ProvID.char = "ProvID", cutoff = 60, message = FALSE)
+  #> Error: Col::subvec(): indices out of bounds or incorrectly used
+  ```
+  With `ProvID` as character strings the same call returns a fit of the 97 remaining providers.
+- Affected outputs: `logis_fe()` and `logis_firth()` with factor IDs whenever a provider is excluded.
+- Statistical impact: none on cases that work.
+- Options: index providers through the data layer, which drops unused levels.
+- Recommendation: fix. `fit_logistic_fe()` returns the same fit as with the labels as character strings.
+- Decision owner: project lead.
+- Status: verified (2026-10-02); fixed in `fit_logistic_fe()`; `logis_firth()` follows in Phase 4.
+- Regression test: `tests/testthat/test-model-logistic-fe.R` ("factor provider IDs work when screening excludes providers").

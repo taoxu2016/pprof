@@ -146,6 +146,7 @@ Fields of model and result objects are snake_case nouns. Shared fields use the s
 | Field | Meaning |
 |---|---|
 | `call`, `formula`, `terms` | as in base R models |
+| `data_spec` | how the data were prepared: response and provider names, decomposed covariates, factor levels and contrasts of the design, the data layer's settings (added in Phase 3, for `predict()` and for rebuilding the design, DEC-005) |
 | `spec` | the model specification: family, method, settings |
 | `providers` | provider table: `provider_id`, `provider_value` (the ID as it appears in the data, keeping its type; DEC-028), `n_obs`, `n_events` (binary outcomes), `included`, `no_events`, `all_events` |
 | `coefficients` | covariate coefficients, named numeric vector |
@@ -155,7 +156,7 @@ Fields of model and result objects are snake_case nouns. Shared fields use the s
 | `linear_predictor` | covariate linear predictor per included observation (Z beta; X beta including the intercept for RE) |
 | `response` | outcome per included observation |
 | `provider_index` | integer index into `providers` per included observation |
-| `convergence` | `iterations`, `converged`, `criterion`, `stop_rule`, `tol`, `max_iter` |
+| `convergence` | `iterations`, `converged`, `criterion`, `stop_rule`, `tol`, `max_iter`; for iterative engines also `criteria` (each criterion's final value) and `history` (the criteria of every iteration) |
 | `loglik`, `aic`, `bic`, `auc`, `sigma` | fit statistics where defined |
 | `n_obs`, `n_providers` | dimensions after screening |
 | `package_version` | version of pprof that built the object |
@@ -177,6 +178,8 @@ Conditions carry classes so that tests and callers can match them without parsin
 | `pprof_warning` | parent class of every pprof warning |
 | `pprof_warning_not_converged` | the iteration limit was reached |
 | `pprof_warning_screening` | providers were excluded by `min_provider_size` |
+| `pprof_warning_rank_deficient` | the covariates are linearly dependent within providers, so some coefficients are not identified (D-38; added in Phase 3) |
+| `pprof_warning_unknown_providers` | new data name providers that the model has no effect for (added in Phase 3) |
 | `pprof_message` | parent class of every message from the verbosity helper |
 | `pprof_deprecated` | a compatibility wrapper was called (warned once per session) |
 
