@@ -1,10 +1,10 @@
 {
   "fixture_set": "full",
   "format_version": 1,
-  "generated_at": "2026-10-03 16:24:43 UTC",
-  "generation_seconds": 52.7,
+  "generated_at": "2026-10-03 22:32:22 UTC",
+  "generation_seconds": 48.2,
   "generator": {
-    "git_commit": "03a7b9074ba2e9ddcf87e72e7c5bf030bc2b659b",
+    "git_commit": "56701e62632e703b5a4e729ce1cc2472de5cc46f",
     "dirty": false,
     "inputs": ["dev/reference/generate_fixtures.R", "dev/reference/cases.R", "dev/reference/datasets.R", "dev/reference/library-lock.json", "tests/testthat/helper-reference-cases.R"],
     "command": "Rscript dev/reference/generate_fixtures.R "

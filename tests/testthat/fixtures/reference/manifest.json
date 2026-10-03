@@ -1,10 +1,10 @@
 {
   "fixture_set": "core",
   "format_version": 1,
-  "generated_at": "2026-10-03 16:23:48 UTC",
-  "generation_seconds": 58.2,
+  "generated_at": "2026-10-03 22:31:32 UTC",
+  "generation_seconds": 58.1,
   "generator": {
-    "git_commit": "03a7b9074ba2e9ddcf87e72e7c5bf030bc2b659b",
+    "git_commit": "56701e62632e703b5a4e729ce1cc2472de5cc46f",
     "dirty": false,
     "inputs": ["dev/reference/generate_fixtures.R", "dev/reference/cases.R", "dev/reference/datasets.R", "dev/reference/library-lock.json", "tests/testthat/helper-reference-cases.R"],
     "command": "Rscript dev/reference/generate_fixtures.R "
@@ -295,6 +295,14 @@
       "name": "syn_d04",
       "file": "datasets/syn_d04.rds",
       "md5": "3328f148c9710ed2087bd28479a3aff3",
+      "class": "data.frame",
+      "rows": 1200,
+      "source": "dev/reference/datasets.R::reference_datasets()"
+    },
+    {
+      "name": "syn_d04_double",
+      "file": "datasets/syn_d04_double.rds",
+      "md5": "26e7033e8b19d258713c41c40bcee37a",
       "class": "data.frame",
       "rows": 1200,
       "source": "dev/reference/datasets.R::reference_datasets()"
@@ -1290,6 +1298,23 @@
       "tier": "iterative",
       "heavy": false,
       "notes": "D-04 parent",
+      "outcome": "value",
+      "error": null,
+      "iterations": 4,
+      "probe_identical": null
+    },
+    {
+      "id": "logis_fe-d04-double",
+      "file": "logis_fe-d04-double.rds",
+      "md5": "29eceb515fd8d87b0d15573934f146cf",
+      "fun": "logis_fe",
+      "call": "logis_fe(data = ref_dataset(\"syn_d04_double\"), Y.char = \"Y\", Z.char = \"x1\", ProvID.char = \"ProvID\", threads = 1)",
+      "parents": null,
+      "datasets": "syn_d04_double",
+      "seed": null,
+      "tier": "iterative",
+      "heavy": false,
+      "notes": "D-04 expected-result parent",
       "outcome": "value",
       "error": null,
       "iterations": 4,
@@ -2363,6 +2388,23 @@
       "notes": "D-04",
       "outcome": "error",
       "error": "row names supplied are of the wrong length",
+      "iterations": null,
+      "probe_identical": null
+    },
+    {
+      "id": "test-d04-score-standard-others",
+      "file": "test-d04-score-standard-others.rds",
+      "md5": "010ea2399d70959dc5739957f6a9e0d8",
+      "fun": "test",
+      "call": "test(fit = ref_fit(\"logis_fe-d04-double\"), parm = c(1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30), test = \"score\", score_modified = FALSE, threads = 1)",
+      "parents": "logis_fe-d04-double",
+      "datasets": null,
+      "seed": null,
+      "tier": "exact",
+      "heavy": false,
+      "notes": "D-04 expected result: the providers other than provider 5",
+      "outcome": "value",
+      "error": null,
       "iterations": null,
       "probe_identical": null
     },
