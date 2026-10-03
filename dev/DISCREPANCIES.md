@@ -644,8 +644,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reproduce the numbers and add a classed warning (`pprof_warning_rank_deficient`) when the design is rank deficient; (2) stop with a classed error (Class B: a result becomes an error); (3) drop aliased columns as `glm()` does (Class B).
 - Recommendation: (1). Methodology owners may prefer (3); recorded as part of question M-17.
 - Decision owner: project lead for (1); methodology owner for (2) or (3).
-- Status: verified (Phase 1 fixtures, 2026-10-02).
-- Regression test: the fixtures above; the warning is tested from Phase 3.
+- Status: verified (Phase 1 fixtures, 2026-10-02); option (1) implemented (Phase 3): `fit_logistic_fe()` warns with `pprof_warning_rank_deficient` when the provider-centered design is rank deficient and fits as the reference does, and the `logis_fe()` wrapper passes the warning on; options (2) and (3) remain question M-17.
+- Regression test: the fixtures above, and `tests/testthat/test-model-logistic-fe.R` (the warning, with estimates as the reference's).
 
 ### D-39: `logis_fe` accepts inputs without checking them
 
