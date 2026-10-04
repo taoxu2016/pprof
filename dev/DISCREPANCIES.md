@@ -24,13 +24,13 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-02 | `logis_fe` help | C | verified | `backtrack` documented default FALSE (code TRUE); `stop` help refers to `iter.max` |
 | D-03 | C++ fitters | C (message); loop bounds preserved | verified | No convergence status; "converged" printed at the iteration limit; SerBIN can run `max_iter + 1` |
 | D-04 | `test.logis_fe(score_modified = FALSE)` | A | verified | Non-finite statistics are dropped, so the result no longer aligns with providers and `test()` errors |
-| D-05 | `logis_firth(threads > 1)` | A | verified; fixed in the C++ engine (Phase 4) | Data race on `d_beta` stops the iteration after 1 to 5 steps; beta off by up to 0.57 |
+| D-05 | `logis_firth(threads > 1)` | A | verified; fixed (Phase 4) | Data race on `d_beta` stops the iteration after 1 to 5 steps; beta off by up to 0.57 |
 | D-06 | `test.logis_fe(test = "robust_wald")` | A | verified | Passes validation, returns NULL |
 | D-07 | `plot.logis_fe(test = "exact")` | A | verified | Always errors (`.data` pronoun outside a data mask) |
 | D-08 | several methods | A | verified | Rely on partial matching of `$` (`fit$obs`, `object$data_includ`) |
 | D-09 | `print` methods | Presentation | verified | `print.logis_cre` unregistered; all RE/CRE prints dump the whole object |
 | D-10 | `summary.logis_fe(test = "lr"/"score")` | B | verified | Null refits ignore the original fit's settings; the likelihood clamp hard-codes 10; a smaller `cutoff` makes the refit fail |
-| D-11 | `linear_re`, `logis_re` vector interface | A | verified | `cbind()` coerces mixed inputs to character; no final `else` |
+| D-11 | `linear_re`, `logis_re` vector interface | A | verified; fixed in the wrappers (Phase 4) | `cbind()` coerces mixed inputs to character; no final `else` |
 | D-12 | `logis_firth` result | B (question M-2) | verified | Class `logis_fe` with unpenalized variance, log-likelihood, AIC, BIC |
 | D-13 | `linear_cre`, `logis_cre` | B (question M-3) | verified | Provider means computed before complete-case filtering |
 | D-14 | `null` validation | A | verified | Integer `null` accepted by `test()`, rejected by `SM_output()`, `confint()`, `plot()` |
@@ -44,7 +44,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-22 | `logis_fe(threads < 1)` | A | verified | Uninitialized information matrix; silently returns beta near 0 |
 | D-23 | `logis_fe(method = "BAN", backtrack = 2)` | A | verified | Runs zero iterations and returns the starting values |
 | D-24 | `logis_fe` default stopping rule | B | verified | `stop = "or"` can stop before provider effects converge (0.04 logit error at n = 1.2M) |
-| D-25 | `logis_firth` help | C | verified | Help says `max.iter` defaults to 10,000; code default is 1,000 |
+| D-25 | `logis_firth` help | C | verified; fixed (Phase 4) | Help says `max.iter` defaults to 10,000; code default is 1,000 |
 | D-26 | `test.logis_fe(score_modified = FALSE)` help | C (question M-7) | verified | Called a "standard score test" but does not refit under the null |
 | D-27 | `parm` with integer provider IDs | A | verified | `parm = 1:3` fails the class check for an integer ID column |
 | D-28 | factor provider IDs in `confint.logis_fe` | A | verified | Exact and score intervals look up gamma by the factor's integer code |
@@ -60,8 +60,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-38 | `logis_fe` with collinear covariates | C | verified | Unidentified estimates with variances near 7e13 and no rank-deficiency warning |
 | D-39 | `logis_fe`, `logis_firth` inputs | A | decided (fix) | Non-binary outcomes, `max.iter` <= 0, `tol` <= 0, and `bound` <= 0 return meaningless or unfitted results without a warning |
 | D-40 | AUC without pROC | none (tolerance) | verified; decided (option 1, Phase 3 gate) | The Mann-Whitney AUC equals pROC's bitwise in 57 of 59 fits and differs in the last bit in 2 |
-| D-41 | `logis_fe`, `logis_firth` with factor IDs | A | verified | Fail when screening excludes a provider: the excluded factor levels become empty provider blocks |
-| D-42 | `logis_firth` with singular information | A | verified; fixed in the C++ engine (Phase 4) | Terminates the R session when the Schur complement of the information cannot be inverted |
+| D-41 | `logis_fe`, `logis_firth` with factor IDs | A | verified; fixed (Phases 3 and 4) | Fail when screening excludes a provider: the excluded factor levels become empty provider blocks |
+| D-42 | `logis_firth` with singular information | A | verified; fixed (Phase 4) | Terminates the R session when the Schur complement of the information cannot be inverted |
 
 ---
 
@@ -84,8 +84,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) fix the count in the message; (2) also change inclusion to `>` to match the message (Class B, not proposed).
 - Recommendation: (1). The new provider table keeps excluded providers with `included = FALSE` and the screening notice reports the true count.
 - Decision owner: project lead.
-- Status: verified (V10.8); option (1) fixed: `fit_logistic_fe()` warns with `pprof_warning_screening` and the true count (Phase 3, step 2), and the `logis_fe()` wrapper keeps the reference's wording with the true count (Phase 3, step 5).
-- Regression test: the inclusion rule (n_i >= `min_provider_size`, including a provider of exactly that size) in `tests/testthat/test-data-prepare.R` (Phase 2); the wrapper's warning and its count in `tests/testthat/test-compat-logis-fe.R`.
+- Status: verified (V10.8); option (1) fixed: `fit_logistic_fe()` warns with `pprof_warning_screening` and the true count (Phase 3, step 2), and the `logis_fe()` wrapper keeps the reference's wording with the true count (Phase 3, step 5). The same holds for `fit_logistic_firth()` (Phase 4, step 2) and the `logis_firth()` wrapper (Phase 4, step 3).
+- Regression test: the inclusion rule (n_i >= `min_provider_size`, including a provider of exactly that size) in `tests/testthat/test-data-prepare.R` (Phase 2); the wrappers' warning and its count in `tests/testthat/test-compat-logis-fe.R` and `tests/testthat/test-compat-fits.R`.
 
 ### D-02: `logis_fe` help states wrong defaults
 
@@ -119,8 +119,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) keep the loop bounds, add diagnostics (iterations, converged flag, final criterion, stop rule) and warn with `pprof_warning_not_converged` when the limit is reached; (2) also change SerBIN to `iter < max_iter` (Class B, not proposed).
 - Recommendation: (1). Diagnostics are additive (brief §5.2).
 - Decision owner: project lead.
-- Status: verified (V10.4); option (1) fixed: `fit_logistic_fe()` keeps the convergence diagnostics and warns with `pprof_warning_not_converged` (Phase 3, step 2); the `logis_fe()` wrapper prints "not converged after N iterations!" and passes the warning on (Phase 3, step 5).
-- Regression test: `tests/testthat/test-model-logistic-fe.R` (4 SerBIN iterations for `max_iter = 3`, `converged = FALSE`, the warning class) and `tests/testthat/test-compat-logis-fe.R` (the wrapper's message and warning).
+- Status: verified (V10.4); option (1) fixed: `fit_logistic_fe()` keeps the convergence diagnostics and warns with `pprof_warning_not_converged` (Phase 3, step 2); the `logis_fe()` wrapper prints "not converged after N iterations!" and passes the warning on (Phase 3, step 5). Likewise for Firth: `fit_logistic_firth()` keeps the diagnostics and warns (Phase 4, step 2), and the `logis_firth()` wrapper prints "Algorithm with N cores not converged after N iterations." and passes the warning on (Phase 4, step 3).
+- Regression test: `tests/testthat/test-model-logistic-fe.R` (4 SerBIN iterations for `max_iter = 3`, `converged = FALSE`, the warning class), `tests/testthat/test-model-logistic-firth.R` (3 Firth iterations for `max_iter = 3`), and `tests/testthat/test-compat-logis-fe.R` and `tests/testthat/test-compat-fits.R` (the wrappers' messages and warnings).
 
 ### D-04: Standard score test drops non-finite statistics
 
@@ -160,8 +160,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) restructure the parallel loop so the criterion is computed from shared state, with no R API calls or exceptions inside the region; (2) run Firth single-threaded only.
 - Recommendation: (1). Results with `threads > 1` must then match `threads = 1` within the Tier 2 tolerance. Fixtures are generated with `threads = 1`, which the reference computes correctly (V12.1).
 - Decision owner: project lead.
-- Status: verified (V12.3); fixed in the C++ engine (Phase 4, step 1, 2026-10-03). `cpp_logistic_firth()` (`src/logistic/firth.cpp`) computes each provider's part in parallel into its own slots and adds every sum over providers in provider order, as the reference does with one thread. Its results with 2 threads are bitwise identical to those with 1 thread, which are bitwise identical to the reference's single-threaded routine. Its parallel regions contain no R API call, and no exception leaves them. `fit_logistic_firth()` and `logis_firth()` use it from steps 2 and 3.
-- Regression test: `tests/testthat/test-cpp-firth.R` ("two threads give results identical to one thread, and repeated runs agree (D-05)": bitwise, on four datasets) and `tests/testthat/test-model-logistic-firth.R` ("two threads give a fit identical to one thread (D-05)", for `fit_logistic_firth()`); both run two threads where OpenMP is available.
+- Status: verified (V12.3); fixed in the C++ engine (Phase 4, step 1, 2026-10-03). `cpp_logistic_firth()` (`src/logistic/firth.cpp`) computes each provider's part in parallel into its own slots and adds every sum over providers in provider order, as the reference does with one thread. Its results with 2 threads are bitwise identical to those with 1 thread, which are bitwise identical to the reference's single-threaded routine. Its parallel regions contain no R API call, and no exception leaves them. `fit_logistic_firth()` uses it from step 2, and the `logis_firth()` wrapper from the switch (step 3).
+- Regression test: `tests/testthat/test-cpp-firth.R` ("two threads give results identical to one thread, and repeated runs agree (D-05)": bitwise, on four datasets), `tests/testthat/test-model-logistic-firth.R` ("two threads give a fit identical to one thread (D-05)", for `fit_logistic_firth()`), and `tests/testthat/test-compat-fits.R` (the same for the wrapper); all run two threads where OpenMP is available.
 
 ### D-06: `test = "robust_wald"` returns NULL
 
@@ -216,8 +216,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: new `print` methods that show a compact summary.
 - Recommendation: new print methods for every class (Phase 3 onward).
 - Decision owner: project lead.
-- Status: verified (V15.8).
-- Regression test: snapshot tests of the new print methods.
+- Status: verified (V15.8). The new models print compactly through `print.pprof_model()` (Phase 3; the Phase 4 models from step 2). The wrappers keep the reference's printing (Phase 4, step 3): `print.linear_re()`, `print.logis_re()`, and `print.linear_cre()` drop the lme4 fit and print the rest with `print.default()`, and no method is registered for `logis_cre`.
+- Regression test: the snapshot in `tests/testthat/test-present.R` and the print checks in `tests/testthat/test-model-linear-fe.R`, `test-model-mixed.R`, and `test-model-logistic-firth.R` (the new print method); `tests/testthat/test-compat-fits.R` (the wrappers' printing).
 
 ### D-10: LR and score covariate tests refit with default settings
 
@@ -246,7 +246,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 
 - Component: `linear_re` and `logis_re` (`R/linear_re.R:132-152`, `R/logis_re.R:132-151`), and the `data_include` construction in all RE/CRE fits.
 - Class (proposed): A
-- Description: The vector interface builds its data with `as.data.frame(cbind(Y, ProvID, Z))`. With a character `ProvID` and a matrix `Z`, `cbind()` makes everything character and `lmer()` fails ("response must be numeric"). When no input format matches there is no final `else`, so the error is "object 'fit_re' not found". All RE/CRE fits also build `data_include` with `cbind()`, so with character IDs `data_include$Y` is character (methods use other fields, so numbers are unaffected).
+- Description: The vector interface builds its data with `as.data.frame(cbind(Y, ProvID, Z))`. With a character `ProvID` and a matrix `Z`, `cbind()` makes everything character and `lmer()` fails ("response must be numeric"; `glmer()`: "response must be numeric or factor"), after making a factor level of every distinct covariate value. When no input format matches there is no final `else`, so the error is "object 'fit_re' not found". All RE/CRE fits also build `data_include` with `cbind()`, so with character IDs `data_include$Y` is character (methods use other fields, so numbers are unaffected).
 - Minimal reproducible example:
   ```r
   data(ExampleDataLinear)
@@ -255,13 +255,14 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
   linear_re(Y = ExampleDataLinear$Y)
   #> Error: object 'fit_re' not found
   ```
+  On the full example data the first call runs for many minutes before it fails (more than 9 minutes and 2.3 GB on 2026-10-03, when it was stopped); V15.9 ran it on the first 12 rows of providers 1 to 5, where it fails at once.
 - Affected outputs: `linear_re`, `logis_re` vector interface; `data_include` of every RE/CRE fit.
 - Statistical impact: none on cases that work.
 - Options: build data frames column by column; validate inputs with classed errors.
 - Recommendation: fix in the data layer; the compatibility wrappers keep accepting the vector interface.
 - Decision owner: project lead.
-- Status: verified (V15.9, V15.13).
-- Regression test: planned, wrapper tests with character IDs and matrix covariates.
+- Status: verified (V15.9, V15.13); fixed in the `linear_re()` and `logis_re()` wrappers (Phase 4, step 3, as the plan states): a character `ProvID` with a matrix `Z`, which `cbind()` turns into text, and a call that matches no input format raise `pprof_error_invalid_input`. No fixture covers the vector interface, so it was compared live with the reference (2026-10-03, reference library, lme4 2.0-6, Matrix 1.7-6): the reference fails on both inputs as described above (on 60 rows), and with numeric IDs (matrix or data frame `Z`) and with character IDs and a data frame `Z`, the wrappers' objects equal the reference's in every field, attribute, and message, and their lme4 fits differ only in the environments of their formulas. The wrappers build `data_include` with `cbind()` as the reference does, so it stays text with character IDs; the old methods read no numbers from it. The new fits take a formula, a data frame, and a provider column, so they have no vector interface.
+- Regression test: `tests/testthat/test-compat-fits.R` ("linear_re() and logis_re() raise classed errors where the reference's vector interface failed (D-11)").
 
 ### D-12: Firth returns a `logis_fe` object with unpenalized summaries
 
@@ -274,8 +275,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) preserve: Firth objects inherit the logistic FE methods and report unpenalized quantities, plus the penalized log-likelihood as an additional field; (2) report penalized quantities or penalized-information variances (Class B).
 - Recommendation: (1) in the rewrite (`c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")`), with the penalized log-likelihood and convergence diagnostics added. Ask question M-2.
 - Decision owner: methodology owner.
-- Status: verified (V12.2); awaiting sign-off. Reproduced by `fit_logistic_firth()` (Phase 4, step 2): class `c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")`, unpenalized variances, log-likelihood, AIC, and BIC, the logistic FE methods and capabilities, and the penalized log-likelihood as the additional field `penalized_loglik`, as recommended.
-- Regression test: `tests/testthat/test-model-logistic-firth.R` (the four `logis_firth` fit fixtures; the unpenalized and penalized log-likelihoods of V12.2; the inherited methods); the method fixtures on Firth fits run through the wrappers from step 3.
+- Status: verified (V12.2); awaiting sign-off. Reproduced by `fit_logistic_firth()` (Phase 4, step 2): class `c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")`, unpenalized variances, log-likelihood, AIC, and BIC, the logistic FE methods and capabilities, and the penalized log-likelihood as the additional field `penalized_loglik`, as recommended. The `logis_firth()` wrapper builds the reference's `logis_fe` object from it (step 3).
+- Regression test: `tests/testthat/test-model-logistic-firth.R` (the four `logis_firth` fit fixtures; the unpenalized and penalized log-likelihoods of V12.2; the inherited methods); the fit fixtures and the method fixtures on Firth fits run through the wrappers from step 3 (`tests/testthat/test-reference-fits.R` and the method files).
 
 ### D-13: CRE provider means use rows that complete-case filtering later drops
 
@@ -289,7 +290,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Recommendation: preserve (1) explicitly in the data layer (`data_decompose_within_between()` runs before complete-case filtering, as an ordered, documented step), pending question M-3.
 - Decision owner: methodology owner.
 - Status: verified (V15.10); awaiting sign-off.
-- Regression test: the data layer reproduces it (`tests/testthat/test-data-prepare.R`, and the fixture `linear_cre-missing` in `test-data-reference.R`); `fit_linear_cre()` reproduces the reference's fit of `linear_cre-missing` (`tests/testthat/test-model-mixed-reference.R`, Phase 4).
+- Regression test: the data layer reproduces it (`tests/testthat/test-data-prepare.R`, and the fixture `linear_cre-missing` in `test-data-reference.R`); `fit_linear_cre()` reproduces the reference's fit of `linear_cre-missing` (`tests/testthat/test-model-mixed-reference.R`, Phase 4), and so does the `linear_cre()` wrapper (`tests/testthat/test-reference-fits.R`, from Phase 4, step 3).
 
 ### D-14: Inconsistent validation of `null`
 
@@ -330,8 +331,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: store the variance type in the model specification.
 - Recommendation: `spec$provider_variance` drives the choice. See D-32 for the related interval inconsistency.
 - Decision owner: project lead.
-- Status: verified (V14.3); made explicit in `fit_linear_fe()` (Phase 4, step 2): the setting `provider_variance` is stored in `spec$provider_variance`. The compatibility wrapper (step 3) keeps the attribute that the old methods read.
-- Regression test: linear FE fixtures for both variance types (`tests/testthat/test-model-linear-fe.R` checks that `spec$provider_variance` matches the reference's attribute).
+- Status: verified (V14.3); made explicit in `fit_linear_fe()` (Phase 4, step 2): the setting `provider_variance` is stored in `spec$provider_variance`. The `linear_fe()` wrapper sets the attribute that the old methods read from it (step 3).
+- Regression test: linear FE fixtures for both variance types (`tests/testthat/test-model-linear-fe.R` checks that `spec$provider_variance` matches the reference's attribute); `tests/testthat/test-compat-fits.R` (the wrapper's attribute for both settings).
 
 ### D-17: `data_check` stops on missing values while fits delete rows
 
@@ -463,8 +464,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: fix the documentation.
 - Recommendation: fix.
 - Decision owner: project lead.
-- Status: verified (V12.4).
-- Regression test: documentation-versus-formals test.
+- Status: verified (V12.4); fixed in the help of the `logis_firth()` wrapper (Phase 4, step 3): `max.iter` defaults to 1,000, and `tol` is described as the bound on the largest absolute change of a coefficient, the only stopping rule.
+- Regression test: not applicable (documentation); a check of the help against `formals()` is planned with the documentation of Phase 8, as for D-02.
 
 ### D-26: "Standard" score test is not the textbook standard score test
 
@@ -617,8 +618,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: one verbosity helper; drop `olsrr`; use `linewidth`.
 - Recommendation: DEC-008 (verbosity) and the dependency plan (ARCHITECTURE §H).
 - Decision owner: project lead.
-- Status: verified.
-- Regression test: tests that `verbose = FALSE` produces no output.
+- Status: verified. The new fits print nothing unless `verbose = TRUE` (Phase 3 for logistic fixed effects, Phase 4 for the others). The compatibility wrappers keep the reference's messages: `linear_fe()`, `linear_re()`, and `logis_re()` always report their input format, and the CRE wrappers print nothing (Phase 4, step 3).
+- Regression test: the tests that `verbose = FALSE` produces no output in `tests/testthat/test-model-*.R`; `tests/testthat/test-compat-fits.R` (the wrappers' messages).
 
 ### D-37: Vignettes contradict the code
 
@@ -671,8 +672,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reject the values with `pprof_error_invalid_input`; (2) reproduce them in the compatibility wrapper (Class B).
 - Recommendation: (1). `fit_logistic_fe()` requires a binary outcome and positive `max_iter`, `tol`, and `effect_bound` (NAMING.md §4), so the wrapper rejects these values too. The wrapper keeps the cases that work: it passes `min_provider_size = max(1, ceiling(cutoff))`, which includes the same providers, and truncates `max.iter` as Rcpp does. Two inputs that already failed fail earlier and with a classed condition: an outcome with a single value (the reference fails after fitting, in pROC: "'response' must have two levels") gives `pprof_error_data`, and an infinite covariate (the reference's solve fails: "solve(): solution not found") gives `pprof_error_invalid_input`.
 - Decision owner: project lead.
-- Status: decided (fix) with the Phase 3 plan; fixed in `fit_logistic_fe()` (Phase 3, step 2); the `logis_fe()` wrapper applies it from the switch (Phase 3, step 5). The same fix applies to Firth: `fit_logistic_firth()` rejects these values (Phase 4, step 2), and the `logis_firth()` wrapper from the switch (Phase 4, step 3).
-- Regression test: `tests/testthat/test-model-logistic-fe.R` ("fit_logistic_fe() rejects invalid settings", "the outcome must be binary with both values") and `tests/testthat/test-model-logistic-firth.R` ("fit_logistic_firth() rejects invalid settings and data (D-39)").
+- Status: decided (fix) with the Phase 3 plan; fixed in `fit_logistic_fe()` (Phase 3, step 2); the `logis_fe()` wrapper applies it from the switch (Phase 3, step 5). The same fix applies to Firth: `fit_logistic_firth()` rejects these values (Phase 4, step 2), and so does the `logis_firth()` wrapper from the switch (Phase 4, step 3), including the negative `bound` that terminated R.
+- Regression test: `tests/testthat/test-model-logistic-fe.R` ("fit_logistic_fe() rejects invalid settings", "the outcome must be binary with both values"), `tests/testthat/test-model-logistic-firth.R` ("fit_logistic_firth() rejects invalid settings and data (D-39)"), and the wrappers in `tests/testthat/test-compat-logis-fe.R` and `tests/testthat/test-compat-fits.R`.
 
 ### D-40: The AUC computed without pROC differs from pROC's in the last bit for some fits
 
@@ -707,8 +708,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: index providers through the data layer, which drops unused levels.
 - Recommendation: fix. `fit_logistic_fe()` returns the same fit as with the labels as character strings.
 - Decision owner: project lead.
-- Status: verified (2026-10-02); fixed in `fit_logistic_fe()` and `fit_logistic_firth()` (Phase 4, step 2); the `logis_firth()` wrapper follows in step 3.
-- Regression test: `tests/testthat/test-model-logistic-fe.R` ("factor provider IDs work when screening excludes providers") and `tests/testthat/test-model-logistic-firth.R` (the same check for Firth).
+- Status: verified (2026-10-02); fixed in `fit_logistic_fe()` (Phase 3), and so in the `logis_fe()` wrapper, and in `fit_logistic_firth()` (Phase 4, step 2), and so in the `logis_firth()` wrapper (Phase 4, step 3).
+- Regression test: `tests/testthat/test-model-logistic-fe.R` ("factor provider IDs work when screening excludes providers"), `tests/testthat/test-model-logistic-firth.R` (the same check for Firth), and the wrappers in `tests/testthat/test-compat-logis-fe.R` and `tests/testthat/test-compat-fits.R`.
 
 ### D-42: `logis_firth` terminates R when the information is singular
 
@@ -731,5 +732,5 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: report the failure as an R error.
 - Recommendation: fix. The new engine inverts outside its parallel regions and throws there; the adapter turns the exception into an R error, and the model layer reclasses it as `pprof_error_convergence`, as for logistic fixed effects.
 - Decision owner: project lead.
-- Status: verified (2026-10-03); fixed in the C++ engine (Phase 4, step 1): `cpp_logistic_firth()` raises an R error, which `fit_logistic_firth()` reclasses as `pprof_error_convergence` (step 2); the `logis_firth()` wrapper follows in step 3.
-- Regression test: `tests/testthat/test-cpp-firth.R` ("a singular information matrix ends the fit with an error, where the reference terminated R (D-42)") and `tests/testthat/test-model-logistic-firth.R` (the same for `fit_logistic_firth()`, with the class `pprof_error_convergence`).
+- Status: verified (2026-10-03); fixed in the C++ engine (Phase 4, step 1): `cpp_logistic_firth()` raises an R error, which `fit_logistic_firth()` reclasses as `pprof_error_convergence` (step 2), and the `logis_firth()` wrapper raises that error (step 3).
+- Regression test: `tests/testthat/test-cpp-firth.R` ("a singular information matrix ends the fit with an error, where the reference terminated R (D-42)"), `tests/testthat/test-model-logistic-firth.R` (the same for `fit_logistic_firth()`, with the class `pprof_error_convergence`), and `tests/testthat/test-compat-fits.R` (the wrapper).
