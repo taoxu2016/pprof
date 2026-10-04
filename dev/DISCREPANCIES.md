@@ -55,7 +55,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-33 | interval attributes | C | verified; results carry the level as a number, the wrappers keep the attributes (Phases 3 and 5) | `confidence_level` is "95 %" (FE) or "0.95 %" (RE/CRE); `logis_cre` rate interval labeled "RE logis" |
 | D-34 | provider ordering | B | verified; reproduced (Phases 3 to 5); awaiting sign-off for (2) | Character IDs are ordered by the session's collation locale, which also fixes the bootstrap draw order |
 | D-35 | bundled data docs | C | verified | `ExampleDataBinary` has 7,944 observations, documented as 7,994 |
-| D-36 | messages and side effects | Presentation | verified | `linear_fe`, `linear_re`, `logis_re` always print messages; attaching pprof prints a `car` message; `bar_plot()` triggers a ggplot2 deprecation warning, and `caterpillar_plot(use_flag = TRUE)` an unused-argument warning under ggplot2 4 |
+| D-36 | messages and side effects | Presentation | verified; the plot warnings fixed in the wrappers (Phase 6) but `geom_errorbarh()`'s | `linear_fe`, `linear_re`, `logis_re` always print messages; attaching pprof prints a `car` message; `bar_plot()` triggers a ggplot2 deprecation warning, and `caterpillar_plot(use_flag = TRUE)` an unused-argument warning under ggplot2 4 |
 | D-37 | vignettes | C | verified | Describe a different clamp, nonexistent functions, and calls that now fail |
 | D-38 | `logis_fe` with collinear covariates | C | verified | Unidentified estimates with variances near 7e13 and no rank-deficiency warning |
 | D-39 | `logis_fe`, `logis_firth` inputs | A | decided (fix) | Non-binary outcomes, `max.iter` <= 0, `tol` <= 0, and `bound` <= 0 return meaningless or unfitted results without a warning |
@@ -66,8 +66,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-44 | RE and CRE `summary()` | C | verified; fixed in the help (Phase 5) | The intercept is selected only as `"(intercept)"`, while its row is named `"(Intercept)"`; the help does not say so |
 | D-45 | `null` with more than one value | A | verified; fixed in the wrappers (Phases 3 and 5) | RE and CRE `test()` recycle it over the providers by position; every `summary()` applies it to the coefficients by position; documented as a number |
 | D-46 | RE and CRE `summary()` without the lme4 fit | A | verified; fixed in the wrappers (Phase 5) | Fails when `attr(, "model")` is missing, though the intervals need only the stored covariance |
-| D-47 | `caterpillar_plot()`, `bar_plot()` colours | Presentation | verified | Colours go to the flags present in sorted order, so the same colour can mean higher, lower, or as expected, unlike the funnel plot |
-| D-48 | `caterpillar_plot()`, `bar_plot()` help | C | verified | `bar_width` has no effect; the input is called `test_df`; infinite limits are said to arise for providers with all or no events and to be shortened |
+| D-47 | `caterpillar_plot()`, `bar_plot()` colours | Presentation | verified; reproduced in the wrappers, fixed in the new plots (Phase 6) | Colours go to the flags present in sorted order, so the same colour can mean higher, lower, or as expected, unlike the funnel plot |
+| D-48 | `caterpillar_plot()`, `bar_plot()` help | C | verified; fixed in the help (Phase 6) | `bar_width` has no effect; the input is called `test_df`; infinite limits are said to arise for providers with all or no events and to be shortened |
 
 ---
 
@@ -582,7 +582,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: fix the labels.
 - Recommendation: result objects carry the level as a number in a named field, not as a string attribute; the wrappers reproduce the old attributes.
 - Decision owner: project lead.
-- Status: verified (V15.12). New result objects carry the level as a number (Phase 3); the logistic FE wrapper reproduces the old attributes (its fixtures pass); the linear FE, RE, and CRE wrappers reproduce them too (Phase 5, step 3), including "0.95 %" and the "RE logis" label of the `logis_cre` indirect rate.
+- Status: verified (V15.12). New result objects carry the level as a number (Phase 3); the logistic FE wrapper reproduces the old attributes (its fixtures pass); the linear FE, RE, and CRE wrappers reproduce them too (Phase 5, step 3), including "0.95 %" and the "RE logis" label of the `logis_cre` indirect rate. The `caterpillar_plot()` wrapper (Phase 6, step 3) reads these attributes, as the reference does, to choose the reference line and the flags; the new `plot_caterpillar()` reads the settings of result objects.
 - Regression test: wrapper fixtures; `tests/testthat/test-compat-methods-families.R` (RE and CRE).
 
 ### D-34: Provider order depends on the collation locale
@@ -624,8 +624,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: one verbosity helper; drop `olsrr`; use `linewidth`; drop the argument ggplot2 ignores.
 - Recommendation: DEC-008 (verbosity) and the dependency plan (ARCHITECTURE §H). For the plots: `linewidth`, and no `box.linetype`, in the wrappers of Phase 6, provided the built plots stay identical (DEC-055).
 - Decision owner: project lead.
-- Status: verified. The new fits print nothing unless `verbose = TRUE` (Phase 3 for logistic fixed effects, Phase 4 for the others). The compatibility wrappers keep the reference's messages: `linear_fe()`, `linear_re()`, and `logis_re()` always report their input format, and the CRE wrappers print nothing (Phase 4, step 3). The plot warnings: the recommendation was approved with the Phase 6 plan (2026-10-04).
-- Regression test: the tests that `verbose = FALSE` produces no output in `tests/testthat/test-model-*.R`; `tests/testthat/test-compat-fits.R` (the wrappers' messages).
+- Status: verified. The new fits print nothing unless `verbose = TRUE` (Phase 3 for logistic fixed effects, Phase 4 for the others). The compatibility wrappers keep the reference's messages: `linear_fe()`, `linear_re()`, and `logis_re()` always report their input format, and the CRE wrappers print nothing (Phase 4, step 3). The plot warnings: the recommendation was approved with the Phase 6 plan (2026-10-04); the wrappers of Phase 6 (step 3) use `linewidth` in `element_line()` and no longer pass `box.linetype`, and the guard finds every built plot, guide, and theme of `bar_plot()` and `caterpillar_plot()` unchanged. One ggplot2 4 message remains: the horizontal `caterpillar_plot()` keeps the reference's `geom_errorbarh()`, which ggplot2 4.0.0 deprecates softly (a warning only where pprof itself is tested) and whose `height` it translates to `width` with the message "`height` was translated to `width`" when the plot is built; `geom_errorbar(orientation = "y")` would build a different `width` column (the ends of the bars are the same), so the change waits for Phase 8's minimum versions.
+- Regression test: the tests that `verbose = FALSE` produces no output in `tests/testthat/test-model-*.R`; `tests/testthat/test-compat-fits.R` (the wrappers' messages); `tests/testthat/test-compat-plots.R` ("caterpillar_plot() and bar_plot() draw without ggplot2 warnings (D-36)").
 
 ### D-37: Vignettes contradict the code
 
@@ -752,7 +752,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reproduce; (2) draw the limits from the variance and distribution of the test (Class B: changes the limits of full-variance plots).
 - Recommendation: reproduce (1) in the wrapper and in `funnel_limits()` for linear FE until the methodology owners answer M-18.
 - Decision owner: methodology owner.
-- Status: verified (2026-10-04, Phase 5 planning); awaiting sign-off. Reproduced in `funnel_limits()` for linear FE (limits from σ/sqrt(n_i) and normal quantiles, flags from the Wald test of the fit's provider variance; Phase 5, step 2) and in `plot.linear_fe()` (Phase 5, step 3).
+- Status: verified (2026-10-04, Phase 5 planning); awaiting sign-off. Reproduced in `funnel_limits()` for linear FE (limits from σ/sqrt(n_i) and normal quantiles, flags from the Wald test of the fit's provider variance; Phase 5, step 2) and in `plot.linear_fe()` (Phase 5, step 3); `plot_funnel()` draws those limits and flags, and its help states the discrepancy (Phase 6, step 2).
 - Regression test: the R-1 fixture cases `plot-linear-full` (the full-variance fit of the linear example) and `plot-linear-funnel-full` (that of `syn_linear_funnel`, where 8 of 40 points disagree with their flags); `tests/testthat/test-profile-families.R` ("the linear funnel has precision n_i, half-width z sigma / sqrt(n_i), and Wald flags").
 
 ### D-44: The RE and CRE summaries select the intercept only as `"(intercept)"`
@@ -808,8 +808,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reproduce in the wrappers; (2) map colours to flags by name.
 - Recommendation: (1) in `caterpillar_plot()` and `bar_plot()`, which reproduce the old presentation (DEC-013, DEC-055); (2) in the new plot functions, which share one fixed flag scale (DEC-058).
 - Decision owner: project lead.
-- Status: verified (2026-10-04, Phase 6 planning); the recommendation was approved with the Phase 6 plan (2026-10-04).
-- Regression test: planned in Phase 6: the guard of step 3 (the built colours of the wrappers) and `tests/testthat/test-present-plots.R` (the new functions' colours whatever flags occur).
+- Status: verified (2026-10-04, Phase 6 planning); the recommendation was approved with the Phase 6 plan (2026-10-04). Reproduced in the wrappers (Phase 6, step 3: the guard finds every built colour of `caterpillar_plot()` and `bar_plot()` unchanged) and stated in their help; the new plot functions map each flag to one colour (Phase 6, step 2, DEC-058).
+- Regression test: `tests/testthat/test-compat-plots.R` ("the wrappers keep pprof 1.0.3's colours, which depend on the flags present (D-47)"); `tests/testthat/test-present-plots.R` ("each flag has the same colour and shape in every plot, whatever flags occur (DEC-058, D-47)"); the guard `dev/design/phase6-facts/08_plot_guard.R` (the built colours of every old plot).
 
 ### D-48: The help of `caterpillar_plot()` and `bar_plot()` contradicts their behavior
 
@@ -822,5 +822,5 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: fix the help; or make `bar_width` set the width (a different plot for users who pass it).
 - Recommendation: fix the help of the wrappers (Phase 6, step 3).
 - Decision owner: project lead.
-- Status: verified (2026-10-04, Phase 6 planning); the recommendation was approved with the Phase 6 plan (2026-10-04).
-- Regression test: planned in Phase 6: a test that `bar_width` leaves the plot unchanged, as the help will say.
+- Status: verified (2026-10-04, Phase 6 planning); the recommendation was approved with the Phase 6 plan (2026-10-04). Fixed in the help of the wrappers (Phase 6, step 3).
+- Regression test: `tests/testthat/test-compat-plots.R` ("bar_plot()'s bar_width has no effect, as its help says (D-48)").

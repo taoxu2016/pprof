@@ -153,6 +153,8 @@ As built through Phase 4: the model layer has the files listed, and `R/model-met
 
 As built in Phase 5 (step 3): the methods of `linear_fe`, `linear_re`, `logis_re`, `linear_cre`, and `logis_cre` objects are compatibility methods over the new API (DEC-049): `R/compat-methods-linear-fe.R` (`test()`, `SM_output()`, `confint()`, `summary()`), `R/compat-methods-mixed.R` (the same four for the four RE and CRE classes), and `plot.linear_fe()` in `R/compat-plots.R`, with the reference's `ppfunnel_linear()` unchanged (DEC-034). The generics `test()` and `SM_output()` moved unchanged to `R/compat-generics.R` (DEC-045). `R/compat-convert.R` rebuilds a model from an old object (`compat_model_from_linear_fe()`, `compat_model_from_mixed()`) and builds the old result shapes. The 23 reference method files are gone; the reference's files left in `R/` are `Data.R`, `RcppExports.R` (generated), `bar_plot.R`, `caterpillar_plot.R`, `data_check.R`, and `pprof.R`, which the architecture test lists as legacy (DEC-031).
 
+As built in Phase 6: the profiling layer gained `R/profile-summaries.R` (the interval flags and reference values of K-112, the size groups and flag shares of K-113; DEC-056), which the new plots and the compatibility wrappers of the old ones share. The presentation layer's plots are built from `R/plot-blocks.R` (one flag scale, the reference line, interval ends, subtitles from the results' settings, the theme; DEC-058), which replaces `R/plot-theme.R`, and `R/plot-volume.R` adds the volume panels (DEC-059). `caterpillar_plot()` and `bar_plot()` moved to `R/compat-plots.R` (DEC-055); the reference's files left in `R/` are `Data.R`, `RcppExports.R` (generated), `data_check.R`, and `pprof.R`.
+
 ### B.3 C++ modules
 
 ```
@@ -520,10 +522,10 @@ As built in Phase 5: `test-metamorphic-profiles.R` extends layer F to the profil
 | pROC | AUC | no | rank-based AUC, identical (V10.15) | GPL ≥ 3 | 1 | remove after an equality test |
 | caret | `nearZeroVar()` in `data_check` | no | frequency-ratio and percent-unique rule with the same thresholds | GPL ≥ 2 | 72 (51 beyond ggplot2 and lme4) | remove after an equality test |
 | olsrr | VIF in `data_check` | no | VIF_j = 1/(1 − R²_j) from `lm()` | MIT | 94 (65 beyond) | remove after an equality test; also removes the `car` attach message |
-| dplyr | CRE decomposition, plot data, `bar_plot` | no | `ave()`, `rowsum()`, base data frames | MIT | 14 (8 beyond) | remove |
-| tidyselect | `all_of()` in CRE | no | | MIT | 6 | remove |
-| magrittr | `%>%` | no | native pipe (R ≥ 4.1) | MIT | 0 | remove |
-| rlang | `.data` pronoun in plots | presentation only, if at all | `aes()` with column names and `utils::globalVariables()` | MIT | 0 beyond ggplot2 | decide in Phase 6; never in numerical code |
+| dplyr | CRE decomposition, plot data, `bar_plot` | no | `ave()`, `rowsum()`, base data frames | MIT | 14 (8 beyond) | removed from Imports in Phase 6 (DEC-057): its last uses, the old plots' data preparation, are base R |
+| tidyselect | `all_of()` in CRE | no | | MIT | 6 | removed from Imports in Phase 6 (DEC-057) with the unused import tags |
+| magrittr | `%>%` | no | native pipe (R ≥ 4.1) | MIT | 0 | removed from Imports in Phase 6 (DEC-057) |
+| rlang | `.data` pronoun in plots | presentation only, if at all | `aes()` with column names and `utils::globalVariables()` | MIT | 0 beyond ggplot2 | decided in Phase 6 (DEC-057): the pronoun stays in presentation and compatibility code, imported from ggplot2, which re-exports it; rlang left Imports; never in numerical code |
 | globals | nothing (silences a check note) | no | | LGPL ≥ 2.1 | 1 | remove |
 | ggplot2 | plots | yes | | MIT | 16 | keep (Imports) |
 | scales | percent labels | yes, in plots | | MIT | 0 beyond ggplot2 | keep |
@@ -570,6 +572,8 @@ R version: keep `R (>= 4.1.0)`, the current requirement, which the native pipe n
 - They are tested against the fixtures field by field.
 
 As built through Phase 5: every fitting function and every method of pprof 1.0.3 except `bar_plot()`, `caterpillar_plot()`, and `data_check()` is a wrapper over the new API. The methods of `linear_fe`, `linear_re`, `logis_re`, `linear_cre`, and `logis_cre` objects (Phase 5, DEC-049) rebuild the model with `compat_model_from_linear_fe()` or `compat_model_from_mixed()`, which read numbers only from the numeric fields and the lme4 fit, never from `data_include`, whose columns are text when the IDs are (D-11); the standard deviations of the RE effects are recomputed from the stored variance (K-69) or read from the lme4 fit when a method needs them, as the reference does (D-46). Before the switch, a live comparison found the wrappers' values `identical()` to the old methods' on every method fixture and a grid of about 280 settings. The once-per-session deprecation warning is not in place yet (`R/compat-deprecate.R`, a later phase).
+
+As built in Phase 6: `caterpillar_plot()` and `bar_plot()` are wrappers too (DEC-055), so every function of pprof 1.0.3 except `data_check()` (Phase 8) runs on the new code. The four old plot functions live in `R/compat-plots.R`: their data come from the new code (the profiling API, `profile_funnel_limits()`, and the K-112 and K-113 functions of `R/profile-summaries.R`), in the reference's layout, and they draw with the reference's ggplot code, kept unlinted as the record of the old appearance; their data preparation is base R instead of dplyr and magrittr. A guard (`dev/design/phase6-facts/08_plot_guard.R`) compared the plots of 687 calls before and after: the built data, labels, scales, guides, and themes are identical, except that `bar_plot()`'s plot data are a data frame instead of a grouped tibble, and inputs the reference failed on without a message of its own raise classed errors.
 
 ### I.3 Timeline
 

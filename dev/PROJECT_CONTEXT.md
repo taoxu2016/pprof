@@ -2,7 +2,7 @@
 
 Living reference for the `pprof` rewrite. Requirements live in `pprof_rewrite_brief.md`; this file holds facts, conventions, and status. Section 5 began as a static read of `main` at commit `5260838`; Phase 0 verified it by running the reference (`dev/design/audit/`), and §5.7 is now the verified conventions register. The Phase 0 findings moved from §6 to `dev/DISCREPANCIES.md`.
 
-Last updated: 2026-10-04. Status: Phase 5 (inference and profiling) complete; gate approved 2026-10-04; `rewrite/phase-5` pushed to the fork, for a pull request into `rewrite/phase-4` (Phase 4's into `rewrite/phase-3`, until the earlier phases are merged into `rewrite/v2`). Phase 6 (visualization) in progress on `rewrite/phase-6` (created from `rewrite/phase-5` at `9517dfa`, not pushed): plan `dev/design/PHASE6_PLAN.md` approved 2026-10-04 with DEC-054 to DEC-060; steps 1 (fixture regeneration R-2) and 2 (the new plot functions) done; appearance approved at the check-in; steps 3 (the old plot functions as wrappers) done; next, step 4 (validation, benchmarks, documents).
+Last updated: 2026-10-04. Status: Phase 5 (inference and profiling) complete; gate approved 2026-10-04; `rewrite/phase-5` pushed to the fork, for a pull request into `rewrite/phase-4` (Phase 4's into `rewrite/phase-3`, until the earlier phases are merged into `rewrite/v2`). Phase 6 (visualization) in progress on `rewrite/phase-6` (created from `rewrite/phase-5` at `9517dfa`, not pushed): plan `dev/design/PHASE6_PLAN.md` approved 2026-10-04 with DEC-054 to DEC-060; steps 1 (fixture regeneration R-2) and 2 (the new plot functions) done; appearance approved at the check-in; step 3 (the old plot functions as wrappers) done; next, step 4 (validation, benchmarks, documents).
 
 ---
 
@@ -359,6 +359,8 @@ None of these contains the extreme cases the validation suite needs, so the edge
 | `dplyr`, `tidyselect`, `rlang` | CRE decomposition, some plotting, the `.data` pronoun | Remove from the computational core; keep in presentation only if justified |
 | `generics` (new) | `tidy`, `glance`, `augment` generics without `broom` | Add |
 
+Status after Phase 6 (the decisions are DEC-009 and ARCHITECTURE §H): RcppParallel, Matrix, and pROC left Imports in Phases 3 and 4 (pROC is suggested, for a test); dplyr, magrittr, rlang, and tidyselect in Phase 6 (DEC-057; the plots import `.data` from ggplot2); generics was added in Phase 3. caret, olsrr, and globals remain until `data_check()` is rewritten in Phase 8 (DEC-054).
+
 ---
 
 ## 6. Audit findings (verified in Phase 0)
@@ -389,17 +391,17 @@ Points that changed on verification:
 | Branch | `rewrite/v2`; each phase on a branch off it (Phase 1: `rewrite/phase-1`) with one pull request into `rewrite/v2`; stop at each gate |
 | Design document | `dev/design/ARCHITECTURE.md` (sections A–M) |
 | Behavior specifications | `dev/design/BEHAVIOR_SPECS.md` |
-| Phase plans | `dev/design/PHASE4_PLAN.md` (Phase 4, approved 2026-10-03), `dev/design/PHASE5_PLAN.md` (Phase 5, approved 2026-10-04, with the facts it rests on in `dev/design/phase5-facts/`); the plans of Phases 1 to 3 are summarized in §10; `dev/design/PHASE5_HANDOFF.md` and `dev/design/PHASE6_HANDOFF.md`, the starting points for the Phase 5 and Phase 6 plans |
+| Phase plans | `dev/design/PHASE4_PLAN.md` (Phase 4, approved 2026-10-03), `dev/design/PHASE5_PLAN.md` (Phase 5, approved 2026-10-04, with the facts it rests on in `dev/design/phase5-facts/`), `dev/design/PHASE6_PLAN.md` (Phase 6, approved 2026-10-04, with `dev/design/phase6-facts/`: the facts, the seed search of R-2, the renders' script, and the guard of the old plots); the plans of Phases 1 to 3 are summarized in §10; `dev/design/PHASE5_HANDOFF.md` and `dev/design/PHASE6_HANDOFF.md`, the starting points for the Phase 5 and Phase 6 plans |
 | Phase 0 audit scripts and logs | `dev/design/audit/` (evidence IDs `Vxx.y`, `Bx`) |
 | Naming convention | `dev/NAMING.md` |
 | Decision records | `dev/DECISIONS.md` |
-| Discrepancy register | `dev/DISCREPANCIES.md` (D-01 to D-37 after Phase 0; D-38 added in Phase 1; D-39 to D-41 in Phase 3; D-42 in Phase 4; D-43 to D-46 in Phase 5) |
+| Discrepancy register | `dev/DISCREPANCIES.md` (D-01 to D-37 after Phase 0; D-38 added in Phase 1; D-39 to D-41 in Phase 3; D-42 in Phase 4; D-43 to D-46 in Phase 5; D-47 and D-48 in Phase 6) |
 | Reference library | `dev/reference/lib/` (gitignored), built by `dev/reference/setup_reference_library.R`; recorded in `dev/reference/library-lock.json` (DEC-017) |
 | Reference generator | `dev/reference/`: `datasets.R`, `cases.R`, `generate_fixtures.R`, `compare_fixtures.R` (diff report); see `dev/reference/README.md` |
 | Case runner | `tests/testthat/helper-reference-cases.R`, shared by the generator and the tests (DEC-018) |
 | Fixtures | Core set (shipped): `tests/testthat/fixtures/reference/` with `manifest.json` and `datasets/`; full set: `validation/fixtures/reference/` |
 | Characterization tests | `tests/testthat/test-reference-*.R`, with helpers `helper-fixtures.R` and `helper-equivalence.R`; per-case expectations of Class A fixes in `helper-reference-overrides.R` (DEC-022, Phase 3) |
-| Large validation suites | `validation/` (build-ignored): the full fixture set, `run-reference.R` and `equivalence-report.md`, from Phase 3 `run-differential.R` and `differential-report.md` (extended to every fitting function in Phase 4, and in Phase 5 to the grid of every family's methods, character IDs, and data without provider effects), and from Phase 5 `run-simulation.R` and `simulation-report.md` (size, power, and coverage with known truth; informational, DEC-053) |
+| Large validation suites | `validation/` (build-ignored): the full fixture set, `run-reference.R` and `equivalence-report.md`, from Phase 3 `run-differential.R` and `differential-report.md` (extended to every fitting function in Phase 4, and in Phase 5 to the grid of every family's methods, character IDs, and data without provider effects), and from Phase 5 `run-simulation.R` and `simulation-report.md` (size, power, and coverage with known truth; informational, DEC-053); in Phase 6 the differential tests also run the old plots and compare their built data |
 | Tolerances | `tests/testthat/helper-tolerances.R`, one justification per entry (the `root` entry's relative part is DEC-019, signed off 2026-10-02); the independent references and metamorphic tests use DEC-043 (accepted with the Phase 4 gate) |
 | Benchmarks | `dev/bench/`: `scenarios.R`, `run_reference.R` (with `--working-tree` from Phase 3), `compare_to_baseline.R`, and from the Phase 3 gate `run_paired.R` (DEC-038) and `harness.R`; baselines, and the gates' runs and reports, in `dev/bench/results/` |
 | Rewrite code (Phase 2 on) | `R/<layer>-<topic>.R` (NAMING.md §8): shared utilities `R/constants.R`, `R/conditions.R`, `R/messages.R`, `R/validate.R`, `R/results.R`; data layer `R/data-*.R`; models `R/model-*.R`; inference `R/inference-*.R`; profiling `R/profile-*.R`; presentation `R/present-*.R` and `R/plot-*.R`; compatibility wrappers `R/compat-*.R` (Phase 3); the C++ core in `src/core/` and `src/logistic/` with the adapter `src/rcpp_logistic.cpp`. The reference's files stay until replaced: logistic FE in Phase 3; the other six fitting functions and `src/Firth.cpp` in Phase 4; the methods of the linear, RE, and CRE objects and `src/Fixed_effect.cpp` (`computeDirectExp()`) in Phase 5. Left after Phase 5: `R/Data.R`, `R/bar_plot.R`, `R/caterpillar_plot.R`, `R/data_check.R`, and `R/pprof.R`; no reference C++ |
