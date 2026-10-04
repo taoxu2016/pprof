@@ -1,13 +1,13 @@
 # Differential report: working tree versus the pprof 1.0.3 reference
 
-Generated 2026-10-04 02:02:22 UTC by `validation/run-differential.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
-Working tree at commit 8d55614; 30 binary datasets (10 with RE and CRE fits), 15 linear datasets, seed 20261003.
+Generated 2026-10-04 16:09:56 UTC by `validation/run-differential.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Working tree at commit 6fc0a91; 30 binary datasets (10 with RE and CRE fits), 15 linear datasets, and 3 binary (RE and CRE fits only) and 3 linear datasets with character IDs; seed 20261003.
 
 ## Summary
 
-- Cases: 1230; matching: 1230; identical: 1130; mismatching: 0.
-- Reference errors reproduced: 0.
-- Time: reference 57 s, working tree 35 s.
+- Cases: 2580; matching: 2580; identical: 1788; mismatching: 0.
+- Reference errors reproduced: 62.
+- Time: reference 73 s, working tree 50 s.
 
 ## Datasets
 
@@ -56,6 +56,12 @@ Working tree at commit 8d55614; 30 binary datasets (10 with RE and CRE fits), 15
 - `lin13`: linear, n 841, m 25 (2 below 5), p 3, 5 missing outcomes
 - `lin14`: linear, n 872, m 25 (2 below 5), p 5, 5 missing outcomes
 - `lin15`: linear, n 1219, m 40 (2 below 5), p 5, 0 missing outcomes
+- `chr-diff01`: n 918, m 25 (2 below 10), p 4, event rate 0.62, character IDs, RE and CRE fits only
+- `chr-diff02`: n 1294, m 40 (2 below 10), p 5, event rate 0.35, character IDs, RE and CRE fits only
+- `chr-diff03`: n 1565, m 40 (2 below 10), p 3, event rate 0.07, character IDs, RE and CRE fits only
+- `chr-lin01`: linear, n 559, m 15 (2 below 5), p 4, 5 missing outcomes, character IDs
+- `chr-lin02`: linear, n 371, m 15 (2 below 5), p 5, 5 missing outcomes, character IDs
+- `chr-lin03`: linear, n 775, m 25 (2 below 5), p 3, 0 missing outcomes, character IDs
 
 ## Cases
 
@@ -995,299 +1001,1649 @@ Working tree at commit 8d55614; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff01-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff01-logis-re-test` | test | lme4 | value | match | identical |
 | `diff01-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `diff01-logis-re-confint` | confint | lme4 | value | match | identical |
+| `diff01-logis-re-summary` | summary | lme4 | value | match | identical |
+| `diff01-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `diff01-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `diff01-logis-re-test-less` | test | lme4 | value | match | identical |
+| `diff01-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `diff01-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `diff01-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff01-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff01-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff01-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff01-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff01-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff01-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `diff01-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `diff01-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `diff01-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `diff01-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `diff01-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `diff01-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `diff01-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `diff01-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff01-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff01-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff01-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff01-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff02-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff02-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff02-logis-re-test` | test | lme4 | value | match | identical |
 | `diff02-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `diff02-logis-re-confint` | confint | lme4 | value | match | identical |
+| `diff02-logis-re-summary` | summary | lme4 | value | match | identical |
+| `diff02-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `diff02-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `diff02-logis-re-test-less` | test | lme4 | value | match | identical |
+| `diff02-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `diff02-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `diff02-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff02-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff02-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff02-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff02-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff02-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff02-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `diff02-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `diff02-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `diff02-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `diff02-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `diff02-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `diff02-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `diff02-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `diff02-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff02-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff02-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff02-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff02-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff03-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff03-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff03-logis-re-test` | test | lme4 | value | match | identical |
 | `diff03-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `diff03-logis-re-confint` | confint | lme4 | value | match | identical |
+| `diff03-logis-re-summary` | summary | lme4 | value | match | identical |
+| `diff03-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `diff03-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `diff03-logis-re-test-less` | test | lme4 | value | match | identical |
+| `diff03-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `diff03-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `diff03-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff03-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff03-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff03-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff03-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff03-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff03-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `diff03-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `diff03-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `diff03-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `diff03-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `diff03-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `diff03-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `diff03-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `diff03-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff03-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff03-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff03-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff03-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff04-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff04-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff04-logis-re-test` | test | lme4 | value | match | identical |
 | `diff04-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `diff04-logis-re-confint` | confint | lme4 | value | match | identical |
+| `diff04-logis-re-summary` | summary | lme4 | value | match | identical |
+| `diff04-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `diff04-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `diff04-logis-re-test-less` | test | lme4 | value | match | identical |
+| `diff04-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `diff04-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `diff04-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff04-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff04-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff04-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff04-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff04-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff04-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `diff04-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `diff04-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `diff04-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `diff04-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `diff04-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `diff04-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `diff04-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `diff04-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff04-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff04-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff04-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff04-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff05-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff05-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff05-logis-re-test` | test | lme4 | value | match | identical |
 | `diff05-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `diff05-logis-re-confint` | confint | lme4 | value | match | identical |
+| `diff05-logis-re-summary` | summary | lme4 | value | match | identical |
+| `diff05-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `diff05-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `diff05-logis-re-test-less` | test | lme4 | value | match | identical |
+| `diff05-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `diff05-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `diff05-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff05-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff05-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff05-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff05-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff05-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff05-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `diff05-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `diff05-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `diff05-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `diff05-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `diff05-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `diff05-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `diff05-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `diff05-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff05-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff05-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff05-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff05-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff06-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff06-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff06-logis-re-test` | test | lme4 | value | match | identical |
 | `diff06-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `diff06-logis-re-confint` | confint | lme4 | value | match | identical |
+| `diff06-logis-re-summary` | summary | lme4 | value | match | identical |
+| `diff06-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `diff06-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `diff06-logis-re-test-less` | test | lme4 | value | match | identical |
+| `diff06-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `diff06-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `diff06-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff06-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff06-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff06-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff06-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff06-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff06-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `diff06-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `diff06-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `diff06-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `diff06-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `diff06-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `diff06-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `diff06-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `diff06-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff06-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff06-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff06-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff06-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff07-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff07-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff07-logis-re-test` | test | lme4 | value | match | identical |
 | `diff07-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `diff07-logis-re-confint` | confint | lme4 | value | match | identical |
+| `diff07-logis-re-summary` | summary | lme4 | value | match | identical |
+| `diff07-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `diff07-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `diff07-logis-re-test-less` | test | lme4 | value | match | identical |
+| `diff07-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `diff07-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `diff07-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff07-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff07-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff07-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff07-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff07-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff07-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `diff07-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `diff07-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `diff07-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `diff07-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `diff07-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `diff07-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `diff07-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `diff07-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff07-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff07-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff07-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff07-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff08-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff08-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff08-logis-re-test` | test | lme4 | value | match | identical |
 | `diff08-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `diff08-logis-re-confint` | confint | lme4 | value | match | identical |
+| `diff08-logis-re-summary` | summary | lme4 | value | match | identical |
+| `diff08-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `diff08-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `diff08-logis-re-test-less` | test | lme4 | value | match | identical |
+| `diff08-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `diff08-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `diff08-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff08-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff08-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff08-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff08-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff08-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff08-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `diff08-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `diff08-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `diff08-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `diff08-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `diff08-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `diff08-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `diff08-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `diff08-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff08-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff08-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff08-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff08-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff09-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff09-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff09-logis-re-test` | test | lme4 | value | match | identical |
 | `diff09-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `diff09-logis-re-confint` | confint | lme4 | value | match | identical |
+| `diff09-logis-re-summary` | summary | lme4 | value | match | identical |
+| `diff09-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `diff09-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `diff09-logis-re-test-less` | test | lme4 | value | match | identical |
+| `diff09-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `diff09-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `diff09-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff09-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff09-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff09-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff09-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff09-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff09-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `diff09-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `diff09-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `diff09-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `diff09-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `diff09-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `diff09-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `diff09-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `diff09-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff09-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff09-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff09-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff09-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff10-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff10-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff10-logis-re-test` | test | lme4 | value | match | identical |
 | `diff10-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `diff10-logis-re-confint` | confint | lme4 | value | match | identical |
+| `diff10-logis-re-summary` | summary | lme4 | value | match | identical |
+| `diff10-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `diff10-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `diff10-logis-re-test-less` | test | lme4 | value | match | identical |
+| `diff10-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `diff10-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `diff10-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff10-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff10-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff10-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff10-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff10-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff10-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `diff10-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `diff10-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `diff10-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `diff10-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `diff10-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `diff10-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `diff10-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `diff10-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `diff10-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `diff10-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `diff10-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `diff10-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff01-logis-re` | logis_re | lme4 | value | match | identical |
+| `chr-diff01-logis-cre` | logis_cre | lme4 | value | match | identical |
+| `chr-diff01-logis-re-test` | test | lme4 | value | match | identical |
+| `chr-diff01-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `chr-diff01-logis-re-confint` | confint | lme4 | value | match | identical |
+| `chr-diff01-logis-re-summary` | summary | lme4 | value | match | identical |
+| `chr-diff01-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `chr-diff01-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-diff01-logis-re-test-less` | test | lme4 | value | match | identical |
+| `chr-diff01-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `chr-diff01-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-diff01-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-diff01-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-diff01-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-diff01-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-diff01-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-test` | test | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-diff01-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff02-logis-re` | logis_re | lme4 | value | match | identical |
+| `chr-diff02-logis-cre` | logis_cre | lme4 | value | match | identical |
+| `chr-diff02-logis-re-test` | test | lme4 | value | match | identical |
+| `chr-diff02-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `chr-diff02-logis-re-confint` | confint | lme4 | value | match | identical |
+| `chr-diff02-logis-re-summary` | summary | lme4 | value | match | identical |
+| `chr-diff02-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `chr-diff02-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-diff02-logis-re-test-less` | test | lme4 | value | match | identical |
+| `chr-diff02-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `chr-diff02-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-diff02-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-diff02-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-diff02-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-diff02-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-diff02-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-test` | test | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-diff02-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff03-logis-re` | logis_re | lme4 | value | match | identical |
+| `chr-diff03-logis-cre` | logis_cre | lme4 | value | match | identical |
+| `chr-diff03-logis-re-test` | test | lme4 | value | match | identical |
+| `chr-diff03-logis-re-sm` | SM_output | lme4 | value | match | identical |
+| `chr-diff03-logis-re-confint` | confint | lme4 | value | match | identical |
+| `chr-diff03-logis-re-summary` | summary | lme4 | value | match | identical |
+| `chr-diff03-logis-re-test-greater` | test | lme4 | value | match | identical |
+| `chr-diff03-logis-re-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-diff03-logis-re-test-less` | test | lme4 | value | match | identical |
+| `chr-diff03-logis-re-confint-less` | confint | lme4 | value | match | identical |
+| `chr-diff03-logis-re-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-diff03-logis-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-diff03-logis-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-diff03-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-diff03-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-diff03-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-test` | test | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-sm` | SM_output | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-confint` | confint | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-summary` | summary | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-test-greater` | test | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-test-less` | test | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-confint-less` | confint | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-diff03-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin01-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin01-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin01-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin01-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin01-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin01-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin01-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin01-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin01-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin01-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin01-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin01-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin01-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin01-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin01-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin01-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin01-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin01-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin01-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin01-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin01-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin01-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin01-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin01-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin01-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin01-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin01-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin01-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin01-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin01-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin01-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin01-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin01-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin01-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin01-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin01-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin01-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin01-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin01-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin01-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin01-re` | linear_re | lme4 | value | match | identical |
 | `lin01-cre` | linear_cre | lme4 | value | match | identical |
 | `lin01-re-test` | test | lme4 | value | match | identical |
 | `lin01-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin01-re-confint` | confint | lme4 | value | match | identical |
 | `lin01-re-summary` | summary | lme4 | value | match | identical |
+| `lin01-re-test-greater` | test | lme4 | value | match | identical |
+| `lin01-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin01-re-test-less` | test | lme4 | value | match | identical |
+| `lin01-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin01-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin01-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin01-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin01-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin01-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin01-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin01-cre-test` | test | lme4 | value | match | identical |
 | `lin01-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin01-cre-confint` | confint | lme4 | value | match | identical |
 | `lin01-cre-summary` | summary | lme4 | value | match | identical |
+| `lin01-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin01-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin01-cre-test-less` | test | lme4 | value | match | identical |
+| `lin01-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin01-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin01-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin01-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin01-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin01-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin01-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin02-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin02-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin02-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin02-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin02-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin02-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin02-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin02-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin02-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin02-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin02-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin02-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin02-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin02-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin02-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin02-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin02-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin02-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Stat, $CI.Lower, $CI.Upper |
+| `lin02-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin02-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin02-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin02-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin02-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin02-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin02-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin02-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin02-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin02-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin02-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin02-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin02-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin02-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin02-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin02-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin02-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin02-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin02-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Stat, $CI.Lower, $CI.Upper |
+| `lin02-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin02-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin02-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin02-re` | linear_re | lme4 | value | match | identical |
 | `lin02-cre` | linear_cre | lme4 | value | match | identical |
 | `lin02-re-test` | test | lme4 | value | match | identical |
 | `lin02-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin02-re-confint` | confint | lme4 | value | match | identical |
 | `lin02-re-summary` | summary | lme4 | value | match | identical |
+| `lin02-re-test-greater` | test | lme4 | value | match | identical |
+| `lin02-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin02-re-test-less` | test | lme4 | value | match | identical |
+| `lin02-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin02-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin02-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin02-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin02-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin02-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin02-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin02-cre-test` | test | lme4 | value | match | identical |
 | `lin02-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin02-cre-confint` | confint | lme4 | value | match | identical |
 | `lin02-cre-summary` | summary | lme4 | value | match | identical |
+| `lin02-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin02-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin02-cre-test-less` | test | lme4 | value | match | identical |
+| `lin02-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin02-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin02-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin02-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin02-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin02-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin02-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin03-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin03-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin03-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin03-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin03-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin03-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin03-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin03-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin03-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin03-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin03-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin03-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin03-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin03-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin03-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin03-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin03-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin03-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin03-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin03-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin03-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin03-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin03-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin03-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin03-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin03-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin03-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin03-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin03-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin03-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin03-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin03-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin03-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin03-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin03-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin03-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin03-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin03-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin03-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin03-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin03-re` | linear_re | lme4 | value | match | identical |
 | `lin03-cre` | linear_cre | lme4 | value | match | identical |
 | `lin03-re-test` | test | lme4 | value | match | identical |
 | `lin03-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin03-re-confint` | confint | lme4 | value | match | identical |
 | `lin03-re-summary` | summary | lme4 | value | match | identical |
+| `lin03-re-test-greater` | test | lme4 | value | match | identical |
+| `lin03-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin03-re-test-less` | test | lme4 | value | match | identical |
+| `lin03-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin03-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin03-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin03-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin03-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin03-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin03-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin03-cre-test` | test | lme4 | value | match | identical |
 | `lin03-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin03-cre-confint` | confint | lme4 | value | match | identical |
 | `lin03-cre-summary` | summary | lme4 | value | match | identical |
+| `lin03-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin03-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin03-cre-test-less` | test | lme4 | value | match | identical |
+| `lin03-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin03-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin03-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin03-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin03-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin03-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin03-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin04-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin04-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin04-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin04-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin04-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin04-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin04-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin04-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin04-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin04-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin04-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin04-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin04-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin04-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin04-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin04-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin04-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin04-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin04-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin04-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin04-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin04-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin04-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin04-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin04-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin04-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin04-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin04-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin04-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin04-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin04-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin04-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin04-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin04-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin04-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin04-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin04-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin04-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin04-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin04-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin04-re` | linear_re | lme4 | value | match | identical |
 | `lin04-cre` | linear_cre | lme4 | value | match | identical |
 | `lin04-re-test` | test | lme4 | value | match | identical |
 | `lin04-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin04-re-confint` | confint | lme4 | value | match | identical |
 | `lin04-re-summary` | summary | lme4 | value | match | identical |
+| `lin04-re-test-greater` | test | lme4 | value | match | identical |
+| `lin04-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin04-re-test-less` | test | lme4 | value | match | identical |
+| `lin04-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin04-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin04-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin04-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin04-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin04-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin04-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin04-cre-test` | test | lme4 | value | match | identical |
 | `lin04-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin04-cre-confint` | confint | lme4 | value | match | identical |
 | `lin04-cre-summary` | summary | lme4 | value | match | identical |
+| `lin04-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin04-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin04-cre-test-less` | test | lme4 | value | match | identical |
+| `lin04-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin04-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin04-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin04-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin04-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin04-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin04-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin05-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin05-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin05-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin05-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin05-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin05-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin05-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin05-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin05-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin05-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin05-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin05-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin05-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin05-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin05-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin05-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin05-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin05-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin05-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin05-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin05-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin05-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin05-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin05-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin05-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin05-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin05-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin05-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin05-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin05-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin05-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin05-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin05-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin05-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin05-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin05-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin05-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin05-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin05-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin05-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin05-re` | linear_re | lme4 | value | match | identical |
 | `lin05-cre` | linear_cre | lme4 | value | match | identical |
 | `lin05-re-test` | test | lme4 | value | match | identical |
 | `lin05-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin05-re-confint` | confint | lme4 | value | match | identical |
 | `lin05-re-summary` | summary | lme4 | value | match | identical |
+| `lin05-re-test-greater` | test | lme4 | value | match | identical |
+| `lin05-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin05-re-test-less` | test | lme4 | value | match | identical |
+| `lin05-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin05-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin05-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin05-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin05-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin05-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin05-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin05-cre-test` | test | lme4 | value | match | identical |
 | `lin05-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin05-cre-confint` | confint | lme4 | value | match | identical |
 | `lin05-cre-summary` | summary | lme4 | value | match | identical |
+| `lin05-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin05-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin05-cre-test-less` | test | lme4 | value | match | identical |
+| `lin05-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin05-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin05-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin05-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin05-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin05-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin05-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin06-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin06-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin06-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin06-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin06-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin06-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin06-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin06-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin06-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin06-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin06-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin06-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin06-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin06-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin06-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin06-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin06-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin06-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin06-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin06-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin06-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin06-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin06-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin06-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin06-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin06-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin06-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin06-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin06-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin06-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin06-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin06-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin06-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin06-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin06-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin06-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin06-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin06-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin06-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin06-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin06-re` | linear_re | lme4 | value | match | identical |
 | `lin06-cre` | linear_cre | lme4 | value | match | identical |
 | `lin06-re-test` | test | lme4 | value | match | identical |
 | `lin06-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin06-re-confint` | confint | lme4 | value | match | identical |
 | `lin06-re-summary` | summary | lme4 | value | match | identical |
+| `lin06-re-test-greater` | test | lme4 | value | match | identical |
+| `lin06-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin06-re-test-less` | test | lme4 | value | match | identical |
+| `lin06-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin06-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin06-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin06-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin06-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin06-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin06-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin06-cre-test` | test | lme4 | value | match | identical |
 | `lin06-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin06-cre-confint` | confint | lme4 | value | match | identical |
 | `lin06-cre-summary` | summary | lme4 | value | match | identical |
+| `lin06-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin06-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin06-cre-test-less` | test | lme4 | value | match | identical |
+| `lin06-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin06-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin06-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin06-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin06-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin06-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin06-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin07-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin07-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin07-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin07-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin07-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin07-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin07-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin07-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin07-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin07-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin07-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin07-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin07-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin07-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin07-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin07-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin07-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin07-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin07-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin07-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin07-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin07-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin07-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin07-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin07-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin07-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin07-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin07-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin07-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin07-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin07-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin07-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin07-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin07-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin07-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin07-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin07-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin07-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin07-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin07-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin07-re` | linear_re | lme4 | value | match | identical |
 | `lin07-cre` | linear_cre | lme4 | value | match | identical |
 | `lin07-re-test` | test | lme4 | value | match | identical |
 | `lin07-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin07-re-confint` | confint | lme4 | value | match | identical |
 | `lin07-re-summary` | summary | lme4 | value | match | identical |
+| `lin07-re-test-greater` | test | lme4 | value | match | identical |
+| `lin07-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin07-re-test-less` | test | lme4 | value | match | identical |
+| `lin07-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin07-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin07-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin07-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin07-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin07-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin07-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin07-cre-test` | test | lme4 | value | match | identical |
 | `lin07-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin07-cre-confint` | confint | lme4 | value | match | identical |
 | `lin07-cre-summary` | summary | lme4 | value | match | identical |
+| `lin07-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin07-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin07-cre-test-less` | test | lme4 | value | match | identical |
+| `lin07-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin07-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin07-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin07-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin07-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin07-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin07-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin08-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin08-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin08-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin08-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin08-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin08-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin08-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin08-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin08-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin08-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin08-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin08-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin08-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin08-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin08-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin08-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin08-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin08-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin08-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin08-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin08-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin08-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin08-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin08-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin08-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin08-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin08-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin08-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin08-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin08-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin08-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin08-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin08-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin08-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin08-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin08-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin08-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin08-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin08-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin08-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin08-re` | linear_re | lme4 | value | match | identical |
 | `lin08-cre` | linear_cre | lme4 | value | match | identical |
 | `lin08-re-test` | test | lme4 | value | match | identical |
 | `lin08-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin08-re-confint` | confint | lme4 | value | match | identical |
 | `lin08-re-summary` | summary | lme4 | value | match | identical |
+| `lin08-re-test-greater` | test | lme4 | value | match | identical |
+| `lin08-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin08-re-test-less` | test | lme4 | value | match | identical |
+| `lin08-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin08-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin08-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin08-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin08-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin08-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin08-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin08-cre-test` | test | lme4 | value | match | identical |
 | `lin08-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin08-cre-confint` | confint | lme4 | value | match | identical |
 | `lin08-cre-summary` | summary | lme4 | value | match | identical |
+| `lin08-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin08-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin08-cre-test-less` | test | lme4 | value | match | identical |
+| `lin08-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin08-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin08-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin08-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin08-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin08-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin08-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin09-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin09-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin09-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin09-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin09-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin09-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin09-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin09-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin09-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin09-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin09-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin09-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin09-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin09-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin09-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin09-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin09-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin09-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin09-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin09-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin09-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin09-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin09-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin09-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin09-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin09-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin09-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin09-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin09-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin09-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin09-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin09-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin09-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin09-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin09-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin09-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin09-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin09-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin09-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin09-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin09-re` | linear_re | lme4 | value | match | identical |
 | `lin09-cre` | linear_cre | lme4 | value | match | identical |
 | `lin09-re-test` | test | lme4 | value | match | identical |
 | `lin09-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin09-re-confint` | confint | lme4 | value | match | identical |
 | `lin09-re-summary` | summary | lme4 | value | match | identical |
+| `lin09-re-test-greater` | test | lme4 | value | match | identical |
+| `lin09-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin09-re-test-less` | test | lme4 | value | match | identical |
+| `lin09-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin09-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin09-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin09-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin09-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin09-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin09-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin09-cre-test` | test | lme4 | value | match | identical |
 | `lin09-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin09-cre-confint` | confint | lme4 | value | match | identical |
 | `lin09-cre-summary` | summary | lme4 | value | match | identical |
+| `lin09-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin09-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin09-cre-test-less` | test | lme4 | value | match | identical |
+| `lin09-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin09-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin09-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin09-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin09-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin09-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin09-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin10-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin10-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin10-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin10-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin10-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin10-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin10-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin10-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin10-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin10-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin10-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin10-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin10-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin10-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin10-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin10-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin10-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin10-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin10-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin10-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin10-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin10-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin10-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin10-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin10-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin10-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin10-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin10-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin10-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin10-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin10-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin10-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin10-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin10-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin10-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin10-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin10-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin10-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin10-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin10-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin10-re` | linear_re | lme4 | value | match | identical |
 | `lin10-cre` | linear_cre | lme4 | value | match | identical |
 | `lin10-re-test` | test | lme4 | value | match | identical |
 | `lin10-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin10-re-confint` | confint | lme4 | value | match | identical |
 | `lin10-re-summary` | summary | lme4 | value | match | identical |
+| `lin10-re-test-greater` | test | lme4 | value | match | identical |
+| `lin10-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin10-re-test-less` | test | lme4 | value | match | identical |
+| `lin10-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin10-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin10-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin10-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin10-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin10-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin10-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin10-cre-test` | test | lme4 | value | match | identical |
 | `lin10-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin10-cre-confint` | confint | lme4 | value | match | identical |
 | `lin10-cre-summary` | summary | lme4 | value | match | identical |
+| `lin10-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin10-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin10-cre-test-less` | test | lme4 | value | match | identical |
+| `lin10-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin10-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin10-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin10-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin10-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin10-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin10-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin11-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin11-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin11-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin11-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin11-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin11-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin11-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin11-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin11-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin11-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin11-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin11-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin11-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin11-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin11-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin11-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin11-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin11-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin11-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin11-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin11-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin11-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin11-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin11-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin11-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin11-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin11-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin11-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin11-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin11-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin11-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin11-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin11-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin11-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin11-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin11-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin11-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin11-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin11-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin11-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin11-re` | linear_re | lme4 | value | match | identical |
 | `lin11-cre` | linear_cre | lme4 | value | match | identical |
 | `lin11-re-test` | test | lme4 | value | match | identical |
 | `lin11-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin11-re-confint` | confint | lme4 | value | match | identical |
 | `lin11-re-summary` | summary | lme4 | value | match | identical |
+| `lin11-re-test-greater` | test | lme4 | value | match | identical |
+| `lin11-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin11-re-test-less` | test | lme4 | value | match | identical |
+| `lin11-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin11-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin11-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin11-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin11-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin11-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin11-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin11-cre-test` | test | lme4 | value | match | identical |
 | `lin11-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin11-cre-confint` | confint | lme4 | value | match | identical |
 | `lin11-cre-summary` | summary | lme4 | value | match | identical |
+| `lin11-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin11-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin11-cre-test-less` | test | lme4 | value | match | identical |
+| `lin11-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin11-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin11-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin11-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin11-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin11-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin11-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin12-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin12-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin12-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin12-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin12-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin12-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin12-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin12-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin12-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin12-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin12-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin12-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin12-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin12-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin12-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin12-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin12-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin12-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin12-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin12-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin12-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin12-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin12-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin12-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin12-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin12-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin12-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin12-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin12-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin12-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin12-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin12-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin12-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin12-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin12-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin12-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin12-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin12-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin12-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin12-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin12-re` | linear_re | lme4 | value | match | identical |
 | `lin12-cre` | linear_cre | lme4 | value | match | identical |
 | `lin12-re-test` | test | lme4 | value | match | identical |
 | `lin12-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin12-re-confint` | confint | lme4 | value | match | identical |
 | `lin12-re-summary` | summary | lme4 | value | match | identical |
+| `lin12-re-test-greater` | test | lme4 | value | match | identical |
+| `lin12-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin12-re-test-less` | test | lme4 | value | match | identical |
+| `lin12-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin12-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin12-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin12-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin12-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin12-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin12-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin12-cre-test` | test | lme4 | value | match | identical |
 | `lin12-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin12-cre-confint` | confint | lme4 | value | match | identical |
 | `lin12-cre-summary` | summary | lme4 | value | match | identical |
+| `lin12-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin12-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin12-cre-test-less` | test | lme4 | value | match | identical |
+| `lin12-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin12-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin12-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin12-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin12-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin12-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin12-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin13-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin13-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin13-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin13-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin13-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin13-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin13-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin13-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin13-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin13-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin13-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin13-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin13-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin13-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin13-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin13-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin13-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin13-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin13-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin13-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin13-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin13-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin13-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin13-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin13-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin13-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin13-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin13-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin13-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin13-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin13-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin13-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin13-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin13-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin13-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin13-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin13-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin13-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin13-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin13-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin13-re` | linear_re | lme4 | value | match | identical |
 | `lin13-cre` | linear_cre | lme4 | value | match | identical |
 | `lin13-re-test` | test | lme4 | value | match | identical |
 | `lin13-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin13-re-confint` | confint | lme4 | value | match | identical |
 | `lin13-re-summary` | summary | lme4 | value | match | identical |
+| `lin13-re-test-greater` | test | lme4 | value | match | identical |
+| `lin13-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin13-re-test-less` | test | lme4 | value | match | identical |
+| `lin13-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin13-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin13-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin13-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin13-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin13-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin13-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin13-cre-test` | test | lme4 | value | match | identical |
 | `lin13-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin13-cre-confint` | confint | lme4 | value | match | identical |
 | `lin13-cre-summary` | summary | lme4 | value | match | identical |
+| `lin13-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin13-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin13-cre-test-less` | test | lme4 | value | match | identical |
+| `lin13-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin13-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin13-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin13-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin13-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin13-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin13-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin14-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin14-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin14-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin14-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin14-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin14-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin14-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin14-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin14-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin14-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin14-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin14-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin14-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin14-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin14-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin14-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin14-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin14-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin14-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin14-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin14-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin14-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin14-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin14-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin14-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin14-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin14-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin14-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin14-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin14-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin14-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin14-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin14-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin14-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin14-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin14-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin14-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin14-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin14-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin14-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin14-re` | linear_re | lme4 | value | match | identical |
 | `lin14-cre` | linear_cre | lme4 | value | match | identical |
 | `lin14-re-test` | test | lme4 | value | match | identical |
 | `lin14-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin14-re-confint` | confint | lme4 | value | match | identical |
 | `lin14-re-summary` | summary | lme4 | value | match | identical |
+| `lin14-re-test-greater` | test | lme4 | value | match | identical |
+| `lin14-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin14-re-test-less` | test | lme4 | value | match | identical |
+| `lin14-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin14-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin14-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin14-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin14-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin14-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin14-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin14-cre-test` | test | lme4 | value | match | identical |
 | `lin14-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin14-cre-confint` | confint | lme4 | value | match | identical |
 | `lin14-cre-summary` | summary | lme4 | value | match | identical |
+| `lin14-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin14-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin14-cre-test-less` | test | lme4 | value | match | identical |
+| `lin14-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin14-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin14-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin14-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin14-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin14-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin14-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin15-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin15-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin15-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin15-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin15-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
 | `lin15-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin15-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin15-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin15-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin15-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin15-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $stat |
+| `lin15-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `lin15-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin15-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin15-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin15-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin15-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin15-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Std.Error, $Stat, $CI.Lower |
+| `lin15-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin15-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin15-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin15-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin15-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `lin15-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin15-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `lin15-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin15-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `lin15-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin15-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin15-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $stat |
+| `lin15-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `lin15-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin15-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `lin15-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `lin15-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `lin15-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `lin15-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Std.Error, $Stat, $CI.Lower |
+| `lin15-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin15-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin15-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin15-re` | linear_re | lme4 | value | match | identical |
 | `lin15-cre` | linear_cre | lme4 | value | match | identical |
 | `lin15-re-test` | test | lme4 | value | match | identical |
 | `lin15-re-sm` | SM_output | lme4 | value | match | identical |
 | `lin15-re-confint` | confint | lme4 | value | match | identical |
 | `lin15-re-summary` | summary | lme4 | value | match | identical |
+| `lin15-re-test-greater` | test | lme4 | value | match | identical |
+| `lin15-re-confint-greater` | confint | lme4 | value | match | identical |
+| `lin15-re-test-less` | test | lme4 | value | match | identical |
+| `lin15-re-confint-less` | confint | lme4 | value | match | identical |
+| `lin15-re-test-null-parm` | test | lme4 | value | match | identical |
+| `lin15-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin15-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin15-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin15-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin15-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin15-cre-test` | test | lme4 | value | match | identical |
 | `lin15-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin15-cre-confint` | confint | lme4 | value | match | identical |
 | `lin15-cre-summary` | summary | lme4 | value | match | identical |
+| `lin15-cre-test-greater` | test | lme4 | value | match | identical |
+| `lin15-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `lin15-cre-test-less` | test | lme4 | value | match | identical |
+| `lin15-cre-confint-less` | confint | lme4 | value | match | identical |
+| `lin15-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `lin15-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `lin15-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `lin15-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `lin15-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `lin15-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin01-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
+| `chr-lin01-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
+| `chr-lin01-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin01-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `chr-lin01-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin01-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin01-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin01-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `chr-lin01-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin01-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin01-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin01-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin01-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `chr-lin01-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `chr-lin01-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `chr-lin01-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin01-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin01-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin01-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin01-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin01-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin01-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin01-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `chr-lin01-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin01-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin01-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin01-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `chr-lin01-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin01-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin01-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin01-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin01-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `chr-lin01-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `chr-lin01-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `chr-lin01-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin01-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin01-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin01-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin01-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin01-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin01-re` | linear_re | lme4 | value | match | identical |
+| `chr-lin01-cre` | linear_cre | lme4 | value | match | identical |
+| `chr-lin01-re-test` | test | lme4 | value | match | identical |
+| `chr-lin01-re-sm` | SM_output | lme4 | value | match | identical |
+| `chr-lin01-re-confint` | confint | lme4 | value | match | identical |
+| `chr-lin01-re-summary` | summary | lme4 | value | match | identical |
+| `chr-lin01-re-test-greater` | test | lme4 | value | match | identical |
+| `chr-lin01-re-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-lin01-re-test-less` | test | lme4 | value | match | identical |
+| `chr-lin01-re-confint-less` | confint | lme4 | value | match | identical |
+| `chr-lin01-re-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-lin01-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-lin01-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-lin01-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-lin01-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-lin01-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin01-cre-test` | test | lme4 | value | match | identical |
+| `chr-lin01-cre-sm` | SM_output | lme4 | value | match | identical |
+| `chr-lin01-cre-confint` | confint | lme4 | value | match | identical |
+| `chr-lin01-cre-summary` | summary | lme4 | value | match | identical |
+| `chr-lin01-cre-test-greater` | test | lme4 | value | match | identical |
+| `chr-lin01-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-lin01-cre-test-less` | test | lme4 | value | match | identical |
+| `chr-lin01-cre-confint-less` | confint | lme4 | value | match | identical |
+| `chr-lin01-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-lin01-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-lin01-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-lin01-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-lin01-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-lin01-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin02-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
+| `chr-lin02-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
+| `chr-lin02-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin02-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `chr-lin02-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin02-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin02-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin02-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `chr-lin02-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin02-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin02-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin02-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin02-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `chr-lin02-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `chr-lin02-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `chr-lin02-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin02-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin02-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin02-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin02-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin02-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin02-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin02-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `chr-lin02-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin02-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin02-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin02-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `chr-lin02-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin02-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin02-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin02-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin02-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `chr-lin02-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `chr-lin02-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `chr-lin02-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin02-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin02-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin02-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin02-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin02-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin02-re` | linear_re | lme4 | value | match | identical |
+| `chr-lin02-cre` | linear_cre | lme4 | value | match | identical |
+| `chr-lin02-re-test` | test | lme4 | value | match | identical |
+| `chr-lin02-re-sm` | SM_output | lme4 | value | match | identical |
+| `chr-lin02-re-confint` | confint | lme4 | value | match | identical |
+| `chr-lin02-re-summary` | summary | lme4 | value | match | identical |
+| `chr-lin02-re-test-greater` | test | lme4 | value | match | identical |
+| `chr-lin02-re-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-lin02-re-test-less` | test | lme4 | value | match | identical |
+| `chr-lin02-re-confint-less` | confint | lme4 | value | match | identical |
+| `chr-lin02-re-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-lin02-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-lin02-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-lin02-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-lin02-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-lin02-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin02-cre-test` | test | lme4 | value | match | identical |
+| `chr-lin02-cre-sm` | SM_output | lme4 | value | match | identical |
+| `chr-lin02-cre-confint` | confint | lme4 | value | match | identical |
+| `chr-lin02-cre-summary` | summary | lme4 | value | match | identical |
+| `chr-lin02-cre-test-greater` | test | lme4 | value | match | identical |
+| `chr-lin02-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-lin02-cre-test-less` | test | lme4 | value | match | identical |
+| `chr-lin02-cre-confint-less` | confint | lme4 | value | match | identical |
+| `chr-lin02-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-lin02-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-lin02-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-lin02-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-lin02-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-lin02-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin03-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
+| `chr-lin03-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
+| `chr-lin03-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin03-fe-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `chr-lin03-fe-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin03-fe-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin03-fe-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin03-fe-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `chr-lin03-fe-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin03-fe-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin03-fe-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat |
+| `chr-lin03-fe-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin03-fe-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `chr-lin03-fe-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `chr-lin03-fe-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `chr-lin03-fe-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin03-fe-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin03-fe-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin03-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin03-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin03-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin03-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin03-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `chr-lin03-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin03-fe-full-summary` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin03-fe-full-test-greater` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin03-fe-full-confint-greater` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.direct$Direct.Difference, CI.direct$direct.Lower |
+| `chr-lin03-fe-full-test-less` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin03-fe-full-confint-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin03-fe-full-test-mean-parm` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin03-fe-full-test-null` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
+| `chr-lin03-fe-full-sm-null-parm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
+| `chr-lin03-fe-full-sm-mean` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
+| `chr-lin03-fe-full-confint-gamma` | confint | closed_form | value | match | within tolerance: $gamma, $gamma.Lower, $gamma.Upper |
+| `chr-lin03-fe-full-confint-mean-parm` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
+| `chr-lin03-fe-full-confint-null-less` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Upper |
+| `chr-lin03-fe-full-summary-parm` | summary | closed_form | value | match | within tolerance: $Estimate, $Std.Error, $Stat, $CI.Lower, $CI.Upper |
+| `chr-lin03-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin03-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin03-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin03-re` | linear_re | lme4 | value | match | identical |
+| `chr-lin03-cre` | linear_cre | lme4 | value | match | identical |
+| `chr-lin03-re-test` | test | lme4 | value | match | identical |
+| `chr-lin03-re-sm` | SM_output | lme4 | value | match | identical |
+| `chr-lin03-re-confint` | confint | lme4 | value | match | identical |
+| `chr-lin03-re-summary` | summary | lme4 | value | match | identical |
+| `chr-lin03-re-test-greater` | test | lme4 | value | match | identical |
+| `chr-lin03-re-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-lin03-re-test-less` | test | lme4 | value | match | identical |
+| `chr-lin03-re-confint-less` | confint | lme4 | value | match | identical |
+| `chr-lin03-re-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-lin03-re-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-lin03-re-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-lin03-re-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-lin03-re-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-lin03-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin03-cre-test` | test | lme4 | value | match | identical |
+| `chr-lin03-cre-sm` | SM_output | lme4 | value | match | identical |
+| `chr-lin03-cre-confint` | confint | lme4 | value | match | identical |
+| `chr-lin03-cre-summary` | summary | lme4 | value | match | identical |
+| `chr-lin03-cre-test-greater` | test | lme4 | value | match | identical |
+| `chr-lin03-cre-confint-greater` | confint | lme4 | value | match | identical |
+| `chr-lin03-cre-test-less` | test | lme4 | value | match | identical |
+| `chr-lin03-cre-confint-less` | confint | lme4 | value | match | identical |
+| `chr-lin03-cre-test-null-parm` | test | lme4 | value | match | identical |
+| `chr-lin03-cre-sm-parm` | SM_output | lme4 | value | match | identical |
+| `chr-lin03-cre-confint-level-parm` | confint | lme4 | value | match | identical |
+| `chr-lin03-cre-confint-alpha` | confint | lme4 | value | match | identical |
+| `chr-lin03-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
+| `chr-lin03-cre-summary-parm` | summary | lme4 | value | match | identical |

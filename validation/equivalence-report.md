@@ -1,17 +1,17 @@
 # Equivalence report: package under test versus the pprof 1.0.3 reference
 
-Generated 2026-10-04 03:59:13 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
-Package under test: pprof 1.0.3 from the working tree at commit 4e2426c.
-Fixtures: core set generated at 56701e6, full set generated at 56701e6.
+Generated 2026-10-04 16:11:33 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Package under test: pprof 1.0.3 from the working tree at commit 6fc0a91.
+Fixtures: core set generated at 8821723, full set generated at 8821723.
 
 ## Summary
 
-- Cases: 280 (core 248, full 32).
-- Compared and matching: 280; failing: 0; skipped: 0.
+- Cases: 335 (core 303, full 32).
+- Compared and matching: 335; failing: 0; skipped: 0.
 - Largest absolute difference over all compared values: 2e-11; largest relative difference: 3.92.
 - Long double vectors stored as signatures: 718; bitwise identical (same checksum of every value's bits): 703.
-- Reference errors reproduced: 15.
-- Per-case expectations for Class A fixes (tests/testthat/helper-reference-overrides.R): 15, all compared against values derived from fixtures where the reference is right.
+- Reference errors reproduced: 17.
+- Per-case expectations for Class A fixes (tests/testthat/helper-reference-overrides.R): 21, all compared against values derived from fixtures where the reference is right.
 
 ## Providers within tolerance of a flag threshold
 
@@ -89,6 +89,8 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `linear_fe-syn` | linear_fe | closed_form | value |  |  | 7.55e-15 | 5.15e-12 |  | compared |
 | core | `linear_fe-syn-full` | linear_fe | closed_form | value |  |  | 7.55e-15 | 5.15e-12 |  | compared |
 | core | `linear_fe-bad-option` | linear_fe | exact | error |  |  |  |  |  | compared |
+| core | `linear_fe-syn-int` | linear_fe | closed_form | value |  |  | 7.55e-15 | 5.15e-12 |  | compared |
+| core | `linear_fe-funnel-full` | linear_fe | closed_form | value |  |  | 3.02e-14 | 1.03e-10 |  | compared |
 | core | `linear_re-linear-columns` | linear_re | lme4 | value |  |  | 0 | 0 | 13 of 13 | compared |
 | core | `linear_re-linear-formula` | linear_re | lme4 | value |  |  | 0 | 0 | 13 of 13 | compared |
 | core | `linear_re-linear-ml` | linear_re | lme4 | value |  |  | 0 | 0 | 13 of 13 | compared |
@@ -104,6 +106,15 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `logis_re-extreme-control` | logis_re | lme4 | value |  |  | 0 | 0 |  | compared |
 | core | `linear_cre-linear-control` | linear_cre | lme4 | value |  |  | 0 | 0 | 15 of 15 | compared |
 | core | `logis_cre-extreme-control` | logis_cre | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `linear_re-vectors-matrix` | linear_re | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `linear_re-vectors-df` | linear_re | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `linear_re-vectors-chr-df` | linear_re | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `logis_re-vectors-matrix` | logis_re | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `logis_re-vectors-chr-df` | logis_re | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `linear_re-vectors-chr-matrix` | linear_re | exact | error |  |  |  |  |  | compared |
+| core | `linear_re-vectors-incomplete` | linear_re | exact | error |  |  |  |  |  | compared |
+| core | `logis_re-extreme-chr` | logis_re | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `logis_cre-extreme-int` | logis_cre | lme4 | value |  |  | 0 | 0 |  | compared |
 | core | `test-binary-exact-two.sided` | test | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `test-binary-bootstrap-two.sided` | test | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `test-binary-score-two.sided` | test | iterative | value |  |  | 0 | 0 |  | compared |
@@ -217,6 +228,21 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `test-linear-syn` | test | closed_form | value |  |  | 6.22e-15 | 7.43e-13 |  | compared |
 | core | `SM_output-linear-syn` | SM_output | closed_form | value |  |  | 1.62e-12 | 7.49e-13 |  | compared |
 | core | `confint-linear-syn-sm` | confint | closed_form | value |  |  | 1.33e-15 | 7.49e-13 |  | compared |
+| core | `test-linear-null-integer` | test | closed_form | value | D-14 |  | 2.22e-14 | 5.42e-14 |  | compared |
+| core | `SM_output-linear-null-integer` | SM_output | closed_form | value | D-14 |  | 2e-11 | 8.18e-14 |  | compared |
+| core | `confint-linear-null-integer` | confint | closed_form | value | D-14 |  | 2.66e-15 | 2.91e-13 |  | compared |
+| core | `plot-linear-null-integer` | plot | closed_form | value | D-14 |  | 1.99e-13 | 8.18e-14 |  | compared |
+| core | `confint-linear-null0` | confint | closed_form | value |  |  | 2.66e-15 | 2.91e-13 |  | compared |
+| core | `plot-linear-null0` | plot | closed_form | value |  |  | 1.99e-13 | 8.18e-14 |  | compared |
+| core | `confint-linear-level90` | confint | closed_form | value |  |  | 3.22e-15 | 3.4e-13 |  | compared |
+| core | `confint-linear-full-sm-greater` | confint | closed_form | value |  |  | 3.22e-15 | 3.4e-13 |  | compared |
+| core | `confint-linear-full-sm-less` | confint | closed_form | value |  |  | 3.22e-15 | 3.4e-13 |  | compared |
+| core | `plot-linear-null-mean` | plot | closed_form | value |  |  | 1.98e-13 | 4.19e-13 |  | compared |
+| core | `plot-linear-full` | plot | closed_form | value |  |  | 2.56e-13 | 1.7e-12 |  | compared |
+| core | `plot-linear-funnel-full` | plot | closed_form | value |  |  | 2.13e-13 | 1.66e-13 |  | compared |
+| core | `SM_output-linear-parm` | SM_output | closed_form | value |  |  | 1e-11 | 1.29e-14 |  | compared |
+| core | `test-linear-syn-int` | test | closed_form | value |  |  | 6.22e-15 | 7.43e-13 |  | compared |
+| core | `test-linear-syn-int-parm` | test | closed_form | value | D-27 |  | 4e-15 | 7.43e-13 |  | compared |
 | core | `test-linear-re-two.sided` | test | lme4 | value |  |  | 0 | 0 |  | compared |
 | core | `test-linear-re-greater` | test | lme4 | value |  |  | 0 | 0 |  | compared |
 | core | `test-linear-re-less` | test | lme4 | value |  |  | 0 | 0 |  | compared |
@@ -262,6 +288,35 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `test-linear-re-null` | test | lme4 | value |  |  | 0 | 0 |  | compared |
 | core | `confint-logis-re-extreme-sm-greater` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
 | core | `confint-linear-cre-missing-sm` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-linear-re-sm-greater` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-linear-re-sm-less` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-logis-re-sm-less` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-linear-cre-sm-greater` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-linear-cre-sm-less` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-logis-cre-sm-less` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-linear-re-alpha-level90` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-logis-re-alpha-level90` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-linear-cre-sm-level90` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-logis-cre-sm-level90` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `test-logis-re-parm-level90` | test | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `test-linear-cre-parm-level90` | test | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `test-logis-cre-parm-level90` | test | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `SM_output-linear-re-parm` | SM_output | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `SM_output-logis-re-parm` | SM_output | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `summary-linear-re-parm-level90` | summary | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `summary-logis-re-parm-level90` | summary | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `summary-linear-cre-parm-level90` | summary | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `summary-logis-cre-parm-level90` | summary | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `summary-linear-re-parm-intercept-capital` | summary | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `test-linear-re-syn-parm` | test | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `SM_output-linear-re-syn-parm` | SM_output | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-linear-re-syn-sm-parm` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-linear-re-syn-alpha-parm` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `summary-linear-re-syn` | summary | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `test-logis-re-extreme-chr` | test | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `SM_output-logis-re-extreme-chr` | SM_output | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-logis-re-extreme-chr-sm` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `test-logis-cre-extreme-int-parm` | test | lme4 | value | D-27 |  | 0 | 0 |  | compared |
 | core | `caterpillar-binary-ratio` | caterpillar_plot | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `caterpillar-binary-rate-flags` | caterpillar_plot | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `caterpillar-linear` | caterpillar_plot | closed_form | value |  |  | 3.16e-15 | 3.23e-13 |  | compared |
