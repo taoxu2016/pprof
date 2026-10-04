@@ -139,12 +139,10 @@ export(test_coefficients)
 export(test_providers)
 export(tidy)
 export(validate_pprof_model)
-importFrom(Matrix,bdiag)
 importFrom(Rcpp,
   evalCpp,
   sourceCpp
 )
-importFrom(RcppParallel,RcppParallelLibs)
 importFrom(caret,nearZeroVar)
 importFrom(dplyr,
   across,
@@ -207,7 +205,6 @@ importFrom(lme4,
 )
 importFrom(magrittr,"%>%")
 importFrom(olsrr,ols_vif_tol)
-importFrom(pROC,auc)
 importFrom(rlang,.data)
 importFrom(scales,
   percent,

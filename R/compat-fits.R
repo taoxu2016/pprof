@@ -196,19 +196,10 @@ compat_logis_fe_settings <- function(method, max_iter, tol, bound, cutoff, backt
 }
 
 # The reference's progress report (R/logis_fe.R:192-209, src/Fixed_effect.cpp): the
-# screening warning, with the count of the providers actually excluded (D-01), the counts of
-# providers with no events and only events, the event rate, and the iteration log, rebuilt
-# from the fit's convergence history; a fit that reached the iteration limit says so (D-03).
+# screening report, and the iteration log, rebuilt from the fit's convergence history; a fit
+# that reached the iteration limit says so (D-03).
 compat_logis_fe_report <- function(model, method) {
-  providers <- provider_table(model)
-  warn_screening(sprintf("%d out of %d providers considered small and filtered out!", sum(!providers$included),
-                         nrow(providers)))
-  included <- providers[providers$included, , drop = FALSE]
-  base::message(sprintf("%d out of %d remaining providers with no events.", sum(included$no_events), nrow(included)))
-  base::message(sprintf("%d out of %d remaining providers with all events.", sum(included$all_events), nrow(included)))
-  response <- model$response
-  base::message(paste0("After screening, ", round(sum(response) / length(response) * 100, 2),
-                       "% of all records exhibit occurrences of events (Y = 1)"))
+  compat_screening_report(model)
   cat(sprintf("Implementing %s algorithm (Rcpp) for fixed provider effects model ...\n", method))
   convergence <- model$convergence
   labels <- c(any = "Minimum criterion across all checks", all = "Maximum criterion across all checks",
@@ -223,4 +214,247 @@ compat_logis_fe_report <- function(model, method) {
   status <- if (isTRUE(convergence$converged)) "converged" else "not converged"
   cat(sprintf("%s (Rcpp) algorithm %s after %d iterations!\n", name, status, convergence$iterations))
   invisible(NULL)
+}
+
+# The screening report of the reference's logistic fixed-effect fits (R/logis_fe.R:192-209,
+# R/logis_firth.R:160-176): the screening warning, with the count of the providers actually
+# excluded (D-01), the counts of providers with no events and only events, and the event rate.
+compat_screening_report <- function(model) {
+  providers <- provider_table(model)
+  warn_screening(sprintf("%d out of %d providers considered small and filtered out!", sum(!providers$included),
+                         nrow(providers)))
+  included <- providers[providers$included, , drop = FALSE]
+  base::message(sprintf("%d out of %d remaining providers with no events.", sum(included$no_events), nrow(included)))
+  base::message(sprintf("%d out of %d remaining providers with all events.", sum(included$all_events), nrow(included)))
+  response <- model$response
+  base::message(paste0("After screening, ", round(sum(response) / length(response) * 100, 2),
+                       "% of all records exhibit occurrences of events (Y = 1)"))
+  invisible(NULL)
+}
+
+#' Main function for fitting the fixed effect logistic model using firth correction
+#'
+#' Fixed effects (FE) models suffer from separation issues when all outcomes in a cluster are the same,
+#' leading to infinite estimates and unreliable inference.
+#' Firth's corrected logistic regression (FLR) overcomes this limitation and
+#' outperforms both FE and random effects (RE) models in terms of bias and RMSE.
+#' This is the interface of pprof 1.0.3, kept for existing code; it calls [fit_logistic_firth()],
+#' whose estimates are identical, and returns the object of pprof 1.0.3.
+#'
+#' @inheritParams logis_fe
+#' @param max.iter maximum iteration number if the stopping criterion is not satisfied. The default value is 1,000.
+#' @param tol tolerance used for stopping the algorithm: it stops when the largest absolute change of a
+#'   coefficient is at most `tol`. The default value is 1e-5.
+#' @param threads a positive integer specifying the number of threads to be used. The default value is 1.
+#'   Results do not depend on it.
+#'
+#' @details
+#' The function accepts three different input formats:
+#' a formula and dataset, where the formula is of the form \code{response ~ covariates + id(provider)}, with
+#'   \code{provider} representing the provider identifier;
+#' a dataset along with the column names of the response, covariates, and provider identifier;
+#' or the binary outcome vector \eqn{\boldsymbol{Y}}, the covariate matrix or data frame \eqn{\mathbf{Z}}, and the
+#'   provider identifier vector.
+#'
+#' As in pprof 1.0.3, the variances, the log-likelihood, AIC, and BIC are those of the unpenalized likelihood at
+#' the Firth estimates, and the object has class \code{"logis_fe"}, so the methods of [logis_fe()] apply.
+#'
+#' Unlike pprof 1.0.3, the formula may contain transformed terms, interactions, and factors whose levels contain
+#' spaces; the outcome must be 0/1 or logical; `max.iter`, `tol`, and `bound` must be positive and `threads` at
+#' least 1; two threads give the same results as one, where pprof 1.0.3 stopped early (D-05); a singular
+#' information matrix gives an error, where pprof 1.0.3 ended the R session (D-42); factor provider IDs work when
+#' providers are excluded; and the screening warning counts only the providers actually excluded.
+#'
+#' @seealso \code{\link{fit_logistic_firth}}, \code{\link{data_check}}
+#'
+#' @return A list of objects with S3 class \code{"logis_fe"}, as [logis_fe()] returns.
+#'
+#' @examples
+#' data(ExampleDataBinary)
+#' outcome <- ExampleDataBinary$Y
+#' covar <- ExampleDataBinary$Z
+#' ProvID <- ExampleDataBinary$ProvID
+#' data <- data.frame(outcome, ProvID, covar)
+#' covar.char <- colnames(covar)
+#' outcome.char <- colnames(data)[1]
+#' ProvID.char <- colnames(data)[2]
+#' formula <- as.formula(paste("outcome ~", paste(covar.char, collapse = " + "), "+ id(ProvID)"))
+#'
+#' # Fit logistic linear effect model using three input formats
+#' fit_fe1 <- logis_firth(Y = outcome, Z = covar, ProvID = ProvID)
+#' fit_fe2 <- logis_firth(data = data, Y.char = outcome.char,
+#' Z.char = covar.char, ProvID.char = ProvID.char)
+#' fit_fe3 <- logis_firth(formula, data)
+#'
+#' @importFrom Rcpp evalCpp
+#' @importFrom stats complete.cases terms model.matrix reformulate median
+#'
+#' @references
+#' Firth, D. (1993) Bias reduction of maximum likelihood estimates.
+#' \emph{Biometrika}, \strong{80(1)}: 27-38.
+#' \cr
+#'
+#' @export
+logis_firth <- function(formula = NULL, data = NULL,
+                        Y.char = NULL, Z.char = NULL, ProvID.char = NULL, # nolint: object_name_linter.
+                        Y = NULL, Z = NULL, ProvID = NULL, # nolint: object_name_linter.
+                        max.iter = 1000, tol = 1e-5, bound = 10, # nolint: object_name_linter.
+                        cutoff = 10, threads = 1, message = TRUE) {
+  inputs <- compat_fe_inputs(formula, data, Y.char, Z.char, ProvID.char, Y, Z, ProvID)
+  if (isTRUE(message)) base::message("Input format: ", inputs$format, ".")
+  settings <- compat_logis_firth_settings(max.iter, cutoff)
+  model <- withCallingHandlers(
+    fit_logistic_firth(stats::reformulate(inputs$covariates, response = inputs$response), inputs$data,
+                       inputs$provider, max_iter = settings$max_iter, tol = tol, effect_bound = bound,
+                       min_provider_size = settings$min_provider_size, keep_data = TRUE, threads = threads),
+    # The wrapper reports screening in the reference's words, and only with message = TRUE.
+    # A fit that reaches the iteration limit warns (D-03).
+    pprof_warning_screening = function(w) invokeRestart("muffleWarning")
+  )
+  if (isTRUE(message)) compat_logis_firth_report(model, threads)
+  compat_logis_fe_object(model, inputs)
+}
+
+# The old settings of logis_firth() in the vocabulary of fit_logistic_firth(): max.iter
+# truncated as Rcpp truncates it, and min_provider_size = max(1, ceiling(cutoff)), which
+# includes the same providers as `cutoff`. The values the reference accepts without
+# checking are rejected by fit_logistic_firth() (D-39).
+compat_logis_firth_settings <- function(max_iter, cutoff) {
+  if (!(is.numeric(cutoff) && length(cutoff) == 1L && !is.na(cutoff))) {
+    abort_invalid_input("`cutoff` must be a number.", arg = "cutoff")
+  }
+  list(
+    max_iter = if (is.numeric(max_iter) && length(max_iter) == 1L && is.finite(max_iter)) trunc(max_iter) else max_iter,
+    min_provider_size = max(1, ceiling(cutoff))
+  )
+}
+
+# The reference's progress report (R/logis_firth.R:160-176, src/Firth.cpp:88-131, :355-358,
+# :406-408): the screening report and the iteration log, rebuilt from the fit's convergence
+# history; a fit that reached the iteration limit says so (D-03).
+compat_logis_firth_report <- function(model, threads) {
+  compat_screening_report(model)
+  cat("Implementing firth-corrected fixed provider effects model (Rcpp) ...\n")
+  cat(sprintf("Algorithm (%d cores) ...\n", as.integer(threads)))
+  convergence <- model$convergence
+  criteria <- convergence$history[, "coefficients"]
+  for (k in seq_along(criteria)) {
+    cat(sprintf("Iter %d: Inf norm of running diff in est reg parm is %.3e;\n", k, criteria[k]))
+  }
+  status <- if (isTRUE(convergence$converged)) "converged" else "not converged"
+  cat(sprintf("Algorithm with %d cores %s after %d iterations.\n", as.integer(threads), status,
+              convergence$iterations))
+  invisible(NULL)
+}
+
+#' Main function for fitting the fixed effect linear model
+#'
+#' Fit a fixed effect linear model via profile likelihood. This is the interface of pprof
+#' 1.0.3, kept for existing code; it calls [fit_linear_fe()] and returns the object of
+#' pprof 1.0.3.
+#'
+#' @inheritParams logis_fe
+#' @param Y a numeric vector representing the response variable.
+#' @param option.gamma.var a character string specifying the method to calculate the variance of provider effects
+#'   \code{gamma}, must be \code{"full"} or \code{"simplified"}. You can specify just the initial letter.
+#' \itemize{
+#'    \item{\code{"simplified"}} (default) calculating the simplified variance of provider effects assuming
+#'      regression coefficients are known.
+#'    This approach is suitable for large datasets where the results of the full and simplified methods are similar,
+#'    or when the full method may become unstable due to complex settings.
+#'    \item{\code{"full"}} considering the correlation between provider effects and regression coefficients.
+#' }
+#'
+#' @return A list of objects with S3 class \code{"linear_fe"}:
+#' \item{coefficient}{a list containing the estimated coefficients:
+#'   \code{beta}, the fixed effects for each predictor, and \code{gamma}, the effect for each provider.}
+#' \item{variance}{a list containing the variance estimates:
+#'   \code{beta}, the variance-covariance matrix of the predictor coefficients, and \code{gamma}, the variance of
+#'   the provider effects.}
+#' \item{sigma}{the residual standard error.}
+#' \item{fitted}{the fitted values of each individual.}
+#' \item{observation}{the original response of each individual.}
+#' \item{residuals}{the residuals of each individual, that is response minus fitted values.}
+#' \item{linear_pred}{the linear predictor of each individual.}
+#' \item{data_include}{the data used to fit the model, sorted by the provider identifier.
+#' For categorical covariates, this includes the dummy variables created for
+#' all categories except the reference level.}
+#' \item{char_list}{a list of the character vectors representing the column names for
+#' the response variable, covariates, and provider identifier.
+#' For categorical variables, the names reflect the dummy variables created for each category.}
+#' \item{Loglkd}{log likelihood.}
+#' \item{AIC}{Akaike information criterion.}
+#' \item{BIC}{Bayesian information criterion.}
+#'
+#' @details
+#' This function is used to fit a fixed effect linear model of the form:
+#' \deqn{Y_{ij} = \gamma_i + \mathbf{Z}_{ij}^\top\boldsymbol\beta + \epsilon_{ij}}
+#' where \eqn{Y_{ij}} is the continuous outcome for individual \eqn{j} in provider \eqn{i}, \eqn{\gamma_i} is the
+#'   provider-specific effect,
+#' \eqn{\mathbf{Z}_{ij}} are the covariates, and \eqn{\boldsymbol\beta} is the vector of coefficients for the
+#'   covariates.
+#'
+#' The function accepts three different input formats:
+#' a formula and dataset, where the formula is of the form \code{response ~ covariates + id(provider)}, with
+#'   \code{provider} representing the provider identifier;
+#' a dataset along with the column names of the response, covariates, and provider identifier;
+#' or the outcome vector \eqn{\boldsymbol{Y}}, the covariate matrix or data frame \eqn{\mathbf{Z}}, and the provider
+#'   identifier vector.
+#'
+#' If issues arise during model fitting, consider using the \code{data_check} function to perform a data quality
+#'   check,
+#' which can help identify missing values, low variation in covariates, high-pairwise correlation, and
+#'   multicollinearity.
+#' For datasets with missing values, this function automatically removes observations (rows) with any missing
+#'   values before fitting the model.
+#'
+#' Unlike pprof 1.0.3, the coefficients come from the deviations of the outcome and the covariates from their
+#' provider means instead of dense centering matrices, whose memory grows with the square of the provider sizes;
+#' the estimates agree to rounding (about 1e-14). The formula may contain transformed terms, interactions, and
+#' factors whose levels contain spaces.
+#'
+#' @seealso \code{\link{fit_linear_fe}}, \code{\link{data_check}}
+#'
+#' @importFrom stats complete.cases terms model.matrix reformulate as.formula
+#'
+#' @examples
+#' data(ExampleDataLinear)
+#' outcome <- ExampleDataLinear$Y
+#' covar <- ExampleDataLinear$Z
+#' ProvID <- ExampleDataLinear$ProvID
+#' data <- data.frame(outcome, ProvID, covar)
+#' covar.char <- colnames(covar)
+#' outcome.char <- colnames(data)[1]
+#' ProvID.char <- colnames(data)[2]
+#' formula <- as.formula(paste("outcome ~", paste(covar.char, collapse = " + "), "+ id(ProvID)"))
+#'
+#' # Fit fixed linear effect model using three input formats
+#' fit_fe1 <- linear_fe(Y = outcome, Z = covar, ProvID = ProvID)
+#' fit_fe2 <- linear_fe(data = data, Y.char = outcome.char,
+#' Z.char = covar.char, ProvID.char = ProvID.char)
+#' fit_fe3 <- linear_fe(formula, data)
+#'
+#' @references
+#' Hsiao, C. (2022). Analysis of panel data (No. 64). Cambridge university press.
+#' \cr
+#'
+#' @export
+linear_fe <- function(formula = NULL, data = NULL,
+                      Y = NULL, Z = NULL, ProvID = NULL, # nolint: object_name_linter.
+                      Y.char = NULL, Z.char = NULL, ProvID.char = NULL, # nolint: object_name_linter.
+                      option.gamma.var = "simplified") { # nolint: object_name_linter.
+  inputs <- compat_fe_inputs(formula, data, Y.char, Z.char, ProvID.char, Y, Z, ProvID)
+  # D-36: linear_fe() always reports the input format.
+  base::message("Input format: ", inputs$format, ".")
+  model <- fit_linear_fe(stats::reformulate(inputs$covariates, response = inputs$response), inputs$data,
+                         inputs$provider, provider_variance = compat_provider_variance(option.gamma.var),
+                         keep_data = TRUE)
+  compat_linear_fe_object(model, inputs)
+}
+
+# `option.gamma.var` in the vocabulary of fit_linear_fe() (K-42).
+compat_provider_variance <- function(option) {
+  if (is.character(option) && length(option) == 1L && option %in% c("full", "f")) return("full")
+  if (is.character(option) && length(option) == 1L && option %in% c("simplified", "s")) return("simplified")
+  abort_invalid_input("Argument 'option.gamma.var' should be 'full' or 'simplified'.", arg = "option.gamma.var")
 }

@@ -47,10 +47,22 @@ compat_fe_inputs <- function(formula, data, Y.char, Z.char, ProvID.char, Y, Z, P
   ), arg = "data")
 }
 
-# The reference's `data_include` from a model fit with keep_data = TRUE: the included rows
-# in provider order, data.frame(Y, ProvID, Z) with names passed through make.names(), the
-# input's row names in their stored type, and the screening indicators.
+# The reference's `data_include` from a logistic model fit with keep_data = TRUE: the rows of
+# compat_fe_data_frame() and the screening indicators.
 compat_data_include <- function(model, inputs) {
+  prepared <- model$data
+  out <- compat_fe_data_frame(model, inputs)
+  out$included <- 1
+  out$no.events <- as.numeric(prepared$providers$no_events[prepared$provider_index])
+  out$all.events <- as.numeric(prepared$providers$all_events[prepared$provider_index])
+  out
+}
+
+# The data frame data.frame(Y, ProvID, Z) of the reference's fixed-effect fits, from a model
+# fit with keep_data = TRUE: the included rows in provider order, with names passed through
+# make.names() and the input's row names in their stored type. linear_fe() returns it as
+# its `data_include`.
+compat_fe_data_frame <- function(model, inputs) {
   prepared <- model$data
   # data.frame() takes only the columns of the design, not its `assign` and `contrasts`
   # attributes; removing them first would copy the design, which the model still holds.
@@ -58,9 +70,6 @@ compat_data_include <- function(model, inputs) {
   ids <- prepared$providers$provider_value[prepared$provider_index]
   out <- data.frame(prepared$response, ids, design)
   names(out) <- make.names(c(inputs$response_name, inputs$provider_name, colnames(design)), unique = TRUE)
-  out$included <- 1
-  out$no.events <- as.numeric(prepared$providers$no_events[prepared$provider_index])
-  out$all.events <- as.numeric(prepared$providers$all_events[prepared$provider_index])
   attr(out, "row.names") <- attr(inputs$data, "row.names")[prepared$row_index]
   out
 }
@@ -96,6 +105,43 @@ compat_logis_fe_object <- function(model, inputs) {
     ),
     class = "logis_fe"
   )
+}
+
+# The reference's linear_fe object (BEHAVIOR_SPECS §4, §16) from a fit_linear_fe() model fit
+# with keep_data = TRUE, with the reference's shapes (R/linear_fe.R:149-243): the observation
+# as as.matrix() of the response column of `data_include`, and the variance type as the
+# "description" attribute of the provider variances, which the old methods read (D-16).
+compat_linear_fe_object <- function(model, inputs) {
+  data_include <- compat_fe_data_frame(model, inputs)
+  covariates <- names(model$coefficients)
+  providers <- names(model$provider_effects)
+  rows <- seq_along(model$response)
+  fitted <- linear_fe_fitted(model)
+  variance_beta <- model$vcov
+  dimnames(variance_beta) <- list(covariates, covariates)
+  variance_gamma <- matrix(unname(model$provider_effect_variance), ncol = 1L,
+                           dimnames = list(providers, "Variance.Gamma"))
+  attr(variance_gamma, "description") <- model$spec$provider_variance
+  result <- structure(
+    list(
+      coefficient = list(beta = matrix(unname(model$coefficients), ncol = 1L, dimnames = list(covariates, "beta")),
+                         gamma = matrix(unname(model$provider_effects), ncol = 1L,
+                                        dimnames = list(providers, "gamma"))),
+      variance = list(beta = variance_beta, gamma = variance_gamma),
+      sigma = model$sigma,
+      fitted = matrix(fitted, ncol = 1L, dimnames = list(rows, "Prediction")),
+      observation = as.matrix(data_include[, 1L, drop = FALSE]),
+      residuals = matrix(as.numeric(model$response) - fitted, ncol = 1L, dimnames = list(rows, "Residuals")),
+      linear_pred = matrix(model$linear_predictor, ncol = 1L, dimnames = list(rows, "Linear Predictor")),
+      Loglkd = model$loglik,
+      AIC = model$aic,
+      BIC = model$bic
+    ),
+    class = "linear_fe"
+  )
+  result$data_include <- data_include
+  result$char_list <- list(Y.char = names(data_include)[1], ProvID.char = names(data_include)[2], Z.char = covariates)
+  result
 }
 
 # A pprof_logistic_fe model rebuilt from an old logis_fe object, from logis_fe(),
