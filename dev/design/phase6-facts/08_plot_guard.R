@@ -12,7 +12,7 @@
 # record must be identical, except the class of bar_plot()'s plot data, which is a grouped
 # tibble from dplyr in the reference and a data frame without dplyr (the data are identical),
 # and the class and message of errors where the wrappers raise classed errors (reported
-# separately). Themes are compared serialized (theme_record()).
+# separately). Themes are compared by the checksum of their serialization (theme_record()).
 #
 # Usage, from the repository root:
 #   Rscript dev/design/phase6-facts/08_plot_guard.R save <snapshot.rds>
@@ -48,8 +48,9 @@ plot_record <- function(p) {
          geom_params = without_functions(layer$geom_params), stat_params = without_functions(layer$stat_params),
          data = if (is.data.frame(layer$data)) as.data.frame(layer$data) else NULL, built = built$data[[k]])
   })
+  # From the built plot, which gives the same guide data as the plot without building it again.
   guides <- lapply(c("colour", "fill", "shape", "linetype"), function(aesthetic) {
-    tryCatch(quiet(ggplot2::get_guide_data(p, aesthetic)), error = function(e) conditionMessage(e))
+    tryCatch(quiet(ggplot2::get_guide_data(built, aesthetic)), error = function(e) conditionMessage(e))
   })
   names(guides) <- c("colour", "fill", "shape", "linetype")
   list(outcome = "value", data_class = class(p$data),
@@ -58,10 +59,19 @@ plot_record <- function(p) {
        scales = lapply(built$plot$scales$scales, scale_record), guides = guides, theme = theme_record(p$theme))
 }
 
-# The theme as bytes: ggplot2 4's theme elements carry their S7 class, an environment that
-# identical() compares by address, so a theme read back from a file is never identical() to
-# a new one; their serializations are.
-theme_record <- function(theme) if (is.raw(theme)) theme else serialize(theme, NULL)
+# The theme as the checksum of its serialization: ggplot2 4's theme elements carry their S7
+# class, an environment that identical() compares by address, so a theme read back from a
+# file is never identical() to a new one; their serializations are, but take about 2 MB each,
+# because the class environments are written out with every theme.
+theme_record <- function(theme) {
+  if (is.character(theme)) return(theme)
+  file <- tempfile()
+  on.exit(unlink(file))
+  connection <- file(file, "wb")
+  serialize(theme, connection)
+  close(connection)
+  unname(tools::md5sum(file))
+}
 
 capture <- function(expr) {
   value <- tryCatch(quiet(expr), error = function(e) e)
@@ -213,6 +223,8 @@ only_expected$flag <- factor(rep(0, nrow(tests)))
 keep("bar:only-expected", bar_plot(only_expected))
 
 # --- Save or compare ------------------------------------------------------------------------
+rm(computed, fits)
+invisible(gc())
 if (mode == "save") {
   saveRDS(results, snapshot_file)
   cat(sprintf("Saved %d records (%d errors) to %s\n", length(results),
