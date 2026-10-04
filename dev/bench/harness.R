@@ -4,7 +4,8 @@
 
 bench_task_id <- function(t) {
   extra <- if (length(t$args)) paste0("[", paste(names(t$args), vapply(t$args, function(a) paste(a, collapse = "+"), ""), sep = "=", collapse = ","), "]") else ""
-  paste0(t$fun, if (isTRUE(t$method_id)) paste0(".", t$fit$fun), extra)
+  input <- if (!is.null(t$input)) paste0("<", t$input$fun, ">") else ""
+  paste0(t$fun, if (isTRUE(t$method_id)) paste0(".", t$fit$fun), input, extra)
 }
 
 # The working tree installed into a temporary library, to be placed before the reference
@@ -49,6 +50,12 @@ bench_run_task <- function(scenario, task, pprof_lib) {
     fit <- suppressWarnings(suppressMessages(do.call(generic(task$fit$fun), c(fit_args(task$fit$fun), task$fit$args))))
     method_args <- task$args
     if (task$fun %in% c("test", "SM_output") && inherits(fit, "logis_fe")) method_args$threads <- 1
+    # Tasks whose input is a method's result (Phase 6, DEC-060): the method runs untimed, and
+    # its result, or one element of it, is the timed function's first argument.
+    if (!is.null(task$input)) {
+      fit <- suppressWarnings(suppressMessages(do.call(generic(task$input$fun), c(list(fit), task$input$args))))
+      if (!is.null(task$input$element)) fit <- fit[[task$input$element]]
+    }
     call <- function() do.call(generic(task$fun), c(list(fit), method_args))
   } else {
     call <- function() do.call(generic(task$fun), c(fit_args(task$fun), task$args))

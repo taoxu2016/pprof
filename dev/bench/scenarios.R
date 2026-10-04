@@ -77,6 +77,7 @@ bench_tasks <- function() {
       binary(ids, "confint", list(option = "alpha"), fit, TRUE),
       binary(ids, "summary", list(), fit, TRUE))
   }
+  with_input <- function(tasks, input) lapply(tasks, function(t) c(t, list(input = input)))
   small <- "bin-1e4-m100-p5"
   medium <- "bin-1e5-m1000-p5"
   all_binary <- c(small, medium, "bin-1e5-m1000-p20", "bin-1e5-m1000-p5-skewed", "bin-1e5-m1000-p5-rare",
@@ -113,7 +114,14 @@ bench_tasks <- function() {
     methods("lin-1e4-m100-p5", list(fun = "linear_cre", args = list())),
     binary("lin-1e5-m1000-p5", "plot", list(), lin_fit, TRUE),
     binary("lin-1e5-m1000-p5", "summary", list(), lin_fit, TRUE),
-    binary("lin-1e5-m1000-p5", "confint", list(option = "gamma"), lin_fit, TRUE)
+    binary("lin-1e5-m1000-p5", "confint", list(option = "gamma"), lin_fit, TRUE),
+    # Phase 6 (DEC-060): the old plot functions Phase 6 replaces; caterpillar_plot() and
+    # bar_plot() take a method's result, computed untimed.
+    binary(c(small, medium), "plot", list(), fe_fit, TRUE),
+    with_input(binary(medium, "caterpillar_plot", list(), fe_fit, TRUE),
+               list(fun = "confint", args = list(option = "SM", test = "wald", stdz = "indirect", measure = "ratio"),
+                    element = "CI.indirect_ratio")),
+    with_input(binary(medium, "bar_plot", list(), fe_fit, TRUE), list(fun = "test", args = list(test = "wald")))
   )
 }
 
