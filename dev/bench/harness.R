@@ -4,7 +4,7 @@
 
 bench_task_id <- function(t) {
   extra <- if (length(t$args)) paste0("[", paste(names(t$args), vapply(t$args, function(a) paste(a, collapse = "+"), ""), sep = "=", collapse = ","), "]") else ""
-  paste0(t$fun, extra)
+  paste0(t$fun, if (isTRUE(t$method_id)) paste0(".", t$fit$fun), extra)
 }
 
 # The working tree installed into a temporary library, to be placed before the reference
@@ -42,7 +42,9 @@ bench_run_task <- function(scenario, task, pprof_lib) {
     if (fun %in% c("logis_fe", "logis_firth")) a <- c(a, list(message = FALSE, threads = 1))
     a
   }
-  generic <- function(fun) switch(fun, confint = stats::confint, summary = base::summary, getExportedValue("pprof", fun))
+  generic <- function(fun) {
+    switch(fun, confint = stats::confint, summary = base::summary, plot = base::plot, getExportedValue("pprof", fun))
+  }
   if (!is.null(task$fit)) {
     fit <- suppressWarnings(suppressMessages(do.call(generic(task$fit$fun), c(fit_args(task$fit$fun), task$fit$args))))
     method_args <- task$args

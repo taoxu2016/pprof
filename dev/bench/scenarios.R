@@ -62,8 +62,21 @@ bench_scenarios <- function() {
 }
 
 # Which functions run on which scenario. `fit` is the fit a method needs first (not timed).
+# Tasks added from Phase 5 on name the method with its class (`method_id`, for example
+# test.logis_re), so that methods of different fits on one scenario have distinct names; the
+# earlier tasks keep their names, which the Phase 1 baseline uses.
 bench_tasks <- function() {
-  binary <- function(ids, fun, args = list(), fit = NULL) lapply(ids, function(id) list(scenario = id, fun = fun, args = args, fit = fit))
+  binary <- function(ids, fun, args = list(), fit = NULL, method_id = FALSE) {
+    lapply(ids, function(id) list(scenario = id, fun = fun, args = args, fit = fit, method_id = method_id))
+  }
+  # The methods of a fit's class that Phase 5 replaced (DEC-051).
+  methods <- function(ids, fit) {
+    c(binary(ids, "test", list(), fit, TRUE),
+      binary(ids, "SM_output", list(stdz = c("indirect", "direct")), fit, TRUE),
+      binary(ids, "confint", list(option = "SM", stdz = c("indirect", "direct")), fit, TRUE),
+      binary(ids, "confint", list(option = "alpha"), fit, TRUE),
+      binary(ids, "summary", list(), fit, TRUE))
+  }
   small <- "bin-1e4-m100-p5"
   medium <- "bin-1e5-m1000-p5"
   all_binary <- c(small, medium, "bin-1e5-m1000-p20", "bin-1e5-m1000-p5-skewed", "bin-1e5-m1000-p5-rare",
@@ -91,7 +104,16 @@ bench_tasks <- function() {
     binary("lin-1e4-m100-p5", "linear_cre"),
     binary("lin-1e5-m1000-p5", "test", list(), lin_fit),
     binary("lin-1e5-m1000-p5", "SM_output", list(stdz = c("indirect", "direct")), lin_fit),
-    binary("lin-1e5-m1000-p5", "confint", list(), lin_fit)
+    binary("lin-1e5-m1000-p5", "confint", list(), lin_fit),
+    # Phase 5 (DEC-051): the RE and CRE methods on the scenarios of their fits, and the linear
+    # FE methods the earlier tasks left out.
+    methods(c(small, medium), list(fun = "logis_re", args = list())),
+    methods(small, list(fun = "logis_cre", args = list())),
+    methods(c("lin-1e4-m100-p5", "lin-1e5-m1000-p5"), list(fun = "linear_re", args = list())),
+    methods("lin-1e4-m100-p5", list(fun = "linear_cre", args = list())),
+    binary("lin-1e5-m1000-p5", "plot", list(), lin_fit, TRUE),
+    binary("lin-1e5-m1000-p5", "summary", list(), lin_fit, TRUE),
+    binary("lin-1e5-m1000-p5", "confint", list(option = "gamma"), lin_fit, TRUE)
   )
 }
 
