@@ -22,3 +22,16 @@ test_that("Wald intervals use qnorm(1 - alpha / 2), or qnorm(1 - alpha) on one s
   expect_identical(unname(greater[, "upper"]), Inf)
   expect_identical(unname(infer_wald_interval(0.5, 0.1, 0.9, "less")[, "lower"]), -Inf)
 })
+
+test_that("Wald tests and intervals use Student's t where the family names it (K-68, K-92, D-32)", {
+  statistic <- c(-2.5, 0.3, 1.96)
+  upper <- stats::pt(statistic, 12, lower.tail = FALSE)
+  expect_identical(infer_wald_tail(statistic, "two.sided", "t", 12), upper)
+  expect_identical(infer_wald_tail(statistic, "less", "t", 12), 1 - upper)
+  expect_identical(infer_cdf(statistic, "t", 12), stats::pt(statistic, 12))
+  expect_identical(infer_cdf(statistic), stats::pnorm(statistic))
+  two_sided <- infer_wald_interval(0.5, 0.1, 0.95, "two.sided", "t", 12)
+  expect_identical(unname(two_sided[, "upper"]), 0.5 + stats::qt(1 - (1 - 0.95) / 2, 12) * 0.1)
+  greater <- infer_wald_interval(0.5, 0.1, 0.9, "greater", "t", 12)
+  expect_identical(unname(greater[, "lower"]), 0.5 - stats::qt(1 - (1 - 0.9), 12) * 0.1)
+})
