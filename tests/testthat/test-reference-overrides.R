@@ -4,10 +4,17 @@ local_strict_mode()
 
 test_that("every per-case expectation names a register entry and an existing case", {
   ids <- names(reference_overrides)
-  expect_length(ids, 15L)
+  expect_length(ids, 21L)
   expect_true(all(ids %in% reference_case_ids()))
   entries <- vapply(reference_overrides, `[[`, character(1), "entry")
   expect_true(all(grepl("^D-[0-9]{2}$", entries)))
+})
+
+test_that("the logis_cre fit behind its D-27 expectation is the reference's fit of the same data (Phase 5)", {
+  plain <- override_value("logis_cre-extreme")$coefficient
+  integer_ids <- override_value("logis_cre-extreme-int")$coefficient
+  expect_identical(integer_ids$FE, plain$FE)
+  expect_identical(integer_ids$RE, plain$RE)
 })
 
 test_that("the fits behind the D-27, D-28, and D-29 expectations are the reference's fit of the same data", {
@@ -42,14 +49,13 @@ test_that("the D-30 expectation applies K-101 to the reference's one-covariate f
   expect_identical(result$value[["p value"]], stats::pchisq(result$value$stat, 1, lower.tail = FALSE))
 })
 
-test_that("the D-08 partial matches are allowed only where the reference code remains (DEC-021)", {
-  allowed <- function(id) reference_allowed_partial_matches(reference_fixture(id)$case)
-  expect_identical(allowed("SM_output-binary-default"), character())
-  expect_identical(allowed("confint-binary-sm-exact"), character())
-  expect_identical(allowed("caterpillar-logis-re-extreme"), character())
-  re_confint <- Filter(function(id) {
-    case <- reference_fixture(id)$case
-    identical(case$fun, "confint") && startsWith(reference_parent_ids(case)[1], "logis_re")
-  }, reference_case_ids("confint"))
-  expect_identical(allowed(re_confint[1]), "partial match of 'obs' to 'observation'")
+test_that("the methods that relied on partial matching no longer do (D-08, DEC-021)", {
+  # The reference's confint() of logistic RE and CRE fits matched `obs`, and its summary() of
+  # linear RE and CRE fits `data_includ`; reference_run() reports every partial match.
+  for (id in c("confint-logis-re-extreme-sm", "confint-logis-cre-extreme-sm", "summary-linear-re", "summary-linear-cre",
+               "SM_output-binary-default")) {
+    result <- reference_run(id)
+    expect_identical(result$outcome, "value")
+    expect_false(any(grepl("partial match", result$warnings, fixed = TRUE)), info = id)
+  }
 })

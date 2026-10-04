@@ -64,6 +64,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-42 | `logis_firth` with singular information | A | verified; fixed (Phase 4) | Terminates the R session when the Schur complement of the information cannot be inverted |
 | D-43 | `plot.linear_fe` with the full variance | B (question M-18) | verified; awaiting sign-off | Limits use σ/sqrt(n_i) and normal quantiles, flags the full variance and t, so points outside the limits can be unflagged |
 | D-44 | RE and CRE `summary()` | C | verified; decided (document, Phase 5 plan) | The intercept is selected only as `"(intercept)"`, while its row is named `"(Intercept)"`; the help does not say so |
+| D-45 | `null` with more than one value | A | verified; fixed in the wrappers (Phases 3 and 5) | RE and CRE `test()` recycle it over the providers by position; every `summary()` applies it to the coefficients by position; documented as a number |
+| D-46 | RE and CRE `summary()` without the lme4 fit | A | verified; fixed in the wrappers (Phase 5) | Fails when `attr(, "model")` is missing, though the intervals need only the stored covariance |
 
 ---
 
@@ -764,3 +766,31 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: project lead.
 - Status: verified (2026-10-04, Phase 5 planning); the recommendation was approved with the Phase 5 plan (2026-10-04): the wrappers keep the selection and their help states it.
 - Regression test: in Phase 5, the R-1 fixture cases with `parm = "(intercept)"` and `parm = "(Intercept)"`, if approved, and a wrapper test.
+
+### D-45: A `null` with more than one value is applied by position
+
+- Component: `test.linear_re`, `test.logis_re`, `test.linear_cre`, `test.logis_cre` (`Z_score <- (fit$coefficient$RE - null)/PostSE`); every `summary()` (`stat <- (beta - null) / se.beta`, and the same for the RE and CRE fixed effects).
+- Class (proposed): A
+- Description: The help documents `null` as "a number". Given several values, the RE and CRE tests subtract them from the provider effects by position, recycling them over the providers in provider order, so each provider's null depends on its position; the summaries subtract them from the coefficients by position. The logistic and linear FE tests use the first value only (`null[1]`).
+- Minimal reproducible example (reference library, 2026-10-04; `dev/design/phase5-facts/08_reference_edge_inputs.R`): `test(linear_re(data = d, Y.char = "Y", Z.char = z, ProvID.char = "ProvID"), null = c(0, 0.1))` and `summary(<that fit>, null = c(0, 0.1, 0, 0, 0, 0))` return values.
+- Affected outputs: the statistics, p-values, and flags of those calls.
+- Statistical impact: a provider's null depends on its position in the provider order, so the results are misaligned with provider IDs for any recycled vector.
+- Options: (1) reproduce the recycling; (2) accept one number and raise `pprof_error_invalid_input` otherwise.
+- Recommendation: (2). The new API takes one number (`test_providers()`, `test_coefficients()`); the wrappers of the FE tests keep using the first value, as the reference does.
+- Decision owner: project lead.
+- Status: verified on the reference (2026-10-04, Phase 5 step 3); fixed in the wrappers: `summary.logis_fe()` has rejected several values since Phase 3 (not recorded then), and the RE and CRE tests and the linear FE, RE, and CRE summaries from Phase 5.
+- Regression test: `tests/testthat/test-compat-methods-families.R` ("the RE and CRE tests take a single number as the null (D-45)").
+
+### D-46: RE and CRE summaries fail without the lme4 fit
+
+- Component: `summary.linear_re`, `summary.logis_re`, `summary.linear_cre`, `summary.logis_cre` (`CI <- confint(model, parm = "beta_", method = "Wald", level = level)` with `model <- attributes(object)$model`).
+- Class (proposed): A
+- Description: The summaries take their intervals from lme4's `confint()` of the fit kept in `attr(, "model")`; when the attribute is missing (for example after the object is rebuilt or edited), they fail with "no applicable method for 'vcov' applied to an object of class \"NULL\"", although the intervals need only the fixed effects and their covariance, which the object keeps. The tests and intervals of the RE and CRE methods other than linear RE need the fit for the conditional standard deviations (K-70), and fail without it in the reference and in the wrappers alike.
+- Minimal reproducible example (reference library, 2026-10-04; `dev/design/phase5-facts/08_reference_edge_inputs.R`): `fit <- linear_re(...); attr(fit, "model") <- NULL; summary(fit)` fails; `test(fit)`, `confint(fit)`, and `SM_output(fit)` work.
+- Affected outputs: error versus result.
+- Statistical impact: none (the wrapper's intervals equal lme4's bitwise, PHASE5_PLAN.md F3).
+- Options: (1) fail as the reference does; (2) compute the intervals from the stored covariance.
+- Recommendation: (2), which the new API does for every RE and CRE model.
+- Decision owner: project lead.
+- Status: verified (2026-10-04, Phase 5 step 3); fixed in the wrappers.
+- Regression test: `tests/testthat/test-compat-methods-families.R` ("only the methods that use the conditional standard deviations need the lme4 fit (D-46)").

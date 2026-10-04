@@ -243,6 +243,65 @@ compat_funnel_plot <- function(plot_data,
 }
 # nolint end
 
+#' Get funnel plot from a fitted `linear_fe` object for institutional comparisons
+#'
+#' Creates a funnel plot from a linear fixed effect model to compare provider performance.
+#' This is the interface of pprof 1.0.3, kept for existing code; see [plot_funnel()] and
+#' [funnel_limits()] for the new interface.
+#'
+#' @param x a model fitted from \code{linear_fe}.
+#' @param null a character string or a number specifying null hypotheses of fixed provider effects. The default is
+#'   \code{"median"}.
+#' @param target a numeric value representing the target outcome. The default value is 0.
+#' @param alpha a number or a vector of significance levels. The default is 0.05.
+#' @param labels a vector of labels for the plot.
+#' @param point_colors a vector of colors representing different provider flags. The default is \code{c("#E69F00",
+#'   "#56B4E9", "#009E73")}.
+#' @param point_shapes a vector of shapes representing different provider flags. The default is \code{c(15, 17, 19)}.
+#' @param point_size size of the points. The default is 2.
+#' @param point_alpha transparency level of the points. The default is 0.8.
+#' @param line_size size of all lines, including control limits and the target line. The default is 0.8.
+#' @param target_line_type line type for the target line. The default is "longdash".
+#' @param \dots additional arguments that can be passed to the function.
+#'
+#' @details
+#' This function generates a funnel plot from a linear fixed effect model. Currently, it only supports the indirect
+#'   standardized difference.
+#' The parameter `alpha` is a vector used to calculate control limits at different significance levels.
+#' The first value in the vector is used as the significance level for flagging each provider, utilizing the
+#'   \code{\link{test.linear_fe}} function.
+#' The control limits are target -/+ qnorm(1 - alpha / 2) sigma / sqrt(n_i) whatever variance of the provider effects
+#'   the fit used, while the flags of a fit with the full variance come from the t test of
+#'   \code{\link{test.linear_fe}}, so that a provider outside the limits may not be flagged; this is as in pprof 1.0.3
+#'   and awaiting a decision of the methodology owners.
+#'
+#' @seealso \code{\link{linear_fe}}, \code{\link{SM_output.linear_fe}}, \code{\link{test.linear_fe}}
+#'
+#' @return A ggplot object representing the funnel plot.
+#'
+#' @examples
+#' data(ExampleDataLinear)
+#' outcome <- ExampleDataLinear$Y
+#' covar <- ExampleDataLinear$Z
+#' ProvID <- ExampleDataLinear$ProvID
+#' fit_fe <- linear_fe(Y = outcome, Z = covar, ProvID = ProvID)
+#' plot(fit_fe)
+#'
+#' @importFrom dplyr arrange cross_join mutate select
+#' @importFrom tibble tibble
+#' @importFrom rlang .data
+#' @exportS3Method plot linear_fe
+plot.linear_fe <- function(x, null = "median", target = 0, alpha = 0.05,
+                           labels = c("lower", "expected", "higher"),
+                           point_colors = c("#E69F00", "#56B4E9", "#009E73"),
+                           point_shapes = c(15, 17, 19),
+                           point_size = 2, point_alpha = 0.8,
+                           line_size = 0.8,
+                           target_line_type = "longdash", ...) {
+  compat_linear_fe_plot(x, null, target, alpha, labels, point_colors, point_shapes, point_size, point_alpha,
+                        line_size, target_line_type)
+}
+
 # The funnel plot of pprof 1.0.3's plot.linear_fe() (DEC-034, DEC-045): the plot data are
 # built from the new API (indirect differences, flags from the Wald test of test.linear_fe()
 # at level 1 - alpha[1], and the limits of profile_funnel_limits() at each provider's size

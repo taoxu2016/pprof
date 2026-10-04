@@ -13,6 +13,14 @@ reference_override <- function(entry, expected = NULL, error_class = NULL, check
 # The value of another case's fixture.
 override_value <- function(id) reference_fixture(id)$result$value
 
+# The first rows of a test() result, with their provider sizes, as the reference's `parm`
+# selects them from a test of every provider.
+override_first_rows <- function(value, n) {
+  selected <- value[seq_len(n), ]
+  attr(selected, "provider size") <- attr(value, "provider size")[seq_len(n)]
+  selected
+}
+
 # A fixture's result record with another value, iteration count, and outcome.
 override_result <- function(fixture, value, iterations = NA_integer_, probe_identical = NA) {
   result <- fixture$result
@@ -147,7 +155,29 @@ reference_overrides <- list(
   "confint-extreme-hospital-sm-direct" = reference_override("D-29", function(fixture) {
     override_result(fixture, override_value("confint-extreme-sm-exact")[c("CI.direct_ratio", "CI.direct_rate")])
   }, tier = "root"),
-  "summary-screening-twocov-lr" = reference_override("D-30", override_lr_two_covariates, tier = "iterative")
+  "summary-screening-twocov-lr" = reference_override("D-30", override_lr_two_covariates, tier = "iterative"),
+  # Phase 5. D-14: the linear FE methods accept an integer null as the equal double.
+  "test-linear-null-integer" = reference_override("D-14", function(fixture) {
+    override_result(fixture, override_value("test-linear-null0"))
+  }, tier = "closed_form"),
+  "SM_output-linear-null-integer" = reference_override("D-14", function(fixture) {
+    override_result(fixture, override_value("SM_output-linear-both-null0"))
+  }, tier = "closed_form"),
+  "confint-linear-null-integer" = reference_override("D-14", function(fixture) {
+    override_result(fixture, override_value("confint-linear-null0"))
+  }, tier = "closed_form"),
+  "plot-linear-null-integer" = reference_override("D-14", function(fixture) {
+    override_result(fixture, override_value("plot-linear-null0"))
+  }, tier = "closed_form"),
+  # D-27: providers stored as integers are selected with `parm`. The Wald tests of these
+  # methods test every provider before selecting rows, so the flag factor keeps the levels of
+  # all providers (D-15), unlike the exact test above.
+  "test-linear-syn-int-parm" = reference_override("D-27", function(fixture) {
+    override_result(fixture, override_first_rows(override_value("test-linear-syn-int"), 3L))
+  }, tier = "closed_form"),
+  "test-logis-cre-extreme-int-parm" = reference_override("D-27", function(fixture) {
+    override_result(fixture, override_first_rows(override_value("test-logis-cre-extreme-two.sided"), 3L))
+  }, tier = "lme4")
 )
 
 # The expected result of a case: its fixture's, or the override's.
