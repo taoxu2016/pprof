@@ -32,14 +32,16 @@ reference_data_translation <- function(case, datasets) {
     provider <- args[["ProvID.char"]]
     covariates <- if (correlated) c(args[["wb.char"]], args[["other.char"]]) else args[["Z.char"]]
     data <- args[["data"]]
-  } else if (fixed && !is.null(args[["Y"]])) {
+  } else if (!correlated && !is.null(args[["Y"]])) {
     interface <- "vectors"
-    # The reference's variable names, so that data.frame() names the columns as it does.
+    # The reference's variable names, so that data.frame() and cbind() name the columns as
+    # it does: data.frame(Y, ProvID, Z) in the FE fits, as.data.frame(cbind(Y, ProvID, Z)) in
+    # the RE fits, which keeps each column's type only when Z is a data frame (D-11).
     data <- local({
       Y <- args[["Y"]] # nolint: object_name_linter.
       ProvID <- args[["ProvID"]] # nolint: object_name_linter.
       Z <- args[["Z"]] # nolint: object_name_linter.
-      data.frame(Y, ProvID, Z)
+      if (fixed) data.frame(Y, ProvID, Z) else as.data.frame(cbind(Y, ProvID, Z))
     })
     response <- "Y"
     provider <- "ProvID"
