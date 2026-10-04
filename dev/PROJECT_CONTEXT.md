@@ -2,7 +2,7 @@
 
 Living reference for the `pprof` rewrite. Requirements live in `pprof_rewrite_brief.md`; this file holds facts, conventions, and status. Section 5 began as a static read of `main` at commit `5260838`; Phase 0 verified it by running the reference (`dev/design/audit/`), and §5.7 is now the verified conventions register. The Phase 0 findings moved from §6 to `dev/DISCREPANCIES.md`.
 
-Last updated: 2026-10-04. Status: Phase 5 (inference and profiling) complete; gate approved 2026-10-04; `rewrite/phase-5` pushed to the fork, for a pull request into `rewrite/phase-4` (Phase 4's into `rewrite/phase-3`, until the earlier phases are merged into `rewrite/v2`). Phase 6 (visualization) in progress on `rewrite/phase-6` (created from `rewrite/phase-5` at `9517dfa`, not pushed): plan `dev/design/PHASE6_PLAN.md` approved 2026-10-04 with DEC-054 to DEC-060; next, step 1 (fixture regeneration R-2).
+Last updated: 2026-10-04. Status: Phase 5 (inference and profiling) complete; gate approved 2026-10-04; `rewrite/phase-5` pushed to the fork, for a pull request into `rewrite/phase-4` (Phase 4's into `rewrite/phase-3`, until the earlier phases are merged into `rewrite/v2`). Phase 6 (visualization) in progress on `rewrite/phase-6` (created from `rewrite/phase-5` at `9517dfa`, not pushed): plan `dev/design/PHASE6_PLAN.md` approved 2026-10-04 with DEC-054 to DEC-060; steps 1 (fixture regeneration R-2) and 2 (the new plot functions) done; next, the project lead's check-in on the plots' appearance, then step 3.
 
 ---
 
