@@ -495,6 +495,63 @@ reference_cases <- function() {
       list(Y = ref_element("syn_constant", "Y"), Z = ref_dataset("syn_constant_covariates"), ProvID = ref_element("syn_constant", "ProvID")),
       "exact")
 
+  # --- Phase 6 (R-2) -------------------------------------------------------------------------
+  # caterpillar_plot() on one-sided, direct, CRE, and RE tables, with a given reference line,
+  # and a bad orientation; bar_plot() on an RE test and on group counts; RE and CRE fits whose
+  # provider variance is 0, where every test flag is missing (M-19), with their methods and
+  # both plots.
+  add("caterpillar-binary-exact-greater", "caterpillar_plot",
+      list(CI = ref_value("confint-binary-sm-exact-greater", "CI.indirect_ratio")), "root", heavy = TRUE,
+      notes = "K-112 (upper one-sided)")
+  add("caterpillar-binary-exact-less-flags", "caterpillar_plot",
+      list(CI = ref_value("confint-binary-sm-exact-less", "CI.direct_rate"), use_flag = TRUE, orientation = "horizontal"),
+      "root", heavy = TRUE, notes = "K-112 (lower one-sided), D-47")
+  add("caterpillar-linear-greater", "caterpillar_plot",
+      list(CI = ref_value("confint-linear-simplified-sm-greater", "CI.indirect"), use_flag = TRUE), "closed_form",
+      notes = "K-112 (infinite upper limits)")
+  add("caterpillar-binary-direct-rate", "caterpillar_plot", list(CI = ref_value("confint-binary-sm-wald", "CI.direct_rate")),
+      "iterative", notes = "K-112 (population rate)")
+  add("caterpillar-linear-cre-less", "caterpillar_plot",
+      list(CI = ref_value("confint-linear-cre-sm-less", "CI.direct"), use_flag = TRUE), "lme4", notes = "K-112 (CRE linear)")
+  add("caterpillar-logis-cre-rate", "caterpillar_plot",
+      list(CI = ref_value("confint-logis-cre-sm-less", "CI.indirect_rate"), use_flag = TRUE), "lme4", heavy = TRUE,
+      notes = "D-33 (labelled RE logis), D-47")
+  add("caterpillar-binary-refline", "caterpillar_plot",
+      list(CI = ref_value("confint-binary-sm-wald", "CI.indirect_ratio"), refline_value = 1.1, use_flag = TRUE,
+           flag_color = c("#D55E00", "#999999", "#0072B2")), "iterative", notes = "K-112 (given reference)")
+  add("caterpillar-bad-orientation", "caterpillar_plot",
+      list(CI = ref_value("confint-binary-sm-wald", "CI.indirect_ratio"), orientation = "diagonal"), "exact")
+  add("bar_plot-logis-re", "bar_plot", list(flag_df = ref_fit("test-logis-re-two.sided")), "lme4", heavy = TRUE, notes = "K-113")
+  add("bar_plot-group-num-1", "bar_plot", list(flag_df = ref_fit("test-binary-exact-two.sided"), group_num = 1), "iterative",
+      notes = "K-113")
+  add("bar_plot-group-num-60", "bar_plot", list(flag_df = ref_fit("test-binary-exact-two.sided"), group_num = 60), "exact",
+      notes = "K-113 (reference error: the quantile breaks are not unique)")
+  singular <- list(list(fun = "linear_re", dataset = "syn_singular_linear", logistic = FALSE),
+                   list(fun = "linear_cre", dataset = "syn_singular_linear", logistic = FALSE),
+                   list(fun = "logis_re", dataset = "syn_singular_binary", logistic = TRUE),
+                   list(fun = "logis_cre", dataset = "syn_singular_binary", logistic = TRUE))
+  for (sg in singular) {
+    id <- paste0(sg$fun, "-singular")
+    tag <- paste0(sub("_", "-", sg$fun), "-singular")
+    args <- if (endsWith(sg$fun, "cre")) {
+      list(data = ref_dataset(sg$dataset), Y.char = "Y", wb.char = "x1", other.char = c("x2", "x3"), ProvID.char = "ProvID")
+    } else {
+      list(data = ref_dataset(sg$dataset), Y.char = "Y", Z.char = c("x1", "x2", "x3"), ProvID.char = "ProvID")
+    }
+    add(id, sg$fun, args, "lme4", notes = "M-19 parent (provider variance 0)")
+    add(sprintf("test-%s", tag), "test", list(fit = ref_fit(id)), "lme4", notes = "M-19 (every flag missing)")
+    sm_args <- list(fit = ref_fit(id), stdz = c("indirect", "direct"))
+    if (sg$logistic) sm_args <- c(sm_args, list(measure = c("ratio", "rate"), threads = 1))
+    add(sprintf("SM_output-%s", tag), "SM_output", sm_args, "lme4", notes = "M-19")
+    add(sprintf("confint-%s-sm", tag), "confint", list(object = ref_fit(id), stdz = c("indirect", "direct")), "lme4",
+        notes = "M-19")
+  }
+  add("bar_plot-singular", "bar_plot", list(flag_df = ref_fit("test-linear-re-singular")), "lme4",
+      notes = "K-113, M-19 (missing flags)")
+  add("caterpillar-singular", "caterpillar_plot",
+      list(CI = ref_value("confint-linear-re-singular-sm", "CI.indirect"), use_flag = TRUE), "lme4",
+      notes = "K-112, M-19 (intervals of width 0)")
+
   # --- full set (validation/) ---------------------------------------------------------------
   for (m in c("SerBIN", "BAN")) for (s in c("or", "beta", "relch", "ratch", "all")) for (bt in c(TRUE, FALSE)) {
     id <- sprintf("logis_fe-binary-grid-%s-%s-%s", tolower(m), s, if (bt) "bt" else "nobt")

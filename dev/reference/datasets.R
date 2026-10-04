@@ -22,6 +22,21 @@ simulate_binary_providers <- function(sizes, beta, gamma_sd = 0.5, intercept = -
   data.frame(Y = y, ProvID = prov, z)
 }
 
+# Outcome without provider effects (the covariate x1 has a provider-level part, so that the
+# CRE decomposition is not trivial), as in dev/design/phase5-facts/09_singular_re_fits.R:
+# m providers with sizes drawn from `sizes`.
+simulate_no_provider_effects <- function(m, sizes, logistic, seed) {
+  reference_set_seed(seed)
+  prov <- rep(seq_len(m), sample(sizes, m, replace = TRUE))
+  n <- length(prov)
+  x1 <- stats::rnorm(n) + stats::rnorm(m, 0, 0.5)[prov]
+  x2 <- stats::rnorm(n)
+  x3 <- stats::rbinom(n, 1, 0.4)
+  eta <- 0.5 * x1 - 0.3 * x2 + 0.2 * x3
+  y <- if (logistic) stats::rbinom(n, 1, stats::plogis(-1 + eta)) else eta + stats::rnorm(n)
+  data.frame(Y = y, ProvID = prov, x1 = x1, x2 = x2, x3 = x3)
+}
+
 reference_datasets <- function(ref_lib, include_full = FALSE) {
   bundled <- new.env()
   for (name in c("ExampleDataBinary", "ExampleDataLinear", "ecls_data")) {
@@ -185,6 +200,12 @@ reference_datasets <- function(ref_lib, include_full = FALSE) {
   zf <- zf + shift[prov]
   ds$syn_linear_funnel <- data.frame(Y = stats::rnorm(m, 0, 1.2)[prov] + drop(zf %*% c(1, -0.5, 0.3, 0, 0.2)) +
                                        stats::rnorm(length(prov)), ProvID = prov, zf)
+
+  # Phase 6 (R-2). Data without provider effects whose linear and logistic RE and CRE fits have
+  # provider variance exactly 0 in the reference, so that every test flag is missing (M-19);
+  # the seeds are the first that dev/design/phase6-facts/06_singular_seed_search.R finds.
+  ds$syn_singular_linear <- simulate_no_provider_effects(20, 5:15, logistic = FALSE, seed = 1)
+  ds$syn_singular_binary <- simulate_no_provider_effects(20, 15:40, logistic = TRUE, seed = 8)
 
   if (include_full) {
     # About 80,000 observations in 1,000 providers (as V11.1, "medium"): default versus
