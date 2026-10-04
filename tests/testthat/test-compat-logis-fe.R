@@ -89,6 +89,17 @@ test_that("inputs the reference accepted without checking raise classed errors (
   expect_error(logis_fe(Y ~ z1, data, message = FALSE), class = "pprof_error_invalid_input")
 })
 
+test_that("factor IDs work when screening excludes providers, as text IDs do (D-41)", {
+  data <- compat_example()
+  data$ProvID <- sprintf("P%03d", data$ProvID)
+  text <- compat_columns(data, cutoff = 60, message = FALSE)
+  data$ProvID <- factor(data$ProvID)
+  factors <- compat_columns(data, cutoff = 60, message = FALSE)
+  expect_identical(nrow(factors$coefficient$gamma), 97L)
+  expect_identical(factors$coefficient, text$coefficient)
+  expect_identical(factors$variance, text$variance)
+})
+
 test_that("settings the reference accepts are translated as it reads them", {
   data <- compat_example()
   # Rcpp truncates a non-integer max.iter; SerBIN reads any non-zero backtrack as TRUE; a
