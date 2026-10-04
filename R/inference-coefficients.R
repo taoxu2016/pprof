@@ -54,17 +54,28 @@ test_coefficients <- function(model, test = "wald", parm = NULL, level = 0.95, n
 
 #' Confidence intervals for the covariate coefficients
 #'
-#' Wald intervals beta -/+ qnorm(1 - alpha / 2) se with alpha = 1 - `level`, as the
-#' summary of pprof 1.0.3 reports them. Intervals for provider effects and standardized
-#' measures come from [provider_effects()] and [standardize_providers()].
+#' For logistic fixed-effect and Firth models, Wald intervals beta -/+ qnorm(1 - alpha / 2)
+#' se with alpha = 1 - `level`, as the summary of pprof 1.0.3 reports them. Models of other
+#' classes raise `pprof_error_unsupported_inference` unless their class provides intervals.
+#' Intervals for provider effects and standardized measures come from [provider_effects()]
+#' and [standardize_providers()].
 #'
-#' @param object A logistic fixed-effect model.
+#' @param object A model object.
 #' @param parm The coefficients, by name or position; all when missing.
 #' @param level The confidence level.
 #' @param ... Not used.
 #'
 #' @return A matrix with one row per coefficient and the lower and upper limits.
 #' @importFrom stats confint
+#' @export
+confint.pprof_model <- function(object, parm, level = 0.95, ...) {
+  # Without this method, stats::confint.default() would compute normal intervals from
+  # coef() and vcov() for any model, whatever rule its family uses (DEC-040).
+  require_capability(object, "coef_wald")
+  abort_unsupported_inference(object, "confint()")
+}
+
+#' @rdname confint.pprof_model
 #' @export
 confint.pprof_logistic_fe <- function(object, parm, level = 0.95, ...) {
   check_level(level)
