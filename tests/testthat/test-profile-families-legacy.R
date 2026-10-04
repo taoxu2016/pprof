@@ -51,6 +51,79 @@ for (id in family_case_ids()) {
   })
 }
 
+# Phase 5, step 3: the wrappers' implementations (compat_*() in R/compat-methods-linear-fe.R,
+# R/compat-methods-mixed.R, and R/compat-plots.R) against the old methods, bitwise: the
+# same raw value, attributes and row names included (plots: the data of their layers).
+
+# The implementation of an old method for a parent's class.
+legacy_wrapper <- function(fun, parent_fun) {
+  if (identical(parent_fun, "linear_fe")) {
+    return(switch(fun, test = compat_linear_fe_test, SM_output = compat_linear_fe_sm_output,
+                  confint = compat_linear_fe_confint, summary = compat_linear_fe_summary, plot = compat_linear_fe_plot))
+  }
+  implementation <- switch(fun, test = compat_mixed_test, SM_output = compat_mixed_sm_output,
+                           confint = compat_mixed_confint, summary = compat_mixed_summary)
+  if (identical(fun, "test")) implementation else function(...) implementation(..., class = parent_fun)
+}
+
+legacy_wrapper_value <- function(case, parent_case, datasets) {
+  results <- stats::setNames(list(legacy_cache[[paste0("old_", parent_case$id)]]), parent_case$id)
+  args <- reference_resolve_args(case$args, datasets, results)
+  tryCatch(list(value = withr::with_collate("C", suppressWarnings(do.call(legacy_wrapper(case$fun, parent_case$fun),
+                                                                          args)))),
+           error = function(e) list(error = e))
+}
+
+expect_same_raw_value <- function(new, old, fun) {
+  if (identical(fun, "plot")) {
+    expect_identical(reference_fixture_value(new, .Machine$integer.max),
+                     reference_fixture_value(old, .Machine$integer.max))
+  } else {
+    expect_identical(new, old)
+  }
+}
+
+# Reference errors that a Class A fix turns into a result (DEC-022): an integer null gives the
+# reference's result at the equal double (D-14); integer provider IDs selected with `parm`
+# (D-27) are checked against their per-case expectations.
+legacy_class_a <- list(
+  "test-linear-null-integer" = "D-14", "SM_output-linear-null-integer" = "D-14", "confint-linear-null-integer" = "D-14",
+  "plot-linear-null-integer" = "D-14", "test-linear-syn-int-parm" = "D-27", "test-logis-cre-extreme-int-parm" = "D-27"
+)
+
+expect_wrapper_case <- function(case, parent_case, datasets) {
+  old <- withr::with_collate("C", legacy_old_result(case, parent_case, datasets))
+  new <- legacy_wrapper_value(case, parent_case, datasets)
+  entry <- legacy_class_a[[case$id]]
+  if (identical(entry, "D-14")) {
+    expect_identical(old$outcome, "error")
+    double_case <- case
+    double_case$args$null <- 0
+    old <- withr::with_collate("C", legacy_old_result(double_case, parent_case, datasets))
+  }
+  if (identical(old$outcome, "error")) {
+    expect_true(!is.null(new$error), info = "the reference fails; the wrapper must fail too")
+    return(invisible())
+  }
+  expect_null(new$error)
+  expect_same_raw_value(new$value, old$raw_value, case$fun)
+}
+
+for (id in reference_case_ids(family_method_funs)) {
+  local({
+    case_id <- id
+    test_that(paste("the wrapper equals the old method bitwise:", case_id), {
+      skip_on_cran()
+      case <- reference_fixture(case_id)$case
+      parent_case <- reference_fixture(profile_case_parent_id(case))$case
+      if (!parent_case$fun %in% family_reference_funs) skip("not a linear FE, RE, or CRE method case")
+      if (identical(legacy_class_a[[case_id]], "D-27")) skip("checked against its per-case expectation (D-27)")
+      datasets <- reference_datasets_for(parent_case, "core")
+      expect_wrapper_case(case, parent_case, datasets)
+    })
+  })
+}
+
 # Seeded datasets: linear outcomes with providers of 1 to 40 observations, and binary
 # outcomes with a provider without events; numeric and character IDs whose C-locale order
 # differs from their numeric order.
@@ -154,6 +227,16 @@ for (label in names(grid$methods)) {
     test_that(paste("the new API equals the old method bitwise on seeded data:", label), {
       skip_on_cran()
       expect_legacy_case(entry$case, grid$fits[[entry$parent]], legacy_datasets())
+    })
+  })
+}
+
+for (label in names(grid$methods)) {
+  local({
+    entry <- grid$methods[[label]]
+    test_that(paste("the wrapper equals the old method bitwise on seeded data:", label), {
+      skip_on_cran()
+      expect_wrapper_case(entry$case, grid$fits[[entry$parent]], legacy_datasets())
     })
   })
 }

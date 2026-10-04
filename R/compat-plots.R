@@ -242,3 +242,190 @@ compat_funnel_plot <- function(plot_data,
   return(plot)
 }
 # nolint end
+
+# The funnel plot of pprof 1.0.3's plot.linear_fe() (DEC-034, DEC-045): the plot data are
+# built from the new API (indirect differences, flags from the Wald test of test.linear_fe()
+# at level 1 - alpha[1], and the limits of profile_funnel_limits() at each provider's size
+# for every alpha, K-111), in the reference's layout, and drawn by the reference's ggplot
+# code, so that every layer is the reference's. With the full provider variance the limits
+# still use sigma^2 / n_i (D-43).
+compat_linear_fe_plot <- function(x, null = "median", target = 0, alpha = 0.05,
+                                  labels = c("lower", "expected", "higher"),
+                                  point_colors = c("#E69F00", "#56B4E9", "#009E73"),
+                                  point_shapes = c(15, 17, 19),
+                                  point_size = 2, point_alpha = 0.8,
+                                  line_size = 0.8,
+                                  target_line_type = "longdash") {
+  compat_check_object(x, missing(x), "x", "linear_fe")
+  null_value <- compat_linear_null(null)
+  model <- compat_model_from_linear_fe(x, require_variance_type = TRUE)
+  ids <- compat_provider_labels(x)
+  measures <- standardize_providers(model, "indirect", "difference", null = null_value)$table
+  funnel <- profile_spec(model)$funnel
+  processed_data <- data.frame(indicator = measures$estimate, Obs = measures$observed, Exp = measures$expected,
+                               row.names = ids)
+  processed_data$precision <- profile_funnel_precision(funnel, measures$expected, measures$variance,
+                                                       stats::setNames(measures$n_obs, ids))
+  flagging <- compat_linear_fe_test(x, level = 1 - alpha[1], null = null)
+  processed_data <- cbind(processed_data, flagging)
+  plot_data <- processed_data |>
+    arrange(.data$precision) |>
+    cross_join(tibble(alpha = alpha))
+  plot_data$lower <- NA_real_
+  plot_data$upper <- NA_real_
+  for (value in unique(alpha)) {
+    rows <- plot_data$alpha == value
+    limits <- profile_funnel_limits(plot_data$precision[rows], value, target, funnel)
+    plot_data$lower[rows] <- limits$lower
+    plot_data$upper[rows] <- limits$upper
+  }
+  plot_data <- plot_data |>
+    select(c("precision", "indicator", "Exp", "flag", "alpha", "lower", "upper")) |>
+    mutate(alpha = factor(alpha))
+  compat_funnel_plot_linear(plot_data, target, alpha, labels, point_colors, point_shapes, point_size, point_alpha,
+                            line_size, target_line_type)
+}
+
+# The reference's funnel plot builder of linear fixed effects (R/plot.linear_fe.R:96-224 in
+# pprof 1.0.3, ppfunnel_linear()), unchanged.
+#' @importFrom stats setNames
+#' @importFrom dplyr filter bind_rows
+#' @importFrom magrittr %>%
+#' @importFrom tibble tibble
+#' @importFrom rlang .data
+#' @importFrom ggplot2 ggplot scale_x_continuous scale_y_continuous geom_point aes scale_shape_manual
+#'   scale_color_manual scale_linetype_manual geom_line geom_hline guides guide_legend theme labs theme_classic
+#'   element_text element_rect margin
+#' @noRd
+# The reference's code is kept unchanged (DEC-034), so it is not linted.
+# nolint start
+compat_funnel_plot_linear <- function(plot_data,
+                            target,
+                            alpha,
+                            labels,
+                            point_colors,
+                            point_shapes,
+                            point_size,
+                            point_alpha,
+                            line_size,
+                            target_line_type,
+                            xlab = "Precision",
+                            ylab = "Outcome",
+                            legend_justification = "center",
+                            legend_position = "right",
+                            point_legend_title = "Flagging",
+                            linetype_legend_title = "Ctrl Limit",
+                            legend_title_size = 14,
+                            legend_size = 14,
+                            legend_box = "vertical",
+                            axis_title_size = 14,
+                            axis_text_size = 14,
+                            plot_title = "Funnel Plot",
+                            plot_title_size = 18
+) {
+
+  # Check if plot_data is a data frame
+  if (!is.data.frame(plot_data)) {
+    stop("plot_data must be a data frame")
+  }
+
+  data <- plot_data %>% filter(alpha == alpha[1])
+
+  # Ensure that data$flag is a factor
+  data$flag <- factor(data$flag, levels = c(-1, 0, 1))
+
+  # Create labels for the legend
+  labs_color <- paste0(labels, " (", table(data$flag), ")")
+
+  # Add dummy rows for missing levels with NA values
+  missing_levels <- setdiff(c(-1, 0, 1), unique(data$flag))
+  if (length(missing_levels) > 0) {
+    dummy_data <- data.frame(flag = factor(missing_levels, levels = c(-1, 0, 1)),
+                             precision = NA,
+                             indicator = NA)
+    data <- bind_rows(data, dummy_data)
+  }
+
+  num_levels <- length(levels(data$flag))
+
+  # # Check if the length of shapes and color_palette is the same as the number of levels
+  # if (length(color_palette) != num_levels) {
+  #   stop("The length of color_palette must be the same as the number of levels in data$flag")
+  # }
+  #
+  # # Check if the length of labels is the same as the number of levels
+  # if (length(labels) != num_levels) {
+  #   stop("The length of labels must be the same as the number of levels in data$flag")
+  # }
+
+
+  # Assign each level of data$flag to a color from the palette
+  color_mapping <- setNames(point_colors, levels(data$flag))
+  # Assign each level of data$flag to a shape
+  shapes_mapping <- setNames(point_shapes, levels(data$flag))
+
+  # Create a named vector of lables for the legend
+  labels <- setNames(labels, levels(data$flag))
+
+  xmax <- max(plot_data$precision)
+  xmin <- min(plot_data$precision)
+  ymax <- max(max(plot_data$upper), max(plot_data$indicator))
+  ymin <- min(min(plot_data$lower), min(plot_data$indicator))
+
+  labs_linetype <- paste0((1 - alpha) * 100, "%")
+
+  values_linetype <- c('solid', 'dashed', 'dotted', 'dotdash', 'longdash', 'twodash')[1:length(alpha)]
+
+  values_linetype <- values_linetype[order(alpha)]
+  labs_linetype <- labs_linetype[order(alpha)]
+
+  plot <-
+    ggplot() +
+    scale_x_continuous(limits = c(xmin, xmax),
+                       expand = c(1, 1)/50) +
+    scale_y_continuous(breaks = round(seq(0, ymax, by=1), 1),
+                       limits = c(ymin, ymax),
+                       expand = c(1, 1)/50) +
+    geom_point(data = data, aes(x = .data$precision, y = .data$indicator, shape = .data$flag, color = .data$flag), size = point_size, alpha = point_alpha) +
+    scale_shape_manual(
+      name = bquote(.(point_legend_title) ~ "(" * alpha == .(alpha[1]) * ")"),
+      labels = labs_color,
+      values = shapes_mapping
+    ) +
+    scale_color_manual(
+      name = bquote(.(point_legend_title) ~ "(" * alpha == .(alpha[1]) * ")"),
+      labels = labs_color,
+      values = color_mapping
+    ) +
+    geom_line(data = plot_data, aes(x = .data$precision, y = .data$lower, group = alpha, linetype = alpha), linewidth = line_size) +
+    geom_line(data = plot_data, aes(x = .data$precision, y = .data$upper, group = alpha, linetype = alpha), linewidth = line_size) +
+    scale_linetype_manual(
+      name =  linetype_legend_title,
+      values = values_linetype,
+      labels = labs_linetype
+    ) +
+    guides(shape = guide_legend(order = 1), color = guide_legend(order = 1), linetype = guide_legend(reverse = TRUE, order = 2)) +
+    geom_hline(yintercept = target, linewidth = line_size, linetype = target_line_type) +
+    theme_classic() +
+    theme(
+      legend.justification = legend_justification,
+      legend.position = legend_position,
+      legend.box = legend_box,
+      legend.title = element_text(size = legend_title_size),
+      legend.text = element_text(size = legend_size),
+      axis.title = element_text(size = axis_title_size, margin = margin(t = 0, r = 0, b = 0, l = 0)),
+      axis.text = element_text(size = axis_text_size),
+      plot.title = element_text(hjust = 0.5, size = plot_title_size),
+      text = element_text(size = 13),
+      legend.background = element_rect(fill = "transparent", colour = NULL, linewidth = 0, linetype = "solid"),
+    ) +
+    labs(
+      x = xlab,
+      y = ylab,
+      title = plot_title
+    )
+
+
+  return(plot)
+}
+# nolint end

@@ -155,13 +155,7 @@ compat_model_from_logis_fe <- function(fit) {
   gamma <- fit$coefficient$gamma
   ids <- data[[chars$ProvID.char]]
   provider_order <- rownames(gamma)
-  # match(as.character(ids), provider_order) through the distinct IDs, which converts only
-  # m IDs to strings rather than n.
-  keys <- unique(ids)
-  codes <- match(as.character(keys), provider_order)[match(ids, keys)]
-  if (anyNA(codes) || is.unsorted(codes) || any(tabulate(codes, nbins = length(provider_order)) == 0L)) {
-    abort_invalid_input("The fit's `data_include` does not match its provider effects.", arg = "fit")
-  }
+  codes <- compat_provider_codes(ids, provider_order, "fit")
   prepared <- compat_data_from_include(data[[chars$Y.char]], data[2L + seq_along(covariates)], covariates, ids,
                                        provider_order, codes)
   estimates <- list(
@@ -179,27 +173,51 @@ compat_model_from_logis_fe <- function(fit) {
 # data_prepare(), whose model frame and sorting cost most of the old methods' run time
 # (Phase 3 gate). The rows are complete, sorted by provider, and all included, so the object
 # is the one data_prepare() returns for data.frame(response, provider, covariate_1, ...) with
-# min_provider_size = 1 and event counts: the same response, design (with `assign`),
-# provider table, and indices. `codes` give each row's provider in `provider_order`.
-compat_data_from_include <- function(response, columns, covariates, ids, provider_order, codes) {
-  design <- matrix(as.double(unlist(columns, use.names = FALSE)), ncol = length(covariates),
+# min_provider_size = 1 and, for binary outcomes, event counts: the same response, design
+# (with `assign`), provider table, and indices. `codes` give each row's provider in
+# `provider_order`. Without covariates the design has no columns.
+compat_data_from_include <- function(response, columns, covariates, ids, provider_order, codes, event_counts = TRUE,
+                                     intercept = FALSE) {
+  n <- length(response)
+  design <- matrix(as.double(unlist(columns, use.names = FALSE)), nrow = n, ncol = length(covariates),
                    dimnames = list(NULL, covariates))
   if (anyNA(response) || anyNA(design)) abort_invalid_input("The fit's `data_include` has missing values.", arg = "fit")
   attr(design, "assign") <- seq_along(covariates)
   internal <- sprintf("covariate_%d", seq_along(covariates))
-  formula <- stats::reformulate(internal, response = "response")
+  formula <- if (length(covariates) > 0L) stats::reformulate(internal, response = "response") else response ~ 1
   terms <- stats::terms(formula)
+  xlevels <- if (length(covariates) > 0L) stats::.getXlevels(terms, stats::setNames(columns, internal)) else list()
   providers <- data_provider_table(provider_order, codes, ids)
   providers <- data_screen_providers(providers, 1)
-  providers <- data_event_indicators(providers, response, codes)
-  n <- length(response)
+  if (event_counts) providers <- data_event_indicators(providers, response, codes)
   new_pprof_data(
-    formula = formula, terms = terms, xlevels = stats::.getXlevels(terms, stats::setNames(columns, internal)),
+    formula = formula, terms = terms, xlevels = xlevels,
     response_name = "response", provider_name = "provider", within_between = NULL, response = response,
     design = design, providers = providers, provider_index = codes, row_index = seq_len(n),
-    settings = list(min_provider_size = 1, intercept = FALSE, event_counts = TRUE),
+    settings = list(min_provider_size = 1, intercept = intercept, event_counts = event_counts),
     n_input = n, n_incomplete = 0L, n_excluded_obs = 0L
   )
+}
+
+# The provider of each row of an old object's `data_include`, as positions in
+# `provider_order`, the row names of the object's provider effects: through the distinct
+# IDs, so that only m IDs are converted to strings rather than n. The rows must be sorted by
+# provider and cover every provider.
+compat_provider_codes <- function(ids, provider_order, arg) {
+  keys <- unique(ids)
+  codes <- match(as.character(keys), provider_order)[match(ids, keys)]
+  if (anyNA(codes) || is.unsorted(codes) || any(tabulate(codes, nbins = length(provider_order)) == 0L)) {
+    abort_invalid_input(sprintf("The %s's `data_include` does not match its provider effects.", arg), arg = arg)
+  }
+  codes
+}
+
+# The provider labels of an old object, in provider order: the row names of its provider
+# effects (`gamma` for fixed effects, `RE` for random effects).
+compat_provider_labels <- function(fit) {
+  effects <- fit$coefficient$gamma
+  if (is.null(effects)) effects <- fit$coefficient$RE
+  rownames(effects)
 }
 
 # The rows of an old object's providers selected by `parm`, as the reference's methods
@@ -212,7 +230,128 @@ compat_parm_providers <- function(fit, parm, message = "Argument 'parm' includes
   if (is.numeric(parm)) parm <- as.numeric(parm)
   same_class <- (is.numeric(parm) && is.numeric(ids)) || identical(class(parm), class(ids))
   if (!same_class) abort_invalid_input(message, arg = "parm")
-  intersect(as.character(parm), rownames(fit$coefficient$gamma))
+  intersect(as.character(parm), compat_provider_labels(fit))
+}
+
+# The positions of the providers `parm` selects among an old object's providers, in
+# provider order, as the reference's which(prov.name %in% parm) gives them; every provider
+# when `parm` is missing.
+compat_parm_rows <- function(fit, parm, message = "Argument 'parm' includes invalid elements!") {
+  ids <- compat_provider_labels(fit)
+  if (missing(parm)) return(seq_along(ids))
+  which(ids %in% compat_parm_providers(fit, parm, message))
+}
+
+# The old object's class checked as the reference's methods check it.
+compat_check_object <- function(object, is_missing, arg, class) {
+  if (is_missing) abort_invalid_input(sprintf("Argument '%s' is required!", arg), arg = arg)
+  if (!inherits(object, class)) {
+    abort_invalid_input(sprintf("Object '%s' is not of the classes '%s'!", arg, class), arg = arg)
+  }
+  invisible(object)
+}
+
+# A pprof_linear_fe model rebuilt from an old linear_fe object (DEC-032, DEC-049): the
+# estimates, variances, residual standard deviation, fit statistics, and linear predictor
+# are the object's own; the data are its `data_include`, in the provider order of its
+# estimates; the provider variance type is the "description" attribute of its provider
+# variances (D-16). The design is not kept: no linear FE method needs it. The tests,
+# intervals, and funnel need the variance type, as the reference's do
+# (`require_variance_type = TRUE`); the other methods do not read it, so without it they
+# rebuild the model as "simplified".
+compat_model_from_linear_fe <- function(fit, require_variance_type = FALSE) {
+  chars <- fit$char_list
+  data <- fit$data_include
+  covariates <- chars$Z.char
+  gamma <- fit$coefficient$gamma
+  provider_order <- rownames(gamma)
+  ids <- data[[chars$ProvID.char]]
+  codes <- compat_provider_codes(ids, provider_order, "fit")
+  variance_type <- attr(fit$variance$gamma, "description")
+  if (!(is.character(variance_type) && length(variance_type) == 1L && variance_type %in% c("simplified", "full"))) {
+    if (require_variance_type) {
+      abort_invalid_input(paste("The fit's provider variances lack the \"description\" attribute that names their",
+                                "type (\"simplified\" or \"full\"), which the test and the intervals use (D-16)."),
+                          arg = "fit")
+    }
+    variance_type <- "simplified"
+  }
+  prepared <- compat_data_from_include(as.numeric(data[[chars$Y.char]]), data[2L + seq_along(covariates)], covariates,
+                                       ids, provider_order, codes, event_counts = FALSE)
+  estimates <- list(
+    gamma = as.numeric(gamma), beta = as.numeric(fit$coefficient$beta), vcov = unname(fit$variance$beta),
+    gamma_variance = as.numeric(fit$variance$gamma), linear_predictor = as.numeric(fit$linear_pred),
+    sigma = fit$sigma, loglik = fit$Loglkd, aic = fit$AIC, bic = fit$BIC
+  )
+  spec <- list(family = "linear_fe", provider_variance = variance_type, keep_data = FALSE)
+  new_pprof_linear_fe(prepared, estimates, spec, keep_data = FALSE)
+}
+
+# The family of the new model for each class of the reference's random-effect objects.
+compat_mixed_families <- c(linear_re = "linear_re", logis_re = "logistic_re", linear_cre = "linear_cre",
+                           logis_cre = "logistic_cre")
+
+# The class of an old random-effect object.
+compat_mixed_class <- function(fit) {
+  class <- intersect(class(fit), names(compat_mixed_families))
+  if (length(class) != 1L) {
+    abort_invalid_input("The object is not a linear_re, logis_re, linear_cre, or logis_cre fit.", arg = "fit")
+  }
+  class
+}
+
+# The outcome of an old random-effect object as a vector: `observation` is a one-column
+# matrix, or for logis_cre a one-column tibble.
+compat_response_vector <- function(observation) {
+  if (is.data.frame(observation)) observation[[1L]] else as.vector(observation)
+}
+
+# A pprof_mixed model rebuilt from an old linear_re, logis_re, linear_cre, or logis_cre object
+# (DEC-032, DEC-049): the fixed and random effects, their variances, the residual standard
+# deviation, lme4's fitted values, the linear predictor, the outcome, and the fit statistics
+# are the object's own, in the provider order of its random effects. Nothing numeric is read
+# from `data_include`, which is text when the provider IDs are (D-11), and no design is kept:
+# no random-effect method needs one. The standard deviations of the provider effects are
+# computed only for the methods that use them (`effect_sd = TRUE`), as the reference's methods
+# compute them: by K-69 from the object's fields for linear RE, and otherwise from the lme4 fit
+# in `attr(, "model")` (K-70); the other methods get missing values, which they do not read.
+compat_model_from_mixed <- function(fit, effect_sd = FALSE) {
+  class <- compat_mixed_class(fit)
+  family <- compat_mixed_families[[class]]
+  rules <- mixed_families[[family]]
+  chars <- fit$char_list
+  re <- fit$coefficient$RE
+  provider_order <- rownames(re)
+  ids <- fit$data_include[[chars$ProvID.char]]
+  codes <- compat_provider_codes(ids, provider_order, "fit")
+  prepared <- compat_data_from_include(compat_response_vector(fit$observation), list(), character(), ids,
+                                       provider_order, codes, event_counts = FALSE, intercept = TRUE)
+  provider_variance <- as.numeric(fit$variance$alpha)
+  sigma <- if (identical(rules$outcome, "linear")) fit$sigma else NULL
+  sizes <- prepared$providers$n_obs
+  sd <- if (!effect_sd) {
+    rep(NA_real_, length(provider_order))
+  } else if (identical(rules$effect_sd, "closed_form")) {
+    linear_re_effect_sd(provider_variance, sigma, sizes)
+  } else {
+    engine_fit <- attr(fit, "model")
+    if (!inherits(engine_fit, "merMod")) {
+      abort_invalid_input("The fit lacks its lme4 fit, `attr(fit, \"model\")`, which this method needs.", arg = "fit")
+    }
+    sqrt(attr(lme4::ranef(engine_fit, condVar = TRUE)[[chars$ProvID.char]], "postVar")[1L, 1L, ])
+  }
+  fixed <- stats::setNames(as.numeric(fit$coefficient$FE), rownames(fit$coefficient$FE))
+  vcov <- matrix(as.numeric(fit$variance$FE), nrow = length(fixed), dimnames = list(names(fixed), names(fixed)))
+  estimates <- list(
+    fixed = fixed, effects = as.numeric(re[, 1L]), effect_sd = sd, provider_variance = provider_variance,
+    sigma = sigma, vcov = vcov, linear_predictor = as.numeric(fit$linear_pred), fitted = as.numeric(fit$fitted),
+    loglik = as.numeric(fit$Loglkd), loglik_df = attr(fit$Loglkd, "df"), aic = fit$AIC, bic = fit$BIC
+  )
+  within_between <- if (!is.null(chars$within_terms)) sub("_within$", "", chars$within_terms)
+  engine <- if (identical(rules$outcome, "linear")) "lmer" else "glmer"
+  spec <- list(family = family, outcome = rules$outcome, engine = engine, within_between = within_between,
+               engine_arguments = list(), keep_data = FALSE)
+  new_pprof_mixed(prepared, estimates, spec, keep_data = FALSE, class = paste0("pprof_", family))
 }
 
 # The numeric null of the old methods: "median" or a number, of which the first element
@@ -388,4 +527,74 @@ compat_logis_cre_object <- function(fit, inputs) {
     class = "logis_cre",
     model = fit
   )
+}
+
+# --- Results in the reference's shapes (Phase 5) --------------------------------------------
+
+# The null of the reference's linear FE methods: "median", "mean", or a number, of which the
+# first element is used; an integer is accepted, which the reference rejects (D-14).
+compat_linear_null <- function(null) {
+  if (identical(null, "median") || identical(null, "mean")) return(null)
+  if (is.numeric(null) && length(null) >= 1L) return(as.double(null[1]))
+  abort_invalid_input("Argument 'null' NOT as required!", arg = "null")
+}
+
+# The null of the reference's RE and CRE tests: a single number. The reference subtracts any
+# numeric vector from the provider effects, recycling it over the providers in their order;
+# the wrappers accept one number (D-45).
+compat_mixed_null <- function(null) {
+  if (!(is.numeric(null) && length(null) == 1L)) {
+    abort_invalid_input("Argument 'null' must be a single number.", arg = "null")
+  }
+  as.double(null)
+}
+
+# The type label of the reference's interval tables (BEHAVIOR_SPECS §9).
+compat_interval_type <- function(alternative) {
+  if (identical(alternative, "greater")) {
+    "upper one-sided"
+  } else if (identical(alternative, "less")) {
+    "lower one-sided"
+  } else {
+    "two-sided"
+  }
+}
+
+# A test() result in the reference's shape (BEHAVIOR_SPECS §7, §16) from a Wald test of
+# every provider: the factor flags of all providers (D-15), the p-values, statistics, and
+# standard errors, with the provider sizes as the "provider size" attribute, and the rows
+# `parm` selects, chosen after the factor is built, as the reference chooses them.
+compat_wald_test_result <- function(table, fit, parm) {
+  out <- data.frame(flag = factor(table$flag), p = table$p_value, stat = table$statistic, Std.Error = table$std_error,
+                    row.names = table$provider_id)
+  colnames(out) <- c("flag", "p value", "stat", "Std.Error")
+  sizes <- stats::setNames(table$n_obs, table$provider_id)
+  if (missing(parm)) {
+    attr(out, "provider size") <- sizes
+    return(out)
+  }
+  keep <- table$provider_id %in% compat_parm_providers(fit, parm)
+  attr(out, "provider size") <- sizes[keep]
+  out[keep, ]
+}
+
+# A summary() table in the reference's shape (BEHAVIOR_SPECS §10) from the Wald tests of
+# every coefficient: the p-values formatted together as the reference formats them (K-100),
+# before the rows are selected.
+compat_summary_table <- function(table) {
+  out <- data.frame(table$estimate, table$std_error, table$statistic,
+                    format.pval(table$p_value, digits = p_value_display_digits, eps = p_value_display_eps),
+                    table$lower, table$upper, row.names = table$term)
+  colnames(out) <- c("Estimate", "Std.Error", "Stat", "p value", "CI.Lower", "CI.Upper")
+  out
+}
+
+# The rows of a summary() table that `parm` selects, as the reference's summaries select
+# them: every row when `parm` is missing, the positions of the names in `labels`, or
+# positions given as whole numbers other than 0 (R/summary.linear_fe.R:84-92).
+compat_summary_rows <- function(parm, labels) {
+  if (missing(parm)) return(seq_along(labels))
+  if (is.character(parm)) return(which(labels %in% parm))
+  if (is.numeric(parm) && length(parm) > 0L && all(parm == round(parm)) && !(0 %in% parm)) return(parm)
+  abort_invalid_input("Argument 'parm' includes invalid elements!", arg = "parm")
 }
