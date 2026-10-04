@@ -231,36 +231,69 @@ test_that("linear FE measures are the differences of K-83, computed by hand", {
   table <- measures$table
   independent_expect(table$estimate[table$standardization == "indirect"], indirect, tolerance, "indirect difference")
   independent_expect(table$estimate[table$standardization == "direct"], unname(direct), tolerance, "direct difference")
+  # K-83: both differences equal gamma_i - gamma_0 up to rounding.
+  identity <- unname(fit$provider_effects - null)
+  for (standardization in c("indirect", "direct")) {
+    independent_expect(table$estimate[table$standardization == standardization], identity, tolerance,
+                       paste(standardization, "difference = gamma - null"))
+  }
 })
 
-test_that("RE measures put lme4's fitted values over the expected outcomes (K-82, K-84), by hand", {
+# The RE and CRE measures by hand from a direct lme4 fit (K-82, K-84): for logistic models
+# the ratios of the fitted values over plogis of the fixed part (indirect) and of each
+# provider's expected events over all observations to the observed total (direct); for
+# linear models the corresponding differences per observation.
+independent_mixed_measures <- function(direct_fit, data, logistic) {
+  fixed <- drop(stats::model.matrix(direct_fit) %*% lme4::fixef(direct_fit))
+  effects <- lme4::ranef(direct_fit)$hospital[, 1]
+  fitted <- stats::fitted(direct_fit)
+  if (logistic) {
+    return(list(
+      indirect = independent_provider_sums(fitted, data$hospital) /
+        independent_provider_sums(stats::plogis(fixed), data$hospital),
+      direct = vapply(effects, function(effect) sum(stats::plogis(effect + fixed)), numeric(1)) / sum(data$y)
+    ))
+  }
+  list(
+    indirect = (independent_provider_sums(fitted, data$hospital) - independent_provider_sums(fixed, data$hospital)) /
+      as.vector(table(data$hospital)),
+    direct = (vapply(effects, function(effect) sum(effect + fixed), numeric(1)) - sum(data$y)) / nrow(data)
+  )
+}
+
+test_that("RE and CRE measures put lme4's fitted values over the expected outcomes (K-82, K-84), by hand", {
   tolerance <- reference_tolerance("closed_form")
   linear <- independent_linear_example()
-  direct_fit <- lme4::lmer(y ~ z1 + z2 + z3 + z4 + z5 + (1 | hospital), linear)
-  fit <- fit_linear_re(y ~ z1 + z2 + z3 + z4 + z5, linear, "hospital")
-  fixed <- drop(stats::model.matrix(direct_fit) %*% lme4::fixef(direct_fit))
-  effects <- lme4::ranef(direct_fit)$hospital[, 1]
-  n_obs <- as.vector(table(linear$hospital))
-  table <- standardize_providers(fit, c("indirect", "direct"))$table
-  indirect <- (independent_provider_sums(stats::fitted(direct_fit), linear$hospital) -
-                 independent_provider_sums(fixed, linear$hospital)) / n_obs
-  direct <- (vapply(effects, function(effect) sum(effect + fixed), numeric(1)) - sum(linear$y)) / nrow(linear)
-  independent_expect(table$estimate[table$standardization == "indirect"], indirect, tolerance, "linear RE indirect")
-  independent_expect(table$estimate[table$standardization == "direct"], direct, tolerance, "linear RE direct")
-
+  linear_decomposed <- transform(linear, z1_bar = stats::ave(z1, hospital))
+  linear_decomposed$z1_within <- linear_decomposed$z1 - linear_decomposed$z1_bar
   binary <- independent_binary()
-  direct_fit <- lme4::glmer(y ~ x1 + x2 + (1 | hospital), binary, family = stats::binomial(link = "logit"))
-  fit <- fit_logistic_re(y ~ x1 + x2, binary, "hospital")
-  fixed <- drop(stats::model.matrix(direct_fit) %*% lme4::fixef(direct_fit))
-  effects <- lme4::ranef(direct_fit)$hospital[, 1]
-  table <- standardize_providers(fit, c("indirect", "direct"))$table
-  rows <- function(standardization, measure) table$standardization == standardization & table$measure == measure
-  indirect <- independent_provider_sums(stats::fitted(direct_fit), binary$hospital) /
-    independent_provider_sums(stats::plogis(fixed), binary$hospital)
-  direct <- vapply(effects, function(effect) sum(stats::plogis(effect + fixed)), numeric(1)) / sum(binary$y)
-  rate <- 100 * sum(binary$y) / nrow(binary)
-  independent_expect(table$estimate[rows("indirect", "ratio")], indirect, tolerance, "logistic RE indirect ratio")
-  independent_expect(table$estimate[rows("direct", "ratio")], direct, tolerance, "logistic RE direct ratio")
-  independent_expect(table$estimate[rows("indirect", "rate")], pmin(pmax(indirect * rate, 0), 100), tolerance,
-                     "logistic RE indirect rate")
+  binary_decomposed <- transform(binary, x1_bar = stats::ave(x1, hospital))
+  binary_decomposed$x1_within <- binary_decomposed$x1 - binary_decomposed$x1_bar
+  logit <- stats::binomial(link = "logit")
+  cases <- list(
+    linear_re = list(fit = fit_linear_re(y ~ z1 + z2 + z3 + z4 + z5, linear, "hospital"), data = linear,
+                     direct = lme4::lmer(y ~ z1 + z2 + z3 + z4 + z5 + (1 | hospital), linear)),
+    linear_cre = list(fit = fit_linear_cre(y ~ z1 + z2 + z3, linear, "hospital", within_between = "z1"), data = linear,
+                      direct = lme4::lmer(y ~ z1_within + z1_bar + z2 + z3 + (1 | hospital), linear_decomposed)),
+    logistic_re = list(fit = fit_logistic_re(y ~ x1 + x2, binary, "hospital"), data = binary,
+                       direct = lme4::glmer(y ~ x1 + x2 + (1 | hospital), binary, family = logit)),
+    logistic_cre = list(fit = fit_logistic_cre(y ~ x1 + x2, binary, "hospital", within_between = "x1"), data = binary,
+                        direct = lme4::glmer(y ~ x1_within + x1_bar + x2 + (1 | hospital), binary_decomposed,
+                                             family = logit))
+  )
+  for (name in names(cases)) {
+    case <- cases[[name]]
+    logistic <- startsWith(name, "logistic")
+    expected <- independent_mixed_measures(case$direct, case$data, logistic)
+    table <- standardize_providers(case$fit, c("indirect", "direct"))$table
+    rows <- function(standardization, measure) table$standardization == standardization & table$measure == measure
+    measure <- if (logistic) "ratio" else "difference"
+    independent_expect(table$estimate[rows("indirect", measure)], expected$indirect, tolerance, paste(name, "indirect"))
+    independent_expect(table$estimate[rows("direct", measure)], expected$direct, tolerance, paste(name, "direct"))
+    if (logistic) {
+      rate <- 100 * sum(case$data$y) / nrow(case$data)
+      independent_expect(table$estimate[rows("indirect", "rate")], pmin(pmax(expected$indirect * rate, 0), 100),
+                         tolerance, paste(name, "indirect rate"))
+    }
+  }
 })
