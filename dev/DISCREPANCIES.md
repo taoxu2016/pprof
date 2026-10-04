@@ -321,8 +321,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: integer flags; or a factor with fixed levels.
 - Recommendation: integer flags -1/0/1 in new result tables; compatibility wrappers reproduce the factor.
 - Decision owner: project lead.
-- Status: verified (V13.10). New result tables have integer flags (Phase 3, step 3); the wrappers reproduce the factor.
-- Regression test: `tests/testthat/test-profile-reference.R` compares the integer flags with the labels of the reference's factor; the wrapper fixtures compare the factor exactly.
+- Status: verified (V13.10). New result tables have integer flags (Phase 3, step 3); the wrappers reproduce the factor. The same for the linear FE, RE, and CRE families (Phase 5, steps 2 and 3), including the factor without levels that the RE and CRE tests return when every flag is missing, on fits whose provider variance is 0 (`dev/design/phase5-facts/09_singular_re_fits.R`).
+- Regression test: `tests/testthat/test-profile-reference.R` compares the integer flags with the labels of the reference's factor; the wrapper fixtures compare the factor exactly; `tests/testthat/test-profile-families.R` (the new API on the method fixtures of every family) and `tests/testthat/test-compat-methods-families.R` (singular fits, Phase 5).
 
 ### D-16: Linear FE test distribution set by a hidden attribute
 
@@ -552,8 +552,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reproduce; (2) use `2 * (1 - pnorm(abs(stat)))` as everywhere else (Class B because a number changes).
 - Recommendation: reproduce in the compatibility wrapper; strongly recommend sign-off for (2) in the new API (question M-10).
 - Decision owner: methodology owner.
-- Status: verified (V15.6); awaiting sign-off.
-- Regression test: fixture for both summaries.
+- Status: verified (V15.6); awaiting sign-off. Reproduced in the new API, where the covariate rule of logistic RE and CRE models computes 2(1 − Φ(z)) (`coefficient_wald$p_value = "upper_doubled"`, Phase 5, step 2), and in the wrappers (Phase 5, step 3).
+- Regression test: fixture for both summaries; `tests/testthat/test-profile-families.R` (the new API's covariate tests on the summary fixtures of every family) and `tests/testthat/test-results.R` (result validators accept p-values above 1).
 
 ### D-32: Linear FE intervals and tests use opposite reference distributions
 
@@ -566,8 +566,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reproduce; (2) align the intervals with the tests (Class B).
 - Recommendation: reproduce until question M-8 is answered.
 - Decision owner: methodology owner.
-- Status: verified (V14.4); awaiting sign-off.
-- Regression test: fixtures for both variance options.
+- Status: verified (V14.4); awaiting sign-off. Reproduced in the new API through the linear FE specification's `wald` field (tests with t(n − m − p) for the full variance and normal for the simplified one; intervals the reverse; Phase 5, step 2) and in the wrappers (Phase 5, step 3).
+- Regression test: fixtures for both variance options; `tests/testthat/test-profile-families.R` and `tests/testthat/test-inference-wald.R` (Phase 5); the differential tests run every linear FE method with both variances.
 
 ### D-33: Inconsistent interval attributes
 
@@ -594,7 +594,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reproduce the session-locale order; (2) order character IDs in a locale-independent way (for example `sort(method = "radix")`), which changes bootstrap draws in non-C locales (Class B by brief §3.5).
 - Recommendation: (1) for equivalence; propose (2) to the methodology owners. The fixture generator records the collation locale in the manifest.
 - Decision owner: methodology owner.
-- Status: verified (V10.10); awaiting sign-off for (2).
+- Status: verified (V10.10); awaiting sign-off for (2). The new API and the wrappers of every family keep the reference's order (Phase 5): the R-1 fixtures add character IDs for the RE families (`linear_re-syn`, `logis_re-extreme-chr`), and the differential tests run datasets whose character IDs ("P1", "P2", ...) sort differently under the C collation than their numbers.
 - Regression test: fixtures generated under a recorded locale; a test that runs under both C and a non-C locale.
 
 ### D-35: `ExampleDataBinary` size documented wrongly
@@ -750,8 +750,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reproduce; (2) draw the limits from the variance and distribution of the test (Class B: changes the limits of full-variance plots).
 - Recommendation: reproduce (1) in the wrapper and in `funnel_limits()` for linear FE until the methodology owners answer M-18.
 - Decision owner: methodology owner.
-- Status: verified (2026-10-04, Phase 5 planning); awaiting sign-off.
-- Regression test: in Phase 5, the R-1 fixture cases of the D-43 dataset (a full-variance fit and its `plot()`), if approved, and a test of `funnel_limits()` on that fit.
+- Status: verified (2026-10-04, Phase 5 planning); awaiting sign-off. Reproduced in `funnel_limits()` for linear FE (limits from σ/sqrt(n_i) and normal quantiles, flags from the Wald test of the fit's provider variance; Phase 5, step 2) and in `plot.linear_fe()` (Phase 5, step 3).
+- Regression test: the R-1 fixture cases `plot-linear-full` (the full-variance fit of the linear example) and `plot-linear-funnel-full` (that of `syn_linear_funnel`, where 8 of 40 points disagree with their flags); `tests/testthat/test-profile-families.R` ("the linear funnel has precision n_i, half-width z sigma / sqrt(n_i), and Wald flags").
 
 ### D-44: The RE and CRE summaries select the intercept only as `"(intercept)"`
 

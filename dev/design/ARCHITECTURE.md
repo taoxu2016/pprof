@@ -151,6 +151,8 @@ An architecture test (`tests/testthat/test-architecture.R`, Phase 2) parses `R/`
 
 As built through Phase 4: the model layer has the files listed, and `R/model-methods.R` for the standard methods that every model shares (Phase 3). The compatibility layer has `R/compat-fits.R` (the seven fitting functions of pprof 1.0.3), `R/compat-methods.R` (the methods of `logis_fe` objects, which Firth fits share, and the print methods of the RE and CRE objects), `R/compat-plots.R`, and `R/compat-convert.R`. `R/check-data.R`, `R/compat-data-check.R`, `R/compat-deprecate.R`, and `R/pprof-package.R` come in later phases; the reference's `R/pprof.R` still declares `useDynLib`. The methods of the linear, RE, and CRE objects are still the reference's files until Phase 5 (DEC-040).
 
+As built in Phase 5 (step 3): the methods of `linear_fe`, `linear_re`, `logis_re`, `linear_cre`, and `logis_cre` objects are compatibility methods over the new API (DEC-049): `R/compat-methods-linear-fe.R` (`test()`, `SM_output()`, `confint()`, `summary()`), `R/compat-methods-mixed.R` (the same four for the four RE and CRE classes), and `plot.linear_fe()` in `R/compat-plots.R`, with the reference's `ppfunnel_linear()` unchanged (DEC-034). The generics `test()` and `SM_output()` moved unchanged to `R/compat-generics.R` (DEC-045). `R/compat-convert.R` rebuilds a model from an old object (`compat_model_from_linear_fe()`, `compat_model_from_mixed()`) and builds the old result shapes. The 23 reference method files are gone; the reference's files left in `R/` are `Data.R`, `RcppExports.R` (generated), `bar_plot.R`, `caterpillar_plot.R`, `data_check.R`, and `pprof.R`, which the architecture test lists as legacy (DEC-031).
+
 ### B.3 C++ modules
 
 ```
@@ -160,9 +162,6 @@ src/
                              cpp_logistic_score_standard(), cpp_logistic_direct_expected(), and
                              cpp_logistic_firth_log_determinant() (tests only)
   RcppExports.cpp            generated
-  Fixed_effect.cpp           the reference's computeDirectExp(), until the logistic RE/CRE methods
-                             are rewritten (Phase 5); header.{h,cpp} and myomp.h, the reference's
-                             helpers, go with it
   core/
     armadillo.h              the one Armadillo configuration of the core: BLAS and LAPACK, 32-bit words,
                              Armadillo's own OpenMP and warnings off, output to a discarding stream (DEC-035)
@@ -185,6 +184,8 @@ src/
 As built in Phase 3, OpenMP regions are written in place with `num_threads(threads)` clauses rather than through a `parallel.h`, and the engines report a failed solve or inversion by throwing outside any parallel region: Rcpp's generated wrappers turn the exception into an R error, which the model layer reclasses as `pprof_error_convergence` (`logistic_fe_engine_call()`). Inside parallel regions only bool-returning Armadillo functions are used, and a failure sets a flag (the standard score test's `failed`).
 
 As built in Phase 4, `logistic/firth.{h,cpp}` reproduces the reference's `logis_firth_prov()` operation by operation in the order it computes with one thread (K-30 to K-33): each provider's blocks, hat values, and modified score are computed in parallel into the provider's own slots, and every sum over providers (the Schur complement, the covariate score) is then added in provider order, so the results do not depend on the thread count (D-05). The Schur complement is inverted and its log-determinant taken outside the parallel regions, and a failure throws there (D-42). The block routine gained `provider_blocks()`, which Firth calls with its 1e-10 weight floor (K-31). With `src/Firth.cpp` gone, RcppParallel and its `$(shell ...)` lines left the build.
+
+As built in Phase 5 (step 3): no reference C++ is left. The logistic RE and CRE methods take their direct expectations from `cpp_logistic_direct_expected()`, which equals the reference's `computeDirectExp()` on their inputs (F5 of the Phase 5 plan), so `src/Fixed_effect.cpp`, `src/header.{h,cpp}`, and `src/myomp.h` were removed with their objects in both Makevars files. `RcppExports.cpp` still includes `RcppArmadillo.h`, because `Rcpp::compileAttributes()` adds it for every LinkingTo package that has a header of its name, so the Makevars keep DEC-035's settings for every translation unit (DEC-052).
 
 Contracts of the core:
 
@@ -210,7 +211,7 @@ Sources: K-60, K-68 to K-70, K-80 to K-84, K-92, K-93. The rows differ where the
 
 As built in Phase 3 (logistic FE; NAMING §5 lists the fields): `profile_spec()` returns a list with `family`, `effect`, `null_default`, `null_options`, `indirect_numerator`, and `measures`, and, where a family supports them, `mean_function` and `variance_function` (measure intervals and the null variance of indirect standardization), `direct_expected` (a function of the effects, the linear predictor, and the thread count; the C++ direct expectations for logistic models), `funnel` (`measure`, `target`, `floor`, `test`, and the functions `precision` and `half_width`, so that the logistic funnel's E²/V and sqrt(1/w) and the linear funnel's n_i and σ/sqrt(n_i) are both data), and `wald_caution` (DEC-037). The exact, bootstrap, modified score, and Wald provider tests are computed by the profiling layer from the contract; `provider_test()` serves the tests that need a model's internals, such as the standard score test (DEC-036).
 
-As built in Phase 5 (DEC-046; the values per family are the table in `dev/design/PHASE5_PLAN.md`, step 2): the specification gains optional fields whose defaults are the behavior of logistic fixed effects, so a family states only where it differs: `test_default` (DEC-047), `comparison` (ratios O/E and E/total, or differences (O − E)/n_i and (E − total)/n), `direct_reference` (Σy, or Σ(γ0 + Zβ) for linear FE, K-83), `direct_limits` (R's sums of the mean function, or the family's direct expectation: logistic RE and CRE use the C++ routine, whose last bits differ from R's sums), `one_sided_extremes` (logistic FE only, K-91), `wald` (the distributions of the provider tests and intervals: t(n − m − p) for linear FE tests with the full variance and intervals with the simplified one, D-32), and `coefficient_wald` (the covariate p-value form, including D-31's 2(1 − Φ(z)), its distribution and degrees of freedom, and the interval form: β ∓ q·se, or lme4's β + se·Φ⁻¹(a), which reproduces `confint(method = "Wald")` bitwise without the lme4 fit). The predicted numerator of RE indirect measures (K-82, K-84) is read through the contract generic `predicted_outcome()`, which returns lme4's fitted values for `pprof_mixed`. The inference layer owns the default of `coefficient_wald`, and the profiling layer those of the other fields, so neither reaches into the other (§B.1). The new API reproduces D-31, D-32, D-43, and M-14 until the methodology owners decide.
+As built in Phase 5 (DEC-046; the values per family are the table in `dev/design/PHASE5_PLAN.md`, step 2): the specification gains optional fields whose defaults are the behavior of logistic fixed effects, so a family states only where it differs: `test_default` (DEC-047), `comparison` (ratios O/E and E/total, or differences (O − E)/n_i and (E − total)/n), `direct_reference` (Σy, or Σ(γ0 + Zβ) for linear FE, K-83), `direct_limits` (R's sums of the mean function, or the family's direct expectation: logistic RE and CRE use the C++ routine, whose last bits differ from R's sums), `one_sided_extremes` (logistic FE only, K-91), `wald` (the distributions of the provider tests and intervals: t(n − m − p) for linear FE tests with the full variance and intervals with the simplified one, D-32), and `coefficient_wald` (the covariate p-value form, including D-31's 2(1 − Φ(z)), its distribution and degrees of freedom, and the interval form: β ∓ q·se, or lme4's β + se·Φ⁻¹(a), which reproduces `confint(method = "Wald")` bitwise without the lme4 fit). The predicted numerator of RE indirect measures (K-82, K-84) is read through the contract generic `predicted_outcome()`, which returns lme4's fitted values for `pprof_mixed`. The inference layer owns the default of `coefficient_wald`, and the profiling layer those of the other fields, so neither reaches into the other (§B.1). The new API reproduces D-31, D-32, D-43, and M-14 until the methodology owners decide. Where lme4 estimates the provider variance as 0, the RE and CRE effects and their standard deviations are 0, and the Wald tests have NaN statistics and p-values and missing flags, as in the reference (`dev/design/phase5-facts/09_singular_re_fits.R`).
 
 ### B.5 A fit and a profile, step by step
 
@@ -484,6 +485,8 @@ Phase 1 implements this table in `tests/testthat/helper-tolerances.R` as `pprof_
 
 As built through Phase 4: `tests/testthat/test-independent-fits.R` implements the linear FE, Firth, and RE and CRE rows, with the tolerances of DEC-043, and `tests/testthat/test-metamorphic-fits.R` the metamorphic layer for the Phase 4 fits. The `glm()` check of logistic FE, planned for Phase 1, has not been written yet (raised at the Phase 4 gate).
 
+As built in Phase 5 (step 4): `test-independent-fits.R` adds the logistic FE row, `fit_logistic_fe()` against `glm()` with provider indicators on the example data without its extreme providers and on a seeded simulation (estimates within 1e-10, DEC-050; variances and log-likelihood at the closed-form tier, with `glm()`'s covariance taken after one more iteration from its estimates), and the standardization row for linear FE (K-83) and linear and logistic RE (K-82, K-84), computed by hand from the data and a direct lme4 fit. The tests-and-intervals row is `validation/run-simulation.R` with its report `validation/simulation-report.md` (DEC-053): the size and power of the provider tests and the coverage of the provider-effect and indirect-measure intervals of every family under data without provider effects and with six outlying providers, with Monte Carlo standard errors; informational, it gates nothing.
+
 ### G.6 Test layers (brief §6)
 
 | Layer | Where | From phase |
@@ -498,6 +501,8 @@ As built through Phase 4: `tests/testthat/test-independent-fits.R` implements th
 | H. Synthetic edge cases | datasets from `dev/reference/datasets.R` stored in fixtures | 1 |
 
 R line coverage target 90%; C++ coverage measured with `covr` (gcov) on Linux CI.
+
+As built in Phase 5: `test-metamorphic-profiles.R` extends layer F to the profiling results of the linear FE, RE, and CRE families (relabeling with character, factor, and numeric IDs gives identical results; shuffling rows changes linear FE results only within the closed-form tier). Regression tests for the Phase 5 register entries are in `test-compat-methods-families.R`, next to the wrappers they test, and in `test-reference-overrides.R` for the cases with per-case expectations.
 
 ---
 
@@ -563,6 +568,8 @@ R version: keep `R (>= 4.1.0)`, the current requirement, which the native pipe n
 - They reproduce the reference including the Class B items awaiting sign-off (D-10, D-12, D-13, D-24, D-31, D-32, D-34), the presentation details (factor flags, character p-values, string attributes), and messages. Class A fixes apply (a crash becomes a result or a classed error) and are listed in the migration guide.
 - Each wrapper warns once per session with class `pprof_deprecated`, through a small internal helper (no `lifecycle` dependency).
 - They are tested against the fixtures field by field.
+
+As built through Phase 5: every fitting function and every method of pprof 1.0.3 except `bar_plot()`, `caterpillar_plot()`, and `data_check()` is a wrapper over the new API. The methods of `linear_fe`, `linear_re`, `logis_re`, `linear_cre`, and `logis_cre` objects (Phase 5, DEC-049) rebuild the model with `compat_model_from_linear_fe()` or `compat_model_from_mixed()`, which read numbers only from the numeric fields and the lme4 fit, never from `data_include`, whose columns are text when the IDs are (D-11); the standard deviations of the RE effects are recomputed from the stored variance (K-69) or read from the lme4 fit when a method needs them, as the reference does (D-46). Before the switch, a live comparison found the wrappers' values `identical()` to the old methods' on every method fixture and a grid of about 280 settings. The once-per-session deprecation warning is not in place yet (`R/compat-deprecate.R`, a later phase).
 
 ### I.3 Timeline
 
