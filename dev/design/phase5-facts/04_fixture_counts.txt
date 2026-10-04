@@ -1,0 +1,31 @@
+core: 248 cases; manifest fields id, file, md5, fun, call, parents, datasets, seed, tier, heavy, notes, outcome, error, iterations, probe_identical
+           parent
+method      linear_cre linear_fe linear_re logis_cre logis_fe logis_firth
+  confint            3         8         2         4       19           1
+  plot               0         2         0         0        5           0
+  SM_output          1         5         1         2       10           1
+  summary            1         3         1         2        9           1
+  test               3        11         4         6       36           2
+           parent
+method      logis_re
+  confint          5
+  plot             0
+  SM_output        2
+  summary          2
+  test             6
+linear_fe methods: 29 cases; tiers closed_form 27, exact 2; errors: test-linear-bad-null, confint-linear-gamma-greater
+linear_re methods: 8 cases; tiers lme4 8; errors: 
+logis_re methods: 15 cases; tiers lme4 15; errors: 
+linear_cre methods: 8 cases; tiers lme4 8; errors: 
+logis_cre methods: 14 cases; tiers lme4 14; errors: 
+full: 32 cases; manifest fields id, file, md5, fun, call, parents, datasets, seed, tier, heavy, notes, outcome, error, iterations, probe_identical
+           parent
+method      logis_fe
+  confint          4
+  SM_output        1
+  test             4
+linear_fe methods: 0 cases; tiers ; errors: 
+linear_re methods: 0 cases; tiers ; errors: 
+logis_re methods: 0 cases; tiers ; errors: 
+linear_cre methods: 0 cases; tiers ; errors: 
+logis_cre methods: 0 cases; tiers ; errors: 

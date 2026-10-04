@@ -62,6 +62,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-40 | AUC without pROC | none (tolerance) | verified; decided (option 1, Phase 3 gate) | The Mann-Whitney AUC equals pROC's bitwise in 57 of 59 fits and differs in the last bit in 2 |
 | D-41 | `logis_fe`, `logis_firth` with factor IDs | A | verified; fixed (Phases 3 and 4) | Fail when screening excludes a provider: the excluded factor levels become empty provider blocks |
 | D-42 | `logis_firth` with singular information | A | verified; fixed (Phase 4) | Terminates the R session when the Schur complement of the information cannot be inverted |
+| D-43 | `plot.linear_fe` with the full variance | B (question M-18) | verified; awaiting sign-off | Limits use σ/sqrt(n_i) and normal quantiles, flags the full variance and t, so points outside the limits can be unflagged |
+| D-44 | RE and CRE `summary()` | C | verified | The intercept is selected only as `"(intercept)"`, while its row is named `"(Intercept)"`; the help does not say so |
 
 ---
 
@@ -303,7 +305,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: accept any finite numeric scalar everywhere.
 - Recommendation: validate once in the inference layer; numeric (double or integer) scalars are accepted, and the value is used as a double, so results are identical to passing the double.
 - Decision owner: project lead.
-- Status: verified (V13.9); the recommendation was approved with the Phase 3 plan (2026-10-02). Fixed in the profiling functions (Phase 3, step 3): `null` is checked once, and a numeric scalar, double or integer, is used as a double. The wrappers apply it from the switch (Phase 3, step 5).
+- Status: verified (V13.9); the recommendation was approved with the Phase 3 plan (2026-10-02). Fixed in the profiling functions (Phase 3, step 3): `null` is checked once, and a numeric scalar, double or integer, is used as a double. The wrappers apply it from the switch (Phase 3, step 5). Also verified for linear fixed effects (2026-10-04, Phase 5 planning, `dev/design/phase5-facts/01_reference_methods.R`): `test.linear_fe`, `SM_output.linear_fe`, `confint.linear_fe`, and `plot.linear_fe` all reject `null = 0L` with "Argument 'null' NOT as required!" (`class(null) == "numeric"`); the Phase 5 wrappers apply the fix. The RE and CRE methods do not validate `null`.
 - Regression test: `tests/testthat/test-profile-regression.R` (`null = 0L` gives the `SM_output-binary-null0` values, the same tests as `null = 0`, and the funnel of the `plot-binary-null0` fixture, added in Phase 3).
 
 ### D-15: Flags are factors whose levels depend on the data
@@ -492,7 +494,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: match providers by their character representation.
 - Recommendation: `providers` arguments are matched as character against provider IDs (NAMING.md §4).
 - Decision owner: project lead.
-- Status: verified (V13.11); fixed in the profiling functions (Phase 3, step 3): `providers` is compared as character with the provider IDs. The wrappers apply it from the switch (Phase 3, step 5).
+- Status: verified (V13.11); fixed in the profiling functions (Phase 3, step 3): `providers` is compared as character with the provider IDs. The wrappers apply it from the switch (Phase 3, step 5). Also verified for the methods of `linear_fe` and `logis_cre` fits with integer IDs (2026-10-04, Phase 5 planning, `dev/design/phase5-facts/06_integer_ids_parm.R`): their `data_include` keeps the IDs as integers, and `test()`, `SM_output()`, and `confint()` with `parm = 1:3` fail the class check; `linear_re` and `linear_cre` are not affected, because `cbind()` turns their IDs into doubles. The Phase 5 wrappers apply the fix.
 - Regression test: `tests/testthat/test-profile-regression.R` (rows 1 to 3 of `test-extreme-exact` for the integer-ID fit) and `tests/testthat/test-profile-api.R`.
 
 ### D-28: Factor provider IDs break exact and score intervals
@@ -734,3 +736,31 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: project lead.
 - Status: verified (2026-10-03); fixed in the C++ engine (Phase 4, step 1): `cpp_logistic_firth()` raises an R error, which `fit_logistic_firth()` reclasses as `pprof_error_convergence` (step 2), and the `logis_firth()` wrapper raises that error (step 3).
 - Regression test: `tests/testthat/test-cpp-firth.R` ("a singular information matrix ends the fit with an error, where the reference terminated R (D-42)"), `tests/testthat/test-model-logistic-firth.R` (the same for `fit_logistic_firth()`, with the class `pprof_error_convergence`), and `tests/testthat/test-compat-fits.R` (the wrapper).
+
+### D-43: The linear FE funnel plot draws limits with one variance and flags with another
+
+- Component: `plot.linear_fe` (`R/plot.linear_fe.R:57-68`): the limits are `target -/+ qnorm(1 - alpha / 2) * sqrt(1 / n_i) * sigma` whatever `option.gamma.var` the fit used, and the flags come from `test.linear_fe(level = 1 - alpha[1])`, which uses the full variance and t(n - m - p) for `option.gamma.var = "full"` (K-68, K-111).
+- Class (proposed): B (methodology question M-18)
+- Description: With the simplified variance the limits and the flags use the same statistic, so a provider is flagged exactly when its point lies outside the limits at the first alpha. With the full variance the flags use the larger variance and the t distribution, while the limits do not change, so points outside the limits can be unflagged.
+- Minimal reproducible example (`dev/design/phase5-facts/05_linear_funnel_flags.R`, reference library, 2026-10-04): 40 simulated providers of 3 to 8 observations whose covariate means differ between providers; with `option.gamma.var = "full"`, 21 points lie outside the 95% limits and 13 providers are flagged (8 disagree). With `"simplified"`, and on `ExampleDataLinear` with either option, points and flags agree.
+- Affected outputs: `plot.linear_fe` for fits with `option.gamma.var = "full"`: the flags of points near the limits.
+- Statistical impact: the plot can show a provider outside the control limits as "expected", or the reverse; the flags agree with `test()`, the limits with the simplified variance.
+- Options: (1) reproduce; (2) draw the limits from the variance and distribution of the test (Class B: changes the limits of full-variance plots).
+- Recommendation: reproduce (1) in the wrapper and in `funnel_limits()` for linear FE until the methodology owners answer M-18.
+- Decision owner: methodology owner.
+- Status: verified (2026-10-04, Phase 5 planning); awaiting sign-off.
+- Regression test: in Phase 5, the R-1 fixture cases of the D-43 dataset (a full-variance fit and its `plot()`), if approved, and a test of `funnel_limits()` on that fit.
+
+### D-44: The RE and CRE summaries select the intercept only as `"(intercept)"`
+
+- Component: `summary.linear_re`, `summary.logis_re`, `summary.linear_cre`, `summary.logis_cre` (`R/summary.linear_re.R:23` and the same line in the others): `covar_char <- c("(intercept)", ...)`, matched against character `parm`.
+- Class (proposed): C
+- Description: The summaries name the intercept's row `"(Intercept)"`, as lme4 does, but select rows by a list that spells it `"(intercept)"`. `parm = "(Intercept)"` selects nothing and returns a data frame with no rows; `parm = "(intercept)"` selects the intercept. The help says only that `parm` "specifies a subset of covariates".
+- Minimal reproducible example: `nrow(summary(linear_re(data = d, Y.char = "Y", Z.char = z, ProvID.char = "ProvID"), parm = "(Intercept)"))` is 0, and with `parm = "(intercept)"` it is 1 (`dev/design/phase5-facts/01_reference_methods.R`, 2026-10-04).
+- Affected outputs: documentation; the rows selected by `parm`.
+- Statistical impact: none.
+- Options: document the spelling; or also accept `"(Intercept)"` (a result where the reference returns no rows).
+- Recommendation: the wrappers keep the reference's selection and their help states that the intercept is selected as `"(intercept)"`; the new API's `test_coefficients()` and `confint()` use the coefficient names, so `"(Intercept)"`.
+- Decision owner: project lead.
+- Status: verified (2026-10-04, Phase 5 planning).
+- Regression test: in Phase 5, the R-1 fixture cases with `parm = "(intercept)"` and `parm = "(Intercept)"`, if approved, and a wrapper test.

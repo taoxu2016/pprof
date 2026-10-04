@@ -1,0 +1,5 @@
+glm: Var(beta) rel 3e-10; Var(gamma) rel 9.3e-08; estimates beta rel 5e-15 gamma abs 3.2e-13
+glm restarted at its estimates: Var(beta) rel 8e-15; Var(gamma) rel 2.7e-13; estimates beta rel 6.9e-15 gamma abs 3.2e-13
+RcppExports.cpp without Fixed_effect.cpp: includes #include <RcppArmadillo.h>; #include <Rcpp.h>
+  exports cpp_logistic_fe_serbin, cpp_logistic_fe_ban, cpp_logistic_firth, cpp_logistic_firth_log_determinant, cpp_logistic_variance, cpp_logistic_score_standard, cpp_logistic_direct_expected
+  mentions RcppArmadillo: TRUE

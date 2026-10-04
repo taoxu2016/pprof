@@ -1,0 +1,13 @@
+linear_fe data_include ProvID class: integer
+test.linear_fe(parm = 1:3) -> error: Argument 'parm' includes invalid elements!
+SM_output.linear_fe(parm = 1:3) -> error: Argument 'parm' includes invalid elements.
+confint.linear_fe(parm = 1:3) -> error: Argument 'parm' includes invalid elements.
+test.linear_fe(parm = c(1, 2, 3)) -> error: Argument 'parm' includes invalid elements!
+linear_re data_include ProvID class: numeric
+test.linear_re(parm = 1:3) -> value (3 rows)
+linear_cre data_include ProvID class: numeric
+test.linear_cre(parm = 1:3) -> value (3 rows)
+logis_cre data_include ProvID class: integer
+test.logis_cre(parm = 1:3) -> error: Argument 'parm' includes invalid elements!
+SM_output.logis_cre(parm = 1:3) -> error: Argument 'parm' includes invalid elements.
+confint.logis_cre(parm = 1:3) -> error: Argument 'parm' includes invalid elements!
