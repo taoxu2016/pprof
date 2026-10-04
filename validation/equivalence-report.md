@@ -1,16 +1,16 @@
 # Equivalence report: package under test versus the pprof 1.0.3 reference
 
-Generated 2026-10-04 18:15:42 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
-Package under test: pprof 1.0.3 from the working tree at commit 8d7be60.
-Fixtures: core set generated at 8821723, full set generated at 8821723.
+Generated 2026-10-04 23:17:34 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Package under test: pprof 1.0.3 from the working tree at commit fc70833.
+Fixtures: core set generated at 9c1fba1, full set generated at 9c1fba1.
 
 ## Summary
 
-- Cases: 335 (core 303, full 32).
-- Compared and matching: 335; failing: 0; skipped: 0.
+- Cases: 364 (core 332, full 32).
+- Compared and matching: 364; failing: 0; skipped: 0.
 - Largest absolute difference over all compared values: 2e-11; largest relative difference: 3.92.
 - Long double vectors stored as signatures: 718; bitwise identical (same checksum of every value's bits): 703.
-- Reference errors reproduced: 17.
+- Reference errors reproduced: 19.
 - Per-case expectations for Class A fixes (tests/testthat/helper-reference-overrides.R): 21, all compared against values derived from fixtures where the reference is right.
 
 ## Providers within tolerance of a flag threshold
@@ -328,6 +328,35 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `data_check-missing` | data_check | exact | error |  |  |  |  |  | compared |
 | core | `data_check-collinear` | data_check | exact | value |  |  | 0 | 0 |  | compared |
 | core | `data_check-constant` | data_check | exact | error |  |  |  |  |  | compared |
+| core | `caterpillar-binary-exact-greater` | caterpillar_plot | root | value |  |  | 0 | 0 |  | compared |
+| core | `caterpillar-binary-exact-less-flags` | caterpillar_plot | root | value |  |  | 0 | 0 |  | compared |
+| core | `caterpillar-linear-greater` | caterpillar_plot | closed_form | value |  |  | 3.11e-15 | 3.23e-13 |  | compared |
+| core | `caterpillar-binary-direct-rate` | caterpillar_plot | iterative | value |  |  | 0 | 0 |  | compared |
+| core | `caterpillar-linear-cre-less` | caterpillar_plot | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `caterpillar-logis-cre-rate` | caterpillar_plot | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `caterpillar-binary-refline` | caterpillar_plot | iterative | value |  |  | 0 | 0 |  | compared |
+| core | `caterpillar-bad-orientation` | caterpillar_plot | exact | error |  |  |  |  |  | compared |
+| core | `bar_plot-logis-re` | bar_plot | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `bar_plot-group-num-1` | bar_plot | iterative | value |  |  | 0 | 0 |  | compared |
+| core | `bar_plot-group-num-60` | bar_plot | exact | error |  |  |  |  |  | compared |
+| core | `linear_re-singular` | linear_re | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `test-linear-re-singular` | test | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `SM_output-linear-re-singular` | SM_output | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-linear-re-singular-sm` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `linear_cre-singular` | linear_cre | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `test-linear-cre-singular` | test | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `SM_output-linear-cre-singular` | SM_output | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-linear-cre-singular-sm` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `logis_re-singular` | logis_re | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `test-logis-re-singular` | test | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `SM_output-logis-re-singular` | SM_output | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-logis-re-singular-sm` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `logis_cre-singular` | logis_cre | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `test-logis-cre-singular` | test | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `SM_output-logis-cre-singular` | SM_output | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `confint-logis-cre-singular-sm` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `bar_plot-singular` | bar_plot | lme4 | value |  |  | 0 | 0 |  | compared |
+| core | `caterpillar-singular` | caterpillar_plot | lme4 | value |  |  | 0 | 0 |  | compared |
 | full | `logis_fe-binary-grid-serbin-or-bt` | logis_fe | iterative | value |  | 12 | 0 | 0 | 13 of 13 | compared |
 | full | `logis_fe-binary-grid-serbin-or-nobt` | logis_fe | iterative | value |  | 12 | 0 | 0 | 13 of 13 | compared |
 | full | `logis_fe-binary-grid-serbin-beta-bt` | logis_fe | iterative | value |  | 12 | 0 | 0 | 13 of 13 | compared |

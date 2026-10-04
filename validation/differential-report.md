@@ -1,13 +1,13 @@
 # Differential report: working tree versus the pprof 1.0.3 reference
 
-Generated 2026-10-04 16:23:53 UTC by `validation/run-differential.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
-Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15 linear datasets, 3 binary (RE and CRE fits only) and 3 linear datasets with character IDs, and 2 binary (RE and CRE fits only) and 2 linear datasets without provider effects; seed 20261003.
+Generated 2026-10-04 23:25:20 UTC by `validation/run-differential.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15 linear datasets, 3 binary (RE and CRE fits only) and 3 linear datasets with character IDs, and 2 binary (RE and CRE fits only) and 2 linear datasets without provider effects; seed 20261003.
 
 ## Summary
 
-- Cases: 2780; matching: 2780; identical: 1900; mismatching: 0.
+- Cases: 3510; matching: 3510; identical: 2510; mismatching: 0.
 - Reference errors reproduced: 70.
-- Time: reference 92 s, working tree 61 s.
+- Time: reference 235 s, working tree 167 s.
 
 ## Datasets
 
@@ -98,6 +98,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff01-summary-lr` | summary | iterative | value | match | identical |
 | `diff01-summary-score` | summary | iterative | value | match | identical |
 | `diff01-plot` | plot | iterative | value | match | identical |
+| `diff01-plot-null` | plot | iterative | value | match | identical |
+| `diff01-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff01-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff01-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff01-bar` | bar_plot | iterative | value | match | identical |
+| `diff01-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff01-firth` | logis_firth | iterative | value | match | identical |
 | `diff01-firth-exact` | test | iterative | value | match | identical |
 | `diff01-firth-sm` | SM_output | iterative | value | match | identical |
@@ -129,6 +135,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff02-summary-lr` | summary | iterative | value | match | identical |
 | `diff02-summary-score` | summary | iterative | value | match | identical |
 | `diff02-plot` | plot | iterative | value | match | identical |
+| `diff02-plot-null` | plot | iterative | value | match | identical |
+| `diff02-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff02-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff02-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff02-bar` | bar_plot | iterative | value | match | identical |
+| `diff02-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff02-firth` | logis_firth | iterative | value | match | identical |
 | `diff02-firth-exact` | test | iterative | value | match | identical |
 | `diff02-firth-sm` | SM_output | iterative | value | match | identical |
@@ -160,6 +172,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff03-summary-lr` | summary | iterative | value | match | identical |
 | `diff03-summary-score` | summary | iterative | value | match | identical |
 | `diff03-plot` | plot | iterative | value | match | identical |
+| `diff03-plot-null` | plot | iterative | value | match | identical |
+| `diff03-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff03-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff03-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff03-bar` | bar_plot | iterative | value | match | identical |
+| `diff03-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff03-firth` | logis_firth | iterative | value | match | identical |
 | `diff03-firth-exact` | test | iterative | value | match | identical |
 | `diff03-firth-sm` | SM_output | iterative | value | match | identical |
@@ -191,6 +209,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff04-summary-lr` | summary | iterative | value | match | identical |
 | `diff04-summary-score` | summary | iterative | value | match | identical |
 | `diff04-plot` | plot | iterative | value | match | identical |
+| `diff04-plot-null` | plot | iterative | value | match | identical |
+| `diff04-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff04-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff04-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff04-bar` | bar_plot | iterative | value | match | identical |
+| `diff04-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff04-firth` | logis_firth | iterative | value | match | identical |
 | `diff04-firth-exact` | test | iterative | value | match | identical |
 | `diff04-firth-sm` | SM_output | iterative | value | match | identical |
@@ -222,6 +246,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff05-summary-lr` | summary | iterative | value | match | identical |
 | `diff05-summary-score` | summary | iterative | value | match | identical |
 | `diff05-plot` | plot | iterative | value | match | identical |
+| `diff05-plot-null` | plot | iterative | value | match | identical |
+| `diff05-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff05-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff05-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff05-bar` | bar_plot | iterative | value | match | identical |
+| `diff05-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff05-firth` | logis_firth | iterative | value | match | identical |
 | `diff05-firth-exact` | test | iterative | value | match | identical |
 | `diff05-firth-sm` | SM_output | iterative | value | match | identical |
@@ -253,6 +283,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff06-summary-lr` | summary | iterative | value | match | identical |
 | `diff06-summary-score` | summary | iterative | value | match | identical |
 | `diff06-plot` | plot | iterative | value | match | identical |
+| `diff06-plot-null` | plot | iterative | value | match | identical |
+| `diff06-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff06-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff06-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff06-bar` | bar_plot | iterative | value | match | identical |
+| `diff06-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff06-firth` | logis_firth | iterative | value | match | identical |
 | `diff06-firth-exact` | test | iterative | value | match | identical |
 | `diff06-firth-sm` | SM_output | iterative | value | match | identical |
@@ -284,6 +320,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff07-summary-lr` | summary | iterative | value | match | identical |
 | `diff07-summary-score` | summary | iterative | value | match | identical |
 | `diff07-plot` | plot | iterative | value | match | identical |
+| `diff07-plot-null` | plot | iterative | value | match | identical |
+| `diff07-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff07-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff07-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff07-bar` | bar_plot | iterative | value | match | identical |
+| `diff07-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff07-firth` | logis_firth | iterative | value | match | identical |
 | `diff07-firth-exact` | test | iterative | value | match | identical |
 | `diff07-firth-sm` | SM_output | iterative | value | match | identical |
@@ -315,6 +357,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff08-summary-lr` | summary | iterative | value | match | identical |
 | `diff08-summary-score` | summary | iterative | value | match | identical |
 | `diff08-plot` | plot | iterative | value | match | identical |
+| `diff08-plot-null` | plot | iterative | value | match | identical |
+| `diff08-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff08-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff08-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff08-bar` | bar_plot | iterative | value | match | identical |
+| `diff08-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff08-firth` | logis_firth | iterative | value | match | identical |
 | `diff08-firth-exact` | test | iterative | value | match | identical |
 | `diff08-firth-sm` | SM_output | iterative | value | match | identical |
@@ -346,6 +394,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff09-summary-lr` | summary | iterative | value | match | identical |
 | `diff09-summary-score` | summary | iterative | value | match | identical |
 | `diff09-plot` | plot | iterative | value | match | identical |
+| `diff09-plot-null` | plot | iterative | value | match | identical |
+| `diff09-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff09-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff09-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff09-bar` | bar_plot | iterative | value | match | identical |
+| `diff09-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff09-firth` | logis_firth | iterative | value | match | identical |
 | `diff09-firth-exact` | test | iterative | value | match | identical |
 | `diff09-firth-sm` | SM_output | iterative | value | match | identical |
@@ -377,6 +431,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff10-summary-lr` | summary | iterative | value | match | identical |
 | `diff10-summary-score` | summary | iterative | value | match | identical |
 | `diff10-plot` | plot | iterative | value | match | identical |
+| `diff10-plot-null` | plot | iterative | value | match | identical |
+| `diff10-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff10-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff10-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff10-bar` | bar_plot | iterative | value | match | identical |
+| `diff10-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff10-firth` | logis_firth | iterative | value | match | identical |
 | `diff10-firth-exact` | test | iterative | value | match | identical |
 | `diff10-firth-sm` | SM_output | iterative | value | match | identical |
@@ -408,6 +468,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff11-summary-lr` | summary | iterative | value | match | identical |
 | `diff11-summary-score` | summary | iterative | value | match | identical |
 | `diff11-plot` | plot | iterative | value | match | identical |
+| `diff11-plot-null` | plot | iterative | value | match | identical |
+| `diff11-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff11-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff11-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff11-bar` | bar_plot | iterative | value | match | identical |
+| `diff11-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff11-firth` | logis_firth | iterative | value | match | identical |
 | `diff11-firth-exact` | test | iterative | value | match | identical |
 | `diff11-firth-sm` | SM_output | iterative | value | match | identical |
@@ -439,6 +505,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff12-summary-lr` | summary | iterative | value | match | identical |
 | `diff12-summary-score` | summary | iterative | value | match | identical |
 | `diff12-plot` | plot | iterative | value | match | identical |
+| `diff12-plot-null` | plot | iterative | value | match | identical |
+| `diff12-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff12-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff12-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff12-bar` | bar_plot | iterative | value | match | identical |
+| `diff12-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff12-firth` | logis_firth | iterative | value | match | identical |
 | `diff12-firth-exact` | test | iterative | value | match | identical |
 | `diff12-firth-sm` | SM_output | iterative | value | match | identical |
@@ -470,6 +542,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff13-summary-lr` | summary | iterative | value | match | identical |
 | `diff13-summary-score` | summary | iterative | value | match | identical |
 | `diff13-plot` | plot | iterative | value | match | identical |
+| `diff13-plot-null` | plot | iterative | value | match | identical |
+| `diff13-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff13-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff13-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff13-bar` | bar_plot | iterative | value | match | identical |
+| `diff13-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff13-firth` | logis_firth | iterative | value | match | identical |
 | `diff13-firth-exact` | test | iterative | value | match | identical |
 | `diff13-firth-sm` | SM_output | iterative | value | match | identical |
@@ -501,6 +579,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff14-summary-lr` | summary | iterative | value | match | identical |
 | `diff14-summary-score` | summary | iterative | value | match | identical |
 | `diff14-plot` | plot | iterative | value | match | identical |
+| `diff14-plot-null` | plot | iterative | value | match | identical |
+| `diff14-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff14-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff14-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff14-bar` | bar_plot | iterative | value | match | identical |
+| `diff14-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff14-firth` | logis_firth | iterative | value | match | identical |
 | `diff14-firth-exact` | test | iterative | value | match | identical |
 | `diff14-firth-sm` | SM_output | iterative | value | match | identical |
@@ -532,6 +616,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff15-summary-lr` | summary | iterative | value | match | identical |
 | `diff15-summary-score` | summary | iterative | value | match | identical |
 | `diff15-plot` | plot | iterative | value | match | identical |
+| `diff15-plot-null` | plot | iterative | value | match | identical |
+| `diff15-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff15-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff15-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff15-bar` | bar_plot | iterative | value | match | identical |
+| `diff15-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff15-firth` | logis_firth | iterative | value | match | identical |
 | `diff15-firth-exact` | test | iterative | value | match | identical |
 | `diff15-firth-sm` | SM_output | iterative | value | match | identical |
@@ -563,6 +653,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff16-summary-lr` | summary | iterative | value | match | identical |
 | `diff16-summary-score` | summary | iterative | value | match | identical |
 | `diff16-plot` | plot | iterative | value | match | identical |
+| `diff16-plot-null` | plot | iterative | value | match | identical |
+| `diff16-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff16-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff16-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff16-bar` | bar_plot | iterative | value | match | identical |
+| `diff16-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff16-firth` | logis_firth | iterative | value | match | identical |
 | `diff16-firth-exact` | test | iterative | value | match | identical |
 | `diff16-firth-sm` | SM_output | iterative | value | match | identical |
@@ -594,6 +690,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff17-summary-lr` | summary | iterative | value | match | identical |
 | `diff17-summary-score` | summary | iterative | value | match | identical |
 | `diff17-plot` | plot | iterative | value | match | identical |
+| `diff17-plot-null` | plot | iterative | value | match | identical |
+| `diff17-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff17-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff17-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff17-bar` | bar_plot | iterative | value | match | identical |
+| `diff17-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff17-firth` | logis_firth | iterative | value | match | identical |
 | `diff17-firth-exact` | test | iterative | value | match | identical |
 | `diff17-firth-sm` | SM_output | iterative | value | match | identical |
@@ -625,6 +727,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff18-summary-lr` | summary | iterative | value | match | identical |
 | `diff18-summary-score` | summary | iterative | value | match | identical |
 | `diff18-plot` | plot | iterative | value | match | identical |
+| `diff18-plot-null` | plot | iterative | value | match | identical |
+| `diff18-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff18-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff18-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff18-bar` | bar_plot | iterative | value | match | identical |
+| `diff18-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff18-firth` | logis_firth | iterative | value | match | identical |
 | `diff18-firth-exact` | test | iterative | value | match | identical |
 | `diff18-firth-sm` | SM_output | iterative | value | match | identical |
@@ -656,6 +764,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff19-summary-lr` | summary | iterative | value | match | identical |
 | `diff19-summary-score` | summary | iterative | value | match | identical |
 | `diff19-plot` | plot | iterative | value | match | identical |
+| `diff19-plot-null` | plot | iterative | value | match | identical |
+| `diff19-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff19-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff19-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff19-bar` | bar_plot | iterative | value | match | identical |
+| `diff19-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff19-firth` | logis_firth | iterative | value | match | identical |
 | `diff19-firth-exact` | test | iterative | value | match | identical |
 | `diff19-firth-sm` | SM_output | iterative | value | match | identical |
@@ -687,6 +801,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff20-summary-lr` | summary | iterative | value | match | identical |
 | `diff20-summary-score` | summary | iterative | value | match | identical |
 | `diff20-plot` | plot | iterative | value | match | identical |
+| `diff20-plot-null` | plot | iterative | value | match | identical |
+| `diff20-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff20-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff20-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff20-bar` | bar_plot | iterative | value | match | identical |
+| `diff20-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff20-firth` | logis_firth | iterative | value | match | identical |
 | `diff20-firth-exact` | test | iterative | value | match | identical |
 | `diff20-firth-sm` | SM_output | iterative | value | match | identical |
@@ -718,6 +838,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff21-summary-lr` | summary | iterative | value | match | identical |
 | `diff21-summary-score` | summary | iterative | value | match | identical |
 | `diff21-plot` | plot | iterative | value | match | identical |
+| `diff21-plot-null` | plot | iterative | value | match | identical |
+| `diff21-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff21-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff21-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff21-bar` | bar_plot | iterative | value | match | identical |
+| `diff21-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff21-firth` | logis_firth | iterative | value | match | identical |
 | `diff21-firth-exact` | test | iterative | value | match | identical |
 | `diff21-firth-sm` | SM_output | iterative | value | match | identical |
@@ -749,6 +875,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff22-summary-lr` | summary | iterative | value | match | identical |
 | `diff22-summary-score` | summary | iterative | value | match | identical |
 | `diff22-plot` | plot | iterative | value | match | identical |
+| `diff22-plot-null` | plot | iterative | value | match | identical |
+| `diff22-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff22-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff22-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff22-bar` | bar_plot | iterative | value | match | identical |
+| `diff22-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff22-firth` | logis_firth | iterative | value | match | identical |
 | `diff22-firth-exact` | test | iterative | value | match | identical |
 | `diff22-firth-sm` | SM_output | iterative | value | match | identical |
@@ -780,6 +912,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff23-summary-lr` | summary | iterative | value | match | identical |
 | `diff23-summary-score` | summary | iterative | value | match | identical |
 | `diff23-plot` | plot | iterative | value | match | identical |
+| `diff23-plot-null` | plot | iterative | value | match | identical |
+| `diff23-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff23-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff23-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff23-bar` | bar_plot | iterative | value | match | identical |
+| `diff23-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff23-firth` | logis_firth | iterative | value | match | identical |
 | `diff23-firth-exact` | test | iterative | value | match | identical |
 | `diff23-firth-sm` | SM_output | iterative | value | match | identical |
@@ -811,6 +949,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff24-summary-lr` | summary | iterative | value | match | identical |
 | `diff24-summary-score` | summary | iterative | value | match | identical |
 | `diff24-plot` | plot | iterative | value | match | identical |
+| `diff24-plot-null` | plot | iterative | value | match | identical |
+| `diff24-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff24-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff24-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff24-bar` | bar_plot | iterative | value | match | identical |
+| `diff24-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff24-firth` | logis_firth | iterative | value | match | identical |
 | `diff24-firth-exact` | test | iterative | value | match | identical |
 | `diff24-firth-sm` | SM_output | iterative | value | match | identical |
@@ -842,6 +986,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff25-summary-lr` | summary | iterative | value | match | identical |
 | `diff25-summary-score` | summary | iterative | value | match | identical |
 | `diff25-plot` | plot | iterative | value | match | identical |
+| `diff25-plot-null` | plot | iterative | value | match | identical |
+| `diff25-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff25-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff25-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff25-bar` | bar_plot | iterative | value | match | identical |
+| `diff25-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff25-firth` | logis_firth | iterative | value | match | identical |
 | `diff25-firth-exact` | test | iterative | value | match | identical |
 | `diff25-firth-sm` | SM_output | iterative | value | match | identical |
@@ -873,6 +1023,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff26-summary-lr` | summary | iterative | value | match | identical |
 | `diff26-summary-score` | summary | iterative | value | match | identical |
 | `diff26-plot` | plot | iterative | value | match | identical |
+| `diff26-plot-null` | plot | iterative | value | match | identical |
+| `diff26-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff26-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff26-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff26-bar` | bar_plot | iterative | value | match | identical |
+| `diff26-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff26-firth` | logis_firth | iterative | value | match | within tolerance: AUC |
 | `diff26-firth-exact` | test | iterative | value | match | identical |
 | `diff26-firth-sm` | SM_output | iterative | value | match | identical |
@@ -904,6 +1060,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff27-summary-lr` | summary | iterative | value | match | identical |
 | `diff27-summary-score` | summary | iterative | value | match | identical |
 | `diff27-plot` | plot | iterative | value | match | identical |
+| `diff27-plot-null` | plot | iterative | value | match | identical |
+| `diff27-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff27-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff27-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff27-bar` | bar_plot | iterative | value | match | identical |
+| `diff27-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff27-firth` | logis_firth | iterative | value | match | identical |
 | `diff27-firth-exact` | test | iterative | value | match | identical |
 | `diff27-firth-sm` | SM_output | iterative | value | match | identical |
@@ -935,6 +1097,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff28-summary-lr` | summary | iterative | value | match | identical |
 | `diff28-summary-score` | summary | iterative | value | match | identical |
 | `diff28-plot` | plot | iterative | value | match | identical |
+| `diff28-plot-null` | plot | iterative | value | match | identical |
+| `diff28-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff28-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff28-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff28-bar` | bar_plot | iterative | value | match | identical |
+| `diff28-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff28-firth` | logis_firth | iterative | value | match | identical |
 | `diff28-firth-exact` | test | iterative | value | match | identical |
 | `diff28-firth-sm` | SM_output | iterative | value | match | identical |
@@ -966,6 +1134,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff29-summary-lr` | summary | iterative | value | match | identical |
 | `diff29-summary-score` | summary | iterative | value | match | identical |
 | `diff29-plot` | plot | iterative | value | match | identical |
+| `diff29-plot-null` | plot | iterative | value | match | identical |
+| `diff29-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff29-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff29-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff29-bar` | bar_plot | iterative | value | match | identical |
+| `diff29-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff29-firth` | logis_firth | iterative | value | match | identical |
 | `diff29-firth-exact` | test | iterative | value | match | identical |
 | `diff29-firth-sm` | SM_output | iterative | value | match | identical |
@@ -997,6 +1171,12 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff30-summary-lr` | summary | iterative | value | match | identical |
 | `diff30-summary-score` | summary | iterative | value | match | identical |
 | `diff30-plot` | plot | iterative | value | match | identical |
+| `diff30-plot-null` | plot | iterative | value | match | identical |
+| `diff30-caterpillar` | caterpillar_plot | iterative | value | match | identical |
+| `diff30-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff30-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
+| `diff30-bar` | bar_plot | iterative | value | match | identical |
+| `diff30-bar-3` | bar_plot | iterative | value | match | identical |
 | `diff30-firth` | logis_firth | iterative | value | match | identical |
 | `diff30-firth-exact` | test | iterative | value | match | identical |
 | `diff30-firth-sm` | SM_output | iterative | value | match | identical |
@@ -1017,6 +1197,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff01-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff01-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff01-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `diff01-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff01-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff01-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff01-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `diff01-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff01-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff01-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `diff01-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1031,6 +1216,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff01-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff01-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff01-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `diff01-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff01-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff01-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff01-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `diff01-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff02-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff02-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff02-logis-re-test` | test | lme4 | value | match | identical |
@@ -1047,6 +1237,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff02-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff02-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff02-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `diff02-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff02-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff02-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff02-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `diff02-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff02-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff02-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `diff02-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1061,6 +1256,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff02-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff02-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff02-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `diff02-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff02-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff02-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff02-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `diff02-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff03-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff03-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff03-logis-re-test` | test | lme4 | value | match | identical |
@@ -1077,6 +1277,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff03-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff03-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff03-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `diff03-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff03-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff03-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff03-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `diff03-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff03-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff03-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `diff03-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1091,6 +1296,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff03-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff03-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff03-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `diff03-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff03-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff03-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff03-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `diff03-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff04-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff04-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff04-logis-re-test` | test | lme4 | value | match | identical |
@@ -1107,6 +1317,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff04-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff04-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff04-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `diff04-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff04-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff04-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff04-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `diff04-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff04-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff04-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `diff04-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1121,6 +1336,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff04-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff04-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff04-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `diff04-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff04-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff04-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff04-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `diff04-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff05-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff05-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff05-logis-re-test` | test | lme4 | value | match | identical |
@@ -1137,6 +1357,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff05-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff05-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff05-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `diff05-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff05-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff05-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff05-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `diff05-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff05-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff05-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `diff05-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1151,6 +1376,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff05-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff05-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff05-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `diff05-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff05-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff05-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff05-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `diff05-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff06-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff06-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff06-logis-re-test` | test | lme4 | value | match | identical |
@@ -1167,6 +1397,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff06-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff06-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff06-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `diff06-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff06-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff06-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff06-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `diff06-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff06-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff06-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `diff06-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1181,6 +1416,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff06-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff06-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff06-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `diff06-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff06-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff06-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff06-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `diff06-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff07-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff07-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff07-logis-re-test` | test | lme4 | value | match | identical |
@@ -1197,6 +1437,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff07-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff07-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff07-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `diff07-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff07-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff07-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff07-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `diff07-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff07-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff07-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `diff07-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1211,6 +1456,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff07-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff07-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff07-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `diff07-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff07-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff07-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff07-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `diff07-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff08-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff08-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff08-logis-re-test` | test | lme4 | value | match | identical |
@@ -1227,6 +1477,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff08-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff08-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff08-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `diff08-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff08-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff08-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff08-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `diff08-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff08-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff08-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `diff08-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1241,6 +1496,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff08-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff08-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff08-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `diff08-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff08-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff08-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff08-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `diff08-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff09-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff09-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff09-logis-re-test` | test | lme4 | value | match | identical |
@@ -1257,6 +1517,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff09-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff09-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff09-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `diff09-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff09-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff09-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff09-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `diff09-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff09-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff09-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `diff09-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1271,6 +1536,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff09-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff09-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff09-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `diff09-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff09-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff09-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff09-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `diff09-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff10-logis-re` | logis_re | lme4 | value | match | identical |
 | `diff10-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `diff10-logis-re-test` | test | lme4 | value | match | identical |
@@ -1287,6 +1557,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff10-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff10-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff10-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `diff10-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff10-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff10-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff10-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `diff10-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `diff10-logis-cre-test` | test | lme4 | value | match | identical |
 | `diff10-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `diff10-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1301,6 +1576,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff10-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `diff10-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff10-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `diff10-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `diff10-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff10-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `diff10-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `diff10-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-diff01-logis-re` | logis_re | lme4 | value | match | identical |
 | `chr-diff01-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `chr-diff01-logis-re-test` | test | lme4 | value | match | identical |
@@ -1317,6 +1597,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff01-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-diff01-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff01-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff01-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff01-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff01-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff01-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-diff01-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-diff01-logis-cre-test` | test | lme4 | value | match | identical |
 | `chr-diff01-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `chr-diff01-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1331,6 +1616,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff01-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-diff01-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff01-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-diff02-logis-re` | logis_re | lme4 | value | match | identical |
 | `chr-diff02-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `chr-diff02-logis-re-test` | test | lme4 | value | match | identical |
@@ -1347,6 +1637,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff02-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-diff02-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff02-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff02-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff02-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff02-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff02-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-diff02-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-diff02-logis-cre-test` | test | lme4 | value | match | identical |
 | `chr-diff02-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `chr-diff02-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1361,6 +1656,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff02-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-diff02-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff02-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-diff03-logis-re` | logis_re | lme4 | value | match | identical |
 | `chr-diff03-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `chr-diff03-logis-re-test` | test | lme4 | value | match | identical |
@@ -1377,6 +1677,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff03-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-diff03-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff03-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff03-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff03-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff03-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff03-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-diff03-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-diff03-logis-cre-test` | test | lme4 | value | match | identical |
 | `chr-diff03-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `chr-diff03-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1391,6 +1696,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff03-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-diff03-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff03-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `null-diff01-logis-re` | logis_re | lme4 | value | match | identical |
 | `null-diff01-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `null-diff01-logis-re-test` | test | lme4 | value | match | identical |
@@ -1407,6 +1717,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-diff01-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `null-diff01-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-diff01-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `null-diff01-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff01-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff01-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff01-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `null-diff01-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `null-diff01-logis-cre-test` | test | lme4 | value | match | identical |
 | `null-diff01-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `null-diff01-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1421,6 +1736,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-diff01-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `null-diff01-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-diff01-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `null-diff01-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff01-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff01-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff01-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `null-diff01-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `null-diff02-logis-re` | logis_re | lme4 | value | match | identical |
 | `null-diff02-logis-cre` | logis_cre | lme4 | value | match | identical |
 | `null-diff02-logis-re-test` | test | lme4 | value | match | identical |
@@ -1437,6 +1757,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-diff02-logis-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `null-diff02-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-diff02-logis-re-summary-parm` | summary | lme4 | value | match | identical |
+| `null-diff02-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff02-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff02-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff02-logis-re-bar` | bar_plot | lme4 | value | match | identical |
+| `null-diff02-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `null-diff02-logis-cre-test` | test | lme4 | value | match | identical |
 | `null-diff02-logis-cre-sm` | SM_output | lme4 | value | match | identical |
 | `null-diff02-logis-cre-confint` | confint | lme4 | value | match | identical |
@@ -1451,6 +1776,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-diff02-logis-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `null-diff02-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-diff02-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `null-diff02-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff02-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff02-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff02-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `null-diff02-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin01-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin01-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin01-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -1472,6 +1802,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin01-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin01-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin01-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin01-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin01-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin01-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin01-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin01-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin01-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin01-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin01-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -1491,6 +1826,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin01-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin01-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin01-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin01-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin01-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin01-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin01-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin01-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin01-re` | linear_re | lme4 | value | match | identical |
 | `lin01-cre` | linear_cre | lme4 | value | match | identical |
 | `lin01-re-test` | test | lme4 | value | match | identical |
@@ -1507,6 +1847,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin01-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin01-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin01-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin01-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin01-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin01-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin01-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin01-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin01-cre-test` | test | lme4 | value | match | identical |
 | `lin01-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin01-cre-confint` | confint | lme4 | value | match | identical |
@@ -1521,6 +1866,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin01-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin01-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin01-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin01-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin01-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin01-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin01-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin01-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin02-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin02-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin02-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -1542,6 +1892,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin02-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin02-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin02-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin02-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin02-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin02-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin02-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin02-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin02-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin02-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin02-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -1561,6 +1916,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin02-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin02-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin02-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin02-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin02-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin02-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin02-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin02-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin02-re` | linear_re | lme4 | value | match | identical |
 | `lin02-cre` | linear_cre | lme4 | value | match | identical |
 | `lin02-re-test` | test | lme4 | value | match | identical |
@@ -1577,6 +1937,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin02-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin02-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin02-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin02-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin02-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin02-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin02-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin02-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin02-cre-test` | test | lme4 | value | match | identical |
 | `lin02-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin02-cre-confint` | confint | lme4 | value | match | identical |
@@ -1591,6 +1956,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin02-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin02-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin02-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin02-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin02-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin02-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin02-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin02-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin03-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin03-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin03-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -1612,6 +1982,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin03-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin03-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin03-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin03-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin03-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin03-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin03-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin03-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin03-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin03-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin03-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -1631,6 +2006,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin03-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin03-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin03-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin03-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin03-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin03-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin03-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin03-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin03-re` | linear_re | lme4 | value | match | identical |
 | `lin03-cre` | linear_cre | lme4 | value | match | identical |
 | `lin03-re-test` | test | lme4 | value | match | identical |
@@ -1647,6 +2027,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin03-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin03-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin03-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin03-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin03-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin03-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin03-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin03-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin03-cre-test` | test | lme4 | value | match | identical |
 | `lin03-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin03-cre-confint` | confint | lme4 | value | match | identical |
@@ -1661,6 +2046,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin03-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin03-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin03-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin03-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin03-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin03-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin03-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin03-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin04-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin04-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin04-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -1682,6 +2072,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin04-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin04-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin04-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin04-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin04-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin04-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin04-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin04-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin04-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin04-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin04-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -1701,6 +2096,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin04-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin04-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin04-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin04-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin04-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin04-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin04-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin04-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin04-re` | linear_re | lme4 | value | match | identical |
 | `lin04-cre` | linear_cre | lme4 | value | match | identical |
 | `lin04-re-test` | test | lme4 | value | match | identical |
@@ -1717,6 +2117,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin04-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin04-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin04-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin04-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin04-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin04-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin04-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin04-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin04-cre-test` | test | lme4 | value | match | identical |
 | `lin04-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin04-cre-confint` | confint | lme4 | value | match | identical |
@@ -1731,6 +2136,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin04-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin04-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin04-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin04-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin04-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin04-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin04-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin04-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin05-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin05-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin05-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -1752,6 +2162,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin05-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin05-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin05-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin05-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin05-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin05-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin05-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin05-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin05-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin05-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin05-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -1771,6 +2186,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin05-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin05-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin05-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin05-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin05-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin05-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin05-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin05-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin05-re` | linear_re | lme4 | value | match | identical |
 | `lin05-cre` | linear_cre | lme4 | value | match | identical |
 | `lin05-re-test` | test | lme4 | value | match | identical |
@@ -1787,6 +2207,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin05-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin05-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin05-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin05-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin05-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin05-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin05-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin05-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin05-cre-test` | test | lme4 | value | match | identical |
 | `lin05-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin05-cre-confint` | confint | lme4 | value | match | identical |
@@ -1801,6 +2226,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin05-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin05-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin05-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin05-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin05-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin05-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin05-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin05-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin06-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin06-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin06-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -1822,6 +2252,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin06-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin06-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin06-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin06-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin06-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin06-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin06-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin06-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin06-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin06-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin06-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -1841,6 +2276,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin06-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin06-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin06-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin06-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin06-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin06-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin06-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin06-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin06-re` | linear_re | lme4 | value | match | identical |
 | `lin06-cre` | linear_cre | lme4 | value | match | identical |
 | `lin06-re-test` | test | lme4 | value | match | identical |
@@ -1857,6 +2297,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin06-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin06-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin06-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin06-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin06-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin06-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin06-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin06-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin06-cre-test` | test | lme4 | value | match | identical |
 | `lin06-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin06-cre-confint` | confint | lme4 | value | match | identical |
@@ -1871,6 +2316,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin06-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin06-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin06-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin06-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin06-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin06-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin06-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin06-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin07-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin07-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin07-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -1892,6 +2342,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin07-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin07-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin07-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin07-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin07-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin07-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin07-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin07-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin07-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `lin07-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin07-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -1911,6 +2366,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin07-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin07-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin07-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin07-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin07-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin07-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin07-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin07-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin07-re` | linear_re | lme4 | value | match | identical |
 | `lin07-cre` | linear_cre | lme4 | value | match | identical |
 | `lin07-re-test` | test | lme4 | value | match | identical |
@@ -1927,6 +2387,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin07-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin07-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin07-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin07-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin07-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin07-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin07-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin07-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin07-cre-test` | test | lme4 | value | match | identical |
 | `lin07-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin07-cre-confint` | confint | lme4 | value | match | identical |
@@ -1941,6 +2406,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin07-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin07-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin07-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin07-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin07-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin07-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin07-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin07-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin08-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin08-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin08-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -1962,6 +2432,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin08-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin08-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin08-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin08-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin08-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin08-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin08-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin08-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin08-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin08-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin08-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -1981,6 +2456,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin08-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin08-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin08-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin08-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin08-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin08-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin08-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin08-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin08-re` | linear_re | lme4 | value | match | identical |
 | `lin08-cre` | linear_cre | lme4 | value | match | identical |
 | `lin08-re-test` | test | lme4 | value | match | identical |
@@ -1997,6 +2477,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin08-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin08-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin08-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin08-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin08-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin08-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin08-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin08-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin08-cre-test` | test | lme4 | value | match | identical |
 | `lin08-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin08-cre-confint` | confint | lme4 | value | match | identical |
@@ -2011,6 +2496,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin08-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin08-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin08-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin08-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin08-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin08-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin08-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin08-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin09-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin09-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin09-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -2032,6 +2522,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin09-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin09-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin09-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin09-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin09-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin09-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin09-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin09-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin09-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin09-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin09-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2051,6 +2546,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin09-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin09-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin09-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin09-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin09-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin09-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin09-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin09-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin09-re` | linear_re | lme4 | value | match | identical |
 | `lin09-cre` | linear_cre | lme4 | value | match | identical |
 | `lin09-re-test` | test | lme4 | value | match | identical |
@@ -2067,6 +2567,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin09-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin09-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin09-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin09-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin09-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin09-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin09-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin09-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin09-cre-test` | test | lme4 | value | match | identical |
 | `lin09-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin09-cre-confint` | confint | lme4 | value | match | identical |
@@ -2081,6 +2586,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin09-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin09-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin09-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin09-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin09-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin09-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin09-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin09-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin10-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin10-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin10-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -2102,6 +2612,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin10-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin10-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin10-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin10-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin10-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin10-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin10-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin10-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin10-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin10-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin10-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2121,6 +2636,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin10-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin10-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin10-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin10-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin10-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin10-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin10-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin10-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin10-re` | linear_re | lme4 | value | match | identical |
 | `lin10-cre` | linear_cre | lme4 | value | match | identical |
 | `lin10-re-test` | test | lme4 | value | match | identical |
@@ -2137,6 +2657,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin10-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin10-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin10-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin10-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin10-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin10-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin10-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin10-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin10-cre-test` | test | lme4 | value | match | identical |
 | `lin10-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin10-cre-confint` | confint | lme4 | value | match | identical |
@@ -2151,6 +2676,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin10-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin10-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin10-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin10-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin10-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin10-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin10-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin10-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin11-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin11-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin11-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -2172,6 +2702,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin11-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin11-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin11-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin11-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin11-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin11-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin11-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin11-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin11-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin11-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin11-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2191,6 +2726,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin11-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin11-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin11-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin11-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin11-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin11-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin11-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin11-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin11-re` | linear_re | lme4 | value | match | identical |
 | `lin11-cre` | linear_cre | lme4 | value | match | identical |
 | `lin11-re-test` | test | lme4 | value | match | identical |
@@ -2207,6 +2747,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin11-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin11-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin11-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin11-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin11-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin11-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin11-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin11-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin11-cre-test` | test | lme4 | value | match | identical |
 | `lin11-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin11-cre-confint` | confint | lme4 | value | match | identical |
@@ -2221,6 +2766,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin11-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin11-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin11-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin11-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin11-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin11-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin11-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin11-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin12-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin12-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin12-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -2242,6 +2792,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin12-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin12-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin12-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin12-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin12-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin12-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin12-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin12-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin12-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin12-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin12-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2261,6 +2816,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin12-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin12-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin12-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin12-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin12-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin12-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin12-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin12-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin12-re` | linear_re | lme4 | value | match | identical |
 | `lin12-cre` | linear_cre | lme4 | value | match | identical |
 | `lin12-re-test` | test | lme4 | value | match | identical |
@@ -2277,6 +2837,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin12-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin12-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin12-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin12-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin12-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin12-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin12-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin12-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin12-cre-test` | test | lme4 | value | match | identical |
 | `lin12-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin12-cre-confint` | confint | lme4 | value | match | identical |
@@ -2291,6 +2856,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin12-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin12-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin12-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin12-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin12-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin12-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin12-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin12-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin13-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin13-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin13-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -2312,6 +2882,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin13-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin13-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin13-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin13-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin13-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin13-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin13-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin13-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin13-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin13-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin13-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2331,6 +2906,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin13-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin13-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin13-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin13-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin13-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin13-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin13-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin13-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin13-re` | linear_re | lme4 | value | match | identical |
 | `lin13-cre` | linear_cre | lme4 | value | match | identical |
 | `lin13-re-test` | test | lme4 | value | match | identical |
@@ -2347,6 +2927,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin13-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin13-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin13-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin13-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin13-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin13-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin13-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin13-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin13-cre-test` | test | lme4 | value | match | identical |
 | `lin13-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin13-cre-confint` | confint | lme4 | value | match | identical |
@@ -2361,6 +2946,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin13-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin13-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin13-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin13-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin13-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin13-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin13-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin13-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin14-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin14-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin14-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -2382,6 +2972,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin14-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin14-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin14-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin14-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin14-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin14-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin14-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin14-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin14-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin14-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `lin14-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2401,6 +2996,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin14-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin14-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin14-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin14-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin14-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin14-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin14-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin14-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin14-re` | linear_re | lme4 | value | match | identical |
 | `lin14-cre` | linear_cre | lme4 | value | match | identical |
 | `lin14-re-test` | test | lme4 | value | match | identical |
@@ -2417,6 +3017,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin14-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin14-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin14-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin14-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin14-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin14-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin14-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin14-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin14-cre-test` | test | lme4 | value | match | identical |
 | `lin14-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin14-cre-confint` | confint | lme4 | value | match | identical |
@@ -2431,6 +3036,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin14-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin14-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin14-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin14-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin14-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin14-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin14-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin14-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin15-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `lin15-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `lin15-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -2452,6 +3062,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin15-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin15-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin15-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin15-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin15-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin15-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin15-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `lin15-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin15-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `lin15-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `lin15-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2471,6 +3086,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin15-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin15-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin15-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `lin15-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin15-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin15-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `lin15-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `lin15-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `lin15-re` | linear_re | lme4 | value | match | identical |
 | `lin15-cre` | linear_cre | lme4 | value | match | identical |
 | `lin15-re-test` | test | lme4 | value | match | identical |
@@ -2487,6 +3107,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin15-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin15-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin15-re-summary-parm` | summary | lme4 | value | match | identical |
+| `lin15-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin15-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin15-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin15-re-bar` | bar_plot | lme4 | value | match | identical |
+| `lin15-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `lin15-cre-test` | test | lme4 | value | match | identical |
 | `lin15-cre-sm` | SM_output | lme4 | value | match | identical |
 | `lin15-cre-confint` | confint | lme4 | value | match | identical |
@@ -2501,6 +3126,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin15-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `lin15-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin15-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `lin15-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `lin15-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin15-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `lin15-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `lin15-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-lin01-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `chr-lin01-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `chr-lin01-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -2522,6 +3152,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin01-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin01-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin01-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin01-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin01-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin01-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `chr-lin01-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `chr-lin01-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `chr-lin01-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `chr-lin01-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `chr-lin01-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2541,6 +3176,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin01-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin01-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin01-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin01-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin01-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin01-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `chr-lin01-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `chr-lin01-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `chr-lin01-re` | linear_re | lme4 | value | match | identical |
 | `chr-lin01-cre` | linear_cre | lme4 | value | match | identical |
 | `chr-lin01-re-test` | test | lme4 | value | match | identical |
@@ -2557,6 +3197,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin01-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-lin01-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin01-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin01-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin01-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin01-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin01-re-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-lin01-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-lin01-cre-test` | test | lme4 | value | match | identical |
 | `chr-lin01-cre-sm` | SM_output | lme4 | value | match | identical |
 | `chr-lin01-cre-confint` | confint | lme4 | value | match | identical |
@@ -2571,6 +3216,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin01-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-lin01-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin01-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin01-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin01-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin01-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin01-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-lin01-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-lin02-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `chr-lin02-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `chr-lin02-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -2592,6 +3242,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin02-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin02-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin02-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin02-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin02-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin02-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `chr-lin02-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `chr-lin02-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `chr-lin02-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `chr-lin02-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `chr-lin02-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2611,6 +3266,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin02-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin02-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin02-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin02-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin02-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin02-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `chr-lin02-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `chr-lin02-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `chr-lin02-re` | linear_re | lme4 | value | match | identical |
 | `chr-lin02-cre` | linear_cre | lme4 | value | match | identical |
 | `chr-lin02-re-test` | test | lme4 | value | match | identical |
@@ -2627,6 +3287,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin02-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-lin02-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin02-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin02-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin02-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin02-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin02-re-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-lin02-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-lin02-cre-test` | test | lme4 | value | match | identical |
 | `chr-lin02-cre-sm` | SM_output | lme4 | value | match | identical |
 | `chr-lin02-cre-confint` | confint | lme4 | value | match | identical |
@@ -2641,6 +3306,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin02-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-lin02-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin02-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin02-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin02-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin02-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin02-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-lin02-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-lin03-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `chr-lin03-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, fitted, residuals, linear_pred |
 | `chr-lin03-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
@@ -2662,6 +3332,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin03-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin03-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin03-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin03-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin03-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin03-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `chr-lin03-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `chr-lin03-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `chr-lin03-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `chr-lin03-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Exp |
 | `chr-lin03-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2681,6 +3356,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin03-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin03-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin03-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `chr-lin03-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin03-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin03-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `chr-lin03-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `chr-lin03-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `chr-lin03-re` | linear_re | lme4 | value | match | identical |
 | `chr-lin03-cre` | linear_cre | lme4 | value | match | identical |
 | `chr-lin03-re-test` | test | lme4 | value | match | identical |
@@ -2697,6 +3377,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin03-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-lin03-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin03-re-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin03-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin03-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin03-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin03-re-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-lin03-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `chr-lin03-cre-test` | test | lme4 | value | match | identical |
 | `chr-lin03-cre-sm` | SM_output | lme4 | value | match | identical |
 | `chr-lin03-cre-confint` | confint | lme4 | value | match | identical |
@@ -2711,6 +3396,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin03-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `chr-lin03-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin03-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `chr-lin03-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin03-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin03-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin03-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `chr-lin03-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `null-lin01-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, sigma, fitted, residuals, linear_pred, Loglkd, AIC, BIC |
 | `null-lin01-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, variance$gamma, sigma, fitted, residuals, linear_pred, Loglkd, AIC, BIC |
 | `null-lin01-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
@@ -2732,6 +3422,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin01-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[1]]$data$lower, layers$[[1]]$data$upper, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[2]]$data$lower, layers$[[2]]$data$upper, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp, layers$[[3]]$data$lower, l |
 | `null-lin01-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[1]]$data$lower, layers$[[1]]$data$upper, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[2]]$data$lower, layers$[[2]]$data$upper, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp, layers$[[3]]$data$lower, l |
 | `null-lin01-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[1]]$data$lower, layers$[[1]]$data$upper, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[2]]$data$lower, layers$[[2]]$data$upper, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp, layers$[[3]]$data$lower, l |
+| `null-lin01-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin01-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin01-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `null-lin01-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `null-lin01-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `null-lin01-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat, $Std.Error |
 | `null-lin01-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `null-lin01-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2751,6 +3446,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin01-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[1]]$data$lower, layers$[[1]]$data$upper, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[2]]$data$lower, layers$[[2]]$data$upper, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp, layers$[[3]]$data$lower, l |
 | `null-lin01-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[1]]$data$lower, layers$[[1]]$data$upper, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[2]]$data$lower, layers$[[2]]$data$upper, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp, layers$[[3]]$data$lower, l |
 | `null-lin01-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[1]]$data$lower, layers$[[1]]$data$upper, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[2]]$data$lower, layers$[[2]]$data$upper, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp, layers$[[3]]$data$lower, l |
+| `null-lin01-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin01-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin01-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `null-lin01-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `null-lin01-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `null-lin01-re` | linear_re | lme4 | value | match | identical |
 | `null-lin01-cre` | linear_cre | lme4 | value | match | identical |
 | `null-lin01-re-test` | test | lme4 | value | match | identical |
@@ -2767,6 +3467,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin01-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `null-lin01-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-lin01-re-summary-parm` | summary | lme4 | value | match | identical |
+| `null-lin01-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin01-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin01-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin01-re-bar` | bar_plot | lme4 | value | match | identical |
+| `null-lin01-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `null-lin01-cre-test` | test | lme4 | value | match | identical |
 | `null-lin01-cre-sm` | SM_output | lme4 | value | match | identical |
 | `null-lin01-cre-confint` | confint | lme4 | value | match | identical |
@@ -2781,6 +3486,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin01-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `null-lin01-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-lin01-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `null-lin01-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin01-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin01-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin01-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `null-lin01-cre-bar-3` | bar_plot | lme4 | value | match | identical |
 | `null-lin02-fe` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `null-lin02-fe-full` | linear_fe | closed_form | value | match | within tolerance: coefficient$beta, coefficient$gamma, variance$beta, fitted, residuals, linear_pred |
 | `null-lin02-fe-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
@@ -2802,6 +3512,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin02-fe-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `null-lin02-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `null-lin02-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `null-lin02-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin02-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin02-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `null-lin02-fe-bar` | bar_plot | closed_form | value | match | identical |
+| `null-lin02-fe-bar-3` | bar_plot | closed_form | value | match | identical |
 | `null-lin02-fe-full-test` | test | closed_form | value | match | within tolerance: $p value, $stat |
 | `null-lin02-fe-full-sm` | SM_output | closed_form | value | match | within tolerance: indirect.difference, direct.difference, OE$OE_indirect$Exp, OE$OE_direct$Obs, OE$OE_direct$Exp |
 | `null-lin02-fe-full-confint` | confint | closed_form | value | match | within tolerance: CI.indirect$Indirect.Difference, CI.indirect$indirect.Lower, CI.indirect$indirect.Upper, CI.direct$Direct.Difference, CI.direct$direct.Lower, CI.direct$direct.Upper |
@@ -2821,6 +3536,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin02-fe-full-plot` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `null-lin02-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `null-lin02-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
+| `null-lin02-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin02-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin02-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
+| `null-lin02-fe-full-bar` | bar_plot | closed_form | value | match | identical |
+| `null-lin02-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
 | `null-lin02-re` | linear_re | lme4 | value | match | identical |
 | `null-lin02-cre` | linear_cre | lme4 | value | match | identical |
 | `null-lin02-re-test` | test | lme4 | value | match | identical |
@@ -2837,6 +3557,11 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin02-re-confint-alpha` | confint | lme4 | value | match | identical |
 | `null-lin02-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-lin02-re-summary-parm` | summary | lme4 | value | match | identical |
+| `null-lin02-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin02-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin02-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin02-re-bar` | bar_plot | lme4 | value | match | identical |
+| `null-lin02-re-bar-3` | bar_plot | lme4 | value | match | identical |
 | `null-lin02-cre-test` | test | lme4 | value | match | identical |
 | `null-lin02-cre-sm` | SM_output | lme4 | value | match | identical |
 | `null-lin02-cre-confint` | confint | lme4 | value | match | identical |
@@ -2851,3 +3576,8 @@ Working tree at commit 22cfd2b; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin02-cre-confint-alpha` | confint | lme4 | value | match | identical |
 | `null-lin02-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-lin02-cre-summary-parm` | summary | lme4 | value | match | identical |
+| `null-lin02-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin02-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin02-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin02-cre-bar` | bar_plot | lme4 | value | match | identical |
+| `null-lin02-cre-bar-3` | bar_plot | lme4 | value | match | identical |

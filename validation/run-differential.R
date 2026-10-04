@@ -29,6 +29,11 @@
 #   (Phase 5): the three alternatives, level = 0.9, numeric nulls, parm, and the provider
 #   effects and covariate summaries; for linear FE, null = "mean" and plot() as well, with
 #   both provider variances.
+# - The old plots (Phase 6): plot() of logis_fe fits with several alphas and a numeric null,
+#   and caterpillar_plot() and bar_plot() on the confint() tables and test() results of every
+#   fit with RE, CRE, or linear FE methods and of the logistic FE fits (two-sided and one-sided,
+#   flagged and unflagged, both orientations, two group counts). For every plot, the built data
+#   of each layer (ggplot_build()) are compared as well, which the fixtures do not record.
 #
 # Usage, from the repository root:
 #   Rscript validation/run-differential.R [--datasets N] [--mixed-datasets N] [--linear-datasets N]
@@ -128,6 +133,19 @@ differential_cases <- function() {
   add <- function(id, fun, args, tier, seed = NULL) {
     cases[[id]] <<- list(id = id, set = "differential", fun = fun, args = args, seed = seed, tier = tier, heavy = FALSE)
   }
+  # caterpillar_plot() on the tables of a two-sided and a one-sided confint() case, flagged and
+  # unflagged, in both orientations, and bar_plot() on a test() case with two group counts
+  # (Phase 6).
+  add_plots <- function(prefix, sm, sm_one_sided, tests, logistic, tier, tier_one_sided = tier) {
+    tables <- if (logistic) c("CI.indirect_ratio", "CI.direct_rate") else c("CI.indirect", "CI.direct")
+    add(paste0(prefix, "-caterpillar"), "caterpillar_plot", list(CI = ref_value(sm, tables[1])), tier)
+    add(paste0(prefix, "-caterpillar-flags"), "caterpillar_plot",
+        list(CI = ref_value(sm, tables[2]), use_flag = TRUE, orientation = "horizontal"), tier)
+    add(paste0(prefix, "-caterpillar-one-sided"), "caterpillar_plot",
+        list(CI = ref_value(sm_one_sided, tables[2]), use_flag = TRUE), tier_one_sided)
+    add(paste0(prefix, "-bar"), "bar_plot", list(flag_df = ref_fit(tests)), tier)
+    add(paste0(prefix, "-bar-3"), "bar_plot", list(flag_df = ref_fit(tests), group_num = 3), tier)
+  }
   for (name in names(binary)) {
     d <- datasets[[name]]
     z <- grep("^x", names(d), value = TRUE)
@@ -163,6 +181,10 @@ differential_cases <- function() {
       add(paste0(name, "-summary-", test), "summary", list(object = f, test = test), "iterative")
     }
     add(paste0(name, "-plot"), "plot", list(x = f, alpha = c(0.05, 0.01)), "iterative")
+    add(paste0(name, "-plot-null"), "plot", list(x = f, null = 0, alpha = c(0.1, 0.05, 0.01)), "iterative")
+    # The old plots on the old outputs (Phase 6).
+    add_plots(name, sm = paste0(name, "-sm-wald"), sm_one_sided = paste0(name, "-sm-score-greater"),
+              tests = paste0(name, "-exact-two.sided"), logistic = TRUE, tier = "iterative", tier_one_sided = "root")
     # Firth, and logistic FE methods on its object (Phase 4).
     firth <- paste0(name, "-firth")
     add(firth, "logis_firth", columns, "iterative")
@@ -211,6 +233,8 @@ differential_cases <- function() {
           list(object = ref_fit(fit), stdz = c("indirect", "direct"), measure = c("ratio", "rate")), "lme4")
       add(paste0(fit, "-summary"), "summary", list(object = ref_fit(fit)), "lme4")
       add_mixed_methods(fit, differential_parm(datasets[[name]], c(3, 4, 10, 11)), logistic = TRUE)
+      add_plots(fit, sm = paste0(fit, "-confint"), sm_one_sided = paste0(fit, "-confint-less"),
+                tests = paste0(fit, "-test"), logistic = TRUE, tier = "lme4")
     }
   }
   for (name in linear_names) {
@@ -250,6 +274,8 @@ differential_cases <- function() {
       add(paste0(fit, "-plot"), "plot", list(x = f, alpha = c(0.05, 0.01)), "closed_form")
       add(paste0(fit, "-plot-mean"), "plot", list(x = f, null = "mean"), "closed_form")
       add(paste0(fit, "-plot-null"), "plot", list(x = f, null = 0.1, alpha = 0.1), "closed_form")
+      add_plots(fit, sm = paste0(fit, "-confint"), sm_one_sided = paste0(fit, "-confint-greater"),
+                tests = paste0(fit, "-test"), logistic = FALSE, tier = "closed_form")
     }
     re <- paste0(name, "-re")
     cre <- paste0(name, "-cre")
@@ -262,6 +288,8 @@ differential_cases <- function() {
       add(paste0(fit, "-confint"), "confint", list(object = ref_fit(fit), stdz = c("indirect", "direct")), "lme4")
       add(paste0(fit, "-summary"), "summary", list(object = ref_fit(fit)), "lme4")
       add_mixed_methods(fit, parm, logistic = FALSE)
+      add_plots(fit, sm = paste0(fit, "-confint"), sm_one_sided = paste0(fit, "-confint-less"),
+                tests = paste0(fit, "-test"), logistic = FALSE, tier = "lme4")
     }
   }
   cases
@@ -270,7 +298,15 @@ cases <- differential_cases()
 
 # --- The reference, in an isolated child session -----------------------------------------------------
 started <- Sys.time()
-reference <- callr::r(function(cases, datasets, runner, ref_lib) {
+# The built data of each layer of a plot (ggplot_build()), which the fixtures do not record;
+# compared too (Phase 6).
+built_data <- function(value) {
+  if (!inherits(value, "ggplot")) return(NULL)
+  built <- tryCatch(suppressMessages(suppressWarnings(ggplot2::ggplot_build(value))), error = function(e) NULL)
+  if (is.null(built)) return("build error")
+  lapply(built$data, as.data.frame)
+}
+reference <- callr::r(function(cases, datasets, runner, ref_lib, built_data) {
   Sys.setlocale("LC_COLLATE", "C")
   suppressPackageStartupMessages(library(pprof))
   if (!startsWith(normalizePath(find.package("pprof"), winslash = "/"), ref_lib)) stop("pprof is not the reference")
@@ -280,9 +316,11 @@ reference <- callr::r(function(cases, datasets, runner, ref_lib) {
   for (id in names(cases)) {
     results[[id]] <- run_reference_case(cases[[id]], datasets, results)
     records[[id]] <- reference_result_record(results[[id]], 5000L)
+    records[[id]]$built <- built_data(results[[id]]$raw_value)
   }
   records
-}, args = list(cases = cases, datasets = datasets, runner = runner, ref_lib = ref_lib), libpath = ref_lib,
+}, args = list(cases = cases, datasets = datasets, runner = runner, ref_lib = ref_lib, built_data = built_data),
+libpath = ref_lib,
 env = c(callr::rcmd_safe_env(), LC_COLLATE = "C", OMP_THREAD_LIMIT = "1", OMP_NUM_THREADS = "1"),
 user_profile = FALSE, system_profile = FALSE, show = FALSE)
 reference_seconds <- as.numeric(difftime(Sys.time(), started, units = "secs"))
@@ -295,6 +333,7 @@ for (id in names(cases)) {
   case <- cases[[id]]
   results[[id]] <- run_reference_case(case, datasets, results)
   actual <- reference_result_record(results[[id]], 5000L)
+  actual$built <- built_data(results[[id]]$raw_value)
   expected <- reference[[id]]
   status <- "match"
   detail <- ""
@@ -309,6 +348,9 @@ for (id in names(cases)) {
     }
     level <- if (!is.null(case$args$level)) case$args$level else 0.95
     diffs <- reference_compare(actual$value, expected$value, reference_tolerance(case$tier), alpha = 1 - level)
+    if (!is.null(expected$built) || !is.null(actual$built)) {
+      diffs <- rbind(diffs, reference_compare(actual$built, expected$built, reference_tolerance(case$tier), "built"))
+    }
     failures <- if (!is.null(diffs)) diffs[diffs$kind != "flag_boundary", , drop = FALSE] else NULL
     if (!is.null(failures) && nrow(failures)) {
       status <- "MISMATCH"
@@ -317,7 +359,7 @@ for (id in names(cases)) {
       detail <- sprintf("%d flag(s) within tolerance of a threshold", nrow(diffs))
     }
     if (identical(status, "match")) {
-      if (identical(actual$value, expected$value)) {
+      if (identical(actual$value, expected$value) && identical(actual$built, expected$built)) {
         detail <- "identical"
       } else if (!nzchar(detail)) {
         # Within tolerance but not bitwise: name the elements that differ.
