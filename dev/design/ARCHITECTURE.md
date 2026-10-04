@@ -149,14 +149,20 @@ An architecture test (`tests/testthat/test-architecture.R`, Phase 2) parses `R/`
 | Diagnostics | `R/check-data.R` | `check_data()` (DEC-010) |
 | Compatibility | `R/compat-fits.R`, `R/compat-methods.R`, `R/compat-plots.R`, `R/compat-data-check.R`, `R/compat-convert.R`, `R/compat-deprecate.R` | old names, translation, old output shapes, once-per-session deprecation (§I) |
 
+As built through Phase 4: the model layer has the files listed, and `R/model-methods.R` for the standard methods that every model shares (Phase 3). The compatibility layer has `R/compat-fits.R` (the seven fitting functions of pprof 1.0.3), `R/compat-methods.R` (the methods of `logis_fe` objects, which Firth fits share, and the print methods of the RE and CRE objects), `R/compat-plots.R`, and `R/compat-convert.R`. `R/check-data.R`, `R/compat-data-check.R`, `R/compat-deprecate.R`, and `R/pprof-package.R` come in later phases; the reference's `R/pprof.R` still declares `useDynLib`. The methods of the linear, RE, and CRE objects are still the reference's files until Phase 5 (DEC-040).
+
 ### B.3 C++ modules
 
 ```
 src/
   rcpp_logistic.cpp          Rcpp adapters: cpp_logistic_fe_serbin(), cpp_logistic_fe_ban(),
                              cpp_logistic_firth(), cpp_logistic_variance(),
-                             cpp_logistic_score_standard(), cpp_logistic_direct_expected()
+                             cpp_logistic_score_standard(), cpp_logistic_direct_expected(), and
+                             cpp_logistic_firth_log_determinant() (tests only)
   RcppExports.cpp            generated
+  Fixed_effect.cpp           the reference's computeDirectExp(), until the logistic RE/CRE methods
+                             are rewritten (Phase 5); header.{h,cpp} and myomp.h, the reference's
+                             helpers, go with it
   core/
     armadillo.h              the one Armadillo configuration of the core: BLAS and LAPACK, 32-bit words,
                              Armadillo's own OpenMP and warnings off, output to a discarding stream (DEC-035)
@@ -171,11 +177,14 @@ src/
     convergence.{h,cpp}      stopping criteria and rules (K-16)
   logistic/
     serbin.{h,cpp}  ban.{h,cpp}  variance.{h,cpp}  score_test.{h,cpp}  direct_expected.{h,cpp}
-    (firth.{h,cpp} in Phase 4)
-  Makevars, Makevars.win     every subdirectory object listed in OBJECTS; OpenMP flags
+    firth.{h,cpp}
+  Makevars, Makevars.win     every subdirectory object listed in OBJECTS; OpenMP flags; plain `=`
+                             assignments, so no GNU make is needed (Phase 4)
 ```
 
-As built in Phase 3, OpenMP regions are written in place with `num_threads(threads)` clauses rather than through a `parallel.h`, the RcppParallel `$(shell ...)` line stays in `Makevars` until `Firth.cpp` is rewritten in Phase 4, and the engines report a failed solve or inversion by throwing outside any parallel region: Rcpp's generated wrappers turn the exception into an R error, which the model layer reclasses as `pprof_error_convergence` (`logistic_fe_engine_call()`). Inside parallel regions only bool-returning Armadillo functions are used, and a failure sets a flag (the standard score test's `failed`).
+As built in Phase 3, OpenMP regions are written in place with `num_threads(threads)` clauses rather than through a `parallel.h`, and the engines report a failed solve or inversion by throwing outside any parallel region: Rcpp's generated wrappers turn the exception into an R error, which the model layer reclasses as `pprof_error_convergence` (`logistic_fe_engine_call()`). Inside parallel regions only bool-returning Armadillo functions are used, and a failure sets a flag (the standard score test's `failed`).
+
+As built in Phase 4, `logistic/firth.{h,cpp}` reproduces the reference's `logis_firth_prov()` operation by operation in the order it computes with one thread (K-30 to K-33): each provider's blocks, hat values, and modified score are computed in parallel into the provider's own slots, and every sum over providers (the Schur complement, the covariate score) is then added in provider order, so the results do not depend on the thread count (D-05). The Schur complement is inverted and its log-determinant taken outside the parallel regions, and a failure throws there (D-42). The block routine gained `provider_blocks()`, which Firth calls with its 1e-10 weight floor (K-31). With `src/Firth.cpp` gone, RcppParallel and its `$(shell ...)` lines left the build.
 
 Contracts of the core:
 
@@ -269,6 +278,12 @@ Memory budget with `keep_data = FALSE`: per observation, 4 bytes of provider ind
 
 The reference object is about 15 times larger, mostly because of `data_include` and the "1".."n" character row names on two n × 1 matrices.
 
+As built in Phase 4 (NAMING §5 lists the fields):
+
+- Firth models keep every logistic FE field, with the unpenalized variances and statistics at the Firth estimates (D-12), and add `penalized_loglik`; their convergence history holds the criterion and the penalized log-likelihood of every iteration.
+- Linear FE models keep `sigma` and `provider_effect_variance`, whose formula `spec$provider_variance` records (D-16); they screen no provider.
+- RE and CRE models (`pprof_mixed`) keep `fitted`, `provider_effect_sd`, `variance_components` (`provider`, as the reference reports it under K-51, and `residual_sd` for linear models), `loglik_df` (lme4's degrees of freedom), `sigma` for linear models, and with `keep_data = TRUE` the merMod as `engine_fit`. They store no `provider_effect_variance`; their provider effects are lme4's conditional modes. Their `convergence` holds lme4's optimizer and its code, lme4's convergence messages, whether the fit is singular, and the messages lme4 printed; their `spec` holds the outcome, the engine, `within_between`, and the `...` passed to lme4 as `engine_arguments`.
+
 ### D.2 Methods that need the covariates
 
 Most provider-level methods need only the linear predictor, the response, and the provider index: exact and bootstrap tests, the modified score test, standardization, intervals, and funnel limits. Three need the covariates themselves: the standard provider score test (K-66) and the covariate LR and score tests (K-101, K-102).
@@ -343,6 +358,8 @@ Capability names: `coef_wald`, `coef_lr`, `coef_score`, `provider_exact`, `provi
 | funnel | yes (score-test limits, K-110; exact limits unsupported, D-07) | yes | yes (normal limits, K-111) | no | no |
 
 The table mirrors exactly what the reference offers per class; it adds no inference.
+
+As built in Phase 4 (DEC-040): Firth models have the logistic FE capabilities through their class, as the table shows. Linear FE, RE, and CRE models declare none yet (the shared `inference_capabilities.pprof_model()` returns an empty vector); their columns of the table arrive with their inference in Phase 5. Until then every entry point raises `pprof_error_unsupported_inference` for them, including `confint()`, whose method for `pprof_model` checks `coef_wald` so that `stats::confint.default()` cannot answer with normal intervals. The old methods of the reference's linear, RE, and CRE objects are unaffected: they still run the reference's code on the wrappers' objects.
 
 ### E.4 Registration and the extension proof
 
@@ -459,6 +476,8 @@ Phase 1 implements this table in `tests/testthat/helper-tolerances.R` as `pprof_
 | AUC | Mann–Whitney statistic | V10.15: identical |
 | Standardization | hand calculation | V13.12, V14.5, V15.4 |
 | Tests and intervals | simulations with known truth (size, coverage), in `validation/` only | (Phase 5) |
+
+As built through Phase 4: `tests/testthat/test-independent-fits.R` implements the linear FE, Firth, and RE and CRE rows, with the tolerances of DEC-043, and `tests/testthat/test-metamorphic-fits.R` the metamorphic layer for the Phase 4 fits. The `glm()` check of logistic FE, planned for Phase 1, has not been written yet (raised at the Phase 4 gate).
 
 ### G.6 Test layers (brief §6)
 

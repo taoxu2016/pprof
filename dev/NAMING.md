@@ -147,7 +147,7 @@ Fields of model and result objects are snake_case nouns. Shared fields use the s
 |---|---|
 | `call`, `formula`, `terms` | as in base R models |
 | `data_spec` | how the data were prepared: response and provider names, decomposed covariates, factor levels and contrasts of the design, the data layer's settings (added in Phase 3, for `predict()` and for rebuilding the design, DEC-005) |
-| `spec` | the model specification: family, method, settings |
+| `spec` | the model specification: family, method, settings; for RE and CRE models also `outcome` (`"linear"` or `"logistic"`), `engine` (`"lmer"` or `"glmer"`), `within_between`, and `engine_arguments` (the `...` passed to lme4) (added in Phase 4) |
 | `providers` | provider table: `provider_id`, `provider_value` (the ID as it appears in the data, keeping its type; DEC-028), `n_obs`, `n_events` (binary outcomes), `included`, `no_events`, `all_events` |
 | `coefficients` | covariate coefficients, named numeric vector |
 | `provider_effects` | provider effects (gamma for FE, alpha for RE), named by provider ID |
@@ -156,8 +156,14 @@ Fields of model and result objects are snake_case nouns. Shared fields use the s
 | `linear_predictor` | covariate linear predictor per included observation (Z beta; X beta including the intercept for RE) |
 | `response` | outcome per included observation |
 | `provider_index` | integer index into `providers` per included observation |
-| `convergence` | `iterations`, `converged`, `criterion`, `stop_rule`, `tol`, `max_iter`; for iterative engines also `criteria` (each criterion's final value) and `history` (the criteria of every iteration) |
+| `convergence` | `iterations`, `converged`, `criterion`, `stop_rule`, `tol`, `max_iter`; for iterative engines also `criteria` (each criterion's final value) and `history` (the criteria of every iteration); for lme4 fits `converged`, `optimizer`, `code` (the optimizer's), `messages` (lme4's convergence messages), `singular`, and `engine_messages` (the messages lme4 printed) (added in Phase 4) |
 | `loglik`, `aic`, `bic`, `auc`, `sigma` | fit statistics where defined |
+| `penalized_loglik` | Firth: the penalized log-likelihood at the estimates (added in Phase 4) |
+| `loglik_df` | RE and CRE: lme4's degrees of freedom of the log-likelihood (added in Phase 4) |
+| `fitted` | RE and CRE: lme4's fitted values per included observation (added in Phase 4) |
+| `provider_effect_sd` | RE and CRE: the standard deviation of each provider effect, K-69's closed form for linear RE and lme4's conditional SD otherwise (K-70) (added in Phase 4) |
+| `variance_components` | RE and CRE: a list with `provider` (the provider variance as the reference reports it, K-51) and `residual_sd` (linear models) (added in Phase 4) |
+| `engine_fit` | RE and CRE with `keep_data = TRUE`: the lme4 fit (added in Phase 4) |
 | `n_obs`, `n_providers` | dimensions after screening |
 | `package_version` | version of pprof that built the object |
 
