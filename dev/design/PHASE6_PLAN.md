@@ -1,6 +1,6 @@
 # Phase 6 plan: visualization
 
-Proposed on 2026-10-04 for the project lead's approval; nothing is implemented. Branch `rewrite/phase-6`, created from `rewrite/phase-5` at `9517dfa` (stacked until Phases 1 to 5 are merged into `rewrite/v2`). The brief gives Phase 6 no gate; this plan proposes ending it with `/phase-gate` and a stop (DEC-054).
+Approved by the project lead on 2026-10-04, with every recommendation of "Questions for the project lead": the gate at the end of the phase (DEC-054), `plot_volume()` as defined in scoping question 2 (DEC-059), the fixture regeneration R-2 as listed in step 1, decisions DEC-054 to DEC-060 (`dev/DECISIONS.md`), including the removal of four packages from Imports in this phase (DEC-057) and the appearance of DEC-058, and the register entries D-47 and D-48 and D-36's extension. Branch `rewrite/phase-6`, created from `rewrite/phase-5` at `9517dfa` (stacked until Phases 1 to 5 are merged into `rewrite/v2`). The brief gives Phase 6 no gate; this phase ends with `/phase-gate` and a stop (DEC-054).
 
 The facts in "Facts gathered" were confirmed by running the pinned reference (`dev/reference/lib`) and the working tree at `e3eb58d` on 2026-10-04. Treat anything else here as a hypothesis to confirm by running code before relying on it (CLAUDE.md).
 

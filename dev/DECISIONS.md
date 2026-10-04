@@ -524,12 +524,12 @@ The Phase 5 decisions below were proposed with the Phase 5 plan (`dev/design/PHA
 
 ---
 
-The Phase 6 decisions below are proposed with the Phase 6 plan (`dev/design/PHASE6_PLAN.md`), for the project lead's approval.
+The Phase 6 decisions below were proposed with the Phase 6 plan (`dev/design/PHASE6_PLAN.md`) and approved by the project lead with it on 2026-10-04.
 
 ### DEC-054: Phase 6 scope
 
 - Date: 2026-10-04
-- Status: proposed
+- Status: accepted with the Phase 6 plan (2026-10-04)
 - Context: Brief §4 gives Phase 6 "`ggplot2` plotting that consumes standardized result objects" and no gate. The Phase 6 handoff leaves four scoping questions: the gate, the volume panels of brief §5.7 (DEC-059), the funnel wrappers' drawing code (DEC-055), and `data_check()` and `check_data()`; and two items carried over from Phase 5, fixture cases for RE and CRE fits whose provider variance is 0, and benchmark tasks for the plots (DEC-060).
 - Decision: (1) Phase 6 ends with `/phase-gate` and stops for the project lead's approval. (2) `data_check()`, `check_data()` (DEC-010), and the removal of caret, olsrr, and globals stay in Phase 8, with the dependency reduction. (3) The fixture cases for singular RE and CRE fits are proposed with the fixture regeneration R-2 of the plan's step 1.
 - Alternatives considered: no gate, as the brief allows (Phase 6 changes what users see and removes four packages from Imports, and Phase 7 documents the result); `check_data()` in Phase 6 (not visualization); the singular fixture cases in a later regeneration (R-2 runs the generator anyway).
@@ -538,7 +538,7 @@ The Phase 6 decisions below are proposed with the Phase 6 plan (`dev/design/PHAS
 ### DEC-055: The old plot functions keep the reference's drawing code
 
 - Date: 2026-10-04
-- Status: proposed
+- Status: accepted with the Phase 6 plan (2026-10-04)
 - Context: DEC-034 and DEC-045 made `plot.logis_fe()` and `plot.linear_fe()` wrappers that compute through the new API and draw with the reference's `ppfunnel()` and `ppfunnel_linear()` code, because the fixtures compare layer data; `caterpillar_plot()` and `bar_plot()` are still the reference's functions. The fixtures record, for each layer, the geom's class, the names of its aesthetics, and the data it is given, and the plot's own data with attributes; not the built data, scales, labels, guides, or themes. The four functions use dplyr and magrittr for data preparation (PHASE6_PLAN.md F16).
 - Decision: all four old plot functions live in `R/compat-plots.R` and keep the reference's ggplot code, unlinted, as the record of the old appearance. What they draw comes from the shared code: the funnel limits and points from the profiling API (as now), the caterpillar flags and the bar plot's shares from the profiling functions of DEC-056. Their data preparation uses base R in place of dplyr and magrittr, giving the same rows, row names, types, and levels. `caterpillar_plot()` and `bar_plot()` translate the attributes of the old tables into settings, which is the wrappers' job (ARCHITECTURE §I.2). Two ggplot2 4 warnings go (D-36: `element_line(size = )`, `guide_legend(box.linetype = )`) if the built plots stay identical. Before the switch, a guard script saves, for the four functions on the fixture inputs and a grid, the plot and layer data, the mapping expressions, the built data, labels, scales, guides, and themes; after each commit they must be identical. The fixture format is unchanged; the differential tests also compare built data.
 - Alternatives considered: rebuilding the old layers from the new functions' building blocks (ties the new appearance to the old, or needs a parameter for every difference); keeping dplyr in the old plot code until Phase 8 (Phase 8 would reopen the plot code, and dplyr would stay in Imports for it); recording built data in the fixtures (a regeneration of every plot fixture, and built data carry ggplot2's internal columns, which change between ggplot2 versions).
@@ -547,7 +547,7 @@ The Phase 6 decisions below are proposed with the Phase 6 plan (`dev/design/PHAS
 ### DEC-056: The plots' computations are profiling functions
 
 - Date: 2026-10-04
-- Status: proposed
+- Status: accepted with the Phase 6 plan (2026-10-04)
 - Context: Brief §5.7 puts computation in the profiling layer, not in plotting code. Two plot computations are still in plotting code, each written twice: the caterpillar plot's flags, which compare each interval with a reference value (K-112), in `caterpillar_plot()` and `plot_caterpillar()`; and the flag plot's provider-size groups and shares (K-113), in `bar_plot()` and `plot_flags()`.
 - Decision: `R/profile-summaries.R` holds `profile_reference_value()` (1 for ratios, the population rate for rates, 0 for differences), `profile_interval_flags()` (K-112, with the reference's order of comparisons and one side for one-sided intervals; a missing limit gives a missing flag), `profile_size_groups()`, and `profile_flag_shares()` (K-113, keeping providers without a flag as a category, as `bar_plot()` does). The new plot functions and the wrappers call them; they stay internal.
 - Alternatives considered: keeping them in the plot functions (two copies of each rule, and the new functions' copies unchecked by the fixtures); flag and group columns in the result objects (the reference value and the group count are plot arguments, which would become result settings).
@@ -556,7 +556,7 @@ The Phase 6 decisions below are proposed with the Phase 6 plan (`dev/design/PHAS
 ### DEC-057: The plots' dependencies
 
 - Date: 2026-10-04
-- Status: proposed
+- Status: accepted with the Phase 6 plan (2026-10-04)
 - Context: DEC-009 removes dplyr, magrittr, and tidyselect from Imports and keeps rlang "only in presentation code if Phase 6 needs it"; ARCHITECTURE §H leaves the `.data` pronoun to Phase 6. After DEC-055, nothing in `R/` calls dplyr, magrittr, or tidyselect (the tidyselect and two dplyr tags of `R/compat-fits.R` import functions its code no longer calls), and rlang is used only for `.data`, which ggplot2 re-exports (the same object, PHASE6_PLAN.md F1). A package in Imports that the namespace does not import gives an `R CMD check` note, which `R/pprof.R` avoids for globals with a dummy function.
 - Decision: the plot code keeps the `.data` pronoun, imported from ggplot2 once (`@importFrom ggplot2 .data`); dplyr, magrittr, rlang, and tidyselect leave Imports in Phase 6, with the unused tags of `R/compat-fits.R`. caret, olsrr, and globals stay until Phase 8 (DEC-054).
 - Alternatives considered: rlang in Imports for `.data` (one more declared dependency for an object ggplot2 exports); column names in `aes()` with `utils::globalVariables()` (a missing column would silently match a variable of the calling environment); removing the packages in Phase 8 (they would stay declared but unused, needing dummy imports like globals').
@@ -565,7 +565,7 @@ The Phase 6 decisions below are proposed with the Phase 6 plan (`dev/design/PHAS
 ### DEC-058: Appearance and arguments of the new plot functions
 
 - Date: 2026-10-04
-- Status: proposed
+- Status: accepted with the Phase 6 plan (2026-10-04)
 - Context: DEC-045 leaves the styling of `plot_funnel()`, `plot_caterpillar()`, and `plot_flags()` to Phase 6; their appearance may change freely (brief §3.2), but not the numbers or flags they draw. The reference's plots disagree with each other: the funnel plot draws lower orange and higher green, while `caterpillar_plot()` and `bar_plot()` give colours to the flags present, so orange can mean higher, lower, or as expected (D-47). With every flag missing (M-19), `plot_flags()` fails with a misleading message (PHASE6_PLAN.md F12).
 - Decision: one appearance from shared building blocks (`R/plot-blocks.R`): flags in the order lower, as expected, higher, with the reference funnel plot's Okabe–Ito colours and shapes, mapped by name whatever flags occur, legend labels with counts, and a grey "no flag" category only when a flag is missing; a subtitle stating the settings the result records (test, level, alternative, interval); one-sided intervals drawn from the bound to the estimate, as the reference draws them, and infinite limits of two-sided intervals to the panel edge; the flag plot's groups labelled with their size ranges; a shared theme. Arguments, in this order where they occur: `x`, the selectors (`standardization`, `measure`), `reference`, `orientation`, `use_flag`, `group_count`, then `point_size`, `point_alpha`, `line_width`, `label_size`; `plot_funnel()`'s `line_size` becomes `line_width` (ggplot2's `linewidth`). NAMING §4 records the plot arguments.
 - Alternatives considered: the reference's appearance (inconsistent colours across plots, D-47); ggplot2's default colours (not colour-blind safe, no meaning per flag); dropping providers without a flag (hides that a fit flags nothing, M-19).
@@ -574,7 +574,7 @@ The Phase 6 decisions below are proposed with the Phase 6 plan (`dev/design/PHAS
 ### DEC-059: Volume panels
 
 - Date: 2026-10-04
-- Status: proposed
+- Status: accepted with the Phase 6 plan (2026-10-04)
 - Context: Brief §5.7 lists "volume panels" among the plots to support through shared building blocks. pprof 1.0.3 has none, so nothing specifies them beyond the brief.
 - Decision: `plot_volume(x, standardization = NULL, measure = NULL, use_flag = TRUE, ...)` plots the standardized measures of a `profile_providers()` result (or a `standardize_providers()` result, then without test flags) against provider volume (`n_obs`, log scale), one panel per standardization and measure, with points coloured by the profile's test flags, each panel's reference line (DEC-056), and the measure intervals when the result has them. It reads result tables only and computes nothing.
 - Alternatives considered: deferring volume panels past 2.0.0 (the brief's list stays incomplete); flag shares by volume group (already `plot_flags()`); a scatter without panels (one measure at a time).
@@ -583,7 +583,7 @@ The Phase 6 decisions below are proposed with the Phase 6 plan (`dev/design/PHAS
 ### DEC-060: Benchmark tasks for the plot functions Phase 6 replaces
 
 - Date: 2026-10-04
-- Status: proposed
+- Status: accepted with the Phase 6 plan (2026-10-04)
 - Context: Brief §3.6 requires no material slowdown at default settings. The benchmark suite has one plot task (`plot.linear_fe` on `lin-1e5-m1000-p5`); `plot.logis_fe()`, `caterpillar_plot()`, and `bar_plot()` have none, and the latter two take a method's result rather than a fit, which the harness cannot prepare. Building these plots takes 0.06 to 0.12 s on the reference at 100 providers (PHASE6_PLAN.md F11).
 - Decision: add tasks for `plot.logis_fe()` on `bin-1e4-m100-p5` and `bin-1e5-m1000-p5`, `caterpillar_plot()` on the `CI.indirect_ratio` of `confint(option = "SM", test = "wald")` of the `bin-1e5-m1000-p5` fit, and `bar_plot()` on the `test(test = "wald")` of the same fit; the harness gains an untimed input step (a method of the fit, and an element of its result). Measure these tasks on the pinned reference with `run_reference.R --only`, in one session, into a supplementary baseline, and compare under DEC-023 with the paired re-measurement of DEC-038 for flagged tasks; `plot.linear_fe()` is measured again.
 - Alternatives considered: no tasks (the replaced functions go unmeasured); timing the new plot functions (they have no reference counterpart).

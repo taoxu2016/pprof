@@ -624,7 +624,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: one verbosity helper; drop `olsrr`; use `linewidth`; drop the argument ggplot2 ignores.
 - Recommendation: DEC-008 (verbosity) and the dependency plan (ARCHITECTURE §H). For the plots: `linewidth`, and no `box.linetype`, in the wrappers of Phase 6, provided the built plots stay identical (DEC-055).
 - Decision owner: project lead.
-- Status: verified. The new fits print nothing unless `verbose = TRUE` (Phase 3 for logistic fixed effects, Phase 4 for the others). The compatibility wrappers keep the reference's messages: `linear_fe()`, `linear_re()`, and `logis_re()` always report their input format, and the CRE wrappers print nothing (Phase 4, step 3). The plot warnings: proposed with the Phase 6 plan (2026-10-04).
+- Status: verified. The new fits print nothing unless `verbose = TRUE` (Phase 3 for logistic fixed effects, Phase 4 for the others). The compatibility wrappers keep the reference's messages: `linear_fe()`, `linear_re()`, and `logis_re()` always report their input format, and the CRE wrappers print nothing (Phase 4, step 3). The plot warnings: the recommendation was approved with the Phase 6 plan (2026-10-04).
 - Regression test: the tests that `verbose = FALSE` produces no output in `tests/testthat/test-model-*.R`; `tests/testthat/test-compat-fits.R` (the wrappers' messages).
 
 ### D-37: Vignettes contradict the code
@@ -808,7 +808,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reproduce in the wrappers; (2) map colours to flags by name.
 - Recommendation: (1) in `caterpillar_plot()` and `bar_plot()`, which reproduce the old presentation (DEC-013, DEC-055); (2) in the new plot functions, which share one fixed flag scale (DEC-058).
 - Decision owner: project lead.
-- Status: verified (2026-10-04, Phase 6 planning); proposed with the Phase 6 plan.
+- Status: verified (2026-10-04, Phase 6 planning); the recommendation was approved with the Phase 6 plan (2026-10-04).
 - Regression test: planned in Phase 6: the guard of step 3 (the built colours of the wrappers) and `tests/testthat/test-present-plots.R` (the new functions' colours whatever flags occur).
 
 ### D-48: The help of `caterpillar_plot()` and `bar_plot()` contradicts their behavior
@@ -822,5 +822,5 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: fix the help; or make `bar_width` set the width (a different plot for users who pass it).
 - Recommendation: fix the help of the wrappers (Phase 6, step 3).
 - Decision owner: project lead.
-- Status: verified (2026-10-04, Phase 6 planning); proposed with the Phase 6 plan.
+- Status: verified (2026-10-04, Phase 6 planning); the recommendation was approved with the Phase 6 plan (2026-10-04).
 - Regression test: planned in Phase 6: a test that `bar_width` leaves the plot unchanged, as the help will say.
