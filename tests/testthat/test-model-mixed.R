@@ -178,17 +178,16 @@ test_that("the contract methods of pprof_mixed (K-60)", {
   expect_identical(expected_outcome(logistic, 0), stats::plogis(logistic$linear_predictor))
 })
 
-test_that("inference on random-effect models is not available until Phase 5 (DEC-040)", {
+test_that("random-effect models have Wald inference only, without a funnel (ARCHITECTURE §E.3, Phase 5)", {
+  # The results are checked against the reference in test-profile-families.R.
   fit <- fit_linear_re(linear_formula, linear_data(), "hospital")
-  expect_identical(inference_capabilities(fit), character())
   unsupported <- function(expr) expect_error(expr, class = "pprof_error_unsupported_inference")
-  unsupported(test_providers(fit))
-  unsupported(provider_effects(fit))
-  unsupported(standardize_providers(fit))
-  unsupported(profile_providers(fit))
+  unsupported(test_providers(fit, "exact"))
+  unsupported(provider_effects(fit, interval = "exact"))
   unsupported(funnel_limits(fit))
-  unsupported(summary(fit))
-  unsupported(confint(fit))
-  unsupported(tidy(fit))
+  unsupported(test_coefficients(fit, "score"))
+  expect_s3_class(test_providers(fit), "pprof_provider_tests")
+  expect_s3_class(summary(fit), "pprof_summary")
+  expect_s3_class(tidy(fit), "tbl_df")
   expect_s3_class(glance(fit), "tbl_df")
 })
