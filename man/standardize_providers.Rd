@@ -22,11 +22,11 @@ standardize_providers(
 \item{standardization}{\code{"indirect"}, \code{"direct"}, or both.}
 
 \item{measure}{The measures: \code{NULL} for all the family's measures (\code{"ratio"} and \code{"rate"}
-for logistic models), or some of them.}
+for logistic models, \code{"difference"} for linear models), or some of them.}
 
-\item{null}{The null value of indirect standardization: \code{NULL} for the family's default
-(\code{"median"} for fixed-effect models), one of the family's named options, or a number.
-Direct standardization does not use it.}
+\item{null}{The null value: \code{NULL} for the family's default (\code{"median"} for fixed-effect
+models, 0 for random-effect models), one of the family's named options, or a number.
+Direct standardization uses it only for linear fixed-effect models.}
 
 \item{interval}{\code{"none"}, \code{"exact"}, \code{"score"}, or \code{"wald"}.}
 
@@ -37,20 +37,26 @@ Direct standardization does not use it.}
 \item{providers}{The IDs of the providers to report, compared as character; \code{NULL} for
 all included providers.}
 
-\item{threads}{The number of threads for the direct expectations.}
+\item{threads}{The number of threads for the direct expectations of logistic models.}
 }
 \value{
 A \code{pprof_measures} result: a \code{table} with one row per standardization, measure,
 and provider (\code{provider_id}, \code{standardization}, \code{measure}, \code{n_obs}, \code{observed},
 \code{expected}, \code{variance}, \code{estimate}, and with an interval \code{lower} and \code{upper}) and the
 settings \code{interval}, \code{level}, \code{alternative}, \code{null_value}, \code{standardization},
-\code{measure}, and \code{population_rate} (for rates). For indirect standardization \code{observed}
-and \code{expected} are O_i and E_i and \code{variance} is sum of p0 (1 - p0); for direct
-standardization \code{observed} is the population's number of events, \code{expected} the
-provider's expected number in the population, and \code{variance} is missing.
+\code{measure}, \code{indirect_numerator}, \code{direct_reference}, and \code{population_rate} (for rates).
+\code{observed} and \code{expected} are the two sums each measure compares, as in pprof 1.0.3's
+\code{OE} tables. For indirect standardization, \code{observed} is the numerator (O_i, or the sum
+of the fitted values when \code{indirect_numerator} is \code{"predicted"}), \code{expected} is E_i, and
+\code{variance} is the sum of p0 (1 - p0) for logistic fixed-effect models and missing
+otherwise; for direct standardization, \code{observed} is the reference total (the
+population's outcome, or for linear fixed-effect models, whose \code{direct_reference} is
+\code{"null_expected"}, the sum of null + z'beta), \code{expected} the provider's expected outcome
+in the population, and \code{variance} is missing.
 }
 \description{
-Indirectly and directly standardized ratios and rates. For logistic fixed-effect models:
+Indirectly and directly standardized measures. For logistic fixed-effect models, ratios
+and rates:
 }
 \details{
 \itemize{
@@ -64,11 +70,26 @@ plogis(gamma_i + z'beta), over the population's number of events;
 [0, 100].
 }
 
-Intervals map the limits of the provider effect from \code{\link[=provider_effects]{provider_effects()}} through the
-same sums, with the one-sided limits of providers with no events or only events: a
-provider with no events has lower limit 0 and one with only events upper limit n_i / E_i
-(indirect) or n / sum(y) (direct). These are the measures and intervals of pprof 1.0.3's
-\code{SM_output()} and \code{confint()}, whose results they reproduce.
+For linear fixed-effect models, differences (K-83): indirect (O_i - E_i) / n_i with
+E_i = sum of (null + z'beta) over the provider's n_i observations, and direct
+(sum over all observations of (gamma_i + z'beta) - sum over all observations of
+(null + z'beta)) / n, so that direct standardization also uses \code{null}. Both are
+gamma_i - null up to rounding.
+
+For random-effect and correlated random-effect models, the numerator of indirect measures
+is the sum of the model's fitted values over the provider's observations, which include
+the provider's estimated effect, not its observed outcomes (predicted over expected, as in
+pprof 1.0.3, K-82 and K-84); the expected outcomes use the null effect, 0 by default.
+Logistic models give ratios and rates, with the population's number of events as the
+direct denominator; linear models give differences, (sum of fitted - sum of x'beta) / n_i
+(indirect) and (sum over all observations of (alpha_i + x'beta) - sum(y)) / n (direct).
+
+Intervals map the limits of the provider effect from \code{\link[=provider_effects]{provider_effects()}} (at
+\code{alternative}, one-sided if asked) through the same sums. Logistic fixed-effect models
+give providers with no events or only events one-sided limits: a provider with no events
+has lower limit 0 and one with only events upper limit n_i / E_i (indirect) or n / sum(y)
+(direct). These are the measures and intervals of pprof 1.0.3's \code{SM_output()} and
+\code{confint()}, whose results they reproduce.
 }
 \examples{
 data(ExampleDataBinary)

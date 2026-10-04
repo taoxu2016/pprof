@@ -2,8 +2,8 @@
 # §E; K-50 to K-54): the lme4 adapter, the fitting steps the four families share, the
 # intermediate class pprof_mixed (DEC-004) with its constructor and validator, and the
 # methods the families share. The fit functions are in model-linear-re.R,
-# model-logistic-re.R, model-linear-cre.R, and model-logistic-cre.R. The models declare no
-# inference capabilities until Phase 5 (DEC-040).
+# model-logistic-re.R, model-linear-cre.R, and model-logistic-cre.R. The family
+# specification and the capabilities came with Phase 5 (DEC-046).
 
 # What differs between the four families, as the reference computes it:
 #   outcome    "linear" (lmer) or "logistic" (glmer);
@@ -308,4 +308,57 @@ null_effect.pprof_mixed <- function(model, null = 0, ...) {
 #' @export
 provider_estimate_se.pprof_mixed <- function(model) {
   model$provider_effect_sd
+}
+
+#' @export
+predicted_outcome.pprof_mixed <- function(model) {
+  # lme4's fitted values, with the provider effects: the numerator of the reference's
+  # indirect measures (K-82, K-84).
+  model$fitted
+}
+
+#' @export
+profile_spec.pprof_mixed <- function(model) {
+  # ARCHITECTURE §B.4, as the reference's RE and CRE methods compute (R/test.*_re.R,
+  # R/SM_output.*_re.R, R/confint.*_re.R, R/summary.*_re.R and their CRE versions). The null
+  # is a number, 0 by default (K-60). Indirect measures put lme4's fitted values over the
+  # outcomes expected with a zero effect, predicted over expected (K-82, K-84, M-14);
+  # logistic measures are ratios and rates, linear ones differences, with the direct
+  # reference total sum(y). Logistic direct expectations and direct limits run in C++, as
+  # the reference's computeDirectExp() (K-82, K-93); linear ones are R's sums. The provider
+  # tests and intervals use the normal distribution with the standard deviations of K-69 and
+  # K-70. The covariate p-values are 2 (1 - pnorm(z)) for logistic models (D-31, awaiting
+  # sign-off) and two-sided t(n - p - m + 1), p counting the intercept, for linear models
+  # (K-104, K-105); the intervals are lme4's Wald intervals.
+  logistic <- identical(model$spec$outcome, "logistic")
+  df <- model$n_obs - length(model$coefficients) - model$n_providers + 1
+  coefficient_wald <- if (logistic) {
+    list(p_value = "upper_doubled", p_value_distribution = "normal", interval = "quantile",
+         interval_distribution = "normal", df = NULL)
+  } else {
+    list(p_value = "two_sided", p_value_distribution = "t", interval = "quantile", interval_distribution = "normal",
+         df = df)
+  }
+  list(
+    family = model$spec$family, effect = "alpha", null_default = 0, null_options = character(),
+    test_default = "wald", indirect_numerator = "predicted", comparison = if (logistic) "ratio" else "difference",
+    measures = if (logistic) c("ratio", "rate") else "difference",
+    mean_function = if (logistic) stats::plogis else identity,
+    direct_expected = if (logistic) {
+      logistic_direct_expected
+    } else {
+      function(effects, linear_predictor, threads) {
+        vapply(effects, function(effect) sum(effect + linear_predictor), numeric(1))
+      }
+    },
+    direct_reference = "observed", direct_limits = if (logistic) "direct_expected" else "mean_function",
+    one_sided_extremes = FALSE, wald = list(test = "normal", interval = "normal", df = NULL),
+    coefficient_wald = coefficient_wald, wald_caution = FALSE
+  )
+}
+
+#' @export
+inference_capabilities.pprof_mixed <- function(model) {
+  # ARCHITECTURE §E.3: the Wald tests and intervals and both standardizations; no funnel.
+  c("coef_wald", "provider_wald", "interval_wald", "standardize_indirect", "standardize_direct")
 }

@@ -19,11 +19,12 @@ funnel_limits(
 are flagged at the first.}
 
 \item{null}{The null value: \code{NULL} for the family's default (\code{"median"} for fixed-effect
-models, the median of the provider effects), one of the family's named options, or a
-number.}
+models, the median of the provider effects; 0 for random-effect models), one of the
+family's named options (\code{"median"}, and for linear fixed-effect models also \code{"mean"}, the
+mean of the provider effects weighted by provider size), or a number.}
 
 \item{target}{The value the limits are centred on: \code{NULL} for the family's default (1 for
-ratios).}
+ratios, 0 for differences).}
 
 \item{providers}{The IDs of the providers to report, compared as character; \code{NULL} for
 all included providers.}
@@ -36,14 +37,20 @@ precision (\code{level}, \code{precision}, \code{lower}, \code{upper}), the sett
 \code{flag}).
 }
 \description{
-The control limits of a funnel plot of the indirectly standardized ratios, with the
-providers' points. For logistic fixed-effect models (K-110), a provider's precision is
-E_i^2 / V_i, with E_i the expected number of events under the null and V_i its null
-variance (see \code{\link[=standardize_providers]{standardize_providers()}}); at precision w the limits are
-target -/+ qnorm(1 - alpha / 2) sqrt(1 / w) with alpha = 1 - \code{level}, and the lower limit
-is at least 0. The providers are flagged by the modified score test of
-\code{\link[=test_providers]{test_providers()}} at the first level. These are the limits and flags of pprof 1.0.3's
-funnel plot.
+The control limits of a funnel plot of the indirectly standardized measures, with the
+providers' points. For logistic fixed-effect models (K-110), the points are the indirect
+ratios, a provider's precision is E_i^2 / V_i, with E_i the expected number of events
+under the null and V_i its null variance (see \code{\link[=standardize_providers]{standardize_providers()}}); at precision w
+the limits are target -/+ qnorm(1 - alpha / 2) sqrt(1 / w) with alpha = 1 - \code{level}, and
+the lower limit is at least 0. The providers are flagged by the modified score test of
+\code{\link[=test_providers]{test_providers()}} at the first level. For linear fixed-effect models (K-111), the points
+are the indirect differences, a provider's precision is its number of observations n_i,
+the limits are target -/+ qnorm(1 - alpha / 2) sqrt(1 / n_i) sigma, without a floor, and
+the providers are flagged by the Wald test. With \code{provider_variance = "full"}, the limits
+still use sigma^2 / n_i while the Wald test uses the full variance and t, so a point
+outside the limits may not be flagged (D-43, awaiting a decision of the methodology
+owners). These are the limits and flags of pprof 1.0.3's funnel plots. Random-effect
+models have no funnel plot.
 }
 \examples{
 data(ExampleDataBinary)

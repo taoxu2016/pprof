@@ -1,8 +1,9 @@
-# Standardized measures (K-80 to K-82) and their intervals (K-91).
+# Standardized measures (K-80 to K-84) and their intervals (K-91 to K-93).
 
 #' Standardized measures for providers
 #'
-#' Indirectly and directly standardized ratios and rates. For logistic fixed-effect models:
+#' Indirectly and directly standardized measures. For logistic fixed-effect models, ratios
+#' and rates:
 #'
 #' - indirect (K-80): the provider's observed number of events O_i over its expected number
 #'   E_i = sum of p0 = plogis(null + z'beta) over its observations, the number expected if
@@ -13,30 +14,50 @@
 #' - rates are ratios times the population rate 100 sum(y) / n, in percent, clipped to
 #'   \[0, 100\].
 #'
-#' Intervals map the limits of the provider effect from [provider_effects()] through the
-#' same sums, with the one-sided limits of providers with no events or only events: a
-#' provider with no events has lower limit 0 and one with only events upper limit n_i / E_i
-#' (indirect) or n / sum(y) (direct). These are the measures and intervals of pprof 1.0.3's
-#' `SM_output()` and `confint()`, whose results they reproduce.
+#' For linear fixed-effect models, differences (K-83): indirect (O_i - E_i) / n_i with
+#' E_i = sum of (null + z'beta) over the provider's n_i observations, and direct
+#' (sum over all observations of (gamma_i + z'beta) - sum over all observations of
+#' (null + z'beta)) / n, so that direct standardization also uses `null`. Both are
+#' gamma_i - null up to rounding.
+#'
+#' For random-effect and correlated random-effect models, the numerator of indirect measures
+#' is the sum of the model's fitted values over the provider's observations, which include
+#' the provider's estimated effect, not its observed outcomes (predicted over expected, as in
+#' pprof 1.0.3, K-82 and K-84); the expected outcomes use the null effect, 0 by default.
+#' Logistic models give ratios and rates, with the population's number of events as the
+#' direct denominator; linear models give differences, (sum of fitted - sum of x'beta) / n_i
+#' (indirect) and (sum over all observations of (alpha_i + x'beta) - sum(y)) / n (direct).
+#'
+#' Intervals map the limits of the provider effect from [provider_effects()] (at
+#' `alternative`, one-sided if asked) through the same sums. Logistic fixed-effect models
+#' give providers with no events or only events one-sided limits: a provider with no events
+#' has lower limit 0 and one with only events upper limit n_i / E_i (indirect) or n / sum(y)
+#' (direct). These are the measures and intervals of pprof 1.0.3's `SM_output()` and
+#' `confint()`, whose results they reproduce.
 #'
 #' @inheritParams test_providers
 #' @param standardization `"indirect"`, `"direct"`, or both.
 #' @param measure The measures: `NULL` for all the family's measures (`"ratio"` and `"rate"`
-#'   for logistic models), or some of them.
-#' @param null The null value of indirect standardization: `NULL` for the family's default
-#'   (`"median"` for fixed-effect models), one of the family's named options, or a number.
-#'   Direct standardization does not use it.
+#'   for logistic models, `"difference"` for linear models), or some of them.
+#' @param null The null value: `NULL` for the family's default (`"median"` for fixed-effect
+#'   models, 0 for random-effect models), one of the family's named options, or a number.
+#'   Direct standardization uses it only for linear fixed-effect models.
 #' @param interval `"none"`, `"exact"`, `"score"`, or `"wald"`.
-#' @param threads The number of threads for the direct expectations.
+#' @param threads The number of threads for the direct expectations of logistic models.
 #'
 #' @return A `pprof_measures` result: a `table` with one row per standardization, measure,
 #'   and provider (`provider_id`, `standardization`, `measure`, `n_obs`, `observed`,
 #'   `expected`, `variance`, `estimate`, and with an interval `lower` and `upper`) and the
 #'   settings `interval`, `level`, `alternative`, `null_value`, `standardization`,
-#'   `measure`, and `population_rate` (for rates). For indirect standardization `observed`
-#'   and `expected` are O_i and E_i and `variance` is sum of p0 (1 - p0); for direct
-#'   standardization `observed` is the population's number of events, `expected` the
-#'   provider's expected number in the population, and `variance` is missing.
+#'   `measure`, `indirect_numerator`, `direct_reference`, and `population_rate` (for rates).
+#'   `observed` and `expected` are the two sums each measure compares, as in pprof 1.0.3's
+#'   `OE` tables. For indirect standardization, `observed` is the numerator (O_i, or the sum
+#'   of the fitted values when `indirect_numerator` is `"predicted"`), `expected` is E_i, and
+#'   `variance` is the sum of p0 (1 - p0) for logistic fixed-effect models and missing
+#'   otherwise; for direct standardization, `observed` is the reference total (the
+#'   population's outcome, or for linear fixed-effect models, whose `direct_reference` is
+#'   `"null_expected"`, the sum of null + z'beta), `expected` the provider's expected outcome
+#'   in the population, and `variance` is missing.
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

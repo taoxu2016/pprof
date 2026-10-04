@@ -33,10 +33,25 @@ A \code{pprof_coefficient_tests} result: a \code{table} with one row per coeffic
 \code{lower}, and \code{upper}) and the settings \code{test}, \code{level}, and \code{null_value}.
 }
 \description{
-Tests each covariate coefficient of a model against \code{null}. For logistic fixed-effect
-models:
+Tests each covariate coefficient of a model against \code{null}. The Wald test is available
+for every family, with the family's rule as in pprof 1.0.3's \code{summary()}; the
+likelihood-ratio and score tests for logistic fixed-effect and Firth models only.
 }
 \details{
+Wald tests and intervals of the other families, with alpha = 1 - \code{level}:
+\itemize{
+\item linear fixed effects (K-103): p-value 2 (1 - pt(|z|, n - m - p)), interval
+beta -/+ qt(1 - alpha / 2, n - m - p) se, for n observations, m providers, and p
+coefficients;
+\item linear random and correlated random effects (K-104), intercept included: p-value
+2 (1 - pt(|z|, n - p - m + 1)) with p counting the intercept, and lme4's Wald interval
+beta + se qnorm(a) at a = alpha / 2 and 1 - alpha / 2;
+\item logistic random and correlated random effects (K-105), intercept included: p-value
+2 (1 - pnorm(z)), which exceeds 1 for negative estimates (D-31, kept as in pprof 1.0.3
+until the methodology owners decide), and lme4's Wald interval.
+}
+
+For logistic fixed-effect models:
 \itemize{
 \item \code{"wald"}: z = (beta - null) / se with the standard error from \code{\link[=vcov]{vcov()}}, the two-sided
 p-value 2 (1 - pnorm(|z|)), and the interval beta -/+ qnorm(1 - alpha / 2) se with

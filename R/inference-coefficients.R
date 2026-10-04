@@ -1,9 +1,24 @@
-# Tests and intervals for covariate coefficients (K-100 to K-102).
+# Tests and intervals for covariate coefficients (K-100 to K-105).
 
 #' Tests of the covariate coefficients
 #'
-#' Tests each covariate coefficient of a model against `null`. For logistic fixed-effect
-#' models:
+#' Tests each covariate coefficient of a model against `null`. The Wald test is available
+#' for every family, with the family's rule as in pprof 1.0.3's `summary()`; the
+#' likelihood-ratio and score tests for logistic fixed-effect and Firth models only.
+#'
+#' Wald tests and intervals of the other families, with alpha = 1 - `level`:
+#'
+#' - linear fixed effects (K-103): p-value 2 (1 - pt(|z|, n - m - p)), interval
+#'   beta -/+ qt(1 - alpha / 2, n - m - p) se, for n observations, m providers, and p
+#'   coefficients;
+#' - linear random and correlated random effects (K-104), intercept included: p-value
+#'   2 (1 - pt(|z|, n - p - m + 1)) with p counting the intercept, and lme4's Wald interval
+#'   beta + se qnorm(a) at a = alpha / 2 and 1 - alpha / 2;
+#' - logistic random and correlated random effects (K-105), intercept included: p-value
+#'   2 (1 - pnorm(z)), which exceeds 1 for negative estimates (D-31, kept as in pprof 1.0.3
+#'   until the methodology owners decide), and lme4's Wald interval.
+#'
+#' For logistic fixed-effect models:
 #'
 #' - `"wald"`: z = (beta - null) / se with the standard error from [vcov()], the two-sided
 #'   p-value 2 (1 - pnorm(|z|)), and the interval beta -/+ qnorm(1 - alpha / 2) se with

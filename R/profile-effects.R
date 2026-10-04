@@ -11,9 +11,15 @@
 #'   with only events only a lower limit (the upper is `Inf`); that limit solves its
 #'   equation at alpha = 1 - `level`, not alpha / 2, as in pprof 1.0.3. A limit without a
 #'   root in any bracket is infinite.
-#' - `"wald"`: estimate -/+ qnorm(1 - alpha / 2) times the standard error; it warns with
-#'   class `pprof_warning_wald_unreliable` when it covers providers with no events or only
-#'   events.
+#' - `"wald"`: estimate -/+ qnorm(1 - alpha / 2) times the standard error; for logistic
+#'   fixed-effect models it warns with class `pprof_warning_wald_unreliable` when it covers
+#'   providers with no events or only events. Linear fixed-effect models use
+#'   qt(1 - alpha / 2, n - m - p) with `provider_variance = "simplified"` and qnorm with
+#'   `"full"`, the reverse of their tests, as pprof 1.0.3 does (D-32, awaiting a decision
+#'   of the methodology owners).
+#'
+#' Logistic fixed-effect and Firth models offer all three intervals; linear fixed-effect,
+#' random-effect, and correlated random-effect models only the Wald interval.
 #'
 #' @inheritParams test_providers
 #' @param interval `"none"`, `"exact"`, `"score"`, or `"wald"`.

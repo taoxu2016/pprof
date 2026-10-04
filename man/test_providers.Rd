@@ -21,11 +21,12 @@ test_providers(
 \item{model}{A model object, such as a \code{\link[=fit_logistic_fe]{fit_logistic_fe()}} fit.}
 
 \item{test}{\code{"exact"}, \code{"bootstrap"}, \code{"score"}, or \code{"wald"}; \code{NULL} for the family's
-default test, \code{"exact"} for logistic fixed-effect models.}
+default test: \code{"exact"} for logistic fixed-effect models, \code{"wald"} for the others.}
 
 \item{null}{The null value: \code{NULL} for the family's default (\code{"median"} for fixed-effect
-models, the median of the provider effects), one of the family's named options, or a
-number.}
+models, the median of the provider effects; 0 for random-effect models), one of the
+family's named options (\code{"median"}, and for linear fixed-effect models also \code{"mean"}, the
+mean of the provider effects weighted by provider size), or a number.}
 
 \item{level}{The confidence level; alpha = 1 - \code{level}.}
 
@@ -78,6 +79,15 @@ A standard score statistic that is not finite gets a missing p-value and flag, w
 \code{pprof_warning_undefined_statistics} warning. Wald tests warn with class
 \code{pprof_warning_wald_unreliable} when they cover providers with no events or only events,
 whose estimates sit at the effect bound.
+
+Linear fixed-effect, random-effect, and correlated random-effect models have only the
+Wald test, which is their default: z = (estimate - null) / se, with the standard error of
+the provider effect (the square root of the provider variance of \code{\link[=fit_linear_fe]{fit_linear_fe()}}; for
+random-effect models, the standard deviation of the conditional mode, as the models'
+\code{provider_effect_sd} holds it). The reference distribution is the standard normal, except
+for linear fixed-effect models with \code{provider_variance = "full"}, which use Student's t
+with n - m - p degrees of freedom (n observations, m providers, p coefficients), as
+pprof 1.0.3's \code{test()} does.
 }
 \examples{
 data(ExampleDataBinary)

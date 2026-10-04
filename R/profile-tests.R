@@ -33,12 +33,22 @@
 #' `pprof_warning_wald_unreliable` when they cover providers with no events or only events,
 #' whose estimates sit at the effect bound.
 #'
+#' Linear fixed-effect, random-effect, and correlated random-effect models have only the
+#' Wald test, which is their default: z = (estimate - null) / se, with the standard error of
+#' the provider effect (the square root of the provider variance of [fit_linear_fe()]; for
+#' random-effect models, the standard deviation of the conditional mode, as the models'
+#' `provider_effect_sd` holds it). The reference distribution is the standard normal, except
+#' for linear fixed-effect models with `provider_variance = "full"`, which use Student's t
+#' with n - m - p degrees of freedom (n observations, m providers, p coefficients), as
+#' pprof 1.0.3's `test()` does.
+#'
 #' @param model A model object, such as a [fit_logistic_fe()] fit.
 #' @param test `"exact"`, `"bootstrap"`, `"score"`, or `"wald"`; `NULL` for the family's
-#'   default test, `"exact"` for logistic fixed-effect models.
+#'   default test: `"exact"` for logistic fixed-effect models, `"wald"` for the others.
 #' @param null The null value: `NULL` for the family's default (`"median"` for fixed-effect
-#'   models, the median of the provider effects), one of the family's named options, or a
-#'   number.
+#'   models, the median of the provider effects; 0 for random-effect models), one of the
+#'   family's named options (`"median"`, and for linear fixed-effect models also `"mean"`, the
+#'   mean of the provider effects weighted by provider size), or a number.
 #' @param level The confidence level; alpha = 1 - `level`.
 #' @param alternative `"two.sided"`, `"greater"`, or `"less"`.
 #' @param providers The IDs of the providers to report, compared as character; `NULL` for

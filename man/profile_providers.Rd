@@ -22,11 +22,12 @@ profile_providers(
 \item{model}{A model object, such as a \code{\link[=fit_logistic_fe]{fit_logistic_fe()}} fit.}
 
 \item{test}{\code{"exact"}, \code{"bootstrap"}, \code{"score"}, or \code{"wald"}; \code{NULL} for the family's
-default test, \code{"exact"} for logistic fixed-effect models.}
+default test: \code{"exact"} for logistic fixed-effect models, \code{"wald"} for the others.}
 
 \item{null}{The null value: \code{NULL} for the family's default (\code{"median"} for fixed-effect
-models, the median of the provider effects), one of the family's named options, or a
-number.}
+models, the median of the provider effects; 0 for random-effect models), one of the
+family's named options (\code{"median"}, and for linear fixed-effect models also \code{"mean"}, the
+mean of the provider effects weighted by provider size), or a number.}
 
 \item{level}{The confidence level; alpha = 1 - \code{level}.}
 

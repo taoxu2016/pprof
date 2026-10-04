@@ -1,6 +1,6 @@
 # Linear fixed-effect models (ARCHITECTURE §B.5, §D, §E): the fit function, the estimates
 # by direct demeaning (DEC-006), the model object, the standard methods, and the contract
-# methods. The model declares no inference capabilities until Phase 5 (DEC-040).
+# methods, including the family specification and the capabilities (Phase 5, DEC-046).
 
 #' Fit a linear fixed-effect model for provider profiling
 #'
@@ -241,4 +241,44 @@ null_effect.pprof_linear_fe <- function(model, null = "median", ...) {
 #' @export
 provider_estimate_se.pprof_linear_fe <- function(model) {
   sqrt(model$provider_effect_variance)
+}
+
+#' @export
+profile_spec.pprof_linear_fe <- function(model) {
+  # ARCHITECTURE §B.4, as the reference's linear FE methods compute (R/test.linear_fe.R,
+  # R/SM_output.linear_fe.R, R/confint.linear_fe.R, R/summary.linear_fe.R,
+  # R/plot.linear_fe.R). Measures are differences (K-83): indirect (O_i - E_i) / n_i with
+  # E_i = sum(null + z'beta), direct (E_i - total) / n with E_i = sum(gamma_i + z'beta) over
+  # all observations and the reference total sum(null + z'beta). The provider tests use the
+  # normal distribution with the simplified variance and t(n - m - p) with the full one
+  # (K-68), the intervals the reverse (K-92, D-32, awaiting sign-off); the covariate tests
+  # and intervals use t(n - m - p) (K-103). The funnel's precision is n_i and its half-width
+  # z * sqrt(1 / n_i) * sigma, without a floor, whatever the provider variance (K-111, D-43).
+  df <- model$n_obs - model$n_providers - length(model$coefficients)
+  sigma <- model$sigma
+  full <- identical(model$spec$provider_variance, "full")
+  list(
+    family = "linear_fe", effect = "gamma", null_default = "median", null_options = c("median", "mean"),
+    test_default = "wald", indirect_numerator = "observed", comparison = "difference", measures = "difference",
+    mean_function = identity,
+    direct_expected = function(effects, linear_predictor, threads) {
+      vapply(effects, function(effect) sum(effect + linear_predictor), numeric(1))
+    },
+    direct_reference = "null_expected", direct_limits = "mean_function", one_sided_extremes = FALSE,
+    wald = list(test = if (full) "t" else "normal", interval = if (full) "normal" else "t", df = df),
+    coefficient_wald = list(p_value = "two_sided", p_value_distribution = "t", interval = "critical",
+                            interval_distribution = "t", df = df),
+    funnel = list(
+      measure = "difference", target = 0, floor = -Inf, test = "wald",
+      precision = function(expected, variance, n_obs) n_obs,
+      half_width = function(critical, precision) critical * sqrt(1 / precision) * sigma
+    ),
+    wald_caution = FALSE
+  )
+}
+
+#' @export
+inference_capabilities.pprof_linear_fe <- function(model) {
+  # ARCHITECTURE §E.3: the Wald tests and intervals, both standardizations, and the funnel.
+  c("coef_wald", "provider_wald", "interval_wald", "standardize_indirect", "standardize_direct", "funnel")
 }

@@ -33,10 +33,16 @@ uses. A provider with no events gets only an upper limit (the lower is \code{-In
 with only events only a lower limit (the upper is \code{Inf}); that limit solves its
 equation at alpha = 1 - \code{level}, not alpha / 2, as in pprof 1.0.3. A limit without a
 root in any bracket is infinite.
-\item \code{"wald"}: estimate -/+ qnorm(1 - alpha / 2) times the standard error; it warns with
-class \code{pprof_warning_wald_unreliable} when it covers providers with no events or only
-events.
+\item \code{"wald"}: estimate -/+ qnorm(1 - alpha / 2) times the standard error; for logistic
+fixed-effect models it warns with class \code{pprof_warning_wald_unreliable} when it covers
+providers with no events or only events. Linear fixed-effect models use
+qt(1 - alpha / 2, n - m - p) with \code{provider_variance = "simplified"} and qnorm with
+\code{"full"}, the reverse of their tests, as pprof 1.0.3 does (D-32, awaiting a decision
+of the methodology owners).
 }
+
+Logistic fixed-effect and Firth models offer all three intervals; linear fixed-effect,
+random-effect, and correlated random-effect models only the Wald interval.
 }
 \examples{
 data(ExampleDataBinary)

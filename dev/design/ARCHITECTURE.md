@@ -210,6 +210,8 @@ Sources: K-60, K-68 to K-70, K-80 to K-84, K-92, K-93. The rows differ where the
 
 As built in Phase 3 (logistic FE; NAMING §5 lists the fields): `profile_spec()` returns a list with `family`, `effect`, `null_default`, `null_options`, `indirect_numerator`, and `measures`, and, where a family supports them, `mean_function` and `variance_function` (measure intervals and the null variance of indirect standardization), `direct_expected` (a function of the effects, the linear predictor, and the thread count; the C++ direct expectations for logistic models), `funnel` (`measure`, `target`, `floor`, `test`, and the functions `precision` and `half_width`, so that the logistic funnel's E²/V and sqrt(1/w) and the linear funnel's n_i and σ/sqrt(n_i) are both data), and `wald_caution` (DEC-037). The exact, bootstrap, modified score, and Wald provider tests are computed by the profiling layer from the contract; `provider_test()` serves the tests that need a model's internals, such as the standard score test (DEC-036).
 
+As built in Phase 5 (DEC-046; the values per family are the table in `dev/design/PHASE5_PLAN.md`, step 2): the specification gains optional fields whose defaults are the behavior of logistic fixed effects, so a family states only where it differs: `test_default` (DEC-047), `comparison` (ratios O/E and E/total, or differences (O − E)/n_i and (E − total)/n), `direct_reference` (Σy, or Σ(γ0 + Zβ) for linear FE, K-83), `direct_limits` (R's sums of the mean function, or the family's direct expectation: logistic RE and CRE use the C++ routine, whose last bits differ from R's sums), `one_sided_extremes` (logistic FE only, K-91), `wald` (the distributions of the provider tests and intervals: t(n − m − p) for linear FE tests with the full variance and intervals with the simplified one, D-32), and `coefficient_wald` (the covariate p-value form, including D-31's 2(1 − Φ(z)), its distribution and degrees of freedom, and the interval form: β ∓ q·se, or lme4's β + se·Φ⁻¹(a), which reproduces `confint(method = "Wald")` bitwise without the lme4 fit). The predicted numerator of RE indirect measures (K-82, K-84) is read through the contract generic `predicted_outcome()`, which returns lme4's fitted values for `pprof_mixed`. The inference layer owns the default of `coefficient_wald`, and the profiling layer those of the other fields, so neither reaches into the other (§B.1). The new API reproduces D-31, D-32, D-43, and M-14 until the methodology owners decide.
+
 ### B.5 A fit and a profile, step by step
 
 `fit_logistic_fe(formula, data, provider, method = "serbin", ...)`:
@@ -324,6 +326,7 @@ The inference and profiling layers rely on these generics only:
 | `linear_predictor(model)` | covariate linear predictor per observation | expected outcomes |
 | `observed_outcome(model)` | outcome per observation | tests, standardization |
 | `expected_outcome(model, effect)` | expected outcome per observation given a provider effect (a scalar or a vector indexed by provider) | tests, standardization, intervals |
+| `predicted_outcome(model)` | the model's prediction per observation with its own provider effects (lme4's fitted values for random-effect models; added in Phase 5, DEC-046) | indirect standardization of families whose numerator is `"predicted"` (K-82, K-84) |
 | `null_effect(model, null)` | the numeric null value for a `null` choice | tests, standardization |
 | `profile_spec(model)` | the family specification of §B.4 | profiling |
 | `inference_capabilities(model)` | character vector of supported inference | capability checks |
@@ -360,6 +363,8 @@ Capability names: `coef_wald`, `coef_lr`, `coef_score`, `provider_exact`, `provi
 The table mirrors exactly what the reference offers per class; it adds no inference.
 
 As built in Phase 4 (DEC-040): Firth models have the logistic FE capabilities through their class, as the table shows. Linear FE, RE, and CRE models declare none yet (the shared `inference_capabilities.pprof_model()` returns an empty vector); their columns of the table arrive with their inference in Phase 5. Until then every entry point raises `pprof_error_unsupported_inference` for them, including `confint()`, whose method for `pprof_model` checks `coef_wald` so that `stats::confint.default()` cannot answer with normal intervals. The old methods of the reference's linear, RE, and CRE objects are unaffected: they still run the reference's code on the wrappers' objects.
+
+As built in Phase 5 (step 2): linear FE models declare `coef_wald`, `provider_wald`, `interval_wald`, `standardize_indirect`, `standardize_direct`, and `funnel`; the four mixed families the same without `funnel`, exactly the columns of the table. One `confint.pprof_model()` serves every family that declares `coef_wald`, with the family's covariate rule.
 
 ### E.4 Registration and the extension proof
 
