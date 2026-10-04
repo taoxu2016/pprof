@@ -27,32 +27,32 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-05 | `logis_firth(threads > 1)` | A | verified; fixed (Phase 4) | Data race on `d_beta` stops the iteration after 1 to 5 steps; beta off by up to 0.57 |
 | D-06 | `test.logis_fe(test = "robust_wald")` | A | verified | Passes validation, returns NULL |
 | D-07 | `plot.logis_fe(test = "exact")` | A | verified | Always errors (`.data` pronoun outside a data mask) |
-| D-08 | several methods | A | verified | Rely on partial matching of `$` (`fit$obs`, `object$data_includ`) |
+| D-08 | several methods | A | verified; resolved (Phases 3 and 5) | Rely on partial matching of `$` (`fit$obs`, `object$data_includ`) |
 | D-09 | `print` methods | Presentation | verified | `print.logis_cre` unregistered; all RE/CRE prints dump the whole object |
 | D-10 | `summary.logis_fe(test = "lr"/"score")` | B | verified | Null refits ignore the original fit's settings; the likelihood clamp hard-codes 10; a smaller `cutoff` makes the refit fail |
 | D-11 | `linear_re`, `logis_re` vector interface | A | verified; fixed in the wrappers (Phase 4) | `cbind()` coerces mixed inputs to character; no final `else` |
 | D-12 | `logis_firth` result | B (question M-2) | verified; signed off: preserve (Phase 4 gate) | Class `logis_fe` with unpenalized variance, log-likelihood, AIC, BIC |
 | D-13 | `linear_cre`, `logis_cre` | B (question M-3) | verified; signed off: preserve (Phase 4 gate) | Provider means computed before complete-case filtering |
-| D-14 | `null` validation | A | verified | Integer `null` accepted by `test()`, rejected by `SM_output()`, `confint()`, `plot()` |
+| D-14 | `null` validation | A | verified; fixed (Phases 3 and 5) | Integer `null` accepted by `test()`, rejected by `SM_output()`, `confint()`, `plot()` |
 | D-15 | `test` methods | Presentation | verified | Flags are factors whose levels depend on the data |
 | D-16 | `test.linear_fe` | none (made explicit) | verified | Reference distribution chosen by a hidden attribute |
 | D-17 | `data_check` | C | verified | Stops on any missing value; fits delete incomplete rows |
 | D-18 | FE formula interface | A | verified; fixed in the data layer (Phase 2) | Transformed and interaction terms fail; factor levels with spaces break the design matrix |
 | D-19 | `confint.logis_fe(option = "SM")` | A | verified | Non-numeric IDs misalign intervals with providers (61 of 100 in the example) |
 | D-20 | `logis_fe(threads > 1)` | none (tolerance) | verified | Element-wise OpenMP information block differs from BLAS at 1e-15 relative |
-| D-21 | thread counts | A (DEC-001) | verified | `threads = 4` hard-coded in logistic RE/CRE intervals; 2 by default in `SM_output()` |
+| D-21 | thread counts | A (DEC-001) | verified; fixed (Phases 3 and 5) | `threads = 4` hard-coded in logistic RE/CRE intervals; 2 by default in `SM_output()` |
 | D-22 | `logis_fe(threads < 1)` | A | verified | Uninitialized information matrix; silently returns beta near 0 |
 | D-23 | `logis_fe(method = "BAN", backtrack = 2)` | A | verified | Runs zero iterations and returns the starting values |
 | D-24 | `logis_fe` default stopping rule | B | verified | `stop = "or"` can stop before provider effects converge (0.04 logit error at n = 1.2M) |
 | D-25 | `logis_firth` help | C | verified; fixed (Phase 4) | Help says `max.iter` defaults to 10,000; code default is 1,000 |
 | D-26 | `test.logis_fe(score_modified = FALSE)` help | C (question M-7) | verified | Called a "standard score test" but does not refit under the null |
-| D-27 | `parm` with integer provider IDs | A | verified | `parm = 1:3` fails the class check for an integer ID column |
+| D-27 | `parm` with integer provider IDs | A | verified; fixed (Phases 3 and 5) | `parm = 1:3` fails the class check for an integer ID column |
 | D-28 | factor provider IDs in `confint.logis_fe` | A | verified | Exact and score intervals look up gamma by the factor's integer code |
 | D-29 | `confint.logis_fe(stdz = "direct")` | A | verified | Selects providers through `data$ProvID`; fails for any other column name |
 | D-30 | `summary.logis_fe(test = "lr"/"score")` | A | verified | Fails with one or two covariates |
 | D-31 | `summary.logis_re`, `summary.logis_cre` | B | verified | p = 2(1 - pnorm(z)) without `abs()`: p-values above 1 for negative estimates |
 | D-32 | `confint.linear_fe` | B (question M-8) | verified | Uses t for the simplified variance and z for the full variance, the reverse of `test.linear_fe` |
-| D-33 | interval attributes | C | verified | `confidence_level` is "95 %" (FE) or "0.95 %" (RE/CRE); `logis_cre` rate interval labeled "RE logis" |
+| D-33 | interval attributes | C | verified; results carry the level as a number, the wrappers keep the attributes (Phases 3 and 5) | `confidence_level` is "95 %" (FE) or "0.95 %" (RE/CRE); `logis_cre` rate interval labeled "RE logis" |
 | D-34 | provider ordering | B | verified | Character IDs are ordered by the session's collation locale, which also fixes the bootstrap draw order |
 | D-35 | bundled data docs | C | verified | `ExampleDataBinary` has 7,944 observations, documented as 7,994 |
 | D-36 | messages and side effects | Presentation | verified | `linear_fe`, `linear_re`, `logis_re` always print messages; attaching pprof prints a `car` message; `bar_plot()` triggers a ggplot2 deprecation warning |
@@ -63,7 +63,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-41 | `logis_fe`, `logis_firth` with factor IDs | A | verified; fixed (Phases 3 and 4) | Fail when screening excludes a provider: the excluded factor levels become empty provider blocks |
 | D-42 | `logis_firth` with singular information | A | verified; fixed (Phase 4) | Terminates the R session when the Schur complement of the information cannot be inverted |
 | D-43 | `plot.linear_fe` with the full variance | B (question M-18) | verified; awaiting sign-off | Limits use σ/sqrt(n_i) and normal quantiles, flags the full variance and t, so points outside the limits can be unflagged |
-| D-44 | RE and CRE `summary()` | C | verified; decided (document, Phase 5 plan) | The intercept is selected only as `"(intercept)"`, while its row is named `"(Intercept)"`; the help does not say so |
+| D-44 | RE and CRE `summary()` | C | verified; fixed in the help (Phase 5) | The intercept is selected only as `"(intercept)"`, while its row is named `"(Intercept)"`; the help does not say so |
 | D-45 | `null` with more than one value | A | verified; fixed in the wrappers (Phases 3 and 5) | RE and CRE `test()` recycle it over the providers by position; every `summary()` applies it to the coefficients by position; documented as a number |
 | D-46 | RE and CRE `summary()` without the lme4 fit | A | verified; fixed in the wrappers (Phase 5) | Fails when `attr(, "model")` is missing, though the intervals need only the stored covariance |
 
@@ -206,8 +206,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: use full names.
 - Recommendation: the rewrite never relies on partial matching; tests run with `warnPartialMatchDollar` and `warnPartialMatchArgs` and treat the warnings as failures.
 - Decision owner: project lead.
-- Status: verified (V13.13, V15.7).
-- Regression test: the rewrite's tests run in strict mode (`tests/testthat/helper-strict.R`, DEC-030), and the reference harness allows only the two D-08 matches (DEC-021).
+- Status: verified (V13.13, V15.7); resolved: the compatibility methods use full names (`SM_output.logis_fe()` from Phase 3, the RE and CRE `confint()` and `summary()` from Phase 5, step 3), and DEC-021's two allowances were removed with the reference's code (Phase 5, step 3).
+- Regression test: the rewrite's tests run in strict mode (`tests/testthat/helper-strict.R`, DEC-030); the reference harness fails on any partial match, and `tests/testthat/test-reference-overrides.R` runs the cases that relied on the two matches (DEC-021).
 
 ### D-09: Print methods
 
@@ -307,8 +307,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: accept any finite numeric scalar everywhere.
 - Recommendation: validate once in the inference layer; numeric (double or integer) scalars are accepted, and the value is used as a double, so results are identical to passing the double.
 - Decision owner: project lead.
-- Status: verified (V13.9); the recommendation was approved with the Phase 3 plan (2026-10-02). Fixed in the profiling functions (Phase 3, step 3): `null` is checked once, and a numeric scalar, double or integer, is used as a double. The wrappers apply it from the switch (Phase 3, step 5). Also verified for linear fixed effects (2026-10-04, Phase 5 planning, `dev/design/phase5-facts/01_reference_methods.R`): `test.linear_fe`, `SM_output.linear_fe`, `confint.linear_fe`, and `plot.linear_fe` all reject `null = 0L` with "Argument 'null' NOT as required!" (`class(null) == "numeric"`); the Phase 5 wrappers apply the fix. The RE and CRE methods do not validate `null`.
-- Regression test: `tests/testthat/test-profile-regression.R` (`null = 0L` gives the `SM_output-binary-null0` values, the same tests as `null = 0`, and the funnel of the `plot-binary-null0` fixture, added in Phase 3).
+- Status: verified (V13.9); the recommendation was approved with the Phase 3 plan (2026-10-02). Fixed in the profiling functions (Phase 3, step 3): `null` is checked once, and a numeric scalar, double or integer, is used as a double. The wrappers apply it from the switch (Phase 3, step 5). Also verified for linear fixed effects (2026-10-04, Phase 5 planning, `dev/design/phase5-facts/01_reference_methods.R`): `test.linear_fe`, `SM_output.linear_fe`, `confint.linear_fe`, and `plot.linear_fe` all reject `null = 0L` with "Argument 'null' NOT as required!" (`class(null) == "numeric"`); the RE and CRE methods do not validate `null`. Fixed in the linear FE wrappers (Phase 5, step 3), with per-case expectations for the four `*-linear-null-integer` fixture cases (R-1).
+- Regression test: `tests/testthat/test-profile-regression.R` (`null = 0L` gives the `SM_output-binary-null0` values, the same tests as `null = 0`, and the funnel of the `plot-binary-null0` fixture, added in Phase 3); `tests/testthat/test-compat-methods-families.R` and the four per-case expectations (linear FE, Phase 5).
 
 ### D-15: Flags are factors whose levels depend on the data
 
@@ -412,8 +412,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: one `threads` argument, default 1, passed everywhere.
 - Recommendation: DEC-001.
 - Decision owner: project lead.
-- Status: verified (V15.11, V13.14). Logistic FE: the new API takes `threads` with default 1, the `SM_output.logis_fe()` wrapper keeps its default of 2, and the direct expectations do not depend on the thread count (Phase 3). The logistic RE and CRE part follows in Phase 5.
-- Regression test: `tests/testthat/test-profile-api.R` (the standard score test and the direct expectations with one and two threads); RE and CRE in Phase 5.
+- Status: verified (V15.11, V13.14). Logistic FE: the new API takes `threads` with default 1, the `SM_output.logis_fe()` wrapper keeps its default of 2, and the direct expectations do not depend on the thread count (Phase 3). Logistic RE and CRE (Phase 5, step 3): the `confint()` wrappers compute their intervals with one thread instead of the hard-coded 4, and `SM_output()` keeps its default of 2; no result depends on the count (K-85).
+- Regression test: `tests/testthat/test-profile-api.R` (the standard score test and the direct expectations with one and two threads); `tests/testthat/test-compat-methods-families.R` (logistic RE measures and intervals with one and two threads).
 
 ### D-22: SerBIN with `threads < 1` uses an uninitialized matrix
 
@@ -496,8 +496,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: match providers by their character representation.
 - Recommendation: `providers` arguments are matched as character against provider IDs (NAMING.md §4).
 - Decision owner: project lead.
-- Status: verified (V13.11); fixed in the profiling functions (Phase 3, step 3): `providers` is compared as character with the provider IDs. The wrappers apply it from the switch (Phase 3, step 5). Also verified for the methods of `linear_fe` and `logis_cre` fits with integer IDs (2026-10-04, Phase 5 planning, `dev/design/phase5-facts/06_integer_ids_parm.R`): their `data_include` keeps the IDs as integers, and `test()`, `SM_output()`, and `confint()` with `parm = 1:3` fail the class check; `linear_re` and `linear_cre` are not affected, because `cbind()` turns their IDs into doubles. The Phase 5 wrappers apply the fix.
-- Regression test: `tests/testthat/test-profile-regression.R` (rows 1 to 3 of `test-extreme-exact` for the integer-ID fit) and `tests/testthat/test-profile-api.R`.
+- Status: verified (V13.11); fixed in the profiling functions (Phase 3, step 3): `providers` is compared as character with the provider IDs. The wrappers apply it from the switch (Phase 3, step 5). Also verified for the methods of `linear_fe` and `logis_cre` fits with integer IDs (2026-10-04, Phase 5 planning, `dev/design/phase5-facts/06_integer_ids_parm.R`): their `data_include` keeps the IDs as integers, and `test()`, `SM_output()`, and `confint()` with `parm = 1:3` fail the class check; `linear_re` and `linear_cre` are not affected, because `cbind()` turns their IDs into doubles. Fixed in those wrappers (Phase 5, step 3), with per-case expectations for `test-linear-syn-int-parm` and `test-logis-cre-extreme-int-parm` (R-1), the reference's tests of every provider without `parm`, of which the first three rows.
+- Regression test: `tests/testthat/test-profile-regression.R` (rows 1 to 3 of `test-extreme-exact` for the integer-ID fit) and `tests/testthat/test-profile-api.R`; `tests/testthat/test-compat-methods-families.R` and the two per-case expectations (linear FE and logistic CRE, Phase 5).
 
 ### D-28: Factor provider IDs break exact and score intervals
 
@@ -580,8 +580,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: fix the labels.
 - Recommendation: result objects carry the level as a number in a named field, not as a string attribute; the wrappers reproduce the old attributes.
 - Decision owner: project lead.
-- Status: verified (V15.12). New result objects carry the level as a number (Phase 3); the logistic FE wrapper reproduces the old attributes (its fixtures pass); RE and CRE follow in Phase 5.
-- Regression test: wrapper fixtures.
+- Status: verified (V15.12). New result objects carry the level as a number (Phase 3); the logistic FE wrapper reproduces the old attributes (its fixtures pass); the linear FE, RE, and CRE wrappers reproduce them too (Phase 5, step 3), including "0.95 %" and the "RE logis" label of the `logis_cre` indirect rate.
+- Regression test: wrapper fixtures; `tests/testthat/test-compat-methods-families.R` (RE and CRE).
 
 ### D-34: Provider order depends on the collation locale
 
@@ -764,8 +764,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: document the spelling; or also accept `"(Intercept)"` (a result where the reference returns no rows).
 - Recommendation: the wrappers keep the reference's selection and their help states that the intercept is selected as `"(intercept)"`; the new API's `test_coefficients()` and `confint()` use the coefficient names, so `"(Intercept)"`.
 - Decision owner: project lead.
-- Status: verified (2026-10-04, Phase 5 planning); the recommendation was approved with the Phase 5 plan (2026-10-04): the wrappers keep the selection and their help states it.
-- Regression test: in Phase 5, the R-1 fixture cases with `parm = "(intercept)"` and `parm = "(Intercept)"`, if approved, and a wrapper test.
+- Status: verified (2026-10-04, Phase 5 planning); the recommendation was approved with the Phase 5 plan (2026-10-04): the wrappers keep the selection and their help states it. Fixed in the help (Phase 5, step 3); the help example of `summary.linear_re()`, which fitted `linear_fe()`, now fits `linear_re()`.
+- Regression test: the R-1 fixture cases `summary-linear-re-parm-level90` and `summary-linear-re-parm-intercept-capital`; `tests/testthat/test-compat-methods-families.R`.
 
 ### D-45: A `null` with more than one value is applied by position
 
