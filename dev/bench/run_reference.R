@@ -15,7 +15,8 @@
 # library. Each process records:
 #   - the elapsed time of a first run, then the median, minimum, and maximum of timed runs
 #     with bench::mark(min_time = 1): at least 5 runs for calls whose first run takes under
-#     10 s, otherwise 3; and the R allocations per run (calls under 10 s only);
+#     10 s, otherwise 3; and the R allocations per run (calls under 10 s only, and missing
+#     where bench's memory profiling fails);
 #   - peak resident memory of the process before and after the first run
 #     (bench::bench_process_memory()), so the increase is a lower bound for the call's peak.
 # Results are assigned, never printed, inside the timed expressions.

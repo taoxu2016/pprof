@@ -60,13 +60,24 @@ bench_run_task <- function(scenario, task, pprof_lib) {
   after <- as.numeric(bench::bench_process_memory()[["max"]])
   # Timed runs: at least 5 (and at least 1 s in total) for calls under 10 s, otherwise 3.
   # bench::mark profiles allocations in one extra, untimed run; that run is skipped for slow
-  # calls, where profiling every allocation can take minutes.
+  # calls, where profiling every allocation can take minutes. Profiling fails on some calls
+  # ("Memory profiling failed", for example on the ggplot2 code of plot.linear_fe, in pprof
+  # 1.0.3 and in the rewrite alike); those are timed without it, and their allocations are
+  # missing (Phase 5).
   slow <- first >= 10
-  b <- bench::mark(quiet_call(), min_time = 1, min_iterations = if (slow) 3L else 5L, max_iterations = 200,
-                   check = FALSE, memory = !slow, filter_gc = FALSE)
+  mark <- function(memory) {
+    bench::mark(quiet_call(), min_time = 1, min_iterations = if (slow) 3L else 5L, max_iterations = 200,
+                check = FALSE, memory = memory, filter_gc = FALSE)
+  }
+  b <- tryCatch(mark(!slow), error = function(e) {
+    if (!grepl("Memory profiling failed", conditionMessage(e), fixed = TRUE)) stop(e)
+    NULL
+  })
+  profiled <- !slow && !is.null(b)
+  if (is.null(b)) b <- mark(FALSE)
   times <- as.numeric(b$time[[1]])
   c(info, status = "ok", message = "", median_s = stats::median(times), min_s = min(times), max_s = max(times),
-    first_s = first, runs = length(times), r_alloc_mb = if (slow) NA_real_ else as.numeric(b$mem_alloc) / 2^20,
+    first_s = first, runs = length(times), r_alloc_mb = if (profiled) as.numeric(b$mem_alloc) / 2^20 else NA_real_,
     peak_before_mb = before / 2^20, peak_after_mb = after / 2^20)
 }
 
