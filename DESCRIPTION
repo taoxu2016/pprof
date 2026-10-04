@@ -26,15 +26,11 @@ Imports:
     caret,
     olsrr,
     poibin,
-    dplyr,
     generics,
     ggplot2,
     lme4,
-    magrittr,
     scales,
     tibble,
-    rlang,
-    tidyselect,
     globals
 LinkingTo: Rcpp, RcppArmadillo
 Depends:

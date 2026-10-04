@@ -152,12 +152,6 @@ importFrom(Rcpp,
   sourceCpp
 )
 importFrom(caret,nearZeroVar)
-importFrom(dplyr,
-  across,
-  group_by,
-  mutate,
-  ungroup
-)
 importFrom(generics,
   augment,
   glance,
@@ -232,5 +226,4 @@ importFrom(stats,
   terms,
   vcov
 )
-importFrom(tidyselect,all_of)
 useDynLib(pprof, .registration = TRUE)

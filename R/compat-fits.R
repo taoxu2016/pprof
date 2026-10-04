@@ -744,8 +744,6 @@ logis_re <- function(formula = NULL, data = NULL,
 #'
 #' @importFrom lme4 lmer fixef ranef
 #' @importFrom stats complete.cases as.formula model.matrix fitted residuals logLik
-#' @importFrom dplyr group_by mutate ungroup across
-#' @importFrom tidyselect all_of
 #'
 #' @export
 #'
@@ -819,8 +817,6 @@ linear_cre <- function(data, Y.char, wb.char, other.char = NULL, ProvID.char, ..
 #'
 #' @importFrom lme4 glmer fixef ranef
 #' @importFrom stats complete.cases as.formula model.matrix fitted logLik
-#' @importFrom dplyr group_by mutate ungroup across
-#' @importFrom tidyselect all_of
 #'
 #' @export
 #'
