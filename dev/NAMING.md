@@ -123,7 +123,7 @@ Every class starts with `pprof_`. Model classes have at most one intermediate cl
 | Class vector | Built by |
 |---|---|
 | `c("pprof_logistic_fe", "pprof_model")` | `fit_logistic_fe()` |
-| `c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")` | `fit_logistic_firth()` (inheritance pending open question M-2) |
+| `c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")` | `fit_logistic_firth()` (inheritance confirmed with M-2 at the Phase 4 gate) |
 | `c("pprof_linear_fe", "pprof_model")` | `fit_linear_fe()` |
 | `c("pprof_logistic_re", "pprof_mixed", "pprof_model")` | `fit_logistic_re()` |
 | `c("pprof_logistic_cre", "pprof_mixed", "pprof_model")` | `fit_logistic_cre()` |

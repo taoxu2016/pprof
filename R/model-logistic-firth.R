@@ -2,7 +2,7 @@
 # function, the call of the C++ engine, and the model object. The class inherits from
 # pprof_logistic_fe (DEC-004), so the logistic fixed-effect methods, contract methods, and
 # inference capabilities apply to Firth models as pprof 1.0.3's logis_fe methods applied to
-# its Firth fits (D-12, awaiting sign-off).
+# its Firth fits (D-12, signed off 2026-10-04).
 
 #' Fit a Firth-corrected logistic fixed-effect model for provider profiling
 #'
@@ -25,8 +25,6 @@
 #' As in pprof 1.0.3, the variances, the log-likelihood, AIC, and BIC are the unpenalized
 #' quantities at the Firth estimates, and the tests, intervals, and standardized measures are
 #' those of [fit_logistic_fe()]. The penalized log-likelihood is kept as `penalized_loglik`.
-#' Whether inference should use the penalized quantities is open question M-2 for the
-#' methodology owners.
 #'
 #' @inheritParams fit_logistic_fe
 #' @param max_iter The iteration limit.

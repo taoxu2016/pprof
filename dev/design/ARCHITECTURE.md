@@ -619,8 +619,8 @@ Each question has a proposed default; the default always reproduces the referenc
 | ID | Question | Proposed default | Related |
 |---|---|---|---|
 | M-1 | Which components are considered validated, and by what evidence (papers, simulations, internal checks)? The CRE models (August 2025) and the Firth correction (February 2026) are the newest. Phase 0 adds independent agreement for Firth (`logistf`, V12.5), linear FE (`lm`, V14.1), and RE (lme4, V15.1). | treat every component as validated behavior to reproduce | brief §11 Q1 |
-| M-2 | Should Firth fits keep returning logistic FE objects whose variance, log-likelihood, AIC, and BIC are the unpenalized versions? | yes, as `c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")`, plus the penalized log-likelihood as an extra field | D-12, Q2 |
-| M-3 | In the CRE models, provider means are computed before complete-case filtering. Intended? | preserve | D-13, Q3 |
+| M-2 | Should Firth fits keep returning logistic FE objects whose variance, log-likelihood, AIC, and BIC are the unpenalized versions? | yes, as `c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")`, plus the penalized log-likelihood as an extra field. Answered with the Phase 4 gate (2026-10-04): the default, as built in Phase 4 | D-12, Q2 |
+| M-3 | In the CRE models, provider means are computed before complete-case filtering. Intended? | preserve. Answered with the Phase 4 gate (2026-10-04): preserve | D-13, Q3 |
 | M-4 | Should the default stopping rule stay `"or"`, given that it can stop before provider effects converge on large data? | preserve, add diagnostics and a warning when the coefficient criterion is far above `tol` at stop | D-24 |
 | M-5 | Should covariate LR and score tests refit the null model with the original fit's settings rather than the defaults? | preserve (defaults) | D-10 |
 | M-6 | Which input interfaces must survive in the new API (formula; data plus column names; separate vectors)? | new API: formula, data, and a `provider` column name; all three old formats only through the compatibility wrappers | DEC-003, Q4 |

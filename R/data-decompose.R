@@ -3,7 +3,7 @@
 # For each covariate v in `within_between`, the decomposition adds the column v_bar, the
 # provider mean of v over every row of `data` with missing values of v removed, and
 # v_within = v - v_bar. The means are computed before any row is dropped for missing values,
-# as in the reference (D-13, awaiting sign-off), and rows with a missing provider form their
+# as in the reference (D-13, signed off 2026-10-04), and rows with a missing provider form their
 # own group, as dplyr::group_by() does in the reference; those rows are dropped later.
 
 data_decompose_within_between <- function(data, provider, variables) {

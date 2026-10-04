@@ -69,8 +69,6 @@ warning.
 As in pprof 1.0.3, the variances, the log-likelihood, AIC, and BIC are the unpenalized
 quantities at the Firth estimates, and the tests, intervals, and standardized measures are
 those of \code{\link[=fit_logistic_fe]{fit_logistic_fe()}}. The penalized log-likelihood is kept as \code{penalized_loglik}.
-Whether inference should use the penalized quantities is open question M-2 for the
-methodology owners.
 }
 \examples{
 data(ExampleDataBinary)

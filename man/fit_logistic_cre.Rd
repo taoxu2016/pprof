@@ -46,7 +46,7 @@ from that mean (\verb{<name>_within}), as \code{\link[=fit_linear_cre]{fit_linea
 }
 \details{
 As in pprof 1.0.3, the provider means are computed over every row of \code{data} before rows
-with missing values are dropped (D-13, awaiting sign-off), the provider variance is the
+with missing values are dropped (D-13), the provider variance is the
 \code{vcov} column of lme4's variance components (K-51), and the standard deviations of the
 provider effects are lme4's conditional standard deviations.
 }

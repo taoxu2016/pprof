@@ -31,8 +31,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-09 | `print` methods | Presentation | verified | `print.logis_cre` unregistered; all RE/CRE prints dump the whole object |
 | D-10 | `summary.logis_fe(test = "lr"/"score")` | B | verified | Null refits ignore the original fit's settings; the likelihood clamp hard-codes 10; a smaller `cutoff` makes the refit fail |
 | D-11 | `linear_re`, `logis_re` vector interface | A | verified; fixed in the wrappers (Phase 4) | `cbind()` coerces mixed inputs to character; no final `else` |
-| D-12 | `logis_firth` result | B (question M-2) | verified | Class `logis_fe` with unpenalized variance, log-likelihood, AIC, BIC |
-| D-13 | `linear_cre`, `logis_cre` | B (question M-3) | verified | Provider means computed before complete-case filtering |
+| D-12 | `logis_firth` result | B (question M-2) | verified; signed off: preserve (Phase 4 gate) | Class `logis_fe` with unpenalized variance, log-likelihood, AIC, BIC |
+| D-13 | `linear_cre`, `logis_cre` | B (question M-3) | verified; signed off: preserve (Phase 4 gate) | Provider means computed before complete-case filtering |
 | D-14 | `null` validation | A | verified | Integer `null` accepted by `test()`, rejected by `SM_output()`, `confint()`, `plot()` |
 | D-15 | `test` methods | Presentation | verified | Flags are factors whose levels depend on the data |
 | D-16 | `test.linear_fe` | none (made explicit) | verified | Reference distribution chosen by a hidden attribute |
@@ -275,7 +275,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) preserve: Firth objects inherit the logistic FE methods and report unpenalized quantities, plus the penalized log-likelihood as an additional field; (2) report penalized quantities or penalized-information variances (Class B).
 - Recommendation: (1) in the rewrite (`c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")`), with the penalized log-likelihood and convergence diagnostics added. Ask question M-2.
 - Decision owner: methodology owner.
-- Status: verified (V12.2); awaiting sign-off. Reproduced by `fit_logistic_firth()` (Phase 4, step 2): class `c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")`, unpenalized variances, log-likelihood, AIC, and BIC, the logistic FE methods and capabilities, and the penalized log-likelihood as the additional field `penalized_loglik`, as recommended. The `logis_firth()` wrapper builds the reference's `logis_fe` object from it (step 3).
+- Status: verified (V12.2); signed off by the project lead with the Phase 4 gate (2026-10-04): option (1), preserve, as recommended, which answers M-2. Reproduced by `fit_logistic_firth()` (Phase 4, step 2): class `c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")`, unpenalized variances, log-likelihood, AIC, and BIC, the logistic FE methods and capabilities, and the penalized log-likelihood as the additional field `penalized_loglik`, as recommended. The `logis_firth()` wrapper builds the reference's `logis_fe` object from it (step 3).
 - Regression test: `tests/testthat/test-model-logistic-firth.R` (the four `logis_firth` fit fixtures; the unpenalized and penalized log-likelihoods of V12.2; the inherited methods); the fit fixtures and the method fixtures on Firth fits run through the wrappers from step 3 (`tests/testthat/test-reference-fits.R` and the method files).
 
 ### D-13: CRE provider means use rows that complete-case filtering later drops
@@ -289,7 +289,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) preserve the order (decompose, then filter); (2) filter first, then decompose (Class B).
 - Recommendation: preserve (1) explicitly in the data layer (`data_decompose_within_between()` runs before complete-case filtering, as an ordered, documented step), pending question M-3.
 - Decision owner: methodology owner.
-- Status: verified (V15.10); awaiting sign-off.
+- Status: verified (V15.10); signed off by the project lead with the Phase 4 gate (2026-10-04): option (1), preserve the order (decompose, then filter), as recommended, which answers M-3.
 - Regression test: the data layer reproduces it (`tests/testthat/test-data-prepare.R`, and the fixture `linear_cre-missing` in `test-data-reference.R`); `fit_linear_cre()` reproduces the reference's fit of `linear_cre-missing` (`tests/testthat/test-model-mixed-reference.R`, Phase 4), and so does the `linear_cre()` wrapper (`tests/testthat/test-reference-fits.R`, from Phase 4, step 3).
 
 ### D-14: Inconsistent validation of `null`

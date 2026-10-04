@@ -13,7 +13,7 @@
 #'
 #' As in pprof 1.0.3, the provider means are computed over every row of `data`, with
 #' missing values of the covariate removed, before rows with missing values are dropped
-#' (D-13, awaiting sign-off), and the standard deviations of the provider effects are
+#' (D-13), and the standard deviations of the provider effects are
 #' lme4's conditional standard deviations.
 #'
 #' @inheritParams fit_linear_re
