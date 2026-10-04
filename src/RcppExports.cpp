@@ -11,19 +11,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// computeDirectExp
-arma::vec computeDirectExp(const arma::vec& est, const arma::vec& Z_beta, const int& threads);
-RcppExport SEXP _pprof_computeDirectExp(SEXP estSEXP, SEXP Z_betaSEXP, SEXP threadsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::vec& >::type est(estSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type Z_beta(Z_betaSEXP);
-    Rcpp::traits::input_parameter< const int& >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(computeDirectExp(est, Z_beta, threads));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cpp_logistic_fe_serbin
 Rcpp::List cpp_logistic_fe_serbin(Rcpp::NumericVector response, Rcpp::NumericMatrix design, Rcpp::IntegerVector provider_sizes, Rcpp::NumericVector gamma, Rcpp::NumericVector beta, int max_iter, double tol, double effect_bound, bool backtrack, std::string stop_rule, int threads);
 RcppExport SEXP _pprof_cpp_logistic_fe_serbin(SEXP responseSEXP, SEXP designSEXP, SEXP provider_sizesSEXP, SEXP gammaSEXP, SEXP betaSEXP, SEXP max_iterSEXP, SEXP tolSEXP, SEXP effect_boundSEXP, SEXP backtrackSEXP, SEXP stop_ruleSEXP, SEXP threadsSEXP) {
@@ -144,7 +131,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_pprof_computeDirectExp", (DL_FUNC) &_pprof_computeDirectExp, 3},
     {"_pprof_cpp_logistic_fe_serbin", (DL_FUNC) &_pprof_cpp_logistic_fe_serbin, 11},
     {"_pprof_cpp_logistic_fe_ban", (DL_FUNC) &_pprof_cpp_logistic_fe_ban, 11},
     {"_pprof_cpp_logistic_firth", (DL_FUNC) &_pprof_cpp_logistic_firth, 9},

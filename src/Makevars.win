@@ -4,17 +4,18 @@
 # subdirectories only when OBJECTS lists them, so every object file is listed explicitly: a
 # wildcard would need GNU make. For the same reason every variable is set with `=`, not `+=`.
 #
-# Every translation unit gets Armadillo without its own OpenMP and without warnings: the old
-# file Fixed_effect.cpp and the generated RcppExports.cpp include RcppArmadillo, the core
-# includes src/core/armadillo.h, and the linker keeps one copy of each Armadillo
-# template they share. With the same settings in every file, no copy can print from inside
-# the core or use Armadillo's OpenMP. Neither setting changes a computation (DEC-035).
+# Every translation unit gets Armadillo without its own OpenMP and without warnings: the
+# generated RcppExports.cpp includes RcppArmadillo, which Rcpp::compileAttributes() adds for
+# every LinkingTo package that has a header of its own name (DEC-052), the core includes
+# src/core/armadillo.h, and the linker keeps one copy of each Armadillo template that files
+# share. With the same settings in every file, no copy can print from inside the core or use
+# Armadillo's OpenMP. Neither setting changes a computation (DEC-035).
 CXX_STD = CXX17
 PKG_CPPFLAGS = -I. -DARMA_DONT_USE_OPENMP= -DARMA_WARN_LEVEL=0
 PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
 PKG_LIBS     = $(SHLIB_OPENMP_CXXFLAGS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
-OBJECTS = RcppExports.o Fixed_effect.o header.o rcpp_logistic.o \
+OBJECTS = RcppExports.o rcpp_logistic.o \
           core/convergence.o core/information_blocks.o core/loglik.o core/provider_layout.o \
           logistic/ban.o logistic/direct_expected.o logistic/firth.o logistic/score_test.o \
           logistic/serbin.o logistic/variance.o
