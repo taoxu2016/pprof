@@ -102,11 +102,15 @@ names(old_ds) <- vapply(old_manifest$datasets, function(x) x$name, character(1))
 new_ds <- vapply(new_manifest$datasets, function(x) x$md5, character(1))
 names(new_ds) <- vapply(new_manifest$datasets, function(x) x$name, character(1))
 ds_changed <- names(new_ds)[names(new_ds) %in% names(old_ds) & new_ds[names(new_ds)] != old_ds[names(new_ds)]]
+ds_added <- setdiff(names(new_ds), names(old_ds))
+ds_removed <- setdiff(names(old_ds), names(new_ds))
+list_or_none <- function(x) if (length(x)) paste(x, collapse = ", ") else "none"
 
 lines <- c(lines, "## Summary", "",
            sprintf("- Cases: %d old, %d new; %d identical, %d changed, %d added, %d removed.",
                    length(old_ids), length(new_ids), length(common) - length(changed), length(changed), length(added), length(removed)),
-           sprintf("- Datasets changed: %s.", if (length(ds_changed)) paste(ds_changed, collapse = ", ") else "none"), "")
+           sprintf("- Datasets changed: %s.", list_or_none(ds_changed)),
+           sprintf("- Datasets added: %s; removed: %s.", list_or_none(ds_added), list_or_none(ds_removed)), "")
 if (length(added)) lines <- c(lines, "## Added cases", "", paste0("- ", added), "")
 if (length(removed)) lines <- c(lines, "## Removed cases", "", paste0("- ", removed), "")
 if (length(changed)) {
@@ -118,6 +122,7 @@ if (length(changed)) {
   }
 }
 if (is.null(report_file)) cat(lines, sep = "\n") else writeLines(lines, report_file)
-identical_all <- !length(changed) && !length(added) && !length(removed) && !length(ds_changed)
+identical_all <- !length(changed) && !length(added) && !length(removed) && !length(ds_changed) && !length(ds_added) &&
+  !length(ds_removed)
 cat(sprintf("%s\n", if (identical_all) "Fixtures identical." else "Fixtures differ."))
 quit(status = if (identical_all) 0L else 1L)
