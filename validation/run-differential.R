@@ -1,24 +1,38 @@
-# Differential testing of the logistic fixed-effect functions against the reference (Phase 3
-# plan, "after the switch"): seeded random datasets, varying the number and sizes of
-# providers (some below the screening cutoff), the event rate, providers with no events or
-# only events, and the number of covariates; on each, every logistic FE function and method
-# of pprof 1.0.3 runs on the pinned reference library in a separate R session, as the fixture
-# generator runs it, and on the working tree, through the same case runner; the results are
-# compared with the tolerance tiers of the fixtures.
+# Differential testing of the fitting functions and their methods against the reference
+# (Phase 3 plan, "after the switch", for logistic fixed effects; Phase 4 plan, step 4, for the
+# other fits): seeded random datasets; on each, the functions and methods of pprof 1.0.3 run on
+# the pinned reference library in a separate R session, as the fixture generator runs them,
+# and on the working tree, through the same case runner; the results are compared with the
+# tolerance tiers of the fixtures.
+#
+# - Binary datasets vary the number and sizes of providers (some below the screening cutoff),
+#   the event rate, providers with no events or only events, and the number of covariates.
+#   Each gets every logistic FE function and method, and logis_firth() with logistic FE
+#   methods on its object; the first ones also get logis_re() and logis_cre() with their
+#   methods.
+# - Linear datasets vary the number and sizes of providers (some of 2 to 4 observations), the
+#   number of covariates, and the noise; the first covariate varies between providers, and
+#   about half of the datasets have missing outcomes, which the CRE fits drop after the
+#   within-between decomposition (D-13). Each gets linear_fe() (both provider variances),
+#   linear_re(), and linear_cre(), with their methods.
 #
 # Usage, from the repository root:
-#   Rscript validation/run-differential.R [--datasets N] [--seed S] [--lib dev/reference/lib] [--report FILE]
-# Defaults: 30 datasets, seed 20261003, report validation/differential-report.md.
+#   Rscript validation/run-differential.R [--datasets N] [--mixed-datasets N] [--linear-datasets N] [--seed S]
+#                                         [--lib dev/reference/lib] [--report FILE]
+# Defaults: 30 binary datasets (the first 10 with RE and CRE fits), 15 linear datasets, seed
+# 20261003, report validation/differential-report.md.
 #
 # Provider IDs are doubles, and every fit has at least three covariates, so that no case hits
 # a defect the wrappers fix (D-19, D-27, D-28, D-29, D-30); a mismatch is reported and makes
 # the exit status 1.
 
-opts <- list(datasets = 30L, seed = 20261003L, lib = "dev/reference/lib",
+opts <- list(datasets = 30L, mixed = 10L, linear = 15L, seed = 20261003L, lib = "dev/reference/lib",
              report = file.path("validation", "differential-report.md"))
 args <- commandArgs(trailingOnly = TRUE)
 for (k in seq_len(length(args) %/% 2) * 2 - 1) {
   switch(args[[k]], "--datasets" = opts$datasets <- as.integer(args[[k + 1]]),
+         "--mixed-datasets" = opts$mixed <- as.integer(args[[k + 1]]),
+         "--linear-datasets" = opts$linear <- as.integer(args[[k + 1]]),
          "--seed" = opts$seed <- as.integer(args[[k + 1]]), "--lib" = opts$lib <- args[[k + 1]],
          "--report" = opts$report <- args[[k + 1]], stop("Unknown argument: ", args[[k]], call. = FALSE))
 }
@@ -48,8 +62,25 @@ differential_dataset <- function(k) {
     data.frame(Y = y, ProvID = as.numeric(prov), z)
   })
 }
-datasets <- stats::setNames(lapply(seq_len(opts$datasets), differential_dataset),
-                            sprintf("diff%02d", seq_len(opts$datasets)))
+differential_linear_dataset <- function(k) {
+  withr::with_seed(opts$seed + 500L + k, {
+    m <- sample(c(15L, 25L, 40L), 1L)
+    sizes <- c(sample(2:4, 2L, replace = TRUE), sample(10:60, m - 2L, replace = TRUE))
+    p <- sample(3:5, 1L)
+    prov <- rep(seq_len(m), sizes)
+    z <- matrix(stats::rnorm(length(prov) * p), ncol = p, dimnames = list(NULL, paste0("x", seq_len(p))))
+    z[, 1] <- z[, 1] + stats::rnorm(m)[prov]
+    y <- 2 + stats::rnorm(m)[prov] + drop(z %*% stats::runif(p, -1, 1)) +
+      stats::rnorm(length(prov), 0, sample(c(0.5, 1, 2), 1L))
+    if (stats::runif(1) < 0.5) y[sample(length(y), 5L)] <- NA
+    data.frame(Y = y, ProvID = as.numeric(prov), z)
+  })
+}
+binary <- stats::setNames(lapply(seq_len(opts$datasets), differential_dataset),
+                          sprintf("diff%02d", seq_len(opts$datasets)))
+linear <- stats::setNames(lapply(seq_len(opts$linear), differential_linear_dataset),
+                          sprintf("lin%02d", seq_len(opts$linear)))
+datasets <- c(binary, linear)
 
 # --- Cases ---------------------------------------------------------------------------------------
 differential_cases <- function() {
@@ -57,7 +88,7 @@ differential_cases <- function() {
   add <- function(id, fun, args, tier, seed = NULL) {
     cases[[id]] <<- list(id = id, set = "differential", fun = fun, args = args, seed = seed, tier = tier, heavy = FALSE)
   }
-  for (name in names(datasets)) {
+  for (name in names(binary)) {
     d <- datasets[[name]]
     z <- grep("^x", names(d), value = TRUE)
     columns <- list(data = ref_dataset(name), Y.char = "Y", Z.char = z, ProvID.char = "ProvID", threads = 1)
@@ -92,6 +123,49 @@ differential_cases <- function() {
       add(paste0(name, "-summary-", test), "summary", list(object = f, test = test), "iterative")
     }
     add(paste0(name, "-plot"), "plot", list(x = f, alpha = c(0.05, 0.01)), "iterative")
+    # Firth, and logistic FE methods on its object (Phase 4).
+    firth <- paste0(name, "-firth")
+    add(firth, "logis_firth", columns, "iterative")
+    add(paste0(firth, "-exact"), "test", list(fit = ref_fit(firth), threads = 1), "iterative")
+    add(paste0(firth, "-sm"), "SM_output", list(fit = ref_fit(firth), stdz = c("indirect", "direct"), threads = 1),
+        "iterative")
+    add(paste0(firth, "-gamma-score"), "confint", list(object = ref_fit(firth), option = "gamma", test = "score"),
+        "root")
+  }
+  for (name in utils::head(names(binary), opts$mixed)) {
+    z <- grep("^x", names(datasets[[name]]), value = TRUE)
+    re <- paste0(name, "-logis-re")
+    cre <- paste0(name, "-logis-cre")
+    add(re, "logis_re", list(data = ref_dataset(name), Y.char = "Y", Z.char = z, ProvID.char = "ProvID"), "lme4")
+    add(cre, "logis_cre", list(data = ref_dataset(name), Y.char = "Y", wb.char = "x1", other.char = z[-1],
+                               ProvID.char = "ProvID"), "lme4")
+    for (fit in c(re, cre)) {
+      add(paste0(fit, "-test"), "test", list(fit = ref_fit(fit)), "lme4")
+      add(paste0(fit, "-sm"), "SM_output",
+          list(fit = ref_fit(fit), stdz = c("indirect", "direct"), measure = c("ratio", "rate"), threads = 1), "lme4")
+    }
+  }
+  for (name in names(linear)) {
+    z <- grep("^x", names(datasets[[name]]), value = TRUE)
+    columns <- list(data = ref_dataset(name), Y.char = "Y", Z.char = z, ProvID.char = "ProvID")
+    fe <- paste0(name, "-fe")
+    add(fe, "linear_fe", columns, "closed_form")
+    add(paste0(fe, "-full"), "linear_fe", c(columns, list(option.gamma.var = "full")), "closed_form")
+    add(paste0(fe, "-test"), "test", list(fit = ref_fit(fe)), "closed_form")
+    add(paste0(fe, "-sm"), "SM_output", list(fit = ref_fit(fe), stdz = c("indirect", "direct")), "closed_form")
+    add(paste0(fe, "-confint"), "confint", list(object = ref_fit(fe), stdz = c("indirect", "direct")), "closed_form")
+    add(paste0(fe, "-summary"), "summary", list(object = ref_fit(fe)), "closed_form")
+    re <- paste0(name, "-re")
+    cre <- paste0(name, "-cre")
+    add(re, "linear_re", columns, "lme4")
+    add(cre, "linear_cre", list(data = ref_dataset(name), Y.char = "Y", wb.char = "x1", other.char = z[-1],
+                                ProvID.char = "ProvID"), "lme4")
+    for (fit in c(re, cre)) {
+      add(paste0(fit, "-test"), "test", list(fit = ref_fit(fit)), "lme4")
+      add(paste0(fit, "-sm"), "SM_output", list(fit = ref_fit(fit), stdz = c("indirect", "direct")), "lme4")
+      add(paste0(fit, "-confint"), "confint", list(object = ref_fit(fit), stdz = c("indirect", "direct")), "lme4")
+      add(paste0(fit, "-summary"), "summary", list(object = ref_fit(fit)), "lme4")
+    }
   }
   cases
 }
@@ -161,17 +235,24 @@ for (id in names(cases)) {
 working_seconds <- as.numeric(difftime(Sys.time(), started, units = "secs"))
 table <- do.call(rbind, rows)
 
-shapes <- vapply(datasets, function(d) {
+shapes <- vapply(names(datasets), function(name) {
+  d <- datasets[[name]]
   sizes <- table(d$ProvID)
-  sprintf("n %d, m %d (%d below 10), p %d, event rate %.2f", nrow(d), length(sizes), sum(sizes < 10),
-          sum(startsWith(names(d), "x")), mean(d$Y))
+  p <- sum(startsWith(names(d), "x"))
+  if (name %in% names(linear)) {
+    return(sprintf("linear, n %d, m %d (%d below 5), p %d, %d missing outcomes", nrow(d), length(sizes),
+                   sum(sizes < 5), p, sum(is.na(d$Y))))
+  }
+  sprintf("n %d, m %d (%d below 10), p %d, event rate %.2f%s", nrow(d), length(sizes), sum(sizes < 10), p, mean(d$Y),
+          if (name %in% utils::head(names(binary), opts$mixed)) ", with RE and CRE fits" else "")
 }, character(1))
 lines <- c(
   "# Differential report: working tree versus the pprof 1.0.3 reference", "",
   sprintf("Generated %s by `validation/run-differential.R` on %s, %s.", format(Sys.time(), tz = "UTC", usetz = TRUE),
           R.version.string, utils::sessionInfo()$running),
-  sprintf("Working tree at commit %s; %d datasets from seed %d.",
-          system2("git", c("rev-parse", "--short", "HEAD"), stdout = TRUE), opts$datasets, opts$seed),
+  sprintf("Working tree at commit %s; %d binary datasets (%d with RE and CRE fits), %d linear datasets, seed %d.",
+          system2("git", c("rev-parse", "--short", "HEAD"), stdout = TRUE), opts$datasets,
+          min(opts$mixed, opts$datasets), opts$linear, opts$seed),
   "", "## Summary", "",
   sprintf("- Cases: %d; matching: %d; identical: %d; mismatching: %d.", nrow(table), sum(table$status == "match"),
           sum(table$detail == "identical"), sum(table$status == "MISMATCH")),
