@@ -20,18 +20,15 @@ Description: Implements linear and generalized linear models for provider profil
 License: MIT + file LICENSE
 LazyData: true
 Imports:
-    Rcpp, 
-    RcppParallel,
+    Rcpp,
     stats,
     utils,
     caret,
     olsrr,
-    pROC,
     poibin,
-    dplyr, 
+    dplyr,
     generics,
-    ggplot2, 
-    Matrix,
+    ggplot2,
     lme4,
     magrittr,
     scales,
@@ -39,19 +36,20 @@ Imports:
     rlang,
     tidyselect,
     globals
-LinkingTo: Rcpp, RcppArmadillo, RcppParallel
+LinkingTo: Rcpp, RcppArmadillo
 Depends:
     R (>= 4.1.0)
 Suggests:
     jsonlite,
     knitr,
+    logistf,
+    pROC,
     rmarkdown,
     testthat (>= 3.0.0),
     withr
 URL: https://github.com/UM-KevinHe/pprof
 BugReports: https://github.com/UM-KevinHe/pprof/issues
 Encoding: UTF-8
-SystemRequirements: GNU make
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.1.0
