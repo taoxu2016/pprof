@@ -178,36 +178,48 @@ logistic_fe_estimate <- function(prepared, spec, threads) {
   response <- prepared$response
   design <- prepared$design
   sizes <- as.integer(prepared$providers$n_obs[prepared$providers$included])
-  # K-10: every provider starts at the logit of the overall event rate, from mean() of the
-  # outcome as stored; beta starts at 0.
-  rate <- mean(response)
-  start <- log(rate / (1 - rate))
   engine <- if (identical(spec$method, "serbin")) cpp_logistic_fe_serbin else cpp_logistic_fe_ban
   fit <- logistic_fe_engine_call(
     toupper(spec$method),
-    engine(as.numeric(response), design, sizes, rep(start, length(sizes)), rep(0, ncol(design)),
+    engine(as.numeric(response), design, sizes, logistic_fe_start(response, length(sizes)), rep(0, ncol(design)),
            as.integer(spec$max_iter), spec$tol, spec$effect_bound, spec$backtrack, spec$stop_rule, as.integer(threads))
   )
-  variances <- logistic_fe_engine_call("variance", cpp_logistic_variance(design, sizes, fit$gamma, fit$beta))
-
-  # K-11, K-21, K-23: the log-likelihood with the linear predictor evaluated directly, AIC
-  # and BIC with m + p parameters and the included observations, and the fitted
-  # probabilities.
-  linear_predictor <- drop(design %*% fit$beta)
-  eta <- rep(fit$gamma, sizes) + linear_predictor
-  loglik <- sum(eta * response - log(1 + exp(eta)))
-  n_parameters <- length(fit$gamma) + length(fit$beta)
+  estimates <- logistic_fe_fit_statistics(prepared, fit$gamma, fit$beta)
   history <- fit$history
   final <- history[nrow(history), ]
+  estimates$convergence <- list(
+    iterations = fit$iterations, converged = fit$converged, criterion = unname(final["rule"]),
+    criteria = final[c("coefficients", "relative_loglik", "relative_gain")], stop_rule = spec$stop_rule,
+    tol = spec$tol, max_iter = spec$max_iter, history = history
+  )
+  estimates
+}
+
+# K-10: every provider starts at the logit of the overall event rate, from mean() of the
+# outcome as stored; beta starts at 0.
+logistic_fe_start <- function(response, n_providers) {
+  rate <- mean(response)
+  rep(log(rate / (1 - rate)), n_providers)
+}
+
+# The variances and fit statistics at the estimates (gamma, beta), as the reference's
+# logis_fe() and logis_firth() compute them (R/logis_fe.R:233-304, R/logis_firth.R:206-262):
+# the unpenalized variances (K-20), the log-likelihood with the linear predictor evaluated
+# directly (K-11), AIC and BIC with m + p parameters and the included observations (K-21),
+# and the AUC of the fitted probabilities (K-22, K-23).
+logistic_fe_fit_statistics <- function(prepared, gamma, beta) {
+  response <- prepared$response
+  design <- prepared$design
+  sizes <- as.integer(prepared$providers$n_obs[prepared$providers$included])
+  variances <- logistic_fe_engine_call("variance", cpp_logistic_variance(design, sizes, gamma, beta))
+  linear_predictor <- drop(design %*% beta)
+  eta <- rep(gamma, sizes) + linear_predictor
+  loglik <- sum(eta * response - log(1 + exp(eta)))
+  n_parameters <- length(gamma) + length(beta)
   list(
-    gamma = fit$gamma, beta = fit$beta, variances = variances, linear_predictor = linear_predictor,
+    gamma = gamma, beta = beta, variances = variances, linear_predictor = linear_predictor,
     loglik = loglik, aic = -2 * loglik + 2 * n_parameters, bic = -2 * loglik + log(length(response)) * n_parameters,
-    auc = logistic_fe_auc(response, stats::plogis(eta)),
-    convergence = list(
-      iterations = fit$iterations, converged = fit$converged, criterion = unname(final["rule"]),
-      criteria = final[c("coefficients", "relative_loglik", "relative_gain")], stop_rule = spec$stop_rule,
-      tol = spec$tol, max_iter = spec$max_iter, history = history
-    )
+    auc = logistic_fe_auc(response, stats::plogis(eta))
   )
 }
 
@@ -260,29 +272,36 @@ logistic_fe_report_convergence <- function(convergence, method, verbose) {
 # The model object (ARCHITECTURE §D.1): the shared fields, plus the fit statistics and the
 # convergence diagnostics.
 new_pprof_logistic_fe <- function(data, estimates, spec, call = NULL, keep_data = FALSE) {
+  validate_pprof_logistic_fe(logistic_fe_model(data, estimates, spec, call, keep_data, class = "pprof_logistic_fe"))
+}
+
+# The fields of logistic fixed-effect models, which Firth models share (DEC-004), with
+# further fields in `...`.
+logistic_fe_model <- function(data, estimates, spec, call, keep_data, class, ...) {
   included <- data$providers$provider_id[data$providers$included]
   covariates <- colnames(data$design)
   vcov <- estimates$variances$beta
   dimnames(vcov) <- list(covariates, covariates)
-  model <- new_pprof_model(
+  new_pprof_model(
     data,
     coefficients = stats::setNames(estimates$beta, covariates),
     vcov = vcov,
     provider_effects = stats::setNames(estimates$gamma, included),
     linear_predictor = estimates$linear_predictor,
     spec = spec,
-    loglik = estimates$loglik, aic = estimates$aic, bic = estimates$bic, auc = estimates$auc,
+    loglik = estimates$loglik, aic = estimates$aic, bic = estimates$bic, auc = estimates$auc, ...,
     provider_effect_variance = stats::setNames(estimates$variances$gamma, included),
-    convergence = estimates$convergence, call = call, keep_data = keep_data, class = "pprof_logistic_fe"
+    convergence = estimates$convergence, call = call, keep_data = keep_data, class = class
   )
-  validate_pprof_logistic_fe(model)
 }
 
-validate_pprof_logistic_fe <- function(x) {
+# `family` is the `spec$family` of the class being checked: "logistic_fe", or
+# "logistic_firth" when validate_pprof_logistic_firth() checks the shared fields.
+validate_pprof_logistic_fe <- function(x, family = "logistic_fe") {
   fail <- function(what) abort_invalid_input(sprintf("Invalid `pprof_logistic_fe` object: %s.", what), arg = "x")
   if (!inherits(x, "pprof_logistic_fe")) fail("not of class `pprof_logistic_fe`")
   validate_pprof_model(x)
-  if (!identical(x$spec$family, "logistic_fe")) fail("`spec$family` must be \"logistic_fe\"")
+  if (!identical(x$spec$family, family)) fail(sprintf("`spec$family` must be \"%s\"", family))
   if (!is.logical(x$response) && !all(x$response %in% c(0, 1))) fail("`response` must be binary")
   if (is.null(x$provider_effect_variance)) fail("`provider_effect_variance` is required")
   for (field in c("loglik", "aic", "bic", "auc")) {
@@ -331,14 +350,17 @@ fitted.pprof_logistic_fe <- function(object, ...) {
 #' @export
 residuals.pprof_logistic_fe <- function(object, type = "deviance", ...) {
   check_choice(type, c("deviance", "pearson", "response"), "type")
-  y <- as.numeric(object$response)
-  p <- logistic_fe_probabilities(object)
-  values <- switch(type,
+  model_input_order(object, logistic_residuals(as.numeric(object$response), logistic_fe_probabilities(object), type))
+}
+
+# Residuals of a binary outcome y with fitted probabilities p, as stats::glm() defines them;
+# random-effect models use them with lme4's fitted probabilities.
+logistic_residuals <- function(y, p, type) {
+  switch(type,
     response = y - p,
     pearson = (y - p) / sqrt(p * (1 - p)),
     deviance = sign(y - p) * sqrt(-2 * ifelse(y == 1, log(p), log(1 - p)))
   )
-  model_input_order(object, values)
 }
 
 #' @rdname logistic_fe_methods
