@@ -1,15 +1,15 @@
 # Equivalence report: package under test versus the pprof 1.0.3 reference
 
-Generated 2026-10-03 22:36:10 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
-Package under test: pprof 1.0.3 from the working tree at commit e3c2d69.
+Generated 2026-10-04 01:55:35 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Package under test: pprof 1.0.3 from the working tree at commit dc8b60e.
 Fixtures: core set generated at 56701e6, full set generated at 56701e6.
 
 ## Summary
 
 - Cases: 280 (core 248, full 32).
 - Compared and matching: 280; failing: 0; skipped: 0.
-- Largest absolute difference over all compared values: 1.11e-16; largest relative difference: 1.57e-16.
-- Long double vectors stored as signatures: 718; bitwise identical (same checksum of every value's bits): 718.
+- Largest absolute difference over all compared values: 2e-11; largest relative difference: 3.92.
+- Long double vectors stored as signatures: 718; bitwise identical (same checksum of every value's bits): 703.
 - Reference errors reproduced: 15.
 - Per-case expectations for Class A fixes (tests/testthat/helper-reference-overrides.R): 15, all compared against values derived from fixtures where the reference is right.
 
@@ -81,13 +81,13 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `logis_firth-small-tight` | logis_firth | iterative | value |  | 10 | 0 | 0 |  | compared |
 | core | `logis_firth-extreme` | logis_firth | iterative | value |  | 7 | 0 | 0 |  | compared |
 | core | `logis_firth-screening` | logis_firth | iterative | value |  | 5 | 0 | 0 |  | compared |
-| core | `linear_fe-linear-columns` | linear_fe | closed_form | value |  |  | 0 | 0 | 11 of 11 | compared |
-| core | `linear_fe-linear-columns-full` | linear_fe | closed_form | value |  |  | 0 | 0 | 11 of 11 | compared |
-| core | `linear_fe-linear-formula` | linear_fe | closed_form | value |  |  | 0 | 0 | 11 of 11 | compared |
-| core | `linear_fe-linear-vectors` | linear_fe | closed_form | value |  |  | 0 | 0 | 11 of 11 | compared |
-| core | `linear_fe-ecls` | linear_fe | closed_form | value |  |  | 0 | 0 | 8 of 8 | compared |
-| core | `linear_fe-syn` | linear_fe | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `linear_fe-syn-full` | linear_fe | closed_form | value |  |  | 0 | 0 |  | compared |
+| core | `linear_fe-linear-columns` | linear_fe | closed_form | value |  |  | 4.55e-13 | 3.92 | 8 of 11 | compared |
+| core | `linear_fe-linear-columns-full` | linear_fe | closed_form | value |  |  | 4.55e-13 | 3.92 | 8 of 11 | compared |
+| core | `linear_fe-linear-formula` | linear_fe | closed_form | value |  |  | 4.55e-13 | 3.92 | 8 of 11 | compared |
+| core | `linear_fe-linear-vectors` | linear_fe | closed_form | value |  |  | 4.55e-13 | 3.92 | 8 of 11 | compared |
+| core | `linear_fe-ecls` | linear_fe | closed_form | value |  |  | 1.27e-11 | 0.918 | 5 of 8 | compared |
+| core | `linear_fe-syn` | linear_fe | closed_form | value |  |  | 7.55e-15 | 5.15e-12 |  | compared |
+| core | `linear_fe-syn-full` | linear_fe | closed_form | value |  |  | 7.55e-15 | 5.15e-12 |  | compared |
 | core | `linear_fe-bad-option` | linear_fe | exact | error |  |  |  |  |  | compared |
 | core | `linear_re-linear-columns` | linear_re | lme4 | value |  |  | 0 | 0 | 13 of 13 | compared |
 | core | `linear_re-linear-formula` | linear_re | lme4 | value |  |  | 0 | 0 | 13 of 13 | compared |
@@ -188,35 +188,35 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `plot-binary-exact` | plot | exact | error |  |  |  |  |  | compared |
 | core | `plot-binary-null-integer` | plot | iterative | value | D-14 |  | 0 | 0 |  | compared |
 | core | `plot-binary-null0` | plot | iterative | value |  |  | 0 | 0 |  | compared |
-| core | `test-linear-simplified-two.sided` | test | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `test-linear-simplified-greater` | test | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `test-linear-simplified-less` | test | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `confint-linear-simplified-gamma` | confint | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `confint-linear-simplified-sm` | confint | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `test-linear-full-two.sided` | test | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `test-linear-full-greater` | test | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `test-linear-full-less` | test | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `confint-linear-full-gamma` | confint | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `confint-linear-full-sm` | confint | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `test-linear-null-mean` | test | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `test-linear-null0` | test | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `test-linear-parm` | test | closed_form | value |  |  | 0 | 0 |  | compared |
+| core | `test-linear-simplified-two.sided` | test | closed_form | value |  |  | 2.78e-14 | 3.93e-13 |  | compared |
+| core | `test-linear-simplified-greater` | test | closed_form | value |  |  | 2.78e-14 | 3.93e-13 |  | compared |
+| core | `test-linear-simplified-less` | test | closed_form | value |  |  | 2.78e-14 | 3.93e-13 |  | compared |
+| core | `confint-linear-simplified-gamma` | confint | closed_form | value |  |  | 2.44e-15 | 2.86e-13 |  | compared |
+| core | `confint-linear-simplified-sm` | confint | closed_form | value |  |  | 3.22e-15 | 3.4e-13 |  | compared |
+| core | `test-linear-full-two.sided` | test | closed_form | value |  |  | 2.78e-14 | 3.93e-13 |  | compared |
+| core | `test-linear-full-greater` | test | closed_form | value |  |  | 2.78e-14 | 3.93e-13 |  | compared |
+| core | `test-linear-full-less` | test | closed_form | value |  |  | 2.78e-14 | 3.93e-13 |  | compared |
+| core | `confint-linear-full-gamma` | confint | closed_form | value |  |  | 2.44e-15 | 2.88e-13 |  | compared |
+| core | `confint-linear-full-sm` | confint | closed_form | value |  |  | 3.22e-15 | 3.4e-13 |  | compared |
+| core | `test-linear-null-mean` | test | closed_form | value |  |  | 2.18e-14 | 2.1e-13 |  | compared |
+| core | `test-linear-null0` | test | closed_form | value |  |  | 2.22e-14 | 5.42e-14 |  | compared |
+| core | `test-linear-parm` | test | closed_form | value |  |  | 1.15e-14 | 4.83e-14 |  | compared |
 | core | `test-linear-bad-null` | test | exact | error |  |  |  |  |  | compared |
-| core | `SM_output-linear-indirect` | SM_output | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `SM_output-linear-direct` | SM_output | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `SM_output-linear-both-mean` | SM_output | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `SM_output-linear-both-null0` | SM_output | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `confint-linear-simplified-sm-greater` | confint | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `confint-linear-simplified-sm-less` | confint | closed_form | value |  |  | 0 | 0 |  | compared |
+| core | `SM_output-linear-indirect` | SM_output | closed_form | value |  |  | 2.56e-13 | 1.7e-12 |  | compared |
+| core | `SM_output-linear-direct` | SM_output | closed_form | value |  |  | 2e-11 | 3.4e-13 |  | compared |
+| core | `SM_output-linear-both-mean` | SM_output | closed_form | value |  |  | 2e-11 | 4.19e-13 |  | compared |
+| core | `SM_output-linear-both-null0` | SM_output | closed_form | value |  |  | 2e-11 | 8.18e-14 |  | compared |
+| core | `confint-linear-simplified-sm-greater` | confint | closed_form | value |  |  | 3.22e-15 | 3.4e-13 |  | compared |
+| core | `confint-linear-simplified-sm-less` | confint | closed_form | value |  |  | 3.22e-15 | 3.4e-13 |  | compared |
 | core | `confint-linear-gamma-greater` | confint | exact | error |  |  |  |  |  | compared |
-| core | `summary-linear` | summary | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `summary-linear-parm` | summary | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `summary-linear-level90` | summary | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `plot-linear` | plot | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `plot-linear-two-levels` | plot | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `test-linear-syn` | test | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `SM_output-linear-syn` | SM_output | closed_form | value |  |  | 0 | 0 |  | compared |
-| core | `confint-linear-syn-sm` | confint | closed_form | value |  |  | 0 | 0 |  | compared |
+| core | `summary-linear` | summary | closed_form | value |  |  | 3.69e-13 | 5.7e-15 |  | compared |
+| core | `summary-linear-parm` | summary | closed_form | value |  |  | 1.42e-13 | 2.64e-15 |  | compared |
+| core | `summary-linear-level90` | summary | closed_form | value |  |  | 3.69e-13 | 5.57e-15 |  | compared |
+| core | `plot-linear` | plot | closed_form | value |  |  | 2.56e-13 | 1.7e-12 |  | compared |
+| core | `plot-linear-two-levels` | plot | closed_form | value |  |  | 2.56e-13 | 1.7e-12 |  | compared |
+| core | `test-linear-syn` | test | closed_form | value |  |  | 6.22e-15 | 7.43e-13 |  | compared |
+| core | `SM_output-linear-syn` | SM_output | closed_form | value |  |  | 1.62e-12 | 7.49e-13 |  | compared |
+| core | `confint-linear-syn-sm` | confint | closed_form | value |  |  | 1.33e-15 | 7.49e-13 |  | compared |
 | core | `test-linear-re-two.sided` | test | lme4 | value |  |  | 0 | 0 |  | compared |
 | core | `test-linear-re-greater` | test | lme4 | value |  |  | 0 | 0 |  | compared |
 | core | `test-linear-re-less` | test | lme4 | value |  |  | 0 | 0 |  | compared |
@@ -264,7 +264,7 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `confint-linear-cre-missing-sm` | confint | lme4 | value |  |  | 0 | 0 |  | compared |
 | core | `caterpillar-binary-ratio` | caterpillar_plot | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `caterpillar-binary-rate-flags` | caterpillar_plot | iterative | value |  |  | 0 | 0 |  | compared |
-| core | `caterpillar-linear` | caterpillar_plot | closed_form | value |  |  | 0 | 0 |  | compared |
+| core | `caterpillar-linear` | caterpillar_plot | closed_form | value |  |  | 3.16e-15 | 3.23e-13 |  | compared |
 | core | `caterpillar-logis-re-extreme` | caterpillar_plot | lme4 | value |  |  | 0 | 0 |  | compared |
 | core | `caterpillar-gamma` | caterpillar_plot | exact | error |  |  |  |  |  | compared |
 | core | `bar_plot-binary` | bar_plot | iterative | value |  |  | 0 | 0 |  | compared |
