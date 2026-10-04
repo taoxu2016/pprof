@@ -1,6 +1,6 @@
 # Phase 5 plan: inference and profiling
 
-Proposed on 2026-10-04 for the project lead's approval, with decisions DEC-045 to DEC-053 (proposed, `dev/DECISIONS.md`) and one fixture regeneration (R-1, below) that needs explicit approval. Branch `rewrite/phase-5`, created from `rewrite/phase-4` at `400f84b` (stacked until Phases 1 to 4 are merged into `rewrite/v2`). The gate is a STOP (brief §4): run `/phase-gate` and wait for approval.
+Approved by the project lead on 2026-10-04, with decisions DEC-045 to DEC-053 (`dev/DECISIONS.md`), the fixture regeneration R-1 as listed below, and the recommendations of "Questions for the project lead": RE and CRE standardization accepts a numeric `null`, the measures tables follow DEC-048, and D-43 and D-44 are recorded as proposed. Branch `rewrite/phase-5`, created from `rewrite/phase-4` at `400f84b` (stacked until Phases 1 to 4 are merged into `rewrite/v2`). The gate is a STOP (brief §4): run `/phase-gate` and wait for approval.
 
 The facts in "Facts gathered" were confirmed by running the pinned reference (`dev/reference/lib`) and the working tree at `71e0c73` on 2026-10-04. Treat anything else here as a hypothesis to confirm by running code before relying on it (CLAUDE.md).
 

@@ -439,12 +439,12 @@ The Phase 3 decisions below were made while implementing the approved plan; they
 
 ---
 
-The Phase 5 decisions below are proposed with the Phase 5 plan (`dev/design/PHASE5_PLAN.md`, 2026-10-04) and await the project lead's approval.
+The Phase 5 decisions below were proposed with the Phase 5 plan (`dev/design/PHASE5_PLAN.md`) and approved by the project lead with it on 2026-10-04.
 
 ### DEC-045: Phase 5 scope
 
 - Date: 2026-10-04
-- Status: proposed (Phase 5 plan)
+- Status: accepted with the Phase 5 plan (2026-10-04)
 - Context: DEC-040 gives Phase 5 the inference of linear FE, RE, and CRE models and the wrappers of their old methods. The Phase 5 handoff leaves two scoping questions open, `plot.linear_fe()` (Phase 5 or 6) and the generics `test()` and `SM_output()` once no reference method is left, and DEC-044 left the investigation of `logis_fe()`'s peak memory with 50 covariates to Phase 5 or Phase 8.
 - Decision: (1) Phase 5 delivers `funnel_limits()` for linear FE (K-111) and turns `plot.linear_fe()` into a wrapper in `R/compat-plots.R`, drawn by the reference's `ppfunnel_linear()` code unchanged, as `plot.logis_fe()` was in Phase 3 (DEC-034); the new plot functions get only the fixes that let them run on the new families' results, and their styling stays Phase 6, as do `caterpillar_plot()` and `bar_plot()`. (2) The generics `test()` and `SM_output()` move unchanged, with their documentation, to `R/compat-generics.R`, and stay exported as long as the wrappers (ARCHITECTURE §I.3). (3) DEC-044's investigation goes to Phase 8, with the dependency reduction and the final benchmark report.
 - Alternatives considered: `plot.linear_fe()` in Phase 6 (keeps 225 lines of reference code, with its deprecated tidyselect use, calling the wrappers for one more phase, and leaves linear FE flags computed outside the profiling layer); keeping the generics in their reference files (the files would stay on the legacy lists with no reference code left in them); investigating DEC-044 now (Phase 5 does not touch the logistic FE engine).
@@ -453,7 +453,7 @@ The Phase 5 decisions below are proposed with the Phase 5 plan (`dev/design/PHAS
 ### DEC-046: The family specification carries the remaining family differences
 
 - Date: 2026-10-04
-- Status: proposed (Phase 5 plan)
+- Status: accepted with the Phase 5 plan (2026-10-04)
 - Context: ARCHITECTURE §B.4 makes the differences between families data in `profile_spec()` rather than code paths. Phase 3 built the fields logistic FE needs. Running the reference (PHASE5_PLAN.md, facts F3 to F10) shows the other differences: linear measures are differences (O − E)/n_i and (E − total)/n rather than ratios (K-83, K-84); the RE indirect numerator is the sum of lme4's fitted values (K-82, K-84); the linear FE direct reference total is Σ(γ0 + Zβ) and depends on the null (K-83); the logistic RE and CRE direct limits come from the C++ direct expectations, which differ from R's sums in the last bits (F5), while logistic FE's come from R sums (K-91); only logistic FE treats providers with no events or only events one-sidedly (F10); linear FE tests and intervals use normal or t(n − m − p) depending on the provider variance, in opposite ways (K-68, K-92, D-32); the covariate tests differ by family in distribution, degrees of freedom, the two-sided form (D-31), and the interval expression (lme4's for RE and CRE, F3); the linear funnel uses n_i, σ, no floor, and the Wald test (K-111).
 - Decision: `profile_spec()` gains the fields `test_default`, `comparison` (`"ratio"` or `"difference"`), `direct_reference` (`"observed"` or `"null_expected"`), `direct_limits` (`"mean_function"` or `"direct_expected"`), `one_sided_extremes`, `wald` (the distribution and degrees of freedom of the provider tests and of the intervals), and `coefficient_wald` (the covariate p-value rule and interval rule); `funnel$precision` takes the observed size as a third argument. `indirect_numerator` accepts `"predicted"`, read through a new contract generic `predicted_outcome(model)`, whose `pprof_mixed` method returns the lme4 fitted values stored at fit time and whose default raises `pprof_error_unsupported_inference`. Every new field is optional, with a default equal to the Phase 3 behavior, so logistic FE and the toy model of the extension proof need no change; logistic FE states them explicitly anyway. The values per family are the table in PHASE5_PLAN.md, step 2.
 - Alternatives considered: methods per family for measures and intervals (the scattered code paths §B.4 replaces); computing the RE numerator as `expected_outcome(model, provider_estimates(model))`, equal to lme4's fitted values on the example data (F4) but not guaranteed by lme4; one tail function with `df = Inf` for the normal distribution, bitwise equal (F7) but less readable than naming the distribution.
@@ -462,7 +462,7 @@ The Phase 5 decisions below are proposed with the Phase 5 plan (`dev/design/PHAS
 ### DEC-047: The family's default test
 
 - Date: 2026-10-04
-- Status: proposed (Phase 5 plan)
+- Status: accepted with the Phase 5 plan (2026-10-04)
 - Context: `test_providers()` and `profile_providers()` default to `test = "exact"`, the reference's default for logistic FE. Linear FE, RE, and CRE models have only the Wald test, so with that default every call that omits `test` would fail for them.
 - Decision: `test = NULL` means the family's `test_default` (`"exact"` for logistic FE and Firth, `"wald"` otherwise), as `null = NULL` means the family's default null (DEC-036).
 - Alternatives considered: keeping `"exact"` (the new families fail by default); a different function per family (against one profiling layer).
@@ -471,7 +471,7 @@ The Phase 5 decisions below are proposed with the Phase 5 plan (`dev/design/PHAS
 ### DEC-048: Observed and expected in the measures tables of every family
 
 - Date: 2026-10-04
-- Status: proposed (Phase 5 plan)
+- Status: accepted with the Phase 5 plan (2026-10-04)
 - Context: In `standardize_providers()`'s table, `observed` and `expected` are the two sums a measure compares. For logistic FE these are Σy and the expected events. For the RE families the indirect numerator is the sum of the fitted values (predicted over expected, K-82, K-84, M-14), and for linear FE the direct reference total is Σ(γ0 + Zβ) (K-83), so `observed` would not always hold observed outcomes. The reference's `OE` tables call these columns `Obs` too.
 - Decision: keep one schema: `observed` and `expected` are the numerator and denominator sums of each measure, as in the reference's `OE` tables, and the result records `indirect_numerator` (`"observed"` or `"predicted"`) and `direct_reference` (`"observed"` or `"null_expected"`) among its settings. The help states per family what the columns hold.
 - Alternatives considered: a `predicted` column for RE indirect rows, with `observed` always Σy (clearer for RE, but the linear FE direct reference total would need another column, and the schema would vary by family).
@@ -480,7 +480,7 @@ The Phase 5 decisions below are proposed with the Phase 5 plan (`dev/design/PHAS
 ### DEC-049: The old methods of linear FE, RE, and CRE objects rebuild the model; compatibility files by family
 
 - Date: 2026-10-04
-- Status: proposed (Phase 5 plan)
+- Status: accepted with the Phase 5 plan (2026-10-04)
 - Context: DEC-032 has the old methods of `logis_fe` objects rebuild the model from the old object. The `linear_fe`, `linear_re`, `logis_re`, `linear_cre`, and `logis_cre` objects need the same for 21 methods. RE and CRE objects keep the lme4 fit in `attr(, "model")`, and with character IDs every column of their `data_include` is text (D-11). `R/compat-methods.R` already has 501 lines.
 - Decision: the `linear_fe` methods rebuild a `pprof_linear_fe` model from the object's estimates, variances, σ, linear predictor, and `data_include`, with `spec$provider_variance` from the `"description"` attribute (D-16). The RE and CRE methods rebuild a `pprof_mixed` model from `coefficient`, `variance`, `sigma`, `fitted`, `linear_pred`, `observation`, the provider order of the `RE` row names, and the lme4 fit, from which the conditional SDs are recomputed as each reference method does (K-70); nothing numeric is read from `data_include`, and no design matrix is kept. The methods live in `R/compat-methods-linear-fe.R` and `R/compat-methods-mixed.R` (shared helpers parameterized by class), the generics in `R/compat-generics.R`; `R/compat-methods.R` keeps the `logis_fe` methods and the RE print methods.
 - Alternatives considered: reading the design from `data_include` (text with character IDs, which `cbind()` rounds to 15 significant digits); one compatibility file for every method (about 1,500 lines).
@@ -489,7 +489,7 @@ The Phase 5 decisions below are proposed with the Phase 5 plan (`dev/design/PHAS
 ### DEC-050: The `glm()` independent check of logistic FE
 
 - Date: 2026-10-04
-- Status: proposed (Phase 5 plan)
+- Status: accepted with the Phase 5 plan (2026-10-04)
 - Context: ARCHITECTURE §G.5 plans a check of logistic FE against `glm(y ~ 0 + factor(provider) + Z, binomial)` on data without extreme providers, carried over from Phase 4. Measured (PHASE5_PLAN.md, F13): with `fit_logistic_fe(tol = 1e-12, stop_rule = "all")` and `glm.control(epsilon = 1e-14)`, estimates agree to 3.2e-13 absolute and 1.3e-13 relative (97 providers) and to 9.1e-15 (60 simulated providers), log-likelihoods are identical, and variances agree to 2.7e-13 relative once `glm()`'s covariance is evaluated at its own estimates (one more iteration started there); `glm()`'s reported covariance belongs to its previous iterate and differs by up to 9.3e-8.
 - Decision: estimates within atol 1e-10 and rtol 1e-10 (a 300-fold margin over the measured agreement, as DEC-043 sets logistf's); variances, from `glm()` restarted at its estimates, and the log-likelihood within the closed-form tier. The tolerance lives with its justification in `tests/testthat/test-independent-fits.R`; the test skips nothing, `glm()` being in stats.
 - Alternatives considered: the closed-form tier for the estimates (a three-fold margin for effects near 0); comparing with `glm()`'s reported covariance (would test `glm()`'s convergence point, not pprof).
@@ -498,7 +498,7 @@ The Phase 5 decisions below are proposed with the Phase 5 plan (`dev/design/PHAS
 ### DEC-051: Benchmark tasks for the methods Phase 5 replaces
 
 - Date: 2026-10-04
-- Status: proposed (Phase 5 plan)
+- Status: accepted with the Phase 5 plan (2026-10-04)
 - Context: Brief §3.6 requires no material slowdown at default settings. The benchmark tasks (`dev/bench/scenarios.R`) have linear FE methods only on `lin-1e5-m1000-p5` and no RE or CRE method, and the Phase 1 baseline has no rows for new tasks (handoff §5).
 - Decision: add tasks for `test()`, `SM_output()` (both standardizations), `confint()` (`option = "SM"`, both standardizations, and the provider effects), and `summary()` on the RE and CRE fits of the existing RE and CRE scenarios, and `plot()`, `summary()`, and `confint(option = "gamma")` for linear FE on `lin-1e5-m1000-p5`; measure only these tasks on the pinned reference with `run_reference.R --only`, in one session, into a supplementary baseline file next to the Phase 1 baseline, compared under DEC-023's rule and re-measured under DEC-038 when flagged.
 - Alternatives considered: regenerating the whole baseline (about 30 minutes, and drift makes the old and new rows incomparable anyway, DEC-038); no new tasks (the methods Phase 5 replaces would go unmeasured).
@@ -507,7 +507,7 @@ The Phase 5 decisions below are proposed with the Phase 5 plan (`dev/design/PHAS
 ### DEC-052: `RcppExports.cpp` keeps including `RcppArmadillo.h`
 
 - Date: 2026-10-04
-- Status: proposed (Phase 5 plan)
+- Status: accepted with the Phase 5 plan (2026-10-04)
 - Context: DEC-035 expects that once the last file including RcppArmadillo is rewritten, every file uses `src/core/armadillo.h` and the Makevars settings become redundant, and the Phase 5 handoff expected the regenerated `RcppExports.cpp` to stop including RcppArmadillo. `Rcpp::compileAttributes()` on a copy of the package without `Fixed_effect.cpp` still writes `#include <RcppArmadillo.h>`, because RcppArmadillo is in LinkingTo (PHASE5_PLAN.md, F14).
 - Decision: keep RcppArmadillo in LinkingTo (the core needs its Armadillo headers) and keep the Makevars settings `ARMA_DONT_USE_OPENMP` and `ARMA_WARN_LEVEL=0` for every file. `RcppExports.cpp` uses no Armadillo type, so it instantiates no Armadillo template.
 - Alternatives considered: vendoring the Armadillo headers (licensing and maintenance cost, for no gain); editing the generated file (never, CLAUDE.md).
@@ -516,7 +516,7 @@ The Phase 5 decisions below are proposed with the Phase 5 plan (`dev/design/PHAS
 ### DEC-053: A simulation study of the provider tests and intervals
 
 - Date: 2026-10-04
-- Status: proposed (Phase 5 plan)
+- Status: accepted with the Phase 5 plan (2026-10-04)
 - Context: ARCHITECTURE §G.5 plans "simulations with known truth (size, coverage), in `validation/` only" for Phase 5: agreement with pprof 1.0.3 alone does not show that its tests and intervals behave as stated (brief §6 E).
 - Decision: `validation/run-simulation.R` simulates data of each family without provider effects and with known outlying providers, and reports the empirical size and power of the provider tests and the coverage of the provider-effect and measure intervals at the default settings, with Monte Carlo standard errors, in `validation/simulation-report.md`. The report is informational: it gates nothing, and any departure from nominal goes to the methodology owners as a question; nothing in the code changes because of it.
 - Alternatives considered: pass/fail thresholds (several reference procedures are approximate by design, for example the Wald test for small providers, and changing them is Class B); no simulation (leaves the §G.5 row empty).

@@ -63,7 +63,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-41 | `logis_fe`, `logis_firth` with factor IDs | A | verified; fixed (Phases 3 and 4) | Fail when screening excludes a provider: the excluded factor levels become empty provider blocks |
 | D-42 | `logis_firth` with singular information | A | verified; fixed (Phase 4) | Terminates the R session when the Schur complement of the information cannot be inverted |
 | D-43 | `plot.linear_fe` with the full variance | B (question M-18) | verified; awaiting sign-off | Limits use σ/sqrt(n_i) and normal quantiles, flags the full variance and t, so points outside the limits can be unflagged |
-| D-44 | RE and CRE `summary()` | C | verified | The intercept is selected only as `"(intercept)"`, while its row is named `"(Intercept)"`; the help does not say so |
+| D-44 | RE and CRE `summary()` | C | verified; decided (document, Phase 5 plan) | The intercept is selected only as `"(intercept)"`, while its row is named `"(Intercept)"`; the help does not say so |
 
 ---
 
@@ -762,5 +762,5 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: document the spelling; or also accept `"(Intercept)"` (a result where the reference returns no rows).
 - Recommendation: the wrappers keep the reference's selection and their help states that the intercept is selected as `"(intercept)"`; the new API's `test_coefficients()` and `confint()` use the coefficient names, so `"(Intercept)"`.
 - Decision owner: project lead.
-- Status: verified (2026-10-04, Phase 5 planning).
+- Status: verified (2026-10-04, Phase 5 planning); the recommendation was approved with the Phase 5 plan (2026-10-04): the wrappers keep the selection and their help states it.
 - Regression test: in Phase 5, the R-1 fixture cases with `parm = "(intercept)"` and `parm = "(Intercept)"`, if approved, and a wrapper test.
