@@ -20,6 +20,11 @@
 #   differs from the numeric order. The linear ones get the linear fits; the binary ones only
 #   logis_re() and logis_cre(), because the logistic FE intervals misalign character IDs in
 #   the reference (D-19), which the wrappers fix.
+# - Datasets without provider effects (Phase 5) are drawn as above with every provider effect
+#   0 (and no providers forced to have no events or only events), so that lme4 often
+#   estimates the provider variance as 0; the RE and CRE tests then have missing flags
+#   (dev/design/phase5-facts/09_singular_re_fits.R). They get the same fits as the datasets
+#   with character IDs; the report says whether the lme4 fit of each is singular.
 # - The methods of the linear FE, RE, and CRE fits run over the grid of ARCHITECTURE §G.2
 #   (Phase 5): the three alternatives, level = 0.9, numeric nulls, parm, and the provider
 #   effects and covariate summaries; for linear FE, null = "mean" and plot() as well, with
@@ -27,17 +32,17 @@
 #
 # Usage, from the repository root:
 #   Rscript validation/run-differential.R [--datasets N] [--mixed-datasets N] [--linear-datasets N]
-#                                         [--character-datasets N] [--seed S] [--lib dev/reference/lib]
-#                                         [--report FILE]
+#                                         [--character-datasets N] [--null-datasets N] [--seed S]
+#                                         [--lib dev/reference/lib] [--report FILE]
 # Defaults: 30 binary datasets (the first 10 with RE and CRE fits), 15 linear datasets, 3
-# linear and 3 binary datasets with character IDs, seed 20261003, report
-# validation/differential-report.md.
+# linear and 3 binary datasets with character IDs, 2 linear and 2 binary datasets without
+# provider effects, seed 20261003, report validation/differential-report.md.
 #
 # Numeric provider IDs are doubles, character IDs are selected by character `parm`, and every
 # fit has at least three covariates, so that no case hits a defect the wrappers fix (D-19,
 # D-27, D-28, D-29, D-30); a mismatch is reported and makes the exit status 1.
 
-opts <- list(datasets = 30L, mixed = 10L, linear = 15L, character = 3L, seed = 20261003L,
+opts <- list(datasets = 30L, mixed = 10L, linear = 15L, character = 3L, null = 2L, seed = 20261003L,
              lib = "dev/reference/lib", report = file.path("validation", "differential-report.md"))
 args <- commandArgs(trailingOnly = TRUE)
 for (k in seq_len(length(args) %/% 2) * 2 - 1) {
@@ -45,6 +50,7 @@ for (k in seq_len(length(args) %/% 2) * 2 - 1) {
          "--mixed-datasets" = opts$mixed <- as.integer(args[[k + 1]]),
          "--linear-datasets" = opts$linear <- as.integer(args[[k + 1]]),
          "--character-datasets" = opts$character <- as.integer(args[[k + 1]]),
+         "--null-datasets" = opts$null <- as.integer(args[[k + 1]]),
          "--seed" = opts$seed <- as.integer(args[[k + 1]]), "--lib" = opts$lib <- args[[k + 1]],
          "--report" = opts$report <- args[[k + 1]], stop("Unknown argument: ", args[[k]], call. = FALSE))
 }
@@ -58,7 +64,9 @@ for (f in c("helper-reference-cases.R", "helper-tolerances.R", "helper-equivalen
 withr::local_collate("C")
 
 # --- Datasets ------------------------------------------------------------------------------------
-differential_dataset <- function(k) {
+# With `effects = 0`, every provider effect is 0 and no provider is forced to have no events or
+# only events; the random draws are the same, so `effects = 1` gives the datasets of Phase 4.
+differential_dataset <- function(k, effects = 1) {
   withr::with_seed(opts$seed + k, {
     m <- sample(c(15L, 25L, 40L), 1L)
     sizes <- c(sample(5:9, 2L, replace = TRUE), sample(15:60, m - 2L, replace = TRUE))
@@ -66,15 +74,15 @@ differential_dataset <- function(k) {
     intercept <- sample(c(-3, -1, 1), 1L)
     prov <- rep(seq_len(m), sizes)
     z <- matrix(stats::rnorm(length(prov) * p), ncol = p, dimnames = list(NULL, paste0("x", seq_len(p))))
-    gamma <- stats::rnorm(m, 0, 0.6)
+    gamma <- stats::rnorm(m, 0, 0.6) * effects
     beta <- stats::runif(p, -0.8, 0.8)
     y <- stats::rbinom(length(prov), 1, stats::plogis(intercept + gamma[prov] + drop(z %*% beta)))
-    if (stats::runif(1) < 0.7) y[prov == 3L] <- 0
-    if (stats::runif(1) < 0.5) y[prov == 4L] <- 1
+    if (stats::runif(1) < 0.7 && effects != 0) y[prov == 3L] <- 0
+    if (stats::runif(1) < 0.5 && effects != 0) y[prov == 4L] <- 1
     data.frame(Y = y, ProvID = as.numeric(prov), z)
   })
 }
-differential_linear_dataset <- function(k) {
+differential_linear_dataset <- function(k, effects = 1) {
   withr::with_seed(opts$seed + 500L + k, {
     m <- sample(c(15L, 25L, 40L), 1L)
     sizes <- c(sample(2:4, 2L, replace = TRUE), sample(10:60, m - 2L, replace = TRUE))
@@ -82,7 +90,7 @@ differential_linear_dataset <- function(k) {
     prov <- rep(seq_len(m), sizes)
     z <- matrix(stats::rnorm(length(prov) * p), ncol = p, dimnames = list(NULL, paste0("x", seq_len(p))))
     z[, 1] <- z[, 1] + stats::rnorm(m)[prov]
-    y <- 2 + stats::rnorm(m)[prov] + drop(z %*% stats::runif(p, -1, 1)) +
+    y <- 2 + effects * stats::rnorm(m)[prov] + drop(z %*% stats::runif(p, -1, 1)) +
       stats::rnorm(length(prov), 0, sample(c(0.5, 1, 2), 1L))
     if (stats::runif(1) < 0.5) y[sample(length(y), 5L)] <- NA
     data.frame(Y = y, ProvID = as.numeric(prov), z)
@@ -102,9 +110,14 @@ binary_character <- stats::setNames(lapply(lapply(k_character, differential_data
 linear_character <- stats::setNames(lapply(lapply(k_character, differential_linear_dataset),
                                            differential_character_ids),
                                     sprintf("chr-lin%02d", seq_len(opts$character)))
-datasets <- c(binary, linear, binary_character, linear_character)
-mixed_names <- c(utils::head(names(binary), opts$mixed), names(binary_character))
-linear_names <- c(names(linear), names(linear_character))
+k_null <- 200L + seq_len(opts$null)
+binary_null <- stats::setNames(lapply(k_null, differential_dataset, effects = 0),
+                               sprintf("null-diff%02d", seq_len(opts$null)))
+linear_null <- stats::setNames(lapply(k_null, differential_linear_dataset, effects = 0),
+                               sprintf("null-lin%02d", seq_len(opts$null)))
+datasets <- c(binary, linear, binary_character, linear_character, binary_null, linear_null)
+mixed_names <- c(utils::head(names(binary), opts$mixed), names(binary_character), names(binary_null))
+linear_names <- c(names(linear), names(linear_character), names(linear_null))
 
 # The providers in places `k` of the provider order (under the C collation), for `parm`.
 differential_parm <- function(d, k) sort(unique(d$ProvID))[k]
@@ -324,11 +337,21 @@ shapes <- vapply(names(datasets), function(name) {
   sizes <- table(d$ProvID)
   p <- sum(startsWith(names(d), "x"))
   ids <- if (is.character(d$ProvID)) ", character IDs" else ""
+  if (name %in% c(names(binary_null), names(linear_null))) {
+    formula <- stats::reformulate(c(grep("^x", names(d), value = TRUE), "(1 | ProvID)"), "Y")
+    fit <- suppressMessages(if (name %in% linear_names) lme4::lmer(formula, d) else {
+      lme4::glmer(formula, d, family = stats::binomial())
+    })
+    ids <- sprintf("%s, no provider effects (the lme4 RE fit is %s)", ids,
+                   if (lme4::isSingular(fit)) "singular" else "not singular")
+  }
   if (name %in% linear_names) {
     return(sprintf("linear, n %d, m %d (%d below 5), p %d, %d missing outcomes%s", nrow(d), length(sizes),
                    sum(sizes < 5), p, sum(is.na(d$Y)), ids))
   }
-  fits <- if (name %in% names(binary_character)) ", RE and CRE fits only" else if (name %in% mixed_names) {
+  fits <- if (name %in% c(names(binary_character), names(binary_null))) {
+    ", RE and CRE fits only"
+  } else if (name %in% mixed_names) {
     ", with RE and CRE fits"
   } else {
     ""
@@ -341,9 +364,11 @@ lines <- c(
   sprintf("Generated %s by `validation/run-differential.R` on %s, %s.", format(Sys.time(), tz = "UTC", usetz = TRUE),
           R.version.string, utils::sessionInfo()$running),
   sprintf(paste("Working tree at commit %s; %d binary datasets (%d with RE and CRE fits), %d linear datasets,",
-                "and %d binary (RE and CRE fits only) and %d linear datasets with character IDs; seed %d."),
+                "%d binary (RE and CRE fits only) and %d linear datasets with character IDs, and %d binary",
+                "(RE and CRE fits only) and %d linear datasets without provider effects; seed %d."),
           system2("git", c("rev-parse", "--short", "HEAD"), stdout = TRUE), opts$datasets,
-          min(opts$mixed, opts$datasets), opts$linear, opts$character, opts$character, opts$seed),
+          min(opts$mixed, opts$datasets), opts$linear, opts$character, opts$character, opts$null, opts$null,
+          opts$seed),
   "", "## Summary", "",
   sprintf("- Cases: %d; matching: %d; identical: %d; mismatching: %d.", nrow(table), sum(table$status == "match"),
           sum(table$detail == "identical"), sum(table$status == "MISMATCH")),
