@@ -132,7 +132,7 @@ Signature: `linear_cre(data, Y.char, wb.char, other.char = NULL, ProvID.char, ..
 | Formula | `Y ~ <within terms> + <between terms> + <other> + (1 | ProvID)` | K-50 |
 | Engine | `lmer()` / `glmer(family = binomial(link = "logit"))` with `...` | K-50 |
 
-Output: as RE models, with `char_list` holding `Y.char`, `ProvID.char`, `within_terms`, `between_terms`, `other.vars`. `logis_cre`: `variance$alpha` from `vcov` (K-51); `observation` is a one-column tibble; `fitted` and `linear_pred` have no row names; RE row names come from `ranef()` (same order). Neither CRE function prints a format message.
+Output: as RE models, with `char_list` holding `Y.char`, `ProvID.char`, `within_terms`, `between_terms`, `other.vars`. `logis_cre`: `variance$alpha` from `vcov` (K-51); `observation` is a one-column tibble; `fitted` has no row names, while `linear_pred` keeps the row names of lme4's design, `1..n` because the data are a tibble (corrected in Phase 4 from the fixtures; Phase 0 said neither had row names); RE row names come from `ranef()` (same order). Neither CRE function prints a format message.
 
 ## 7. `test()` methods
 

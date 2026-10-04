@@ -58,7 +58,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-36 | messages and side effects | Presentation | verified | `linear_fe`, `linear_re`, `logis_re` always print messages; attaching pprof prints a `car` message; `bar_plot()` triggers a ggplot2 deprecation warning |
 | D-37 | vignettes | C | verified | Describe a different clamp, nonexistent functions, and calls that now fail |
 | D-38 | `logis_fe` with collinear covariates | C | verified | Unidentified estimates with variances near 7e13 and no rank-deficiency warning |
-| D-39 | `logis_fe` inputs | A | decided (fix) | Non-binary outcomes, `max.iter` <= 0, `tol` <= 0, and `bound` <= 0 return meaningless or unfitted results without a warning |
+| D-39 | `logis_fe`, `logis_firth` inputs | A | decided (fix) | Non-binary outcomes, `max.iter` <= 0, `tol` <= 0, and `bound` <= 0 return meaningless or unfitted results without a warning |
 | D-40 | AUC without pROC | none (tolerance) | verified; decided (option 1, Phase 3 gate) | The Mann-Whitney AUC equals pROC's bitwise in 57 of 59 fits and differs in the last bit in 2 |
 | D-41 | `logis_fe`, `logis_firth` with factor IDs | A | verified | Fail when screening excludes a provider: the excluded factor levels become empty provider blocks |
 | D-42 | `logis_firth` with singular information | A | verified; fixed in the C++ engine (Phase 4) | Terminates the R session when the Schur complement of the information cannot be inverted |
@@ -161,7 +161,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Recommendation: (1). Results with `threads > 1` must then match `threads = 1` within the Tier 2 tolerance. Fixtures are generated with `threads = 1`, which the reference computes correctly (V12.1).
 - Decision owner: project lead.
 - Status: verified (V12.3); fixed in the C++ engine (Phase 4, step 1, 2026-10-03). `cpp_logistic_firth()` (`src/logistic/firth.cpp`) computes each provider's part in parallel into its own slots and adds every sum over providers in provider order, as the reference does with one thread. Its results with 2 threads are bitwise identical to those with 1 thread, which are bitwise identical to the reference's single-threaded routine. Its parallel regions contain no R API call, and no exception leaves them. `fit_logistic_firth()` and `logis_firth()` use it from steps 2 and 3.
-- Regression test: `tests/testthat/test-cpp-firth.R` ("two threads give results identical to one thread, and repeated runs agree (D-05)": bitwise, on four datasets). Step 2 adds the same check for `fit_logistic_firth()` in `test-model-logistic-firth.R` (runs where OpenMP is available; on CRAN at most 2 threads).
+- Regression test: `tests/testthat/test-cpp-firth.R` ("two threads give results identical to one thread, and repeated runs agree (D-05)": bitwise, on four datasets) and `tests/testthat/test-model-logistic-firth.R` ("two threads give a fit identical to one thread (D-05)", for `fit_logistic_firth()`); both run two threads where OpenMP is available.
 
 ### D-06: `test = "robust_wald"` returns NULL
 
@@ -274,8 +274,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) preserve: Firth objects inherit the logistic FE methods and report unpenalized quantities, plus the penalized log-likelihood as an additional field; (2) report penalized quantities or penalized-information variances (Class B).
 - Recommendation: (1) in the rewrite (`c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")`), with the penalized log-likelihood and convergence diagnostics added. Ask question M-2.
 - Decision owner: methodology owner.
-- Status: verified (V12.2); awaiting sign-off.
-- Regression test: planned, fixtures for every method on Firth fits.
+- Status: verified (V12.2); awaiting sign-off. Reproduced by `fit_logistic_firth()` (Phase 4, step 2): class `c("pprof_logistic_firth", "pprof_logistic_fe", "pprof_model")`, unpenalized variances, log-likelihood, AIC, and BIC, the logistic FE methods and capabilities, and the penalized log-likelihood as the additional field `penalized_loglik`, as recommended.
+- Regression test: `tests/testthat/test-model-logistic-firth.R` (the four `logis_firth` fit fixtures; the unpenalized and penalized log-likelihoods of V12.2; the inherited methods); the method fixtures on Firth fits run through the wrappers from step 3.
 
 ### D-13: CRE provider means use rows that complete-case filtering later drops
 
@@ -289,7 +289,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Recommendation: preserve (1) explicitly in the data layer (`data_decompose_within_between()` runs before complete-case filtering, as an ordered, documented step), pending question M-3.
 - Decision owner: methodology owner.
 - Status: verified (V15.10); awaiting sign-off.
-- Regression test: the data layer reproduces it (`tests/testthat/test-data-prepare.R`, and the fixture `linear_cre-missing` in `test-data-reference.R`); fit-level fixture from Phase 4.
+- Regression test: the data layer reproduces it (`tests/testthat/test-data-prepare.R`, and the fixture `linear_cre-missing` in `test-data-reference.R`); `fit_linear_cre()` reproduces the reference's fit of `linear_cre-missing` (`tests/testthat/test-model-mixed-reference.R`, Phase 4).
 
 ### D-14: Inconsistent validation of `null`
 
@@ -330,8 +330,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: store the variance type in the model specification.
 - Recommendation: `spec$provider_variance` drives the choice. See D-32 for the related interval inconsistency.
 - Decision owner: project lead.
-- Status: verified (V14.3).
-- Regression test: linear FE fixtures for both variance types.
+- Status: verified (V14.3); made explicit in `fit_linear_fe()` (Phase 4, step 2): the setting `provider_variance` is stored in `spec$provider_variance`. The compatibility wrapper (step 3) keeps the attribute that the old methods read.
+- Regression test: linear FE fixtures for both variance types (`tests/testthat/test-model-linear-fe.R` checks that `spec$provider_variance` matches the reference's attribute).
 
 ### D-17: `data_check` stops on missing values while fits delete rows
 
@@ -648,7 +648,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Status: verified (Phase 1 fixtures, 2026-10-02); option (1) implemented (Phase 3): `fit_logistic_fe()` warns with `pprof_warning_rank_deficient` when the provider-centered design is rank deficient and fits as the reference does, and the `logis_fe()` wrapper passes the warning on; options (2) and (3) remain question M-17.
 - Regression test: the fixtures above, and `tests/testthat/test-model-logistic-fe.R` (the warning, with estimates as the reference's).
 
-### D-39: `logis_fe` accepts inputs without checking them
+### D-39: `logis_fe` and `logis_firth` accept inputs without checking them
 
 - Component: `logis_fe` (`R/logis_fe.R:125-312`, which validates no setting), `logis_BIN_fe_prov` and `logis_fe_prov` (`src/Fixed_effect.cpp`).
 - Class (proposed): A, like D-22 and D-23; approved as Class A with the Phase 3 plan (2026-10-02).
@@ -658,6 +658,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
   - `tol` <= 0: the stopping rule is never met, so the fit runs `max.iter + 1` (SerBIN) or `max.iter` (BAN) iterations and reports convergence;
   - `bound` = 0 sets every provider effect to their median (-0.874 for all 100 providers); a negative `bound` fails inside Armadillo ("clamp(): min_val must be less than max_val").
   These inputs work as one would expect: a logical outcome (identical to 0 and 1), any `cutoff` (inclusion is n_i >= `cutoff`, so values <= 1 include every provider and 9.5 acts as 10), and a non-integer `max.iter` (Rcpp truncates it).
+  `logis_firth` (`R/logis_firth.R:94-190`, `src/Firth.cpp`), whose R code copies this processing, does the same (2026-10-03, `ExampleDataBinary`, each setting in its own process): `max.iter` <= 0 returns the starting values and reports convergence after 0 iterations; `tol` <= 0 runs all 1,000 iterations and reports convergence; `bound` = 0 sets every provider effect to their median (-0.857); a negative `bound` terminates R (exit status 127), because the Armadillo error is raised inside the OpenMP region, as in D-42.
 - Minimal reproducible example:
   ```r
   data(ExampleDataBinary)
@@ -670,8 +671,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reject the values with `pprof_error_invalid_input`; (2) reproduce them in the compatibility wrapper (Class B).
 - Recommendation: (1). `fit_logistic_fe()` requires a binary outcome and positive `max_iter`, `tol`, and `effect_bound` (NAMING.md §4), so the wrapper rejects these values too. The wrapper keeps the cases that work: it passes `min_provider_size = max(1, ceiling(cutoff))`, which includes the same providers, and truncates `max.iter` as Rcpp does. Two inputs that already failed fail earlier and with a classed condition: an outcome with a single value (the reference fails after fitting, in pROC: "'response' must have two levels") gives `pprof_error_data`, and an infinite covariate (the reference's solve fails: "solve(): solution not found") gives `pprof_error_invalid_input`.
 - Decision owner: project lead.
-- Status: decided (fix) with the Phase 3 plan; fixed in `fit_logistic_fe()` (Phase 3, step 2); the `logis_fe()` wrapper applies it from the switch (Phase 3, step 5).
-- Regression test: `tests/testthat/test-model-logistic-fe.R` ("fit_logistic_fe() rejects invalid settings", "the outcome must be binary with both values").
+- Status: decided (fix) with the Phase 3 plan; fixed in `fit_logistic_fe()` (Phase 3, step 2); the `logis_fe()` wrapper applies it from the switch (Phase 3, step 5). The same fix applies to Firth: `fit_logistic_firth()` rejects these values (Phase 4, step 2), and the `logis_firth()` wrapper from the switch (Phase 4, step 3).
+- Regression test: `tests/testthat/test-model-logistic-fe.R` ("fit_logistic_fe() rejects invalid settings", "the outcome must be binary with both values") and `tests/testthat/test-model-logistic-firth.R` ("fit_logistic_firth() rejects invalid settings and data (D-39)").
 
 ### D-40: The AUC computed without pROC differs from pROC's in the last bit for some fits
 
@@ -706,8 +707,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: index providers through the data layer, which drops unused levels.
 - Recommendation: fix. `fit_logistic_fe()` returns the same fit as with the labels as character strings.
 - Decision owner: project lead.
-- Status: verified (2026-10-02); fixed in `fit_logistic_fe()`; `logis_firth()` follows in Phase 4.
-- Regression test: `tests/testthat/test-model-logistic-fe.R` ("factor provider IDs work when screening excludes providers").
+- Status: verified (2026-10-02); fixed in `fit_logistic_fe()` and `fit_logistic_firth()` (Phase 4, step 2); the `logis_firth()` wrapper follows in step 3.
+- Regression test: `tests/testthat/test-model-logistic-fe.R` ("factor provider IDs work when screening excludes providers") and `tests/testthat/test-model-logistic-firth.R` (the same check for Firth).
 
 ### D-42: `logis_firth` terminates R when the information is singular
 
@@ -730,5 +731,5 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: report the failure as an R error.
 - Recommendation: fix. The new engine inverts outside its parallel regions and throws there; the adapter turns the exception into an R error, and the model layer reclasses it as `pprof_error_convergence`, as for logistic fixed effects.
 - Decision owner: project lead.
-- Status: verified (2026-10-03); fixed in the C++ engine (Phase 4, step 1): `cpp_logistic_firth()` raises an R error. `fit_logistic_firth()` and `logis_firth()` follow in steps 2 and 3.
-- Regression test: `tests/testthat/test-cpp-firth.R` ("a singular information matrix ends the fit with an error, where the reference terminated R (D-42)").
+- Status: verified (2026-10-03); fixed in the C++ engine (Phase 4, step 1): `cpp_logistic_firth()` raises an R error, which `fit_logistic_firth()` reclasses as `pprof_error_convergence` (step 2); the `logis_firth()` wrapper follows in step 3.
+- Regression test: `tests/testthat/test-cpp-firth.R` ("a singular information matrix ends the fit with an error, where the reference terminated R (D-42)") and `tests/testthat/test-model-logistic-firth.R` (the same for `fit_logistic_firth()`, with the class `pprof_error_convergence`).

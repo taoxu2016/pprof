@@ -101,7 +101,7 @@ New files, following ARCHITECTURE §B.2 and NAMING.md:
 - **Old object shapes to watch.**
   - `linear_fe`: `variance$gamma` carries the `"description"` attribute that the old `test.linear_fe()` reads (D-16).
   - RE/CRE: `data_include` is built with `as.data.frame(cbind(Y, ProvID, model.matrix(fit)))`, so every column becomes character with character IDs (D-11); CRE `data_include` row names are the positions 1..n.
-  - `logis_cre`: `observation` is a one-column tibble, and `fitted` and `linear_pred` have no row names.
+  - `logis_cre`: `observation` is a one-column tibble, and `fitted` has no row names; `linear_pred` keeps the row names of lme4's design, `1..n` (corrected at step 2 from the fixtures, which the plan's first version contradicted).
   - The CRE `char_list` records formula terms.
 - **Print methods (D-09).** `print.linear_re`, `print.logis_re`, and `print.linear_cre` are registered: they remove `attr(, "model")` and call `print.default()`. Move them into `R/compat-*.R`. `print.logis_cre` is defined but not registered in the reference, so do not register one.
 - **The switch.** After the wrappers pass every fit and method fixture:
