@@ -6,7 +6,7 @@
 # nothing. Any other row order or relabeling changes the order of summation: the Firth and
 # linear FE estimates then move at the level of rounding, while lme4's estimates move at its
 # optimizer's precision (measured: 4e-9 relative for linear and up to 4e-4 for logistic
-# models), so for the random-effect fits only the exact relations are tested.
+# models), so for the random-effect fits only the exact relations are tested (DEC-043).
 local_strict_mode()
 
 metamorphic_linear <- function() {

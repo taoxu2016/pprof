@@ -121,7 +121,8 @@ test_that("the random-effect fits are the fits of direct lme4 calls (V15.1)", {
 
 # logistf and fit_logistic_firth() reach the same penalized maximum by different iterations
 # that stop on different step sizes (1e-12 and 1e-10 here); on these two datasets they agreed
-# to 2.2e-11 absolute and 1.6e-11 relative (V12.5; Phase 4 step 4). 1e-9 leaves a 45-fold margin.
+# to 2.2e-11 absolute and 1.6e-11 relative (V12.5; Phase 4 step 4). 1e-9 leaves a 45-fold margin
+# (DEC-043).
 independent_firth_tolerance <- list(atol = 1e-9, rtol = 1e-9)
 
 independent_firth_data <- function(seed, m, sizes, intercept, sd, beta) {
