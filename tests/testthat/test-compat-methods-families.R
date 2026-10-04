@@ -117,6 +117,43 @@ test_that("the methods of RE and CRE objects read no numbers from data_include (
                    unname(as.matrix(SM_output(numeric_fit)$indirect.difference)))
 })
 
+test_that("tests of fits whose provider variance is 0 have missing flags, as in the reference", {
+  skip_on_cran()
+  pinned <- reference_lme4_matches()
+  skip_if_not(pinned$ok, pinned$detail)
+  # Data without provider effects (seed 4 of dev/design/phase5-facts/09_singular_re_fits.R):
+  # lme4 estimates the provider variance as 0, so the effects and their standard errors are 0,
+  # and the reference's test() returns NaN statistics and p-values and missing flags (a factor
+  # without levels) for every provider. Found by validation/run-simulation.R, where the
+  # wrapper failed until the flags were stored as integers.
+  data <- withr::with_seed(4, {
+    provider <- rep(seq_len(50), sample(10:60, 50, replace = TRUE))
+    n <- length(provider)
+    x1 <- stats::rnorm(n) + stats::rnorm(50, 0, 0.5)[provider]
+    x2 <- stats::rnorm(n)
+    x3 <- stats::rbinom(n, 1, 0.4)
+    data.frame(y = 0.5 * x1 - 0.3 * x2 + 0.2 * x3 + stats::rnorm(n), hospital = provider, x1 = x1, x2 = x2, x3 = x3)
+  })
+  fits <- withr::with_collate("C", suppressMessages(list(
+    linear_re = linear_re(data = data, Y.char = "y", Z.char = c("x1", "x2", "x3"), ProvID.char = "hospital"),
+    linear_cre = linear_cre(data = data, Y.char = "y", wb.char = "x1", other.char = c("x2", "x3"),
+                            ProvID.char = "hospital")
+  )))
+  for (name in names(fits)) {
+    expect_true(lme4::isSingular(attr(fits[[name]], "model")), label = paste(name, "is singular"))
+    for (alternative in c("two.sided", "less")) {
+      result <- test(fits[[name]], alternative = alternative)
+      label <- paste(name, alternative)
+      expect_identical(levels(result$flag), character(0), label = label)
+      expect_true(all(is.na(result$flag)), label = label)
+      expect_true(all(is.nan(result$`p value`)) && all(is.nan(result$stat)), label = label)
+      expect_identical(result$Std.Error, rep(0, 50), label = label)
+    }
+  }
+  model <- suppressMessages(fit_linear_re(y ~ x1 + x2 + x3, data, "hospital"))
+  expect_identical(test_providers(model)$table$flag, rep(NA_integer_, 50))
+})
+
 test_that("only the methods that use the conditional standard deviations need the lme4 fit (D-46)", {
   skip_on_cran()
   fit <- compat_family_fits()$linear_cre

@@ -11,10 +11,13 @@
 # The two-sided p-value 2 min(p, 1 - p) and the flag 1 (higher than expected) when p is
 # below alpha / 2, -1 (lower) when it is above 1 - alpha / 2, and 0 otherwise; one-sided,
 # the p-value is the probability, flagged 1 ("greater") or -1 ("less") when below alpha.
-# Flags are integers; a missing probability gives a missing p-value and flag.
+# Flags are integers; a missing probability gives a missing p-value and flag. ifelse()
+# returns a logical vector when every probability is missing, as for the Wald tests of a
+# random-effect model whose provider variance is estimated as 0, so the flags are stored as
+# integers explicitly.
 infer_decide <- function(probability, alternative, level) {
   alpha <- 1 - level
-  switch(alternative,
+  decided <- switch(alternative,
     two.sided = list(
       p_value = 2 * pmin(probability, 1 - probability),
       flag = ifelse(probability < alpha / 2, 1L, ifelse(probability <= 1 - alpha / 2, 0L, -1L))
@@ -22,6 +25,8 @@ infer_decide <- function(probability, alternative, level) {
     greater = list(p_value = probability, flag = ifelse(probability < alpha, 1L, 0L)),
     less = list(p_value = probability, flag = ifelse(probability < alpha, -1L, 0L))
   )
+  storage.mode(decided$flag) <- "integer"
+  decided
 }
 
 # The tail of a standard normal statistic that a score test compares with alpha (K-65,

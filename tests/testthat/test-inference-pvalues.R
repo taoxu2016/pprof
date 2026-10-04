@@ -19,6 +19,15 @@ test_that("one-sided flags compare the tested tail with alpha (K-63)", {
   expect_identical(less$flag, c(-1L, 0L, 0L))
 })
 
+test_that("flags are integers when every probability is missing", {
+  # ifelse() alone returns a logical vector here, which the result objects reject; the Wald
+  # tests of a random-effect model whose provider variance is 0 have only missing
+  # probabilities (dev/design/phase5-facts/09_singular_re_fits.R).
+  for (alternative in c("two.sided", "greater", "less")) {
+    expect_identical(infer_decide(c(NaN, NA), alternative, 0.95)$flag, c(NA_integer_, NA_integer_))
+  }
+})
+
 test_that("alpha is 1 - level in floating point (K-61)", {
   # 1 - 0.95 is 0.050000000000000044, so a tail probability of exactly 0.025 is flagged.
   expect_identical(infer_decide(0.025, "two.sided", 0.95)$flag, 1L)
