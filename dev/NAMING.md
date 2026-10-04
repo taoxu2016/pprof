@@ -50,7 +50,7 @@ Not carried over: `logis`, `SM`, `stdz`, `Y.char`, `Z.char`, `ProvID`, `ProvID.c
 | Funnel-plot control limits | noun | `funnel_limits()` |
 | Covariate-level tests (Wald, LR, score) | verb | `test_coefficients()` |
 | Data diagnostics | verb | `check_data()` |
-| Plots | `plot_<kind>()` | `plot_funnel()`, `plot_caterpillar()`, `plot_flags()` |
+| Plots | `plot_<kind>()` | `plot_funnel()`, `plot_caterpillar()`, `plot_flags()`, `plot_volume()` (added in Phase 6, DEC-059) |
 | Model-contract generics for extension developers | noun | `provider_table()`, `provider_index()`, `linear_predictor()`, `observed_outcome()`, `expected_outcome()`, `predicted_outcome()` (added in Phase 5, DEC-046), `null_effect()`, `profile_spec()`, `inference_capabilities()`, `provider_estimates()`, `provider_estimate_se()`, `provider_test()`, `refit_without()` (ARCHITECTURE §E.1; documented in the developer guide, exported with `@keywords internal`). They return plain vectors and tables; the user-facing `provider_effects()` builds its result object from them |
 
 Standard generics keep their base-R names and meanings: `print`, `summary`, `coef`, `vcov`, `confint`, `predict`, `fitted`, `residuals`, `nobs`, `logLik`, `formula`, `plot`, and `tidy`, `glance`, `augment` from `generics`.
@@ -108,6 +108,21 @@ Every function that takes one of these concepts uses the name, type, and default
 | Funnel target | `target` | number | `1` (ratio), `0` (difference) | `target` |
 | Thread count | `threads` | positive integer | `1` | `threads` (and hard-coded 2 and 4) |
 | Verbosity | `verbose` | `TRUE`/`FALSE` | `FALSE` | `message` |
+
+Plot functions (added in Phase 6, DEC-058) take the result first as `x`, then, where they apply, in this order:
+
+| Concept | Name | Type and values | Default | Replaces |
+|---|---|---|---|---|
+| Measures to plot | `standardization`, `measure` | values present in the result | the first (`plot_caterpillar()`) or all (`plot_volume()`) | the `confint()` element passed |
+| Reference line | `reference` | number | 1 (ratio), the population rate (rate), 0 (difference); none for provider effects | `refline_value` |
+| Orientation | `orientation` | `"vertical"`, `"horizontal"` | `"vertical"` | `orientation` |
+| Colour by flag | `use_flag` | `TRUE`/`FALSE` | `FALSE` (`plot_caterpillar()`), `TRUE` (`plot_volume()`) | `use_flag` |
+| Number of provider-size groups | `group_count` | positive integer | `4` | `group_num` |
+| Point size and opacity | `point_size`, `point_alpha` | non-negative number; number in [0, 1] | `2`, `0.8` | `point_size`, `point_alpha` |
+| Line width | `line_width` | non-negative number | per plot | `line_size`, `errorbar_size`, `refline_size` |
+| Label size | `label_size` | non-negative number | `4` | `label_size` |
+
+Colours, shapes, and line types are not arguments: each flag has one colour and shape in every plot, and users restyle the returned ggplot object with ggplot2's functions.
 
 Notes:
 

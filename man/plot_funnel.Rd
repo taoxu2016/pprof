@@ -4,7 +4,7 @@
 \alias{plot_funnel}
 \title{Funnel plot}
 \usage{
-plot_funnel(x, point_size = 2, point_alpha = 0.8, line_size = 0.8)
+plot_funnel(x, point_size = 2, point_alpha = 0.8, line_width = 0.8)
 }
 \arguments{
 \item{x}{A \code{pprof_funnel} result from \code{\link[=funnel_limits]{funnel_limits()}}, or a \code{pprof_profile} result from
@@ -12,15 +12,31 @@ plot_funnel(x, point_size = 2, point_alpha = 0.8, line_size = 0.8)
 
 \item{point_size, point_alpha}{Size and opacity of the points.}
 
-\item{line_size}{Width of the control-limit lines.}
+\item{line_width}{Width of the control limits and the target line.}
 }
 \value{
 A ggplot object.
 }
 \description{
-Plots each provider's indirectly standardized ratio against its precision, with the
-control limits of \code{\link[=funnel_limits]{funnel_limits()}} and the target line. Points are coloured by the flags
-the funnel result carries (by default the modified score test at the first level).
+Plots each provider's indirectly standardized measure against its precision, with the
+control limits and the target of \code{\link[=funnel_limits]{funnel_limits()}}, and the providers coloured by the flags
+the funnel result carries, from the test at its first level.
+}
+\details{
+For logistic fixed-effect models, the points are the indirect ratios, the precision is
+E_i^2 / V_i (the squared expected count over its null variance), the limits are those of
+the score statistic around the target 1, and the flags come from the modified score test
+(pprof 1.0.3's \code{plot()} of \code{logis_fe} fits). For linear fixed-effect models, the points are
+the indirect differences, the precision is the provider's number of observations n_i, the
+limits are target -/+ z sigma / sqrt(n_i) around the target 0, and the flags come from the
+Wald test (\code{plot()} of \code{linear_fe} fits). With \code{provider_variance = "full"} the limits still
+use sigma^2 / n_i while the Wald test uses the full variance and the t distribution, so a
+point outside the limits may not be flagged; this is as in pprof 1.0.3 and awaiting a
+decision of the methodology owners. Random-effect models have no funnel plot.
+
+Providers whose flag is missing are shown as "no flag". The plot is returned, not printed;
+change its appearance with ggplot2's functions, for example
+\code{+ ggplot2::scale_colour_manual(...)}.
 }
 \examples{
 data(ExampleDataBinary)
@@ -28,4 +44,7 @@ example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$Prov
                       ExampleDataBinary$Z)
 fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
 plot_funnel(funnel_limits(fit, level = c(0.95, 0.99)))
+}
+\seealso{
+\code{\link[=funnel_limits]{funnel_limits()}}, \code{\link[=plot_caterpillar]{plot_caterpillar()}}, \code{\link[=plot_flags]{plot_flags()}}, \code{\link[=plot_volume]{plot_volume()}}
 }

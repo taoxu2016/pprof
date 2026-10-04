@@ -11,7 +11,8 @@ plot_caterpillar(
   reference = NULL,
   orientation = "vertical",
   use_flag = FALSE,
-  point_size = 2
+  point_size = 2,
+  line_width = 0.6
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ line and the flags are omitted unless it is given.}
 \item{use_flag}{Whether to colour the intervals by flag.}
 
 \item{point_size}{Size of the points.}
+
+\item{line_width}{Width of the intervals and the reference line.}
 }
 \value{
 A ggplot object.
@@ -36,9 +39,17 @@ A ggplot object.
 \description{
 Plots each provider's estimate with its interval, in order of the estimate, and a
 reference line. For standardized measures the reference is 1 for ratios, the population
-rate for rates, and 0 for differences; providers whose interval lies above the reference
-are flagged "higher" and those whose interval lies below it "lower" (for one-sided
-intervals, only on the side tested), as pprof 1.0.3's \code{caterpillar_plot()} does.
+rate for rates, and 0 for differences; a provider whose interval lies above the reference
+is flagged "higher" and one whose interval lies below it "lower" (a one-sided interval only
+on the side tested), as pprof 1.0.3's \code{caterpillar_plot()} flags them. These flags compare
+the intervals with the line; the flags of \code{\link[=test_providers]{test_providers()}} come from the tests, and the
+two can differ where an interval and the test use different distributions.
+}
+\details{
+A two-sided interval is drawn from its lower to its upper limit, an infinite limit to the
+edge of the panel; a one-sided interval is drawn from its bound to the estimate, as in
+\code{caterpillar_plot()}. Providers with equal estimates keep their order in \code{x}. The plot is
+returned, not printed.
 }
 \examples{
 data(ExampleDataBinary)
@@ -46,4 +57,7 @@ example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$Prov
                       ExampleDataBinary$Z)
 fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
 plot_caterpillar(standardize_providers(fit, measure = "ratio", interval = "wald"), use_flag = TRUE)
+}
+\seealso{
+\code{\link[=standardize_providers]{standardize_providers()}}, \code{\link[=provider_effects]{provider_effects()}}, \code{\link[=plot_funnel]{plot_funnel()}}
 }

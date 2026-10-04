@@ -68,18 +68,27 @@ plot_alternative_text <- function(alternative) {
   switch(alternative, two.sided = "two-sided", greater = "one-sided (greater)", less = "one-sided (less)", alternative)
 }
 
-# "Flags: exact test at the 95% level, two-sided".
+# "flags: exact test at the 95% level, two-sided".
 plot_test_subtitle <- function(test, level, alternative = "two.sided", score_type = NULL) {
   name <- switch(test, exact = "exact test", bootstrap = "bootstrap test", wald = "Wald test",
                  score = if (identical(score_type, "standard")) "standard score test" else "score test",
                  paste(test, "test"))
-  sprintf("Flags: %s at the %s level, %s", name, plot_level_text(level), plot_alternative_text(alternative))
+  sprintf("flags: %s at the %s level, %s", name, plot_level_text(level), plot_alternative_text(alternative))
 }
 
-# "Wald intervals at the 95% level, two-sided".
+# "exact intervals at the 95% level, two-sided".
 plot_interval_subtitle <- function(interval, level, alternative = "two.sided") {
-  name <- switch(interval, wald = "Wald", exact = "Exact", score = "Score", interval)
+  name <- switch(interval, wald = "Wald", interval)
   sprintf("%s intervals at the %s level, %s", name, plot_level_text(level), plot_alternative_text(alternative))
+}
+
+# The subtitle from its parts, joined by semicolons and starting with a capital; NULL without
+# parts.
+plot_subtitle <- function(...) {
+  parts <- c(...)
+  if (length(parts) == 0L) return(NULL)
+  text <- paste(parts, collapse = "; ")
+  paste0(toupper(substr(text, 1L, 1L)), substring(text, 2L))
 }
 
 plot_theme <- function(base_size = 12) {

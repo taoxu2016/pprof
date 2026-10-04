@@ -21,8 +21,10 @@ A ggplot object.
 The share of providers flagged higher than expected, as expected, and lower than
 expected, in groups of providers by size and overall. Providers are grouped at the
 quantiles of their sizes, \code{cut(n_obs, quantile(n_obs, (0:g) / g), include.lowest = TRUE)}
-with g = \code{group_count}, as pprof 1.0.3's \code{bar_plot()} groups them (K-113). Providers
-without a flag (a test statistic that is not finite) are left out.
+with g = \code{group_count}, as pprof 1.0.3's \code{bar_plot()} groups them; each group is labelled
+with the range of its providers' sizes. Providers without a flag (a test statistic that is
+not finite, for example for every provider of a random-effect model whose provider
+variance is estimated as 0) are counted as "no flag". The plot is returned, not printed.
 }
 \examples{
 data(ExampleDataBinary)
@@ -30,4 +32,7 @@ example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$Prov
                       ExampleDataBinary$Z)
 fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
 plot_flags(test_providers(fit))
+}
+\seealso{
+\code{\link[=test_providers]{test_providers()}}, \code{\link[=plot_funnel]{plot_funnel()}}, \code{\link[=plot_volume]{plot_volume()}}
 }
