@@ -1,7 +1,10 @@
-# Compatibility wrapper for the funnel plot of pprof 1.0.3 (DEC-034): the plot data are
-# built from the new API (indirect ratios, score-test flags, and the funnel limits of
-# profile_funnel_limits() at the user's alpha, K-110), in the reference's layout, and drawn
-# by the reference's ggplot code, so that every layer is the reference's.
+# Compatibility wrappers for the plots of pprof 1.0.3 (DEC-034, DEC-045, DEC-055): plot() of
+# logis_fe and linear_fe fits, caterpillar_plot(), and bar_plot(). The plot data are built by
+# the new code (the profiling API, the funnel limits of profile_funnel_limits() at the user's
+# alpha, K-110 and K-111, and the interval flags and flag shares of K-112 and K-113) in the
+# reference's layout, and drawn by the reference's ggplot code, so that every layer is the
+# reference's. The reference's dplyr and magrittr calls are base R here, with the same rows,
+# row names, column types, and factor levels.
 
 #' Get funnel plot from a fitted `logis_fe` object for institutional comparisons
 #'
@@ -52,10 +55,6 @@
 #'   \strong{23(1)}, 45-58.
 #' \cr
 #'
-#' @importFrom dplyr arrange cross_join mutate select
-#' @importFrom magrittr %>%
-#' @importFrom tibble tibble
-#' @importFrom rlang .data
 #' @exportS3Method plot logis_fe
 plot.logis_fe <- function(x, null = "median", test = "score", target = 1, alpha = 0.05,
                           labels = c("lower", "expected", "higher"),
@@ -83,9 +82,21 @@ plot.logis_fe <- function(x, null = "median", test = "score", target = 1, alpha 
                                row.names = rownames(x$coefficient$gamma))
   processed_data$precision <- funnel$precision(processed_data$Exp, processed_data$Var)
   processed_data <- cbind(processed_data, flags)
-  plot_data <- processed_data |>
-    arrange(.data$precision) |>
-    cross_join(tibble(alpha = alpha))
+  plot_data <- compat_funnel_data(processed_data, alpha, target, funnel)
+  compat_funnel_plot(plot_data, target, alpha, labels, point_colors, point_shapes, point_size, point_alpha, line_size,
+                     target_line_type)
+}
+
+# The data of the funnel plots of pprof 1.0.3 (K-110, K-111), as its dplyr code gives them:
+# the providers in order of precision (ties in provider order), each repeated for every alpha
+# in turn, with the control limits of profile_funnel_limits() at that alpha; the columns
+# precision, indicator, Exp, flag, alpha (a factor), lower, and upper; automatic row names.
+compat_funnel_data <- function(processed_data, alpha, target, funnel) {
+  ordered <- processed_data[order(processed_data$precision), , drop = FALSE]
+  rows <- rep(seq_len(nrow(ordered)), each = length(alpha))
+  plot_data <- ordered[rows, c("precision", "indicator", "Exp", "flag"), drop = FALSE]
+  rownames(plot_data) <- NULL
+  plot_data$alpha <- rep(alpha, times = nrow(ordered))
   plot_data$lower <- NA_real_
   plot_data$upper <- NA_real_
   for (value in unique(alpha)) {
@@ -94,19 +105,31 @@ plot.logis_fe <- function(x, null = "median", test = "score", target = 1, alpha 
     plot_data$lower[rows] <- limits$lower
     plot_data$upper[rows] <- limits$upper
   }
-  plot_data <- plot_data |>
-    select(c("precision", "indicator", "Exp", "flag", "alpha", "lower", "upper")) |>
-    mutate(alpha = factor(alpha))
-  compat_funnel_plot(plot_data, target, alpha, labels, point_colors, point_shapes, point_size, point_alpha, line_size,
-                     target_line_type)
+  plot_data$alpha <- factor(plot_data$alpha)
+  plot_data
 }
 
-# The reference's funnel plot builder (R/plot.logis_fe.R:184-311 in pprof 1.0.3), unchanged.
+# The funnel points at the first alpha, renumbered, as dplyr::filter(alpha == alpha[1]) gives
+# them in the reference's drawing code.
+compat_first_alpha_rows <- function(plot_data) {
+  rows <- plot_data[which(plot_data$alpha == plot_data$alpha[1]), , drop = FALSE]
+  rownames(rows) <- NULL
+  rows
+}
+
+# dplyr::bind_rows(data, extra) where `extra` has some of data's columns: the other columns of
+# the extra rows are missing, of their column's type; automatic row names.
+compat_bind_rows <- function(data, extra) {
+  rows <- data[rep(NA_integer_, nrow(extra)), , drop = FALSE]
+  for (column in names(extra)) rows[[column]][] <- extra[[column]]
+  combined <- rbind(data, rows)
+  rownames(combined) <- NULL
+  combined
+}
+
+# The reference's funnel plot builder (R/plot.logis_fe.R:184-311 in pprof 1.0.3), unchanged
+# except that its dplyr calls are compat_first_alpha_rows() and compat_bind_rows().
 #' @importFrom stats setNames
-#' @importFrom dplyr filter bind_rows
-#' @importFrom magrittr %>%
-#' @importFrom tibble tibble
-#' @importFrom rlang .data
 #' @importFrom ggplot2 ggplot scale_x_continuous scale_y_continuous geom_point aes scale_shape_manual
 #'   scale_color_manual scale_linetype_manual geom_line geom_hline guides guide_legend theme labs theme_classic
 #'   element_text element_rect
@@ -143,7 +166,7 @@ compat_funnel_plot <- function(plot_data,
     stop("plot_data must be a data frame")
   }
 
-  data <- plot_data %>% filter(alpha == alpha[1])
+  data <- compat_first_alpha_rows(plot_data)
 
   # Ensure that data$flag is a factor
   data$flag <- factor(data$flag, levels = c(-1, 0, 1))
@@ -157,7 +180,7 @@ compat_funnel_plot <- function(plot_data,
     dummy_data <- data.frame(flag = factor(missing_levels, levels = c(-1, 0, 1)),
                              precision = NA,
                              indicator = NA)
-    data <- bind_rows(data, dummy_data)
+    data <- compat_bind_rows(data, dummy_data)
   }
 
   num_levels <- length(levels(data$flag))
@@ -287,9 +310,6 @@ compat_funnel_plot <- function(plot_data,
 #' fit_fe <- linear_fe(Y = outcome, Z = covar, ProvID = ProvID)
 #' plot(fit_fe)
 #'
-#' @importFrom dplyr arrange cross_join mutate select
-#' @importFrom tibble tibble
-#' @importFrom rlang .data
 #' @exportS3Method plot linear_fe
 plot.linear_fe <- function(x, null = "median", target = 0, alpha = 0.05,
                            labels = c("lower", "expected", "higher"),
@@ -327,31 +347,15 @@ compat_linear_fe_plot <- function(x, null = "median", target = 0, alpha = 0.05,
                                                        stats::setNames(measures$n_obs, ids))
   flagging <- compat_linear_fe_test(x, level = 1 - alpha[1], null = null)
   processed_data <- cbind(processed_data, flagging)
-  plot_data <- processed_data |>
-    arrange(.data$precision) |>
-    cross_join(tibble(alpha = alpha))
-  plot_data$lower <- NA_real_
-  plot_data$upper <- NA_real_
-  for (value in unique(alpha)) {
-    rows <- plot_data$alpha == value
-    limits <- profile_funnel_limits(plot_data$precision[rows], value, target, funnel)
-    plot_data$lower[rows] <- limits$lower
-    plot_data$upper[rows] <- limits$upper
-  }
-  plot_data <- plot_data |>
-    select(c("precision", "indicator", "Exp", "flag", "alpha", "lower", "upper")) |>
-    mutate(alpha = factor(alpha))
+  plot_data <- compat_funnel_data(processed_data, alpha, target, funnel)
   compat_funnel_plot_linear(plot_data, target, alpha, labels, point_colors, point_shapes, point_size, point_alpha,
                             line_size, target_line_type)
 }
 
 # The reference's funnel plot builder of linear fixed effects (R/plot.linear_fe.R:96-224 in
-# pprof 1.0.3, ppfunnel_linear()), unchanged.
+# pprof 1.0.3, ppfunnel_linear()), unchanged except that its dplyr calls are compat_first_alpha_rows()
+# and compat_bind_rows().
 #' @importFrom stats setNames
-#' @importFrom dplyr filter bind_rows
-#' @importFrom magrittr %>%
-#' @importFrom tibble tibble
-#' @importFrom rlang .data
 #' @importFrom ggplot2 ggplot scale_x_continuous scale_y_continuous geom_point aes scale_shape_manual
 #'   scale_color_manual scale_linetype_manual geom_line geom_hline guides guide_legend theme labs theme_classic
 #'   element_text element_rect margin
@@ -388,7 +392,7 @@ compat_funnel_plot_linear <- function(plot_data,
     stop("plot_data must be a data frame")
   }
 
-  data <- plot_data %>% filter(alpha == alpha[1])
+  data <- compat_first_alpha_rows(plot_data)
 
   # Ensure that data$flag is a factor
   data$flag <- factor(data$flag, levels = c(-1, 0, 1))
@@ -402,7 +406,7 @@ compat_funnel_plot_linear <- function(plot_data,
     dummy_data <- data.frame(flag = factor(missing_levels, levels = c(-1, 0, 1)),
                              precision = NA,
                              indicator = NA)
-    data <- bind_rows(data, dummy_data)
+    data <- compat_bind_rows(data, dummy_data)
   }
 
   num_levels <- length(levels(data$flag))

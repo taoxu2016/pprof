@@ -154,14 +154,9 @@ importFrom(Rcpp,
 importFrom(caret,nearZeroVar)
 importFrom(dplyr,
   across,
-  arrange,
-  bind_rows,
-  cross_join,
-  filter,
   group_by,
   mutate,
   n,
-  select,
   summarise,
   ungroup
 )
@@ -241,6 +236,5 @@ importFrom(stats,
   terms,
   vcov
 )
-importFrom(tibble,tibble)
 importFrom(tidyselect,all_of)
 useDynLib(pprof, .registration = TRUE)
