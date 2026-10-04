@@ -458,3 +458,395 @@ compat_provider_variance <- function(option) {
   if (is.character(option) && length(option) == 1L && option %in% c("simplified", "s")) return("simplified")
   abort_invalid_input("Argument 'option.gamma.var' should be 'full' or 'simplified'.", arg = "option.gamma.var")
 }
+
+#' Main Function for fitting the random effect linear model
+#'
+#' Fit a random effect linear model via \code{\link[lme4]{lmer}} from the \code{lme4} package. This is the
+#' interface of pprof 1.0.3, kept for existing code; it fits the model with the same call as pprof 1.0.3 and
+#' returns the object of pprof 1.0.3. [fit_linear_re()] is the new interface.
+#'
+#' @param formula a two-sided formula object describing the model to be fitted,
+#' with the response variable on the left of a ~ operator and covariates on the right,
+#' separated by + operators. The random effect of the provider identifier is specified using \code{(1 | )}.
+#' @param data a data frame containing the variables named in the `formula`,
+#' or the columns specified by `Y.char`, `Z.char`, and `ProvID.char`.
+#' @param Y.char a character string specifying the column name of the response variable in the `data`.
+#' @param Z.char a character vector specifying the column names of the covariates in the `data`.
+#' @param ProvID.char a character string specifying the column name of the provider identifier in the `data`.
+#' @param Y a numeric vector representing the response variable.
+#' @param Z a matrix or data frame representing the covariates, which can include both numeric and categorical
+#'   variables.
+#' @param ProvID a numeric vector representing the provider identifier.
+#' @param \dots additional arguments passed to \code{\link[lme4]{lmer}} for further customization.
+#'
+#' @return A list of objects with S3 class \code{"linear_re"}:
+#' \item{coefficient}{a list containing the estimated coefficients:
+#'   \code{FE}, the fixed effects for each predictor and the intercept, and \code{RE}, the random effects for each
+#'   provider.}
+#' \item{variance}{a list containing the variance estimates:
+#'   \code{FE}, the variance-covariance matrix of the fixed effect coefficients, and \code{RE}, the variance of the
+#'   random effects.}
+#' \item{sigma}{the residual standard error.}
+#' \item{fitted}{the fitted values of each individual.}
+#' \item{observation}{the original response of each individual.}
+#' \item{residuals}{the residuals of each individual, that is response minus fitted values.}
+#' \item{linear_pred}{the linear predictor of each individual.}
+#' \item{data_include}{the data used to fit the model, sorted by the provider identifier.
+#' For categorical covariates, this includes the dummy variables created for
+#' all categories except the reference level.}
+#' \item{char_list}{a list of the character vectors representing the column names for
+#' the response variable, covariates, and provider identifier.
+#' For categorical variables, the names reflect the dummy variables created for each category.}
+#' \item{Loglkd}{the log-likelihood.}
+#' \item{AIC}{Akaike information criterion.}
+#' \item{BIC}{Bayesian information criterion.}
+#'
+#' @details
+#' This function is used to fit a random effect linear model of the form:
+#' \deqn{Y_{ij} = \mu + \alpha_i + \mathbf{Z}_{ij}^\top\boldsymbol\beta + \epsilon_{ij}}
+#' where \eqn{Y_{ij}} is the continuous outcome for individual \eqn{j} in provider \eqn{i},
+#' \eqn{\mu} is the overall intercept, \eqn{\alpha_i} is the random effect for provider \eqn{i},
+#' \eqn{\mathbf{Z}_{ij}} are the covariates, and \eqn{\boldsymbol\beta} is the vector of coefficients for the
+#'   covariates.
+#'
+#' The model is fitted by overloading the \code{\link[lme4]{lmer}} function from the \code{lme4} package.
+#' Three different input formats are accepted:
+#' a formula and dataset, where the formula is of the form \code{response ~ covariates + (1 | provider)}, with
+#'   \code{provider} representing the provider identifier;
+#' a dataset along with the column names of the response, covariates, and provider identifier;
+#' or the outcome vector \eqn{\boldsymbol{Y}}, the covariate matrix or data frame \eqn{\mathbf{Z}}, and the provider
+#'   identifier vector.
+#'
+#' In addition to these input formats, all arguments from the \code{\link[lme4]{lmer}} function can be modified via
+#'   \code{\dots},
+#' allowing for customization of model fitting options such as controlling the optimization method or adjusting
+#'   convergence criteria.
+#' By default, the model is fitted using REML (restricted maximum likelihood).
+#'
+#' If issues arise during model fitting, consider using the \code{data_check} function to perform a data quality
+#'   check,
+#' which can help identify missing values, low variation in covariates, high-pairwise correlation, and
+#'   multicollinearity.
+#' For datasets with missing values, this function automatically removes observations (rows) with any missing
+#'   values before fitting the model.
+#'
+#' Unlike pprof 1.0.3, a call that matches none of the three input formats, or a character `ProvID` with a matrix
+#' `Z` (which `cbind()` would turn into text), gives a clear error.
+#'
+#' @seealso \code{\link{fit_linear_re}}, \code{\link{data_check}}
+#'
+#' @importFrom lme4 lmer fixef ranef
+#' @importFrom stats complete.cases as.formula model.matrix fitted residuals logLik
+#'
+#' @export
+#'
+#' @examples
+#' data(ExampleDataLinear)
+#' outcome <- ExampleDataLinear$Y
+#' covar <- ExampleDataLinear$Z
+#' ProvID <- ExampleDataLinear$ProvID
+#' data <- data.frame(outcome, ProvID, covar)
+#' covar.char <- colnames(covar)
+#' outcome.char <- colnames(data)[1]
+#' ProvID.char <- colnames(data)[2]
+#' formula <- as.formula(paste("outcome ~", paste(covar.char, collapse = " + "), "+ (1|ProvID)"))
+#'
+#' # Fit random effect linear model using three input formats
+#' fit_re1 <- linear_re(Y = outcome, Z = covar, ProvID = ProvID)
+#' fit_re2 <- linear_re(data = data, Y.char = outcome.char,
+#' Z.char = covar.char, ProvID.char = ProvID.char)
+#' fit_re3 <- linear_re(formula, data)
+#'
+#' @references
+#' Bates D, Maechler M, Bolker B, Walker S (2015). \emph{Fitting Linear Mixed-Effects Models Using lme4}.
+#' Journal of Statistical Software, 67(1), 1-48.
+#' \cr
+linear_re <- function(formula = NULL, data = NULL,
+                      Y = NULL, Z = NULL, ProvID = NULL, # nolint: object_name_linter.
+                      Y.char = NULL, Z.char = NULL, ProvID.char = NULL, ...) { # nolint: object_name_linter.
+  inputs <- compat_re_inputs(formula, data, Y.char, Z.char, ProvID.char, Y, Z, ProvID)
+  # D-36: the random-effect fits always report the input format.
+  base::message("Input format: ", inputs$format, ".")
+  compat_re_object(compat_lme4_fit(inputs, "linear", ...), inputs, "linear_re")
+}
+
+#' Main Function for fitting the random effect logistic model
+#'
+#' Fit a random effect logistic model via \code{\link[lme4]{glmer}} from the \code{lme4} package. This is the
+#' interface of pprof 1.0.3, kept for existing code; it fits the model with the same call as pprof 1.0.3 and
+#' returns the object of pprof 1.0.3. [fit_logistic_re()] is the new interface.
+#'
+#' @inheritParams linear_re
+#' @param \dots additional arguments passed to \code{\link[lme4]{glmer}} for further customization.
+#'
+#' @return A list of objects with S3 class \code{"logis_re"}:
+#' \item{coefficient}{a list containing the estimated coefficients:
+#'   \code{FE}, the fixed effects for each predictor and the intercept, and \code{RE}, the random effects for each
+#'   provider.}
+#' \item{variance}{a list containing the variance estimates:
+#'   \code{FE}, the variance-covariance matrix of the fixed effect coefficients, and \code{RE}, the variance of the
+#'   random effects.}
+#' \item{fitted}{the predicted probability of each observation having a response of 1.}
+#' \item{observation}{the original response of each individual.}
+#' \item{linear_pred}{the linear predictor of each individual.}
+#' \item{data_include}{the data used to fit the model, sorted by the provider identifier.
+#' For categorical covariates, this includes the dummy variables created for
+#' all categories except the reference level.}
+#' \item{char_list}{a list of the character vectors representing the column names for
+#' the response variable, covariates, and provider identifier.
+#' For categorical variables, the names reflect the dummy variables created for each category.}
+#' \item{Loglkd}{the log-likelihood.}
+#' \item{AIC}{Akaike information criterion.}
+#' \item{BIC}{Bayesian information criterion.}
+#'
+#' @details
+#' This function is used to fit a random effect logistic model of the form:
+#' \deqn{\text{logit}(P(Y_{ij} = 1 \mid \alpha_i, \mathbf{Z}_{ij})) = \mu + \alpha_i + \mathbf{Z}_{ij}^\top
+#'   \boldsymbol{\beta},}
+#' where \eqn{Y_{ij}} is the binary outcome for individual \eqn{j} in provider \eqn{i},
+#' \eqn{\mu} is the overall intercept, \eqn{\alpha_i} is the random effect for provider \eqn{i},
+#' \eqn{\mathbf{Z}_{ij}} are the covariates, and \eqn{\boldsymbol\beta} is the vector of coefficients for the
+#'   covariates.
+#'
+#' The model is fitted by overloading the \code{\link[lme4]{glmer}} function from the \code{lme4} package.
+#' Three different input formats are accepted:
+#' a formula and dataset, where the formula is of the form \code{response ~ covariates + (1 | provider)}, with
+#'   \code{provider} representing the provider identifier;
+#' a dataset along with the column names of the response, covariates, and provider identifier;
+#' or the outcome vector \eqn{\boldsymbol{Y}}, the covariate matrix or data frame \eqn{\mathbf{Z}}, and the provider
+#'   identifier vector.
+#'
+#' In addition to these input formats, all arguments from the \code{\link[lme4]{glmer}} function can be modified
+#'   via \code{\dots},
+#' allowing for customization of model fitting options.
+#'
+#' If issues arise during model fitting, consider using the \code{data_check} function to perform a data quality
+#'   check,
+#' which can help identify missing values, low variation in covariates, high-pairwise correlation, and
+#'   multicollinearity.
+#' For datasets with missing values, this function automatically removes observations (rows) with any missing
+#'   values before fitting the model.
+#'
+#' Unlike pprof 1.0.3, a call that matches none of the three input formats, or a character `ProvID` with a matrix
+#' `Z` (which `cbind()` would turn into text), gives a clear error.
+#'
+#' @seealso \code{\link{fit_logistic_re}}, \code{\link{data_check}}
+#'
+#' @importFrom lme4 glmer fixef ranef
+#' @importFrom stats complete.cases as.formula model.matrix fitted residuals logLik binomial
+#'
+#' @export
+#'
+#' @examples
+#' data(ExampleDataBinary)
+#' keep <- ExampleDataBinary$ProvID <= 20
+#' outcome <- ExampleDataBinary$Y[keep]
+#' covar <- ExampleDataBinary$Z[keep, ]
+#' ProvID <- ExampleDataBinary$ProvID[keep]
+#' data <- data.frame(outcome, ProvID, covar)
+#' covar.char <- colnames(covar)
+#' outcome.char <- colnames(data)[1]
+#' ProvID.char <- colnames(data)[2]
+#' formula <- as.formula(paste("outcome ~", paste(covar.char, collapse = " + "), "+ (1|ProvID)"))
+#'
+#' # Fit random effect logistic model using three input formats
+#' fit_re1 <- logis_re(Y = outcome, Z = covar, ProvID = ProvID)
+#' fit_re2 <- logis_re(data = data, Y.char = outcome.char,
+#' Z.char = covar.char, ProvID.char = ProvID.char)
+#' fit_re3 <- logis_re(formula, data)
+#'
+#' @references
+#' Bates D, Maechler M, Bolker B, Walker S (2015). \emph{Fitting Linear Mixed-Effects Models Using lme4}.
+#' Journal of Statistical Software, 67(1), 1-48.
+#' \cr
+logis_re <- function(formula = NULL, data = NULL,
+                     Y = NULL, Z = NULL, ProvID = NULL, # nolint: object_name_linter.
+                     Y.char = NULL, Z.char = NULL, ProvID.char = NULL, ...) { # nolint: object_name_linter.
+  inputs <- compat_re_inputs(formula, data, Y.char, Z.char, ProvID.char, Y, Z, ProvID)
+  # D-36: the random-effect fits always report the input format.
+  base::message("Input format: ", inputs$format, ".")
+  compat_re_object(compat_lme4_fit(inputs, "logistic", ...), inputs, "logis_re")
+}
+
+#' Main Function for fitting correlated random effect linear model
+#'
+#' Fit a correlated  random effect linear model via \code{\link[lme4]{lmer}} from the \code{lme4} package. This is
+#' the interface of pprof 1.0.3, kept for existing code; it fits the model with the same call as pprof 1.0.3 and
+#' returns the object of pprof 1.0.3. [fit_linear_cre()] is the new interface.
+#'
+#' @param data a data frame containing all variables.
+#' @param Y.char a character string specifying the column name of the response variable in the `data`.
+#' @param wb.char a character vector specifying covariates to be decomposed into
+#'   within (\code{*_within}) and between (\code{*_bar}) components.
+#' @param other.char a character vector specifying additional covariates to include in the model without
+#'   decomposition.
+#' @param ProvID.char a character string specifying the column name of the provider identifier in the `data`.
+#' @param \dots additional arguments passed to \code{\link[lme4]{lmer}} for further customization.
+#'
+#' @return A list of objects with S3 class \code{"linear_cre"}:
+#' \item{coefficient}{a list containing the estimated coefficients:
+#'   \code{FE}, the fixed effects for each predictor and the intercept, and \code{RE}, the random effects for each
+#'   provider.}
+#' \item{variance}{a list containing the variance estimates:
+#'   \code{FE}, the variance-covariance matrix of the fixed effect coefficients, and \code{RE}, the variance of the
+#'   random effects.}
+#' \item{sigma}{the residual standard error.}
+#' \item{fitted}{the fitted values of each individual.}
+#' \item{observation}{the original response of each individual.}
+#' \item{residuals}{the residuals of each individual, that is response minus fitted values.}
+#' \item{linear_pred}{the linear predictor of each individual.}
+#' \item{data_include}{the processed data used to fit the model, sorted by the provider identifier.
+#' This includes the within-group (\code{*_within}) and between-group (\code{*_bar}) components for variables
+#'   specified in \code{wb.char}.
+#' For categorical covariates, it includes the dummy variables created for
+#' all categories except the reference level.}
+#' \item{char_list}{a list of the character vectors representing the column names for
+#' the response variable, covariates, and provider identifier.
+#' For categorical variables, the names reflect the dummy variables created for each category.}
+#' \item{Loglkd}{the log-likelihood.}
+#' \item{AIC}{Akaike information criterion.}
+#' \item{BIC}{Bayesian information criterion.}
+#'
+#' @details
+#' Fit a correlated random effect linear model using \code{\link[lme4]{lmer}} with a Mundlak
+#' within-between decomposition for selected covariates. For each
+#' decomposed covariate \eqn{Z_k}, the function constructs
+#' \eqn{Z_{k,\mathrm{bar},i} = \frac{1}{n_i}\sum_j Z_{k,ij}} (the group mean, "between")
+#' and \eqn{Z_{k,\mathrm{within},ij} = Z_{k,ij} - Z_{k,\mathrm{bar},i}} (the within-group deviation),
+#' and estimates
+#' \deqn{Y_{ij} = \mu + \alpha_i + \sum_k \beta_{k,W} Z_{k,\mathrm{within},ij}
+#'       + \sum_k \beta_{k,B} Z_{k,\mathrm{bar},i}
+#'       + \mathbf{X}_{ij}^\top\gamma + \varepsilon_{ij},}
+#' where \eqn{\alpha_i \sim \mathcal{N}(0,\sigma_\alpha^2)} is a random intercept.
+#'
+#' The function creates, for every name in \code{wb.char}, two columns:
+#' \code{<var>_bar} (group mean within \code{ProvID.char}) and
+#' \code{<var>_within} (observation minus its group mean).
+#' The fitted model is:
+#' \preformatted{
+#'   Y ~ <all *_within> + <all *_bar> + <other.char> + (1 | ProvID)
+#' }
+#'
+#' All arguments from the \code{\link[lme4]{lmer}} function can be modified via \code{\dots},
+#' allowing for customization of model fitting options such as controlling the optimization method or adjusting
+#'   convergence criteria.
+#' By default, the model is fitted using REML (restricted maximum likelihood).
+#'
+#' If issues arise during model fitting, consider using the \code{data_check} function to perform a data quality
+#'   check,
+#' which can help identify missing values, low variation in covariates, high-pairwise correlation, and
+#'   multicollinearity.
+#' For datasets with missing values, this function automatically removes observations (rows) with any missing
+#'   values before fitting the model; the group means are computed over every row of `data`, before rows are
+#'   removed.
+#'
+#' @seealso \code{\link{fit_linear_cre}}, \code{\link{data_check}}
+#'
+#' @importFrom lme4 lmer fixef ranef
+#' @importFrom stats complete.cases as.formula model.matrix fitted residuals logLik
+#' @importFrom dplyr group_by mutate ungroup across
+#' @importFrom tidyselect all_of
+#'
+#' @export
+#'
+#' @examples
+#' data(ExampleDataLinear)
+#' outcome <- ExampleDataLinear$Y
+#' covar <- ExampleDataLinear$Z
+#' ProvID <- ExampleDataLinear$ProvID
+#' data <- data.frame(outcome, ProvID, covar)
+#' outcome.char <- colnames(data)[1]
+#' ProvID.char <- colnames(data)[2]
+#' wb.char <- c("z1", "z2")
+#' other.char <- c("z3", "z4", "z5")
+#'
+#' # Fit a correlated random effect linear model
+#' fit_cre <- linear_cre(data = data, Y.char = outcome.char, ProvID.char = ProvID.char,
+#' wb.char = wb.char, other.char = other.char)
+#'
+#' @references
+#' Bates D, Maechler M, Bolker B, Walker S (2015). \emph{Fitting Linear Mixed-Effects Models Using lme4}.
+#' Journal of Statistical Software, 67(1), 1-48.
+#' \cr
+linear_cre <- function(data, Y.char, wb.char, other.char = NULL, ProvID.char, ...) { # nolint: object_name_linter.
+  inputs <- compat_cre_inputs(data, Y.char, wb.char, other.char, ProvID.char)
+  compat_re_object(compat_lme4_fit(inputs, "linear", ...), inputs, "linear_cre")
+}
+
+#' Main Function for fitting correlated random effect logistic model
+#'
+#' Fit a correlated random effect logistic model via \code{\link[lme4]{glmer}} from the \code{lme4} package. This
+#' is the interface of pprof 1.0.3, kept for existing code; it fits the model with the same call as pprof 1.0.3
+#' and returns the object of pprof 1.0.3. [fit_logistic_cre()] is the new interface.
+#'
+#' @inheritParams linear_cre
+#' @param \dots additional arguments passed to \code{\link[lme4]{glmer}} for further customization.
+#'
+#' @return A list of objects with S3 class \code{"logis_cre"}:
+#' \item{coefficient}{a list containing the estimated coefficients:
+#'   \code{FE}, the fixed effects for each predictor and the intercept, and \code{RE}, the random effects for each
+#'   provider.}
+#' \item{variance}{a list containing the variance estimates:
+#'   \code{FE}, the variance-covariance matrix of the fixed effect coefficients, and \code{alpha}, the variance of
+#'   the random effects.}
+#' \item{fitted}{the predicted probability of each observation having a response of 1.}
+#' \item{observation}{the original response of each individual.}
+#' \item{linear_pred}{the linear predictor (on the logit scale, fixed effects only) of each individual.}
+#' \item{data_include}{the processed data used to fit the model, sorted by the provider identifier.
+#' This includes the within-group (\code{*_within}) and between-group (\code{*_bar}) components for variables
+#'   specified in \code{wb.char}.}
+#' \item{char_list}{a list of the character vectors representing the column names for
+#' the response variable, the decomposed covariates, the other covariates, and provider identifier.}
+#' \item{Loglkd}{the log-likelihood.}
+#' \item{AIC}{Akaike information criterion.}
+#' \item{BIC}{Bayesian information criterion.}
+#'
+#' @details
+#' Fit a correlated random effect logistic model using \code{\link[lme4]{glmer}} with a Mundlak
+#' within-between decomposition for selected covariates, as [linear_cre()] does. The fitted model is:
+#' \preformatted{
+#'   Y ~ <all *_within> + <all *_bar> + <other.char> + (1 | ProvID)
+#' }
+#' with a logit link and a normal random intercept, fitted with the Laplace approximation.
+#'
+#' All arguments from the \code{\link[lme4]{glmer}} function can be modified via \code{\dots}.
+#'
+#' For datasets with missing values, this function automatically removes observations (rows) with any missing
+#'   values before fitting the model; the group means are computed over every row of `data`, before rows are
+#'   removed.
+#'
+#' @seealso \code{\link{fit_logistic_cre}}, \code{\link{data_check}}
+#'
+#' @importFrom lme4 glmer fixef ranef
+#' @importFrom stats complete.cases as.formula model.matrix fitted logLik
+#' @importFrom dplyr group_by mutate ungroup across
+#' @importFrom tidyselect all_of
+#'
+#' @export
+#'
+#' @examples
+#' data(ExampleDataBinary)
+#' keep <- ExampleDataBinary$ProvID <= 20
+#' data <- data.frame(outcome = ExampleDataBinary$Y[keep], ProvID = ExampleDataBinary$ProvID[keep],
+#'                    ExampleDataBinary$Z[keep, ])
+#'
+#' # Fit a correlated random effect logistic model
+#' fit_cre <- logis_cre(data = data, Y.char = "outcome", ProvID.char = "ProvID",
+#' wb.char = c("z1", "z2"), other.char = c("z3", "z4", "z5"))
+#'
+#' @references
+#' Bates D, Maechler M, Bolker B, Walker S (2015). \emph{Fitting Linear Mixed-Effects Models Using lme4}.
+#' Journal of Statistical Software, 67(1), 1-48.
+#' \cr
+logis_cre <- function(data, Y.char, wb.char, other.char = NULL, ProvID.char, ...) { # nolint: object_name_linter.
+  inputs <- compat_cre_inputs(data, Y.char, wb.char, other.char, ProvID.char)
+  compat_logis_cre_object(compat_lme4_fit(inputs, "logistic", ...), inputs)
+}
+
+# The lme4 fit of a random-effect wrapper through the adapter, with the reference's formula
+# and data (DEC-042). lme4's messages are printed, as the reference calls lme4 directly.
+compat_lme4_fit <- function(inputs, outcome, ...) {
+  engine <- lme4_fit(inputs$formula, inputs$data, outcome, ...)
+  for (text in engine$messages) base::message(text)
+  engine$fit
+}

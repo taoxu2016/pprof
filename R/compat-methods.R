@@ -466,3 +466,36 @@ summary.logis_fe <- function(object, parm, level = 0.95, test = "wald", null = 0
   colnames(out) <- c("Estimate", "stat", "p value")
   out
 }
+
+# Print methods of the reference's random-effect objects (R/linear_re.R:236-243,
+# R/logis_re.R:236-243, R/linear_cre.R:204-211): they drop the lme4 fit and print the rest
+# with print.default() (D-09). The reference defines print.logis_cre() but registers
+# print.linear_re() in its place (R/logis_cre.R:197-199), so logis_cre objects print with
+# print.default(), lme4 fit included; that is kept.
+
+#' @noRd
+#' @exportS3Method print linear_re
+print.linear_re <- function(x, ...) {
+  x2 <- x
+  attr(x2, "model") <- NULL
+  base::print.default(x2, ...)
+  invisible(x)
+}
+
+#' @noRd
+#' @exportS3Method print logis_re
+print.logis_re <- function(x, ...) {
+  x2 <- x
+  attr(x2, "model") <- NULL
+  base::print.default(x2, ...)
+  invisible(x)
+}
+
+#' @noRd
+#' @exportS3Method print linear_cre
+print.linear_cre <- function(x, ...) {
+  x2 <- x
+  attr(x2, "model") <- NULL
+  base::print.default(x2, ...)
+  invisible(x)
+}

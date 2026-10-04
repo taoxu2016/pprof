@@ -222,3 +222,170 @@ compat_null <- function(null) {
   if (is.numeric(null) && length(null) >= 1L) return(as.double(null[1]))
   abort_invalid_input("Argument 'null' NOT as required!", arg = "null")
 }
+
+# --- Random-effect and correlated random-effect fits (Phase 4) ----------------------------
+#
+# The wrappers of linear_re(), logis_re(), linear_cre(), and logis_cre() prepare their data
+# and lme4 formula exactly as the reference does, fit through the lme4 adapter (lme4_fit()),
+# and build the reference's object from the lme4 fit as the reference does, so that every
+# shape, including the coercions of cbind() (D-11) and the tibbles of the CRE fits, is the
+# reference's (BEHAVIOR_SPECS §5, §6, §16). The lme4 calls are the reference's (DEC-042).
+
+# The inputs of a random-effect fit in the reference's three formats (R/linear_re.R:91-152):
+# the data (the used columns, the complete rows, sorted by provider) and the formula for
+# lme4: the user's formula unchanged, or the formula the reference builds. Where the
+# reference fails with "object 'fit_re' not found" (no format matches) or later in lme4 (a
+# character ProvID with a matrix Z, which cbind() turns into text), the wrapper raises a
+# classed error (D-11).
+compat_re_inputs <- function(formula, data, Y.char, Z.char, ProvID.char, Y, Z, ProvID) { # nolint: object_name_linter.
+  if (!is.null(formula) && !is.null(data)) {
+    terms <- stats::terms(formula)
+    response <- as.character(attr(terms, "variables"))[2]
+    labels <- attr(terms, "term.labels")
+    is_random <- vapply(labels, function(label) {
+      term <- str2lang(label)
+      is.call(term) && (identical(term[[1]], as.name("|")) || identical(term[[1]], as.name("||")))
+    }, logical(1))
+    provider <- vapply(labels[is_random], function(label) deparse(str2lang(label)[[3]]), character(1))
+    covariates <- labels[!is_random]
+    if (length(provider) != 1L || !all(c(response, covariates, provider) %in% colnames(data))) {
+      abort_invalid_input("Formula contains variables not in the data or is incorrectly structured.", arg = "formula")
+    }
+    data <- data[, c(response, provider, covariates)]
+    data <- data[stats::complete.cases(data), ]
+    data <- data[order(factor(data[[provider]])), ]
+    return(list(format = "formula and data", data = data, formula = formula, response = unname(response),
+                provider = unname(provider)))
+  }
+  if (!is.null(data) && !is.null(Y.char) && !is.null(Z.char) && !is.null(ProvID.char)) {
+    if (!all(c(Y.char, Z.char, ProvID.char) %in% colnames(data))) {
+      abort_invalid_input("Some of the specified columns are not in the data!", arg = "data")
+    }
+    data <- data[, c(Y.char, ProvID.char, Z.char)]
+    data <- data[stats::complete.cases(data), ]
+    data <- data[order(factor(data[, ProvID.char])), ]
+    formula <- stats::as.formula(paste(Y.char, "~ (1|", ProvID.char, ") +", paste(Z.char, collapse = " + ")))
+    return(list(format = "data, Y.char, Z.char, and ProvID.char", data = data, formula = formula, response = Y.char,
+                provider = ProvID.char))
+  }
+  if (!is.null(Y) && !is.null(Z) && !is.null(ProvID)) {
+    if (length(Y) != length(ProvID) || length(ProvID) != NROW(Z)) {
+      abort_invalid_input("Dimensions of the input data do not match!!", arg = "Y")
+    }
+    combined <- cbind(Y, ProvID, Z)
+    if (is.character(combined)) {
+      abort_invalid_input(paste(
+        "cbind(Y, ProvID, Z) would turn every column into text, because the provider IDs are text and Z is a",
+        "matrix; pass Z as a data frame, or use numeric provider IDs (D-11)."
+      ), arg = "ProvID")
+    }
+    data <- as.data.frame(combined)
+    data <- data[stats::complete.cases(data), ]
+    response <- colnames(data)[1]
+    provider <- colnames(data)[2]
+    data <- data[order(factor(data[, provider])), ]
+    formula <- stats::as.formula(paste(response, "~ (1|", provider, ")+", paste0(colnames(Z), collapse = "+")))
+    return(list(format = "Y, Z, and ProvID", data = data, formula = formula, response = response, provider = provider))
+  }
+  abort_invalid_input(paste(
+    "Insufficient or incompatible arguments provided. Please provide either (1) formula and data,",
+    "(2) data, Y.char, Z.char, and ProvID.char, or (3) Y, Z, and ProvID."
+  ), arg = "data")
+}
+
+# The inputs of a correlated random-effect fit (R/linear_cre.R:93-118, R/logis_cre.R:89-114):
+# the within-between decomposition over every row of `data` (K-54, D-13), from the data layer,
+# which computes the reference's dplyr means bitwise, as a tibble as dplyr returns it; then
+# the used columns, the complete rows, sorted by provider; and the reference's formula. As
+# dplyr's mutate() does, the decomposition replaces columns of `data` that have its names.
+compat_cre_inputs <- function(data, Y.char, wb.char, other.char, ProvID.char) { # nolint: object_name_linter.
+  needed <- c(Y.char, ProvID.char, wb.char, if (!is.null(other.char)) other.char)
+  if (!all(needed %in% colnames(data))) {
+    abort_invalid_input("Some specified columns are not in `data`.", arg = "data")
+  }
+  within_terms <- paste0(wb.char, "_within")
+  between_terms <- paste0(wb.char, "_bar")
+  data[intersect(c(between_terms, within_terms), names(data))] <- NULL
+  decomposed <- tibble::as_tibble(data_decompose_within_between(data, ProvID.char, wb.char))
+  rhs_terms <- c(within_terms, between_terms, other.char)
+  used <- decomposed[, c(Y.char, ProvID.char, rhs_terms), drop = FALSE]
+  used <- used[stats::complete.cases(used), ]
+  used <- used[order(factor(used[[ProvID.char]])), ]
+  formula <- stats::as.formula(paste(Y.char, "~", paste(rhs_terms, collapse = " + "), "+ (1 |", ProvID.char, ")"))
+  list(data = used, formula = formula, response = Y.char, provider = ProvID.char, within_terms = within_terms,
+       between_terms = between_terms, other = other.char)
+}
+
+# The reference's linear_re, logis_re, or linear_cre object (R/linear_re.R:154-232,
+# R/logis_re.R:154-233, R/linear_cre.R:121-200) from the lme4 fit of `inputs`.
+compat_re_object <- function(fit, inputs, class) {
+  linear <- class %in% c("linear_re", "linear_cre")
+  x_model <- stats::model.matrix(fit)
+  response <- as.matrix(inputs$data[, inputs$response, drop = FALSE])
+  provider <- as.matrix(inputs$data[, inputs$provider, drop = FALSE])
+  data_include <- as.data.frame(cbind(response, provider, x_model))
+  n_prov <- sapply(split(data_include[, inputs$response], data_include[, inputs$provider]), length)
+  fixed <- lme4::fixef(fit)
+  fe <- matrix(fixed, dimnames = list(names(fixed), "Coefficient"))
+  re <- as.matrix(lme4::ranef(fit, condVar = TRUE)[[inputs$provider]])
+  dimnames(re) <- list(names(n_prov), "alpha")
+  fit_summary <- summary(fit)
+  # K-51.
+  var_alpha <- matrix(as.data.frame(fit_summary$varcor)[1, "sdcor"]^2, dimnames = list("ProvID", "Variance.Alpha"))
+  varcov_fe <- matrix(fit_summary$vcov, ncol = length(fixed),
+                      dimnames = list(rownames(fit_summary$vcov), colnames(fit_summary$vcov)))
+  rows <- seq_len(nrow(x_model))
+  linear_pred <- x_model %*% fe
+  dimnames(linear_pred) <- list(rows, "Fixed Fitted")
+  fields <- list(coefficient = list(FE = fe, RE = re), variance = list(alpha = var_alpha, FE = varcov_fe))
+  if (linear) fields$sigma <- fit_summary$sigma
+  fields$fitted <- matrix(stats::fitted(fit), ncol = 1L, dimnames = list(rows, "Prediction"))
+  fields$observation <- response
+  if (linear) fields$residuals <- matrix(stats::residuals(fit), ncol = 1L, dimnames = list(rows, "Residuals"))
+  fields <- c(fields, list(linear_pred = linear_pred, Loglkd = stats::logLik(fit), AIC = stats::AIC(fit),
+                           BIC = stats::BIC(fit)))
+  result <- structure(fields, class = class)
+  result$data_include <- data_include
+  result$char_list <- if (identical(class, "linear_cre")) {
+    list(Y.char = inputs$response, ProvID.char = inputs$provider, within_terms = inputs$within_terms,
+         between_terms = inputs$between_terms, other.vars = inputs$other)
+  } else {
+    list(Y.char = inputs$response, ProvID.char = inputs$provider, Z.char = rownames(fe)[2:length(rownames(fe))])
+  }
+  attr(result, "model") <- fit
+  result
+}
+
+# The reference's logis_cre object (R/logis_cre.R:118-193), whose shapes differ from those of
+# the other three fits: tibble columns for the observation and data_include, no row names on
+# the fitted values, the provider rows of ranef(), the variance as VarCorr's `vcov` (K-51), and
+# as.matrix() of the summary's vcov.
+compat_logis_cre_object <- function(fit, inputs) {
+  x_model <- stats::model.matrix(fit)
+  response <- inputs$data[, inputs$response, drop = FALSE]
+  provider <- inputs$data[, inputs$provider, drop = FALSE]
+  data_include <- as.data.frame(cbind(response, provider, x_model))
+  fixed <- lme4::fixef(fit)
+  fe <- matrix(fixed, dimnames = list(names(fixed), "Coefficient"))
+  random <- lme4::ranef(fit)[[inputs$provider]]
+  re <- as.matrix(random)
+  dimnames(re) <- list(rownames(random), "alpha")
+  fit_summary <- summary(fit)
+  var_alpha <- matrix(as.data.frame(fit_summary$varcor)[1, "vcov"], dimnames = list(inputs$provider, "Variance.Alpha"))
+  varcov_fe <- as.matrix(fit_summary$vcov)
+  dimnames(varcov_fe) <- list(rownames(fit_summary$vcov), colnames(fit_summary$vcov))
+  linear_pred <- x_model %*% fe
+  colnames(linear_pred) <- "Fixed Fitted"
+  structure(
+    list(
+      coefficient = list(FE = fe, RE = re), variance = list(alpha = var_alpha, FE = varcov_fe),
+      fitted = matrix(stats::fitted(fit), ncol = 1L, dimnames = list(NULL, "Prediction")),
+      observation = response, linear_pred = linear_pred, Loglkd = stats::logLik(fit), AIC = stats::AIC(fit),
+      BIC = stats::BIC(fit), data_include = data_include,
+      char_list = list(Y.char = inputs$response, ProvID.char = inputs$provider, within_terms = inputs$within_terms,
+                       between_terms = inputs$between_terms, other.vars = inputs$other)
+    ),
+    class = "logis_cre",
+    model = fit
+  )
+}
