@@ -29,12 +29,12 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-07 | `plot.logis_fe(test = "exact")` | A | verified | Always errors (`.data` pronoun outside a data mask) |
 | D-08 | several methods | A | verified; resolved (Phases 3 and 5) | Rely on partial matching of `$` (`fit$obs`, `object$data_includ`) |
 | D-09 | `print` methods | Presentation | verified | `print.logis_cre` unregistered; all RE/CRE prints dump the whole object |
-| D-10 | `summary.logis_fe(test = "lr"/"score")` | B | verified | Null refits ignore the original fit's settings; the likelihood clamp hard-codes 10; a smaller `cutoff` makes the refit fail |
+| D-10 | `summary.logis_fe(test = "lr"/"score")` | B | verified; reproduced (Phase 3); awaiting sign-off | Null refits ignore the original fit's settings; the likelihood clamp hard-codes 10; a smaller `cutoff` makes the refit fail |
 | D-11 | `linear_re`, `logis_re` vector interface | A | verified; fixed in the wrappers (Phase 4) | `cbind()` coerces mixed inputs to character; no final `else` |
 | D-12 | `logis_firth` result | B (question M-2) | verified; signed off: preserve (Phase 4 gate) | Class `logis_fe` with unpenalized variance, log-likelihood, AIC, BIC |
 | D-13 | `linear_cre`, `logis_cre` | B (question M-3) | verified; signed off: preserve (Phase 4 gate) | Provider means computed before complete-case filtering |
 | D-14 | `null` validation | A | verified; fixed (Phases 3 and 5) | Integer `null` accepted by `test()`, rejected by `SM_output()`, `confint()`, `plot()` |
-| D-15 | `test` methods | Presentation | verified | Flags are factors whose levels depend on the data |
+| D-15 | `test` methods | Presentation | verified; integer flags in the new API, the factor in the wrappers (Phases 3 and 5) | Flags are factors whose levels depend on the data |
 | D-16 | `test.linear_fe` | none (made explicit) | verified | Reference distribution chosen by a hidden attribute |
 | D-17 | `data_check` | C | verified | Stops on any missing value; fits delete incomplete rows |
 | D-18 | FE formula interface | A | verified; fixed in the data layer (Phase 2) | Transformed and interaction terms fail; factor levels with spaces break the design matrix |
@@ -43,17 +43,17 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-21 | thread counts | A (DEC-001) | verified; fixed (Phases 3 and 5) | `threads = 4` hard-coded in logistic RE/CRE intervals; 2 by default in `SM_output()` |
 | D-22 | `logis_fe(threads < 1)` | A | verified | Uninitialized information matrix; silently returns beta near 0 |
 | D-23 | `logis_fe(method = "BAN", backtrack = 2)` | A | verified | Runs zero iterations and returns the starting values |
-| D-24 | `logis_fe` default stopping rule | B | verified | `stop = "or"` can stop before provider effects converge (0.04 logit error at n = 1.2M) |
+| D-24 | `logis_fe` default stopping rule | B | verified; preserved (Phase 3); awaiting sign-off for any default change | `stop = "or"` can stop before provider effects converge (0.04 logit error at n = 1.2M) |
 | D-25 | `logis_firth` help | C | verified; fixed (Phase 4) | Help says `max.iter` defaults to 10,000; code default is 1,000 |
 | D-26 | `test.logis_fe(score_modified = FALSE)` help | C (question M-7) | verified | Called a "standard score test" but does not refit under the null |
 | D-27 | `parm` with integer provider IDs | A | verified; fixed (Phases 3 and 5) | `parm = 1:3` fails the class check for an integer ID column |
 | D-28 | factor provider IDs in `confint.logis_fe` | A | verified | Exact and score intervals look up gamma by the factor's integer code |
 | D-29 | `confint.logis_fe(stdz = "direct")` | A | verified | Selects providers through `data$ProvID`; fails for any other column name |
 | D-30 | `summary.logis_fe(test = "lr"/"score")` | A | verified | Fails with one or two covariates |
-| D-31 | `summary.logis_re`, `summary.logis_cre` | B | verified | p = 2(1 - pnorm(z)) without `abs()`: p-values above 1 for negative estimates |
-| D-32 | `confint.linear_fe` | B (question M-8) | verified | Uses t for the simplified variance and z for the full variance, the reverse of `test.linear_fe` |
+| D-31 | `summary.logis_re`, `summary.logis_cre` | B | verified; reproduced in the new API and the wrappers (Phase 5); awaiting sign-off | p = 2(1 - pnorm(z)) without `abs()`: p-values above 1 for negative estimates |
+| D-32 | `confint.linear_fe` | B (question M-8) | verified; reproduced in the new API and the wrappers (Phase 5); awaiting sign-off | Uses t for the simplified variance and z for the full variance, the reverse of `test.linear_fe` |
 | D-33 | interval attributes | C | verified; results carry the level as a number, the wrappers keep the attributes (Phases 3 and 5) | `confidence_level` is "95 %" (FE) or "0.95 %" (RE/CRE); `logis_cre` rate interval labeled "RE logis" |
-| D-34 | provider ordering | B | verified | Character IDs are ordered by the session's collation locale, which also fixes the bootstrap draw order |
+| D-34 | provider ordering | B | verified; reproduced (Phases 3 to 5); awaiting sign-off for (2) | Character IDs are ordered by the session's collation locale, which also fixes the bootstrap draw order |
 | D-35 | bundled data docs | C | verified | `ExampleDataBinary` has 7,944 observations, documented as 7,994 |
 | D-36 | messages and side effects | Presentation | verified | `linear_fe`, `linear_re`, `logis_re` always print messages; attaching pprof prints a `car` message; `bar_plot()` triggers a ggplot2 deprecation warning |
 | D-37 | vignettes | C | verified | Describe a different clamp, nonexistent functions, and calls that now fail |
