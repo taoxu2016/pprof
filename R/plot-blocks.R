@@ -4,6 +4,12 @@
 # Plots read result objects only (ARCHITECTURE §B.1, rule 3); what they draw comes from the
 # profiling layer (DEC-056).
 
+# The plots and the compatibility wrappers of the old plots refer to columns through the
+# `.data` pronoun, which ggplot2 re-exports from rlang (DEC-057).
+#' @importFrom ggplot2 .data
+#' @noRd
+NULL
+
 plot_flag_values <- c(-1L, 0L, 1L)
 plot_flag_labels <- c("lower", "as expected", "higher")
 plot_no_flag <- "no flag"

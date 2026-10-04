@@ -156,8 +156,6 @@ importFrom(dplyr,
   across,
   group_by,
   mutate,
-  n,
-  summarise,
   ungroup
 )
 importFrom(generics,
@@ -166,6 +164,7 @@ importFrom(generics,
   tidy
 )
 importFrom(ggplot2,
+  .data,
   aes,
   element_blank,
   element_line,
@@ -206,9 +205,7 @@ importFrom(lme4,
   lmer,
   ranef
 )
-importFrom(magrittr,"%>%")
 importFrom(olsrr,ols_vif_tol)
-importFrom(rlang,.data)
 importFrom(scales,
   percent,
   percent_format
@@ -228,7 +225,6 @@ importFrom(stats,
   nobs,
   plogis,
   predict,
-  quantile,
   reformulate,
   reorder,
   residuals,

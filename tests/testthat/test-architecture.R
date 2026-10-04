@@ -10,7 +10,7 @@ architecture_shared_files <- c(
 
 # R/ at the reference commit 5260838. Remove a file from this list when it is deleted.
 architecture_legacy_files <- c(
-  "Data.R", "RcppExports.R", "bar_plot.R", "caterpillar_plot.R", "data_check.R", "pprof.R"
+  "Data.R", "RcppExports.R", "data_check.R", "pprof.R"
 )
 
 # Layers in dependency order: shared 0, data 1, model 2 (with the diagnostics), inference 3,

@@ -7,7 +7,6 @@ exclusions: list(
     "vignettes",
     "tests/testthat/helper-reference-cases.R", "tests/testthat/helper-audit-ports.R",
     "R/Data.R", "R/RcppExports.R",
-    "R/bar_plot.R", "R/caterpillar_plot.R",
     "R/data_check.R", "R/pprof.R",
     "tests/testthat/test-SM_output.R", "tests/testthat/test-confint.R", "tests/testthat/test-linear_cre.R",
     "tests/testthat/test-linear_fe.R", "tests/testthat/test-linear_re.R", "tests/testthat/test-logis_cre.R",
