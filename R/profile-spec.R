@@ -6,9 +6,60 @@
 # families differ, it reads the difference from profile_spec() instead of branching on the
 # class: the null options and default (K-60), the numerator of indirect measures, the
 # measures, the mean and variance functions, the direct expectation, the funnel, and
-# whether Wald inference warns about providers with no events or only events.
+# whether Wald inference warns about providers with no events or only events. The fields
+# added in Phase 5 (DEC-046) are optional: a family that omits one gets the behavior of
+# logistic fixed effects, the first family profiled (Phase 3).
 
 profile_spec_fields <- c("family", "effect", "null_default", "null_options", "indirect_numerator", "measures")
+
+# The optional fields of the family specification and their defaults (DEC-046):
+#   test_default        the provider test when `test` is NULL (DEC-047);
+#   comparison          "ratio": indirect O / E and direct E / total; "difference":
+#                       indirect (O - E) / n_i and direct (E - total) / n (K-83, K-84);
+#   direct_reference    the total of direct standardization: "observed", the sum of the
+#                       outcome, or "null_expected", the sum of the outcomes expected under
+#                       the null (linear fixed effects, K-83);
+#   direct_limits       how direct limits sum over the population: "mean_function", R's sum
+#                       of the mean function (K-91), or "direct_expected", the family's
+#                       direct expectation (the C++ routine of logistic RE and CRE, K-93);
+#   one_sided_extremes  whether providers with no events or only events get one-sided
+#                       measure limits (K-91);
+#   wald                the distributions of the provider Wald tests (`test`) and intervals
+#                       (`interval`), "normal" or "t", and the degrees of freedom `df` of t.
+# The covariate rule `coefficient_wald` is read by the inference layer
+# (infer_coefficient_rule()).
+profile_spec_defaults <- list(
+  test_default = "exact", comparison = "ratio", direct_reference = "observed", direct_limits = "mean_function",
+  one_sided_extremes = TRUE, wald = list(test = "normal", interval = "normal", df = NULL)
+)
+
+# An optional field of the family specification, or its default.
+profile_spec_option <- function(spec, field) {
+  value <- spec[[field]]
+  if (is.null(value)) profile_spec_defaults[[field]] else value
+}
+
+# A standardized measure on the family's comparison scale (K-80 to K-84): `value` over
+# `reference`, or their difference per observation, of the provider (`n_obs`, indirect
+# standardization) or of the population (`n`, direct standardization). For indirect
+# standardization `value` is the provider's numerator and `reference` its expected outcome
+# under the null; for direct standardization `value` is the outcome expected in the
+# population with the provider's effect and `reference` the reference total.
+profile_compare <- function(spec, standardization, value, reference, n_obs, n) {
+  if (!identical(profile_spec_option(spec, "comparison"), "difference")) return(value / reference)
+  if (identical(standardization, "indirect")) (value - reference) / n_obs else (value - reference) / n
+}
+
+# The precision of each provider in a funnel plot: a function of the expected count and
+# its null variance (K-110), and of the provider's number of observations when the function
+# takes `n_obs` (K-111).
+profile_funnel_precision <- function(funnel, expected, variance, n_obs) {
+  if ("n_obs" %in% names(formals(funnel$precision))) {
+    funnel$precision(expected, variance, n_obs = n_obs)
+  } else {
+    funnel$precision(expected, variance)
+  }
+}
 
 # The family specification of a model, checked for the fields every profiling function
 # reads. Fields that only some functions need are checked where they are used.

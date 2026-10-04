@@ -46,12 +46,13 @@ funnel_limits <- function(model, level = 0.95, null = NULL, target = NULL, provi
   test_capability <- profile_test_capability(funnel$test, "modified")
   require_capability(model, test_capability)
   base <- profile_indirect(model, spec, null_value, rows)
-  precision <- funnel$precision(base$expected, base$variance)
+  n_obs <- provider_table(model)$n_obs[rows]
+  precision <- profile_funnel_precision(funnel, base$expected, base$variance, n_obs)
   flags <- profile_test_table(model, spec, test_capability, null_value, level[1], "two.sided", rows)$flag
-  points <- data.frame(provider_id = provider_table(model)$provider_id[rows], n_obs = provider_table(model)$n_obs[rows],
+  estimate <- profile_compare(spec, "indirect", base$observed, base$expected, n_obs, NULL)
+  points <- data.frame(provider_id = provider_table(model)$provider_id[rows], n_obs = n_obs,
                        observed = base$observed, expected = base$expected, variance = base$variance,
-                       precision = precision, estimate = base$observed / base$expected, flag = flags,
-                       stringsAsFactors = FALSE)
+                       precision = precision, estimate = estimate, flag = flags, stringsAsFactors = FALSE)
   limits <- profile_funnel_limits(sort(unique(precision[is.finite(precision)])), 1 - level, target, funnel)
   table <- data.frame(level = level[match(limits$alpha, 1 - level)], precision = limits$precision,
                       lower = limits$lower, upper = limits$upper)

@@ -34,7 +34,8 @@
 #' whose estimates sit at the effect bound.
 #'
 #' @param model A model object, such as a [fit_logistic_fe()] fit.
-#' @param test `"exact"`, `"bootstrap"`, `"score"`, or `"wald"`.
+#' @param test `"exact"`, `"bootstrap"`, `"score"`, or `"wald"`; `NULL` for the family's
+#'   default test, `"exact"` for logistic fixed-effect models.
 #' @param null The null value: `NULL` for the family's default (`"median"` for fixed-effect
 #'   models, the median of the provider effects), one of the family's named options, or a
 #'   number.
@@ -60,10 +61,11 @@
 #' tests <- test_providers(fit)
 #' table(tests$table$flag)
 #' @export
-test_providers <- function(model, test = "exact", null = NULL, level = 0.95, alternative = "two.sided",
+test_providers <- function(model, test = NULL, null = NULL, level = 0.95, alternative = "two.sided",
                            providers = NULL, score_type = "modified", n_resamples = 10000, data = NULL,
                            threads = 1) {
   profile_check_model(model)
+  test <- profile_test_name(model, test)
   check_choice(test, c("exact", "bootstrap", "score", "wald"), "test")
   check_choice(score_type, c("modified", "standard"), "score_type")
   check_level(level)
@@ -81,6 +83,11 @@ test_providers <- function(model, test = "exact", null = NULL, level = 0.95, alt
   if (identical(test, "score")) settings$score_type <- score_type
   if (identical(test, "bootstrap")) settings$n_resamples <- as.integer(n_resamples)
   do.call(new_pprof_provider_tests, c(list(table), settings))
+}
+
+# The provider test: `test`, or the family's default when it is NULL (DEC-047).
+profile_test_name <- function(model, test) {
+  if (is.null(test)) profile_spec_option(profile_family(model), "test_default") else test
 }
 
 profile_test_capability <- function(test, score_type) {
@@ -151,11 +158,14 @@ profile_score_standard <- function(model, null_value, alternative, rows, data, t
   list(probability = probability, statistic = statistic)
 }
 
-# The Wald test (K-67).
+# The Wald test (K-67 to K-70), with the family's reference distribution: normal, or t for
+# linear fixed effects with the full provider variance (K-68).
 profile_wald_test <- function(model, spec, null_value, alternative, rows) {
   profile_wald_caution(model, spec, rows)
   positions <- profile_positions(model, rows)
   std_error <- unname(provider_estimate_se(model))[positions]
   statistic <- infer_wald_statistic(unname(provider_estimates(model))[positions], null_value, std_error)
-  list(probability = infer_wald_tail(statistic, alternative), statistic = statistic, std_error = std_error)
+  wald <- profile_spec_option(spec, "wald")
+  list(probability = infer_wald_tail(statistic, alternative, wald$test, wald$df), statistic = statistic,
+       std_error = std_error)
 }

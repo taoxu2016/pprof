@@ -16,9 +16,13 @@
 #' - `provider_table()`, `provider_estimates()`, `provider_index()`, `linear_predictor()`,
 #'   `observed_outcome()`, and `inference_capabilities()` have shared methods that read the
 #'   fields filled by [new_pprof_model()]; `inference_capabilities()` declares nothing.
-#' - `expected_outcome()`, `null_effect()`, `profile_spec()`, `provider_estimate_se()`,
-#'   `provider_test()`, and `refit_without()` have no shared method and raise
-#'   `pprof_error_unsupported_inference` for a model class that does not implement them.
+#' - `expected_outcome()`, `predicted_outcome()`, `null_effect()`, `profile_spec()`,
+#'   `provider_estimate_se()`, `provider_test()`, and `refit_without()` have no shared method
+#'   and raise `pprof_error_unsupported_inference` for a model class that does not implement
+#'   them. `predicted_outcome()` is needed only by families whose specification sets
+#'   `indirect_numerator = "predicted"`: it gives the model's prediction for each observation
+#'   with the model's own provider effects (for the random-effect models, lme4's fitted
+#'   values), the numerator of their indirectly standardized measures.
 #'
 #' @param model A model object inheriting from `pprof_model`.
 #' @param effect A provider effect: a single value, or one value per included provider in
@@ -32,8 +36,8 @@
 #'
 #' @return `provider_table()`: the provider table. `provider_estimates()`: the provider effects,
 #'   named by provider ID. `provider_index()`: the provider of each observation, as a row of
-#'   the provider table. `linear_predictor()`, `observed_outcome()`, `expected_outcome()`: one
-#'   value per observation. `null_effect()`: a number. `profile_spec()`: the family
+#'   the provider table. `linear_predictor()`, `observed_outcome()`, `expected_outcome()`,
+#'   `predicted_outcome()`: one value per observation. `null_effect()`: a number. `profile_spec()`: the family
 #'   specification. `inference_capabilities()`: a character vector. `provider_estimate_se()`:
 #'   standard errors named like the provider effects. `provider_test()`: per-provider test
 #'   results. `refit_without()`: a model object.
@@ -116,6 +120,16 @@ expected_outcome.pprof_model <- function(model, effect, ...) abort_unsupported_i
 
 #' @export
 expected_outcome.default <- function(model, effect, ...) contract_not_model(model)
+
+#' @rdname model_contract
+#' @export
+predicted_outcome <- function(model) UseMethod("predicted_outcome")
+
+#' @export
+predicted_outcome.pprof_model <- function(model) abort_unsupported_inference(model, "predicted_outcome()")
+
+#' @export
+predicted_outcome.default <- function(model) contract_not_model(model)
 
 #' @rdname model_contract
 #' @export

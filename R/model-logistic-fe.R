@@ -409,22 +409,34 @@ null_effect.pprof_logistic_fe <- function(model, null = "median", ...) {
 #' @export
 profile_spec.pprof_logistic_fe <- function(model) {
   # ARCHITECTURE §B.4. The direct expectation runs in C++, as the reference's
-  # computeDirectExp() does (K-81); the funnel is K-110; Wald inference warns about providers
-  # with no events or only events (K-67).
+  # computeDirectExp() does (K-81), while the direct limits are R's sums of plogis (K-91);
+  # providers with no events or only events get one-sided measure limits (K-91); tests and
+  # intervals use the normal distribution (K-67, K-90, K-100); the funnel is K-110; Wald
+  # inference warns about providers with no events or only events (K-67).
   list(
     family = "logistic_fe", effect = "gamma", null_default = "median", null_options = "median",
-    indirect_numerator = "observed", measures = c("ratio", "rate"), mean_function = stats::plogis,
-    variance_function = function(mean) mean * (1 - mean),
-    direct_expected = function(effects, linear_predictor, threads) {
-      logistic_fe_engine_call("direct expectation",
-                              cpp_logistic_direct_expected(effects, linear_predictor, as.integer(threads)))
-    },
+    test_default = "exact", indirect_numerator = "observed", comparison = "ratio", measures = c("ratio", "rate"),
+    mean_function = stats::plogis, variance_function = function(mean) mean * (1 - mean),
+    direct_expected = logistic_direct_expected, direct_reference = "observed", direct_limits = "mean_function",
+    one_sided_extremes = TRUE, wald = list(test = "normal", interval = "normal", df = NULL),
+    coefficient_wald = list(p_value = "two_sided", p_value_distribution = "normal", interval = "critical",
+                            interval_distribution = "normal", df = NULL),
     funnel = list(
       measure = "ratio", target = 1, floor = 0, test = "score",
       precision = function(expected, variance) expected^2 / variance,
       half_width = function(critical, precision) critical * sqrt(1 / precision)
     ),
     wald_caution = TRUE
+  )
+}
+
+# The expected number of events in the whole population with each provider effect in
+# `effects`: for each effect, the sum over all observations of plogis(effect + z'beta),
+# computed in C++ as the reference's computeDirectExp() computes it (K-81, K-82, K-85).
+logistic_direct_expected <- function(effects, linear_predictor, threads) {
+  logistic_fe_engine_call(
+    "direct expectation",
+    cpp_logistic_direct_expected(effects, linear_predictor, as.integer(threads))
   )
 }
 

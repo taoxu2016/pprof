@@ -106,10 +106,24 @@ if (identical(mode, "save")) {
   saveRDS(results, snapshot_file)
   cat(sprintf("Saved %d results to %s\n", length(results), snapshot_file))
 } else {
+  # Result objects may gain settings (DEC-048 adds `indirect_numerator` and
+  # `direct_reference` to measures): every saved field must be identical, and added fields
+  # are listed. Everything else must be identical as a whole.
+  added <- character()
+  same_value <- function(old, new, path) {
+    if (inherits(old, "pprof_result") && inherits(new, "pprof_result")) {
+      if (!identical(class(old), class(new))) return(FALSE)
+      extra <- setdiff(names(new), names(old))
+      if (length(extra)) added <<- union(added, paste0(class(new)[1], "$", extra))
+      if (!all(names(old) %in% names(new))) return(FALSE)
+      return(all(vapply(names(old), function(field) same_value(old[[field]], new[[field]], path), logical(1))))
+    }
+    identical(old, new)
+  }
   saved <- readRDS(snapshot_file)
   labels <- union(names(saved), names(results))
-  same <- vapply(labels, function(label) identical(saved[[label]], results[[label]]), logical(1))
+  same <- vapply(labels, function(label) same_value(saved[[label]], results[[label]], label), logical(1))
   report <- c(sprintf("%d results compared; %d identical; %d differ or are missing", length(labels), sum(same),
-                      sum(!same)), paste("differs:", labels[!same]))
+                      sum(!same)), paste("differs:", labels[!same]), paste("added field:", added))
   writeLines(report, args[3])
 }

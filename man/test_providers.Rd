@@ -6,7 +6,7 @@
 \usage{
 test_providers(
   model,
-  test = "exact",
+  test = NULL,
   null = NULL,
   level = 0.95,
   alternative = "two.sided",
@@ -20,7 +20,8 @@ test_providers(
 \arguments{
 \item{model}{A model object, such as a \code{\link[=fit_logistic_fe]{fit_logistic_fe()}} fit.}
 
-\item{test}{\code{"exact"}, \code{"bootstrap"}, \code{"score"}, or \code{"wald"}.}
+\item{test}{\code{"exact"}, \code{"bootstrap"}, \code{"score"}, or \code{"wald"}; \code{NULL} for the family's
+default test, \code{"exact"} for logistic fixed-effect models.}
 
 \item{null}{The null value: \code{NULL} for the family's default (\code{"median"} for fixed-effect
 models, the median of the provider effects), one of the family's named options, or a

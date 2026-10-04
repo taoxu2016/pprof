@@ -67,26 +67,32 @@ standardize_providers <- function(model, standardization = "indirect", measure =
     profile_effect_limits(model, spec, interval, level, alternative, rows)
   }
   population_rate <- if ("rate" %in% measure) profile_population_rate(model)
+  n_obs <- provider_table(model)$n_obs[rows]
+  n <- length(observed_outcome(model))
   parts <- list()
   for (method in standardization) {
     base <- if (identical(method, "indirect")) {
       profile_indirect(model, spec, null_value, rows)
     } else {
-      profile_direct(model, spec, rows, threads)
+      profile_direct(model, spec, null_value, rows, threads)
     }
-    ratio <- if (identical(method, "indirect")) base$observed / base$expected else base$expected / base$observed
-    ratio_limits <- if (!is.null(effect_limits)) {
-      profile_ratio_limits(model, spec, method, base, effect_limits, alternative, rows)
+    value <- if (identical(method, "indirect")) {
+      profile_compare(spec, method, base$observed, base$expected, n_obs, n)
+    } else {
+      profile_compare(spec, method, base$expected, base$observed, n_obs, n)
+    }
+    value_limits <- if (!is.null(effect_limits)) {
+      profile_measure_limits(model, spec, method, base, effect_limits, alternative, rows, threads)
     }
     for (scale in measure) {
       part <- data.frame(provider_id = provider_table(model)$provider_id[rows], standardization = method,
-                         measure = scale, n_obs = provider_table(model)$n_obs[rows], observed = base$observed,
+                         measure = scale, n_obs = n_obs, observed = base$observed,
                          expected = base$expected, variance = base$variance,
-                         estimate = profile_measure_value(model, ratio, scale, population_rate),
+                         estimate = profile_measure_value(model, value, scale, population_rate),
                          stringsAsFactors = FALSE)
-      if (!is.null(ratio_limits)) {
-        part$lower <- profile_measure_value(model, ratio_limits[, 1], scale, population_rate)
-        part$upper <- profile_measure_value(model, ratio_limits[, 2], scale, population_rate)
+      if (!is.null(value_limits)) {
+        part$lower <- profile_measure_value(model, value_limits[, 1], scale, population_rate)
+        part$upper <- profile_measure_value(model, value_limits[, 2], scale, population_rate)
       }
       parts[[length(parts) + 1L]] <- part
     }
@@ -94,19 +100,25 @@ standardize_providers <- function(model, standardization = "indirect", measure =
   table <- do.call(rbind, parts)
   rownames(table) <- NULL
   settings <- list(interval = interval, level = level, null_value = null_value, alternative = alternative,
-                   standardization = standardization, measure = measure)
+                   standardization = standardization, measure = measure,
+                   indirect_numerator = spec$indirect_numerator,
+                   direct_reference = profile_spec_option(spec, "direct_reference"))
   if (!is.null(population_rate)) settings$population_rate <- population_rate
   do.call(new_pprof_measures, c(list(table), settings))
 }
 
-# Indirect standardization (K-80): per provider, the observed number of events, the number
-# expected under the null, and its null variance, each summed over the provider's
-# observations in their stored order, as the reference sums them.
+# Indirect standardization (K-80, K-82 to K-84): per provider, the numerator (the observed
+# outcomes, or the model's predictions with its own provider effects for random-effect
+# models), the outcomes expected under the null, and their null variance where the family
+# has one, each summed over the provider's observations in their stored order, as the
+# reference sums them. The table calls the numerator `observed` (DEC-048).
 profile_indirect <- function(model, spec, null_value, rows) {
-  if (!identical(spec$indirect_numerator, "observed")) {
+  numerator <- switch(spec$indirect_numerator,
+    observed = observed_outcome(model),
+    predicted = predicted_outcome(model),
     abort_unsupported_inference(model, sprintf("indirect standardization with numerator '%s'",
                                                spec$indirect_numerator))
-  }
+  )
   index <- provider_index(model)
   expected <- expected_outcome(model, null_value)
   variance <- if (is.null(spec$variance_function)) {
@@ -114,17 +126,24 @@ profile_indirect <- function(model, spec, null_value, rows) {
   } else {
     data_provider_sums(spec$variance_function(expected), index, rows)
   }
-  data.frame(observed = data_provider_sums(observed_outcome(model), index, rows),
+  data.frame(observed = data_provider_sums(numerator, index, rows),
              expected = data_provider_sums(expected, index, rows), variance = variance)
 }
 
-# Direct standardization (K-81): the population's number of events, and per provider the
-# number expected in the population with the provider's effect, from the family's direct
-# expectation (computed in C++ for logistic models, as the reference computes it).
-profile_direct <- function(model, spec, rows, threads) {
+# Direct standardization (K-81 to K-84): the reference total, and per provider the outcome
+# expected in the population with the provider's effect, from the family's direct
+# expectation (computed in C++ for logistic models, as the reference computes it). The
+# reference total is the sum of the outcomes, or for linear fixed effects the sum of the
+# outcomes expected under the null (K-83), which the table calls `observed` (DEC-048).
+profile_direct <- function(model, spec, null_value, rows, threads) {
   direct_expected <- profile_spec_field(model, spec, "direct_expected")
   effects <- unname(provider_estimates(model))[profile_positions(model, rows)]
-  total <- as.double(sum(observed_outcome(model)))
+  total <- switch(profile_spec_option(spec, "direct_reference"),
+    observed = as.double(sum(observed_outcome(model))),
+    null_expected = sum(expected_outcome(model, null_value)),
+    abort_unsupported_inference(model, sprintf("direct standardization with the reference total '%s'",
+                                               spec$direct_reference))
+  )
   data.frame(observed = rep(total, length(rows)),
              expected = direct_expected(effects, linear_predictor(model), threads), variance = NA_real_)
 }
@@ -136,12 +155,13 @@ profile_population_rate <- function(model) {
   sum(observed) / length(observed) * rate_scale
 }
 
-# A ratio on the scale of a measure: the ratio itself, or the rate, the ratio times the
-# population rate clipped to rate_limits (K-80).
-profile_measure_value <- function(model, ratio, measure, population_rate) {
+# A ratio or difference on the scale of a measure: the ratio or difference itself, or the
+# rate, the ratio times the population rate clipped to rate_limits (K-80).
+profile_measure_value <- function(model, value, measure, population_rate) {
   switch(measure,
-    ratio = ratio,
-    rate = pmax(pmin(ratio * population_rate, rate_limits[2]), rate_limits[1]),
+    ratio = value,
+    difference = value,
+    rate = pmax(pmin(value * population_rate, rate_limits[2]), rate_limits[1]),
     abort_unsupported_inference(model, sprintf("the measure '%s'", measure))
   )
 }

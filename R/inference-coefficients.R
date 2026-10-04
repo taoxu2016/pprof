@@ -54,11 +54,15 @@ test_coefficients <- function(model, test = "wald", parm = NULL, level = 0.95, n
 
 #' Confidence intervals for the covariate coefficients
 #'
-#' For logistic fixed-effect and Firth models, Wald intervals beta -/+ qnorm(1 - alpha / 2)
-#' se with alpha = 1 - `level`, as the summary of pprof 1.0.3 reports them. Models of other
-#' classes raise `pprof_error_unsupported_inference` unless their class provides intervals.
-#' Intervals for provider effects and standardized measures come from [provider_effects()]
-#' and [standardize_providers()].
+#' Wald intervals for the covariate coefficients with the family's rule, as the summaries of
+#' pprof 1.0.3 report them, with alpha = 1 - `level`: beta -/+ qnorm(1 - alpha / 2) se for
+#' logistic fixed-effect and Firth models; beta -/+ qt(1 - alpha / 2, n - m - p) se for
+#' linear fixed-effect models (n observations, m providers, p coefficients); and lme4's Wald
+#' intervals, beta + se qnorm(a) with a = alpha / 2 and 1 - alpha / 2, for random-effect and
+#' correlated random-effect models, intercept included. Models whose class declares no Wald
+#' inference for coefficients raise `pprof_error_unsupported_inference`. Intervals for
+#' provider effects and standardized measures come from [provider_effects()] and
+#' [standardize_providers()].
 #'
 #' @param object A model object.
 #' @param parm The coefficients, by name or position; all when missing.
@@ -72,12 +76,6 @@ confint.pprof_model <- function(object, parm, level = 0.95, ...) {
   # Without this method, stats::confint.default() would compute normal intervals from
   # coef() and vcov() for any model, whatever rule its family uses (DEC-040).
   require_capability(object, "coef_wald")
-  abort_unsupported_inference(object, "confint()")
-}
-
-#' @rdname confint.pprof_model
-#' @export
-confint.pprof_logistic_fe <- function(object, parm, level = 0.95, ...) {
   check_level(level)
   terms <- infer_coefficient_terms(object, if (missing(parm)) NULL else parm)
   table <- infer_coefficient_wald(object, terms, level, 0)
@@ -105,18 +103,47 @@ infer_coefficient_terms <- function(model, parm) {
   abort_invalid_input("`parm` must name coefficients or give their positions.", arg = "parm")
 }
 
-# K-100 (R/summary.logis_fe.R:63-98).
+# The covariate Wald rule of a model's family (`coefficient_wald` in its family
+# specification, DEC-046): `p_value`, "two_sided" for 2 (1 - F(|z|)) or "upper_doubled" for
+# 2 (1 - F(z)); `p_value_distribution`, "normal" or "t"; `interval`, "critical" for
+# beta -/+ q(1 - alpha / 2) se or "quantile" for lme4's beta + se q(a); `interval_distribution`;
+# and `df` for t. A family that sets none has the rule of logistic fixed effects (K-100).
+infer_coefficient_default_rule <- list(p_value = "two_sided", p_value_distribution = "normal", interval = "critical",
+                                       interval_distribution = "normal", df = NULL)
+
+infer_coefficient_rule <- function(model) {
+  rule <- profile_spec(model)$coefficient_wald
+  if (is.null(rule)) infer_coefficient_default_rule else rule
+}
+
+# The covariate Wald tests and intervals with the family's rule: K-100 (R/summary.logis_fe.R:63-98), K-103
+# (R/summary.linear_fe.R:47-52), K-104 (R/summary.linear_re.R:25-35), and K-105
+# (R/summary.logis_re.R:45-50), whose p-values are 2 (1 - pnorm(z)) without abs() (D-31,
+# reproduced until the methodology owners decide). lme4's intervals are computed from the
+# coefficients and their covariance with lme4's expression, which equals
+# confint(method = "Wald") bitwise.
 infer_coefficient_wald <- function(model, terms, level, null) {
+  rule <- infer_coefficient_rule(model)
   alpha <- 1 - level
   estimate <- stats::coef(model)
   std_error <- sqrt(diag(stats::vcov(model)))
   statistic <- (estimate - null) / std_error
-  p_value <- 2 * (1 - stats::pnorm(abs(statistic)))
-  critical <- stats::qnorm(1 - alpha / 2)
+  p_value <- switch(rule$p_value,
+    two_sided = 2 * (1 - infer_cdf(abs(statistic), rule$p_value_distribution, rule$df)),
+    upper_doubled = 2 * (1 - infer_cdf(statistic, rule$p_value_distribution, rule$df))
+  )
+  limits <- if (identical(rule$interval, "quantile")) {
+    a <- (1 - level) / 2
+    a <- c(a, 1 - a)
+    estimate + std_error %o% infer_quantile(a, rule$interval_distribution, rule$df)
+  } else {
+    critical <- infer_quantile(1 - alpha / 2, rule$interval_distribution, rule$df)
+    cbind(estimate - critical * std_error, estimate + critical * std_error)
+  }
   table <- data.frame(
     term = names(estimate), estimate = unname(estimate), std_error = unname(std_error),
-    statistic = unname(statistic), p_value = unname(p_value), lower = unname(estimate - critical * std_error),
-    upper = unname(estimate + critical * std_error), stringsAsFactors = FALSE
+    statistic = unname(statistic), p_value = unname(p_value), lower = unname(limits[, 1]),
+    upper = unname(limits[, 2]), stringsAsFactors = FALSE
   )
   table[match(terms, table$term), , drop = FALSE]
 }

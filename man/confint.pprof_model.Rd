@@ -2,12 +2,9 @@
 % Please edit documentation in R/inference-coefficients.R
 \name{confint.pprof_model}
 \alias{confint.pprof_model}
-\alias{confint.pprof_logistic_fe}
 \title{Confidence intervals for the covariate coefficients}
 \usage{
 \method{confint}{pprof_model}(object, parm, level = 0.95, ...)
-
-\method{confint}{pprof_logistic_fe}(object, parm, level = 0.95, ...)
 }
 \arguments{
 \item{object}{A model object.}
@@ -22,9 +19,13 @@
 A matrix with one row per coefficient and the lower and upper limits.
 }
 \description{
-For logistic fixed-effect and Firth models, Wald intervals beta -/+ qnorm(1 - alpha / 2)
-se with alpha = 1 - \code{level}, as the summary of pprof 1.0.3 reports them. Models of other
-classes raise \code{pprof_error_unsupported_inference} unless their class provides intervals.
-Intervals for provider effects and standardized measures come from \code{\link[=provider_effects]{provider_effects()}}
-and \code{\link[=standardize_providers]{standardize_providers()}}.
+Wald intervals for the covariate coefficients with the family's rule, as the summaries of
+pprof 1.0.3 report them, with alpha = 1 - \code{level}: beta -/+ qnorm(1 - alpha / 2) se for
+logistic fixed-effect and Firth models; beta -/+ qt(1 - alpha / 2, n - m - p) se for
+linear fixed-effect models (n observations, m providers, p coefficients); and lme4's Wald
+intervals, beta + se qnorm(a) with a = alpha / 2 and 1 - alpha / 2, for random-effect and
+correlated random-effect models, intercept included. Models whose class declares no Wald
+inference for coefficients raise \code{pprof_error_unsupported_inference}. Intervals for
+provider effects and standardized measures come from \code{\link[=provider_effects]{provider_effects()}} and
+\code{\link[=standardize_providers]{standardize_providers()}}.
 }

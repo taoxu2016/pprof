@@ -24,7 +24,7 @@
 #' profile <- profile_providers(fit)
 #' head(profile$table)
 #' @export
-profile_providers <- function(model, test = "exact", null = NULL, level = 0.95, alternative = "two.sided",
+profile_providers <- function(model, test = NULL, null = NULL, level = 0.95, alternative = "two.sided",
                               interval = "none", providers = NULL, score_type = "modified", n_resamples = 10000,
                               data = NULL, threads = 1) {
   effects <- provider_effects(model, providers = providers)
@@ -40,6 +40,6 @@ profile_providers <- function(model, test = "exact", null = NULL, level = 0.95, 
   table <- data.frame(provider_id = tests$table$provider_id, n_obs = tests$table$n_obs, observed = first$observed,
                       expected = first$expected, statistic = tests$table$statistic, p_value = tests$table$p_value,
                       flag = tests$table$flag, stringsAsFactors = FALSE)
-  new_pprof_profile(table, effects = effects, tests = tests, measures = measures, funnel = funnel, test = test,
+  new_pprof_profile(table, effects = effects, tests = tests, measures = measures, funnel = funnel, test = tests$test,
                     level = level, alternative = alternative, null_value = tests$null_value, interval = interval)
 }

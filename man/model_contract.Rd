@@ -9,6 +9,7 @@
 \alias{observed_outcome}
 \alias{inference_capabilities}
 \alias{expected_outcome}
+\alias{predicted_outcome}
 \alias{null_effect}
 \alias{profile_spec}
 \alias{provider_estimate_se}
@@ -29,6 +30,8 @@ observed_outcome(model)
 inference_capabilities(model)
 
 expected_outcome(model, effect, ...)
+
+predicted_outcome(model)
 
 null_effect(model, null, ...)
 
@@ -60,8 +63,8 @@ example \code{"median"} or a number).}
 \value{
 \code{provider_table()}: the provider table. \code{provider_estimates()}: the provider effects,
 named by provider ID. \code{provider_index()}: the provider of each observation, as a row of
-the provider table. \code{linear_predictor()}, \code{observed_outcome()}, \code{expected_outcome()}: one
-value per observation. \code{null_effect()}: a number. \code{profile_spec()}: the family
+the provider table. \code{linear_predictor()}, \code{observed_outcome()}, \code{expected_outcome()},
+\code{predicted_outcome()}: one value per observation. \code{null_effect()}: a number. \code{profile_spec()}: the family
 specification. \code{inference_capabilities()}: a character vector. \code{provider_estimate_se()}:
 standard errors named like the provider effects. \code{provider_test()}: per-provider test
 results. \code{refit_without()}: a model object.
@@ -76,9 +79,13 @@ generics it needs:
 \item \code{provider_table()}, \code{provider_estimates()}, \code{provider_index()}, \code{linear_predictor()},
 \code{observed_outcome()}, and \code{inference_capabilities()} have shared methods that read the
 fields filled by \code{\link[=new_pprof_model]{new_pprof_model()}}; \code{inference_capabilities()} declares nothing.
-\item \code{expected_outcome()}, \code{null_effect()}, \code{profile_spec()}, \code{provider_estimate_se()},
-\code{provider_test()}, and \code{refit_without()} have no shared method and raise
-\code{pprof_error_unsupported_inference} for a model class that does not implement them.
+\item \code{expected_outcome()}, \code{predicted_outcome()}, \code{null_effect()}, \code{profile_spec()},
+\code{provider_estimate_se()}, \code{provider_test()}, and \code{refit_without()} have no shared method
+and raise \code{pprof_error_unsupported_inference} for a model class that does not implement
+them. \code{predicted_outcome()} is needed only by families whose specification sets
+\code{indirect_numerator = "predicted"}: it gives the model's prediction for each observation
+with the model's own provider effects (for the random-effect models, lme4's fitted
+values), the numerator of their indirectly standardized measures.
 }
 }
 \keyword{internal}
