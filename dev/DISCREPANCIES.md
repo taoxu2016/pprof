@@ -55,7 +55,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-33 | interval attributes | C | verified; results carry the level as a number, the wrappers keep the attributes (Phases 3 and 5) | `confidence_level` is "95 %" (FE) or "0.95 %" (RE/CRE); `logis_cre` rate interval labeled "RE logis" |
 | D-34 | provider ordering | B | verified; reproduced (Phases 3 to 5); awaiting sign-off for (2) | Character IDs are ordered by the session's collation locale, which also fixes the bootstrap draw order |
 | D-35 | bundled data docs | C | verified | `ExampleDataBinary` has 7,944 observations, documented as 7,994 |
-| D-36 | messages and side effects | Presentation | verified | `linear_fe`, `linear_re`, `logis_re` always print messages; attaching pprof prints a `car` message; `bar_plot()` triggers a ggplot2 deprecation warning |
+| D-36 | messages and side effects | Presentation | verified | `linear_fe`, `linear_re`, `logis_re` always print messages; attaching pprof prints a `car` message; `bar_plot()` triggers a ggplot2 deprecation warning, and `caterpillar_plot(use_flag = TRUE)` an unused-argument warning under ggplot2 4 |
 | D-37 | vignettes | C | verified | Describe a different clamp, nonexistent functions, and calls that now fail |
 | D-38 | `logis_fe` with collinear covariates | C | verified | Unidentified estimates with variances near 7e13 and no rank-deficiency warning |
 | D-39 | `logis_fe`, `logis_firth` inputs | A | decided (fix) | Non-binary outcomes, `max.iter` <= 0, `tol` <= 0, and `bound` <= 0 return meaningless or unfitted results without a warning |
@@ -66,6 +66,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-44 | RE and CRE `summary()` | C | verified; fixed in the help (Phase 5) | The intercept is selected only as `"(intercept)"`, while its row is named `"(Intercept)"`; the help does not say so |
 | D-45 | `null` with more than one value | A | verified; fixed in the wrappers (Phases 3 and 5) | RE and CRE `test()` recycle it over the providers by position; every `summary()` applies it to the coefficients by position; documented as a number |
 | D-46 | RE and CRE `summary()` without the lme4 fit | A | verified; fixed in the wrappers (Phase 5) | Fails when `attr(, "model")` is missing, though the intervals need only the stored covariance |
+| D-47 | `caterpillar_plot()`, `bar_plot()` colours | Presentation | verified | Colours go to the flags present in sorted order, so the same colour can mean higher, lower, or as expected, unlike the funnel plot |
+| D-48 | `caterpillar_plot()`, `bar_plot()` help | C | verified | `bar_width` has no effect; the input is called `test_df`; infinite limits are said to arise for providers with all or no events and to be shortened |
 
 ---
 
@@ -613,16 +615,16 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 
 ### D-36: Unconditional messages and side effects
 
-- Component: `linear_fe`, `linear_re`, `logis_re` (always call `message()`); package attach; `bar_plot`.
+- Component: `linear_fe`, `linear_re`, `logis_re` (always call `message()`); package attach; `bar_plot`; `caterpillar_plot` (`R/caterpillar_plot.R:114` and `:155-157`).
 - Class (proposed): Presentation (brief §3.2)
-- Description: `linear_fe`, `linear_re`, and `logis_re` print their input format with no way to turn it off (the CRE fits print nothing). Attaching pprof prints "Registered S3 method overwritten by 'car'" because `olsrr` loads `car`. `bar_plot()` triggers a ggplot2 deprecation warning for `element_line(size = )`.
-- Minimal reproducible example: V14.7, V16.4, V16.2.
+- Description: `linear_fe`, `linear_re`, and `logis_re` print their input format with no way to turn it off (the CRE fits print nothing). Attaching pprof prints "Registered S3 method overwritten by 'car'" because `olsrr` loads `car`. `bar_plot()` triggers a ggplot2 deprecation warning for `element_line(size = )`. Under ggplot2 4, `caterpillar_plot(use_flag = TRUE)` warns "Arguments in `...` must be used. Problematic argument: box.linetype", because `guide_legend()` no longer takes `box.linetype` (found in Phase 6 planning; the warning is stored in the fixtures `caterpillar-binary-rate-flags` and `caterpillar-linear`, PHASE6_PLAN.md F3).
+- Minimal reproducible example: V14.7, V16.4, V16.2; `caterpillar_plot(confint(fit)$CI.indirect_ratio, use_flag = TRUE)` on a `logis_fe()` fit (`dev/design/phase6-facts/02_reference_plots.R`).
 - Affected outputs: console output.
 - Statistical impact: none.
-- Options: one verbosity helper; drop `olsrr`; use `linewidth`.
-- Recommendation: DEC-008 (verbosity) and the dependency plan (ARCHITECTURE §H).
+- Options: one verbosity helper; drop `olsrr`; use `linewidth`; drop the argument ggplot2 ignores.
+- Recommendation: DEC-008 (verbosity) and the dependency plan (ARCHITECTURE §H). For the plots: `linewidth`, and no `box.linetype`, in the wrappers of Phase 6, provided the built plots stay identical (DEC-055).
 - Decision owner: project lead.
-- Status: verified. The new fits print nothing unless `verbose = TRUE` (Phase 3 for logistic fixed effects, Phase 4 for the others). The compatibility wrappers keep the reference's messages: `linear_fe()`, `linear_re()`, and `logis_re()` always report their input format, and the CRE wrappers print nothing (Phase 4, step 3).
+- Status: verified. The new fits print nothing unless `verbose = TRUE` (Phase 3 for logistic fixed effects, Phase 4 for the others). The compatibility wrappers keep the reference's messages: `linear_fe()`, `linear_re()`, and `logis_re()` always report their input format, and the CRE wrappers print nothing (Phase 4, step 3). The plot warnings: proposed with the Phase 6 plan (2026-10-04).
 - Regression test: the tests that `verbose = FALSE` produces no output in `tests/testthat/test-model-*.R`; `tests/testthat/test-compat-fits.R` (the wrappers' messages).
 
 ### D-37: Vignettes contradict the code
@@ -794,3 +796,31 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: project lead.
 - Status: verified (2026-10-04, Phase 5 step 3); fixed in the wrappers.
 - Regression test: `tests/testthat/test-compat-methods-families.R` ("only the methods that use the conditional standard deviations need the lme4 fit (D-46)").
+
+### D-47: The colours of `caterpillar_plot()` and `bar_plot()` depend on the flags present
+
+- Component: `caterpillar_plot(use_flag = TRUE)` (`R/caterpillar_plot.R:114`, `:155`: `scale_color_manual(values = flag_color, ...)`); `bar_plot()` (`R/bar_plot.R:89`: `scale_fill_manual(values = bar_colors)`).
+- Class (proposed): Presentation (brief §3.2)
+- Description: Both functions pass their colours to a manual scale without names, so ggplot2 gives them, in order, to the categories present in the plot. In `caterpillar_plot()` the flags are the strings `"Higher"`, `"Lower"`, and `"Normal"`: with all three, Higher is orange, Lower blue, and Normal green; with Higher and Normal (one-sided `greater`), Higher is orange and Normal blue; with Lower and Normal (`less`), Lower is orange; with Normal only, Normal is orange. In `bar_plot()`, with every category present, higher is `#66c2a5`, as expected `#fc8d62`, and lower `#8da0cb`; when every provider is as expected, as expected is `#66c2a5`. The funnel plots, by contrast, map each flag to a fixed colour (lower orange, as expected blue, higher green). The help says which colours are used, not which flag gets which.
+- Minimal reproducible example (reference library, 2026-10-04; `dev/design/phase6-facts/02_reference_plots.R` and `05_bar_plot_without_dplyr.R`): `caterpillar_plot(confint(fit, option = "SM", alternative = "less")$CI.indirect_ratio, use_flag = TRUE)` on a `logis_fe()` fit of the binary example draws the providers flagged lower in orange, and with `alternative = "greater"` those flagged higher; every interval of `caterpillar_plot(confint(logis_cre(...))$CI.indirect_ratio, use_flag = TRUE)` on the binary example is orange.
+- Affected outputs: the colours of `caterpillar_plot(use_flag = TRUE)` and `bar_plot()`.
+- Statistical impact: none; a reader who compares plots, or reads orange as in the funnel plot, can misread the flags.
+- Options: (1) reproduce in the wrappers; (2) map colours to flags by name.
+- Recommendation: (1) in `caterpillar_plot()` and `bar_plot()`, which reproduce the old presentation (DEC-013, DEC-055); (2) in the new plot functions, which share one fixed flag scale (DEC-058).
+- Decision owner: project lead.
+- Status: verified (2026-10-04, Phase 6 planning); proposed with the Phase 6 plan.
+- Regression test: planned in Phase 6: the guard of step 3 (the built colours of the wrappers) and `tests/testthat/test-present-plots.R` (the new functions' colours whatever flags occur).
+
+### D-48: The help of `caterpillar_plot()` and `bar_plot()` contradicts their behavior
+
+- Component: the help of `bar_plot()` (`R/bar_plot.R:8` and `:14`) and of `caterpillar_plot()` (`R/caterpillar_plot.R:35-36`).
+- Class (proposed): C
+- Description: `bar_plot()` documents `bar_width` as "width of the bars in the bar chart", but draws bars of width 0.7 whatever it is (`R/bar_plot.R:79`); its details call the input `test_df`, but the argument is `flag_df`. The details of `caterpillar_plot()` say that "where one side of the confidence interval is infinite, that side only extends to the standardized measure", for example for logistic FE providers with all events or none; but the code shortens the bars of one-sided intervals (by the table's `type`) whatever their limits, and the measure intervals of logistic FE providers with all events or none are finite (K-91).
+- Minimal reproducible example (reference library, 2026-10-04): `bar_plot(test(fit), bar_width = 0.2)` builds the same data as `bar_plot(test(fit))` (`dev/design/phase6-facts/05_bar_plot_without_dplyr.R`); the two-sided measure tables of `confint(fit)` for a `logis_fe()` fit of the binary example, which has providers without events, have no infinite limit (`02_reference_plots.R`).
+- Affected outputs: documentation.
+- Statistical impact: none.
+- Options: fix the help; or make `bar_width` set the width (a different plot for users who pass it).
+- Recommendation: fix the help of the wrappers (Phase 6, step 3).
+- Decision owner: project lead.
+- Status: verified (2026-10-04, Phase 6 planning); proposed with the Phase 6 plan.
+- Regression test: planned in Phase 6: a test that `bar_width` leaves the plot unchanged, as the help will say.
