@@ -10,11 +10,13 @@ bench_task_id <- function(t) {
 # The working tree installed into a temporary library, to be placed before the reference
 # library, so that every other package comes from the same pinned versions as in the
 # baseline (DEC-023); packages the reference does not use (such as generics) come from the
-# user library.
+# user library. --preclean removes the compiled code in src/ first: without it the install
+# reuses whatever objects are there, such as those devtools::load_all() compiles with -g -O0,
+# and the benchmark measures a debug build (found at the Phase 4 gate).
 bench_install_working_tree <- function() {
   lib <- normalizePath(file.path(tempdir(), "bench-working-tree"), winslash = "/", mustWork = FALSE)
   dir.create(lib, recursive = TRUE, showWarnings = FALSE)
-  status <- system2(file.path(R.home("bin"), "R"), c("CMD", "INSTALL", "--no-docs", "--no-multiarch",
+  status <- system2(file.path(R.home("bin"), "R"), c("CMD", "INSTALL", "--preclean", "--no-docs", "--no-multiarch",
                                                        paste0("--library=", shQuote(lib)), "."))
   if (!identical(status, 0L)) stop("Installing the working tree failed.", call. = FALSE)
   normalizePath(lib, winslash = "/")
