@@ -163,6 +163,29 @@ reference_datasets <- function(ref_lib, include_full = FALSE) {
   rownames(lm2) <- NULL
   ds$syn_linear_missing <- lm2
 
+  # Phase 5 (R-1). No random numbers are drawn for the first three.
+  # The vector interface of linear_re() and logis_re() (D-11): the outcome, numeric and
+  # character provider IDs, and the covariates as a data frame and as a matrix.
+  ds$syn_linear_vectors <- list(Y = ds$syn_linear$Y, ProvID = as.numeric(sub("S", "", ds$syn_linear$ProvID)),
+                                ProvID_chr = ds$syn_linear$ProvID, Z = ds$syn_linear[, c("x1", "x2")],
+                                Z_matrix = as.matrix(ds$syn_linear[, c("x1", "x2")]))
+  ds$syn_extreme_vectors <- list(Y = ext$Y, ProvID = as.numeric(ext$ProvID), ProvID_chr = chr_ids[ext$ProvID],
+                                 Z = ext[, c("x1", "x2", "x3")], Z_matrix = as.matrix(ext[, c("x1", "x2", "x3")]))
+  # syn_linear with the provider IDs stored as integers (D-27).
+  ds$syn_linear_int <- transform(ds$syn_linear, ProvID = as.integer(sub("S", "", ProvID)))
+  # Small providers whose covariate means differ, where the linear funnel's limits and flags
+  # disagree with the full provider variance (D-43; dev/design/phase5-facts/05_linear_funnel_flags.R).
+  # Only the first m of the m * 5 shifts are used; all are drawn, as in that script.
+  reference_set_seed(20261004)
+  m <- 40
+  sizes <- sample(3:8, m, replace = TRUE)
+  prov <- rep(seq_len(m), sizes)
+  zf <- matrix(stats::rnorm(length(prov) * 5), ncol = 5, dimnames = list(NULL, paste0("z", 1:5)))
+  shift <- stats::rnorm(m * 5, 0, 4)[seq_len(m)]
+  zf <- zf + shift[prov]
+  ds$syn_linear_funnel <- data.frame(Y = stats::rnorm(m, 0, 1.2)[prov] + drop(zf %*% c(1, -0.5, 0.3, 0, 0.2)) +
+                                       stats::rnorm(length(prov)), ProvID = prov, zf)
+
   if (include_full) {
     # About 80,000 observations in 1,000 providers (as V11.1, "medium"): default versus
     # tight convergence (D-24).

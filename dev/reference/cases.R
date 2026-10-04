@@ -153,6 +153,14 @@ reference_cases <- function() {
   add("linear_fe-bad-option", "linear_fe",
       list(data = ref_dataset("syn_linear"), Y.char = "Y", Z.char = c("x1", "x2"), ProvID.char = "ProvID", option.gamma.var = "fu"),
       "exact", notes = "K-42")
+  # Phase 5 (R-1): provider IDs stored as integers (D-27), and small providers whose funnel
+  # limits and flags disagree with the full variance (D-43).
+  LI <- "linear_fe-syn-int"
+  add(LI, "linear_fe", list(data = ref_dataset("syn_linear_int"), Y.char = "Y", Z.char = c("x1", "x2", "grp"),
+                            ProvID.char = "ProvID"), "closed_form", notes = "D-27 parent")
+  LF <- "linear_fe-funnel-full"
+  add(LF, "linear_fe", list(data = ref_dataset("syn_linear_funnel"), Y.char = "Y", Z.char = z5, ProvID.char = "ProvID",
+                            option.gamma.var = "full"), "closed_form", notes = "D-43 parent")
 
   # --- linear_re, logis_re, linear_cre, logis_cre -----------------------------------------
   R1 <- "linear_re-linear-columns"
@@ -203,6 +211,27 @@ reference_cases <- function() {
   add("logis_cre-extreme-control", "logis_cre",
       list(data = ref_dataset("syn_extreme"), Y.char = "Y", wb.char = "x1", other.char = c("x2", "x3"), ProvID.char = "ProvID",
            control = glmer_control), "lme4", notes = "... pass-through")
+  # Phase 5 (R-1): the vector interface of linear_re() and logis_re() (D-11), where the
+  # reference works and where it fails; character IDs whose order depends on the collation
+  # (D-34); integer IDs (D-27).
+  vectors <- function(dataset, provider, z) {
+    list(Y = ref_element(dataset, "Y"), Z = ref_element(dataset, z), ProvID = ref_element(dataset, provider))
+  }
+  add("linear_re-vectors-matrix", "linear_re", vectors("syn_linear_vectors", "ProvID", "Z_matrix"), "lme4", notes = "D-11")
+  add("linear_re-vectors-df", "linear_re", vectors("syn_linear_vectors", "ProvID", "Z"), "lme4", notes = "D-11")
+  add("linear_re-vectors-chr-df", "linear_re", vectors("syn_linear_vectors", "ProvID_chr", "Z"), "lme4", notes = "D-11")
+  add("logis_re-vectors-matrix", "logis_re", vectors("syn_extreme_vectors", "ProvID", "Z_matrix"), "lme4", notes = "D-11")
+  add("logis_re-vectors-chr-df", "logis_re", vectors("syn_extreme_vectors", "ProvID_chr", "Z"), "lme4", notes = "D-11")
+  add("linear_re-vectors-chr-matrix", "linear_re", vectors("syn_linear_vectors", "ProvID_chr", "Z_matrix"), "exact",
+      notes = "D-11 (reference error: cbind() makes every column text)")
+  add("linear_re-vectors-incomplete", "linear_re", list(Y = ref_element("syn_linear_vectors", "Y")), "exact",
+      notes = "D-11 (reference error: no input format matches)")
+  GC <- "logis_re-extreme-chr"
+  add(GC, "logis_re", list(data = ref_dataset("syn_extreme_chr"), Y.char = "Y", Z.char = c("x1", "x2", "x3"), ProvID.char = "ProvID"),
+      "lme4", notes = "D-34")
+  KI <- "logis_cre-extreme-int"
+  add(KI, "logis_cre", list(data = ref_dataset("syn_extreme_int"), Y.char = "Y", wb.char = "x1", other.char = c("x2", "x3"),
+                            ProvID.char = "ProvID"), "lme4", notes = "D-27 parent")
 
   # --- test() -----------------------------------------------------------------------------
   alts <- c("two.sided", "greater", "less")
@@ -350,6 +379,29 @@ reference_cases <- function() {
   add("test-linear-syn", "test", list(fit = ref_fit(LS)), "closed_form")
   add("SM_output-linear-syn", "SM_output", list(fit = ref_fit(LS), stdz = c("indirect", "direct")), "closed_form")
   add("confint-linear-syn-sm", "confint", list(object = ref_fit(LS), stdz = c("indirect", "direct")), "closed_form")
+  # Phase 5 (R-1). An integer null, which every linear FE method rejects (D-14), with the
+  # results at null = 0 that the fix must give (test and SM_output have theirs above).
+  add("test-linear-null-integer", "test", list(fit = ref_fit(L1), null = 0L), "exact", notes = "D-14")
+  add("SM_output-linear-null-integer", "SM_output", list(fit = ref_fit(L1), stdz = c("indirect", "direct"), null = 0L), "exact",
+      notes = "D-14")
+  add("confint-linear-null-integer", "confint", list(object = ref_fit(L1), stdz = c("indirect", "direct"), null = 0L), "exact",
+      notes = "D-14")
+  add("plot-linear-null-integer", "plot", list(x = ref_fit(L1), null = 0L), "exact", notes = "D-14")
+  add("confint-linear-null0", "confint", list(object = ref_fit(L1), stdz = c("indirect", "direct"), null = 0), "closed_form",
+      notes = "D-14 expected result")
+  add("plot-linear-null0", "plot", list(x = ref_fit(L1), null = 0), "closed_form", notes = "D-14 expected result")
+  add("confint-linear-level90", "confint", list(object = ref_fit(L1), stdz = c("indirect", "direct"), level = 0.9), "closed_form",
+      notes = "K-61, K-92")
+  for (a in c("greater", "less")) {
+    add(paste0("confint-linear-full-sm-", a), "confint", list(object = ref_fit(L2), stdz = c("indirect", "direct"), alternative = a),
+        "closed_form", notes = "K-92, K-94, D-32")
+  }
+  add("plot-linear-null-mean", "plot", list(x = ref_fit(L1), null = "mean"), "closed_form", notes = "K-60, K-111")
+  add("plot-linear-full", "plot", list(x = ref_fit(L2)), "closed_form", notes = "K-111, D-43")
+  add("plot-linear-funnel-full", "plot", list(x = ref_fit(LF)), "closed_form", notes = "D-43")
+  add("SM_output-linear-parm", "SM_output", list(fit = ref_fit(L1), stdz = c("indirect", "direct"), parm = parm_ids), "closed_form")
+  add("test-linear-syn-int", "test", list(fit = ref_fit(LI)), "closed_form", notes = "D-27 expected result")
+  add("test-linear-syn-int-parm", "test", list(fit = ref_fit(LI), parm = 1:3), "exact", notes = "D-27")
 
   # --- random-effect and CRE methods --------------------------------------------------------
   mixed <- list(list(id = R1, tag = "linear-re", logistic = FALSE, heavy = FALSE),
@@ -376,6 +428,47 @@ reference_cases <- function() {
   add("confint-logis-re-extreme-sm-greater", "confint", list(object = ref_fit(GX), stdz = c("indirect", "direct"), alternative = "greater"),
       "lme4", notes = "K-94")
   add("confint-linear-cre-missing-sm", "confint", list(object = ref_fit("linear_cre-missing")), "lme4", notes = "D-13")
+  # Phase 5 (R-1): the grid of ARCHITECTURE §G.2 for the RE and CRE methods (one-sided and
+  # level = 0.9 intervals, parm, summaries with parm), character IDs, and integer IDs.
+  sm_both <- c("indirect", "direct")
+  for (mx in mixed[1:4]) {
+    alternatives <- if (mx$logistic) "less" else c("greater", "less")
+    for (a in alternatives) {
+      add(sprintf("confint-%s-sm-%s", mx$tag, a), "confint", list(object = ref_fit(mx$id), stdz = sm_both, alternative = a),
+          "lme4", heavy = mx$heavy, notes = "K-93, K-94")
+    }
+  }
+  add("confint-linear-re-alpha-level90", "confint", list(object = ref_fit(R1), option = "alpha", level = 0.9), "lme4", notes = "K-61, K-93")
+  add("confint-logis-re-alpha-level90", "confint", list(object = ref_fit(G1), option = "alpha", level = 0.9), "lme4", heavy = TRUE,
+      notes = "K-61, K-93")
+  add("confint-linear-cre-sm-level90", "confint", list(object = ref_fit(C1), stdz = sm_both, level = 0.9), "lme4", notes = "K-61, K-93")
+  add("confint-logis-cre-sm-level90", "confint", list(object = ref_fit(K1), stdz = sm_both, level = 0.9), "lme4", heavy = TRUE,
+      notes = "K-61, K-93")
+  add("test-logis-re-parm-level90", "test", list(fit = ref_fit(G1), parm = parm_ids, level = 0.9), "lme4", heavy = TRUE)
+  add("test-linear-cre-parm-level90", "test", list(fit = ref_fit(C1), parm = parm_ids, level = 0.9), "lme4")
+  add("test-logis-cre-parm-level90", "test", list(fit = ref_fit(K1), parm = parm_ids, level = 0.9), "lme4", heavy = TRUE)
+  add("SM_output-linear-re-parm", "SM_output", list(fit = ref_fit(R1), stdz = sm_both, parm = parm_ids), "lme4")
+  add("SM_output-logis-re-parm", "SM_output",
+      list(fit = ref_fit(G1), stdz = sm_both, measure = c("ratio", "rate"), parm = parm_ids, threads = 1), "lme4", heavy = TRUE)
+  add("summary-linear-re-parm-level90", "summary", list(object = ref_fit(R1), parm = c("(intercept)", "z1", "z4"), level = 0.9),
+      "lme4", notes = "K-104, D-44")
+  add("summary-logis-re-parm-level90", "summary", list(object = ref_fit(G1), parm = c("(intercept)", "z2"), level = 0.9),
+      "lme4", heavy = TRUE, notes = "K-105, D-31, D-44")
+  add("summary-linear-cre-parm-level90", "summary",
+      list(object = ref_fit(C1), parm = c("(intercept)", "z1_within", "z2_bar", "z5"), level = 0.9), "lme4", notes = "K-104, D-44")
+  add("summary-logis-cre-parm-level90", "summary", list(object = ref_fit(K1), parm = c(1, 4), level = 0.9), "lme4", heavy = TRUE,
+      notes = "K-105, D-31")
+  add("summary-linear-re-parm-intercept-capital", "summary", list(object = ref_fit(R1), parm = "(Intercept)"), "lme4", notes = "D-44")
+  chr_parm <- c("S01", "S05", "S30")
+  add("test-linear-re-syn-parm", "test", list(fit = ref_fit("linear_re-syn"), parm = chr_parm), "lme4")
+  add("SM_output-linear-re-syn-parm", "SM_output", list(fit = ref_fit("linear_re-syn"), stdz = sm_both, parm = chr_parm), "lme4")
+  add("confint-linear-re-syn-sm-parm", "confint", list(object = ref_fit("linear_re-syn"), stdz = sm_both, parm = chr_parm), "lme4")
+  add("confint-linear-re-syn-alpha-parm", "confint", list(object = ref_fit("linear_re-syn"), option = "alpha", parm = chr_parm), "lme4")
+  add("summary-linear-re-syn", "summary", list(object = ref_fit("linear_re-syn")), "lme4", notes = "K-104")
+  add("test-logis-re-extreme-chr", "test", list(fit = ref_fit(GC)), "lme4", notes = "D-34")
+  add("SM_output-logis-re-extreme-chr", "SM_output", list(fit = ref_fit(GC), stdz = sm_both, threads = 1), "lme4", notes = "D-34")
+  add("confint-logis-re-extreme-chr-sm", "confint", list(object = ref_fit(GC), stdz = sm_both), "lme4", notes = "D-34")
+  add("test-logis-cre-extreme-int-parm", "test", list(fit = ref_fit(KI), parm = 1:3), "exact", notes = "D-27")
 
   # --- caterpillar_plot(), bar_plot(), data_check() ----------------------------------------
   add("caterpillar-binary-ratio", "caterpillar_plot", list(CI = ref_value("confint-binary-sm-wald", "CI.indirect_ratio")), "iterative",
