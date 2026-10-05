@@ -1,0 +1,278 @@
+---
+title: "Migrating from pprof 1.0.3"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Migrating from pprof 1.0.3}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE, comment = "#>",
+  fig.width = 6, fig.height = 4, dpi = 96, fig.retina = 1, out.width = "100%"
+)
+```
+
+pprof 2.0.0 brings a new interface: one fitting function per model, all taking a formula,
+a data frame, and the name of the provider column, and profiling functions that work the
+same way for every model. The functions of pprof 1.0.3 are still there and give the same
+results, except where pprof 1.0.3 failed, returned wrong results, or attached results to
+the wrong providers (listed below). This vignette maps the old functions to the new ones,
+shows each step of an analysis both ways, and lists what changed.
+
+In this development version the old functions do not warn. From pprof 2.0.0 on they warn,
+once per session, that they are deprecated; they remain at least through the next minor
+release, and their removal will be announced in the package's NEWS.
+
+## The functions
+
+| pprof 1.0.3 | New | How to migrate |
+|---|---|---|
+| `logis_fe()`, `logis_firth()` | `fit_logistic_fe()`, `fit_logistic_firth()` | drop `id()` from the formula and name the provider column in `provider`; column names and vectors become a formula and a data frame |
+| `linear_fe()` | `fit_linear_fe()` | as above; `option.gamma.var` becomes `provider_variance` |
+| `linear_re()`, `logis_re()` | `fit_linear_re()`, `fit_logistic_re()` | drop `(1 | id)` from the formula and name the provider column in `provider` |
+| `linear_cre()`, `logis_cre()` | `fit_linear_cre()`, `fit_logistic_cre()` | write `Y.char`, `wb.char`, and `other.char` as a formula, and name `wb.char` in `within_between` |
+| `test()` | `test_providers()` | the test names change (below); `parm` becomes `providers` |
+| `SM_output()` | `standardize_providers()` | `stdz` becomes `standardization` |
+| `confint(option = "gamma")` | `provider_effects(interval = )` | `test` becomes `interval` |
+| `confint(option = "SM")` | `standardize_providers(interval = )` | as above |
+| `summary()` | `summary()` and `test_coefficients()` | likelihood-ratio and score tests come from `test_coefficients()`, with the data |
+| `plot()` (funnel plot) | `plot_funnel(funnel_limits(fit))` | `alpha` becomes `level = 1 - alpha` |
+| `caterpillar_plot()` | `plot_caterpillar()` | takes the result of `standardize_providers()` or `provider_effects()` with intervals |
+| `bar_plot()` | `plot_flags()` | takes the result of `test_providers()`; `group_num` becomes `group_count` |
+| `data_check()` | none yet | keep using `data_check()` |
+
+Every old function remains, as do the `test()`, `SM_output()`, `confint()`, `summary()`,
+and `plot()` methods for the objects the old fitting functions return. New in pprof 2.0.0:
+`profile_providers()`, which runs the tests, measures, effects, and funnel limits at once;
+`plot_volume()`; and `tidy()`, `glance()`, and `augment()`.
+
+## The arguments
+
+| pprof 1.0.3 | New |
+|---|---|
+| `id()` or `(1 | id)` in the formula; `ProvID.char`; `ProvID` | `provider`, the name of a column of `data` |
+| `Y.char`, `Z.char`; `Y`, `Z` | `formula` and `data` |
+| `wb.char`, `other.char` | `within_between`; the other covariates are in the formula |
+| `method = "SerBIN"`, `"BAN"` | `method = "serbin"`, `"ban"` |
+| `max.iter` | `max_iter` |
+| `stop = "or"`, `"all"`, `"beta"`, `"relch"`, `"ratch"` | `stop_rule = "any"`, `"all"`, `"coefficients"`, `"relative_loglik"`, `"relative_gain"` |
+| `bound` | `effect_bound` |
+| `cutoff` | `min_provider_size` |
+| `option.gamma.var` | `provider_variance` |
+| `message` (default `TRUE`) | `verbose` (default `FALSE`) |
+| `parm` (provider functions) | `providers` |
+| `test = "exact.poisbinom"`, `"exact.bootstrap"` | `test = "exact"`, `"bootstrap"` |
+| `score_modified = TRUE`, `FALSE` | `score_type = "modified"`, `"standard"` |
+| `n` | `n_resamples` |
+| `stdz` | `standardization` |
+| `confint(test = )` | `interval` |
+| `alpha` (funnel plot) | `level`, equal to `1 - alpha` |
+| `refline_value` | `reference` |
+| `group_num` | `group_count` |
+| `line_size` | `line_width` |
+
+## Each step, both ways
+
+The examples use the binary example data. The helper `same()` prints `TRUE` when the old
+and the new numbers are identical, and stops otherwise; the comparisons run every time this
+vignette is built.
+
+```{r data, message = FALSE}
+library(pprof)
+data(ExampleDataBinary)
+example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+same <- function(old, new) {
+  stopifnot(identical(as.vector(unname(old)), as.vector(unname(new))))
+  TRUE
+}
+```
+
+### Fitting
+
+```{r fit}
+# pprof 1.0.3
+old <- logis_fe(y ~ id(hospital) + z1 + z2 + z3 + z4 + z5, data = example, message = FALSE)
+# pprof 2.0.0
+fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, data = example, provider = "hospital")
+same(old$coefficient$beta, coef(fit))
+same(old$coefficient$gamma, provider_estimates(fit))
+same(old$variance$beta, vcov(fit))
+```
+
+The other input formats of pprof 1.0.3, column names and vectors, become a data frame:
+
+```{r fit-formats}
+old_columns <- logis_fe(data = example, Y.char = "y", Z.char = paste0("z", 1:5), ProvID.char = "hospital",
+                        message = FALSE)
+old_vectors <- logis_fe(Y = ExampleDataBinary$Y, Z = ExampleDataBinary$Z, ProvID = ExampleDataBinary$ProvID,
+                        message = FALSE)
+same(old_columns$coefficient$beta, coef(fit))
+same(old_vectors$coefficient$beta, coef(fit))
+```
+
+The new model keeps less than the old object (no copy of the data, unless
+`keep_data = TRUE`) and more about the fit: `fit$convergence` records the iterations and
+the convergence criteria, and a fit that reaches the iteration limit warns.
+
+### Testing providers
+
+```{r tests}
+old_tests <- test(old)
+tests <- test_providers(fit)
+same(old_tests[["p value"]], tests$table$p_value)
+same(as.integer(as.character(old_tests$flag)), tests$table$flag)
+head(tests$table, 3)
+```
+
+The old result is a data frame with the providers as row names and the flag as a factor
+whose levels are the flags that occur; the new result's `table` has a `provider_id` column
+and integer flags (-1, 0, 1), and the result records its settings (`tests$test`,
+`tests$level`, `tests$null_value`, ...).
+
+### Standardized measures
+
+```{r measures}
+old_measures <- SM_output(old)
+measures <- standardize_providers(fit)
+same(old_measures$indirect.ratio, measures$table$estimate[measures$table$measure == "ratio"])
+same(old_measures$indirect.rate, measures$table$estimate[measures$table$measure == "rate"])
+```
+
+The new table has one row per standardization, measure, and provider, with the observed
+and expected counts that pprof 1.0.3 kept in `OE`.
+
+### Intervals
+
+`confint()` of an old object gives intervals for provider effects or standardized
+measures; for the new models, these come from `provider_effects()` and
+`standardize_providers()`, and `confint()` gives the intervals of the covariate
+coefficients, as for other models in R. Here for the first ten hospitals:
+
+```{r intervals}
+old_effects <- confint(old, parm = 1:10, option = "gamma")
+effects <- provider_effects(fit, interval = "exact", providers = 1:10)
+same(c(old_effects$gamma.lower, old_effects$gamma.upper), c(effects$table$lower, effects$table$upper))
+old_ratios <- confint(old, parm = 1:10)$CI.indirect_ratio
+ratios <- standardize_providers(fit, measure = "ratio", interval = "exact", providers = 1:10)
+same(c(old_ratios$CI_ratio.lower, old_ratios$CI_ratio.upper), c(ratios$table$lower, ratios$table$upper))
+```
+
+### Covariates
+
+```{r covariates}
+old_summary <- summary(old)
+same(c(old_summary$Estimate, old_summary$CI.Lower, old_summary$CI.Upper), c(coef(fit), confint(fit)))
+old_lr <- summary(old, test = "lr")
+same(old_lr$stat, test_coefficients(fit, test = "lr", data = example)$table$statistic)
+```
+
+The new `summary()` returns numbers, which it prints formatted, where the old one gave the
+p-values as text. The likelihood-ratio and score tests refit the model without each
+covariate; since the new model does not keep the covariates, they need `data` (or a fit
+with `keep_data = TRUE`).
+
+### Plots
+
+The old plot functions draw what they drew in pprof 1.0.3. The new ones take the new
+results, give each flag the same colour in every plot, and return ggplot objects:
+
+```{r plots}
+old_funnel <- plot(old)
+funnel <- funnel_limits(fit)
+same(sort(old_funnel$layers[[1]]$data$indicator), sort(funnel$providers$estimate))
+plot_funnel(funnel)
+```
+
+`caterpillar_plot(confint(old)$CI.indirect_ratio)` becomes
+`plot_caterpillar(standardize_providers(fit, interval = "exact"))`, and
+`bar_plot(test(old))` becomes `plot_flags(test_providers(fit))`.
+
+### Other models
+
+The other fitting functions translate in the same way:
+
+```{r other-models, message = FALSE}
+data(ExampleDataLinear)
+continuous <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID, ExampleDataLinear$Z)
+risk <- y ~ z1 + z2 + z3 + z4 + z5
+
+old_fe <- linear_fe(y ~ id(hospital) + z1 + z2 + z3 + z4 + z5, data = continuous)
+same(old_fe$coefficient$beta, coef(fit_linear_fe(risk, continuous, "hospital")))
+
+old_re <- linear_re(y ~ (1 | hospital) + z1 + z2 + z3 + z4 + z5, data = continuous)
+same(old_re$coefficient$RE, provider_estimates(fit_linear_re(risk, continuous, "hospital")))
+
+old_cre <- linear_cre(data = continuous, Y.char = "y", wb.char = c("z1", "z2"), other.char = c("z3", "z4", "z5"),
+                      ProvID.char = "hospital")
+same(old_cre$coefficient$FE, coef(fit_linear_cre(risk, continuous, "hospital", within_between = c("z1", "z2"))))
+
+old_firth <- logis_firth(y ~ id(hospital) + z1 + z2 + z3 + z4 + z5, data = example, message = FALSE)
+same(old_firth$coefficient$beta, coef(fit_logistic_firth(risk, example, "hospital")))
+```
+
+`logis_re()` and `logis_cre()` translate like `linear_re()` and `linear_cre()`.
+
+## What is different in the new interface
+
+- **One way to give the data.** A formula, a data frame, and the name of the provider
+  column, for every model. Formulas may contain transformations, interactions, and factors.
+- **Results.** Every profiling function returns a result with a `table` (a data frame
+  keyed by `provider_id`, in provider order) and the settings used; flags are the integers
+  -1, 0, and 1. `tidy()` turns a result or a model into a tibble.
+- **`confint()`** of a model gives the intervals of the covariate coefficients; intervals
+  for providers come from `provider_effects()` and `standardize_providers()`.
+- **Quiet by default.** The new fitting functions print nothing unless `verbose = TRUE`;
+  screening and the iteration limit still raise warnings. The old functions print as
+  they did.
+- **One thread by default.** The new functions that take `threads` use one thread unless
+  asked for more, where pprof 1.0.3's `SM_output()` used two by default. Results do not
+  depend on the number of threads.
+- **Compact models.** A model keeps what the profiling needs, but not the matrix of
+  covariates; the standard score test and the likelihood-ratio and score tests of the
+  coefficients take `data`, or a fit with `keep_data = TRUE`.
+- **Conditions with classes.** Errors and warnings have classes (for example
+  `pprof_error_unsupported_inference` when a model does not support the inference asked for,
+  or `pprof_warning_screening`), so code can catch them by class.
+- **Defaults.** `null = NULL` means the model's norm (the median effect for fixed-effect
+  models, 0 for random-effect models); providers are selected by ID, compared as text, so
+  integer, character, and factor IDs work alike.
+
+## What changed in the old functions
+
+The old functions return the same objects and numbers as pprof 1.0.3, including its
+defaults and its conventions, with these exceptions, where pprof 1.0.3 failed, returned a
+wrong result, or misaligned results:
+
+- **Fitting.** Formulas with transformed terms, interactions, or factor levels containing
+  spaces work. Factor provider IDs work when providers are excluded by screening. Settings
+  that returned meaningless fits now raise errors: `threads` below 1, `backtrack` other
+  than 0 or 1 with BAN, outcomes other than 0 and 1, and non-positive `max.iter`, `tol`, or
+  `bound`. `logis_firth()` with more than one thread gives the result of one thread, where
+  it stopped after a few iterations, and a singular information matrix raises an error
+  instead of ending the R session. In `linear_re()` and `logis_re()`, character provider IDs
+  with a covariate matrix, and calls that match no input format, raise errors instead of
+  failing in lme4 or with "object 'fit_re' not found".
+- **Messages.** The screening warning counts only the providers excluded, a fit that
+  reaches the iteration limit says "not converged" and warns, pROC's messages no longer
+  appear, and neither do the ggplot2 warnings of `bar_plot()` and `caterpillar_plot()`
+  (the horizontal caterpillar plot still gives ggplot2's message about
+  `geom_errorbarh()`).
+- **Tests and intervals.** With character provider IDs, `confint()` keeps each provider's
+  interval with that provider (pprof 1.0.3 attached the intervals of the providers after
+  the first one without events to other providers), and it works with factor provider IDs
+  and with a provider column of any name. Providers stored as integers can be selected with `parm`, and
+  an integer `null` works in every method. A `null` of several values raises an error
+  instead of being applied by position. `test(test = "robust_wald")`, which returned
+  `NULL`, raises an error. A standard score statistic that cannot be computed gives a missing
+  p-value and flag with a warning, where `test()` failed. `summary(test = "lr")` and
+  `"score"` work with two covariates (with one, they raise an error), and the summaries of
+  random-effect fits work on objects without their lme4 fit. The `confint()` methods of
+  `logis_re()` and `logis_cre()` fits use one thread, where they used four.
+- **Plots.** `plot(test = "exact")`, which always failed, raises a classed error. Inputs
+  that `caterpillar_plot()` and `bar_plot()` failed on raise classed errors, and the plot
+  data of `bar_plot()` are a data frame rather than a grouped tibble.
+
+Nothing else changes: estimates, tests, p-values, intervals, flags, standardized measures,
+and defaults are those of pprof 1.0.3.
