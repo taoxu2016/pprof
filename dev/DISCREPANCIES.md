@@ -71,7 +71,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-49 | `bar_plot()`'s plot data | Presentation | verified; documented (Phase 6) | The plot's data are a data frame, where pprof 1.0.3's are dplyr's grouped tibble; the data and the built plot are the same |
 | D-50 | `test_providers()` help | C | verified; fixed in the help (Phase 7) | Says the estimates of providers with no events or only events sit at the effect bound; at the default settings they are where the iterations stopped |
 | D-51 | the new interface's results | Presentation | verified; fixed (Phase 7, approved at the check-in) | Every fit and profiling function returned its result invisibly, so calling one at the console printed nothing, where pprof 1.0.3's functions print |
-| D-52 | `data_check` with one covariate | A | verified; fix proposed (Phase 8 plan) | Stops inside `cor()` with "supply both 'x' and 'y' or a matrix-like 'x'" after the variation check |
+| D-52 | `data_check` with one covariate | A | verified; fix approved with the Phase 8 plan | Stops inside `cor()` with "supply both 'x' and 'y' or a matrix-like 'x'" after the variation check |
 
 ---
 
@@ -903,5 +903,5 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reproduce the error in the wrapper; (2) complete the checks: no pair of covariates to correlate, and no VIF warning (the VIF of a single covariate is 1).
 - Recommendation: (2), in `check_data()` and the `data_check()` wrapper (Phase 8, DEC-073), with a regression test, listed in the migration guide with the other errors that became results.
 - Decision owner: project lead.
-- Status: verified (2026-10-05, Phase 8 planning, on the working tree at `a089bc5`, whose `R/data_check.R` differs from `5260838` only in its roxygen comments); fix proposed with the Phase 8 plan.
+- Status: verified (2026-10-05, Phase 8 planning, on the working tree at `a089bc5`, whose `R/data_check.R` differs from `5260838` only in its roxygen comments); option (2) approved by the project lead with the Phase 8 plan (2026-10-05), for step 3.
 - Regression test: planned in `tests/testthat/test-check-data.R` (Phase 8, step 3).

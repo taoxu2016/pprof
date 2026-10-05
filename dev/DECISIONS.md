@@ -677,12 +677,12 @@ The Phase 7 decisions below were proposed with the Phase 7 plan (`dev/design/PHA
 
 ---
 
-The Phase 8 decisions below are proposed with the Phase 8 plan (`dev/design/PHASE8_PLAN.md`, 2026-10-05), for the project lead's approval. The facts they cite (F1 to F14) are the plan's, with their scripts in `dev/design/phase8-facts/`.
+The Phase 8 decisions below were proposed with the Phase 8 plan (`dev/design/PHASE8_PLAN.md`, 2026-10-05) and approved by the project lead with it on 2026-10-05, with every recommendation of the plan. The facts they cite (F1 to F14) are the plan's, with their scripts in `dev/design/phase8-facts/`.
 
 ### DEC-070: Phase 8 scope
 
 - Date: 2026-10-05
-- Status: proposed
+- Status: accepted with the Phase 8 plan (2026-10-05)
 - Context: Brief §4 gives Phase 8 "final compatibility wrappers, dependency reduction, dead-code removal, CRAN readiness, final equivalence and benchmark reports" and the final review; brief §7 to §9 and §12 set the standards that review checks. Earlier decisions assign Phase 8 the deprecation warnings (DEC-033), `check_data()` and the removal of caret, olsrr, and globals (DEC-010, DEC-054), one model build in `plot.logis_fe()` (DEC-039), DEC-044's memory investigation, the site address (DEC-066), and the version. The fork's CI has failed on every push since Phase 2 (PHASE8_PLAN F1), so the earlier gates rested on local checks on Windows with R 4.4.0, and criteria 1 and 9 cannot be shown.
 - Decision: (1) CI comes first (step 1); the other steps follow in the plan's order, each checked on CI as well as locally. (2) No Class B change, fixture regeneration, or tolerance change; a cause found in CI that would need one stops the work for the project lead. (3) `rewrite/phase-8` is pushed to the fork as the project lead approves, fast-forward only. (4) The gate is the final review: `/phase-gate` with the CI results of every platform, and `dev/design/FINAL_REVIEW.md`, which gives the evidence for each success criterion of brief §12 and what the methodology owners must decide. (5) The namespace guard of Phase 7 (`07_code_unchanged.R`) shows which functions each code step changed.
 - Alternatives considered: the dependency and wrapper work first, CI last (every step would be checked on one platform only, as in Phases 2 to 7); a CI-only phase before the hardening (one more gate for the same work).
@@ -691,7 +691,7 @@ The Phase 8 decisions below are proposed with the Phase 8 plan (`dev/design/PHAS
 ### DEC-071: CI
 
 - Date: 2026-10-05
-- Status: proposed
+- Status: accepted with the Phase 8 plan (2026-10-05)
 - Context: DEC-026 set up the check matrix (five jobs), the reference job, and coverage; the sanitizer and benchmark jobs came in Phase 3. Brief §9 asks for `R CMD check --as-cran` on Linux, macOS, and Windows for R release, devel, and oldrel, and lint enforcement; brief §3.4 asks for the tolerances to be validated on every CI platform, and criterion 1 for every fixture to pass on every CI platform. The job logs and artifacts need a signed-in account, while annotations are public (F1). `actions/checkout@v4` and `actions/upload-artifact@v4` run on the deprecated Node.js 20, and `ubuntu-latest` moves to Ubuntu 26 from 2026-10-19 (F1, F2). The CI checks skip the CRAN incoming check and run the tests in CRAN mode (F2).
 - Decision: (1) `actions/checkout@v5`, `actions/upload-artifact@v6`; Linux jobs on `ubuntu-24.04`. (2) The check matrix: Linux, macOS, and Windows × release, devel, oldrel-1, and the declared minimum R on Linux (DEC-074); `error-on: '"warning"'`. (3) A failure step in the check jobs writes the not-OK sections of `00check.log` and the failure summary of `testthat.Rout.fail` as `::error` annotations. (4) The reference suite runs on macOS and Windows with R release and the current CRAN packages, next to the pinned Linux job; lme4-backed cases run where lme4 and Matrix equal the manifest's versions and are listed as skipped otherwise. (5) Coverage reports R and C++ separately and fails below 90% of R lines. (6) A lint job (`rewrite-lint.yaml`): `lintr::lint_package()`, and clang-format once DEC-078 is in place. (7) The rewrite workflows also run on pushes and pull requests to `main`. (8) `test-pprof-package.yml` is removed (it runs `devtools::test()` on R 4.3.1 for `main`, superseded by the check matrix); `rhub.yaml` stays (manual; R-hub's platforms before a submission). (9) Each cause of a failure is recorded in `dev/design/phase8-facts/08_ci_diagnosis.md`.
 - Alternatives considered: the GitHub CLI to read logs (needs installing and signing in, the project lead's decision; the annotations need neither); keeping five check jobs (brief §9 names three R versions on each system); the reference suite on Linux only (criterion 1 says every CI platform); `ubuntu-latest` (the gate's CI could change system under it).
@@ -700,7 +700,7 @@ The Phase 8 decisions below are proposed with the Phase 8 plan (`dev/design/PHAS
 ### DEC-072: Deprecation warnings
 
 - Date: 2026-10-05
-- Status: proposed
+- Status: accepted with the Phase 8 plan (2026-10-05)
 - Context: Brief §8: wrappers for old exported names emit a deprecation warning once per session and remain for at least one minor release; DEC-033 starts the warnings in Phase 8, through `warn_deprecated()` (`R/conditions.R`, never called, F11); ARCHITECTURE §I.3 keeps every wrapper through 2.0.0 and at least 2.1.0. 33 test files call old functions, and strict mode turns any unexpected warning into an error (DEC-030); the fixture comparison compares only partial-matching warnings (F11). The migration guide runs 31 old calls (DEC-064).
 - Decision: (1) Every function of pprof 1.0.3 is kept. (2) Its twelve exported names (`logis_fe`, `logis_firth`, `linear_fe`, `linear_re`, `logis_re`, `linear_cre`, `logis_cre`, `test`, `SM_output`, `caterpillar_plot`, `bar_plot`, `data_check`) warn once per session each, with class `pprof_deprecated`, before computing, naming the replacement and the migration guide; `test()` and `SM_output()` warn in the generic. (3) The old classes' methods of base generics (`confint()`, `summary()`, `plot()`, `print()`) do not warn: their objects come from a function that has warned, and the generics are not deprecated. (4) The old names and their replacements are a table in `R/compat-deprecate.R`. (5) A test helper marks every warning as given for the test run; `test-compat-deprecate.R` checks each name with a cleared registry (warns once, then not; results identical). (6) The migration guide shows the first warning and explains it; its later comparison chunks hide warnings, as the text says, except those that show a warning on purpose. No option to silence the warnings is added: `suppressWarnings()` and handlers for the class do that.
 - Alternatives considered: warnings from every method of the old classes (a `print()` that warns; objects saved with pprof 1.0.3 would warn on every generic); lifecycle (a dependency for one helper, DEC-013); a package option to silence them (more interface for what the class already allows).
@@ -709,7 +709,7 @@ The Phase 8 decisions below are proposed with the Phase 8 plan (`dev/design/PHAS
 ### DEC-073: `check_data()`, the `data_check()` wrapper, and the dependencies
 
 - Date: 2026-10-05
-- Status: proposed
+- Status: accepted with the Phase 8 plan (2026-10-05)
 - Context: DEC-010 specifies `check_data(formula, data, provider)` returning a `pprof_data_check` result, and keeps `data_check()`'s behavior in a wrapper (D-17). DEC-009 removes caret and olsrr after an equality test of the replaced functions. `data_check()` uses caret's `nzv()` and olsrr's `viftol()`, whose base-R versions are `identical()` to them on eleven inputs; with one covariate, `data_check()` fails in `cor()` (F6, D-52). globals is imported only for a dummy function (F10).
 - Decision: (1) `R/check-data.R` computes missing values per variable, complete observations, the near-zero-variance metrics and VIF of the design-matrix columns of the complete observations (as `data_check()` checks the columns of `Z`), and correlated pairs, with the K-120 thresholds, in base R written as F6's versions, and reports them without stopping; a print method lists the problems. (2) `R/compat-data-check.R` builds pprof 1.0.3's data from `Y`, `Z`, and `ProvID`, computes through the same functions, and reproduces pprof 1.0.3's messages, warnings, and errors in its order, except that one covariate completes the checks (D-52). (3) caret, olsrr, and globals leave Imports; caret and olsrr go to Suggests for tests that compare the base-R functions with them when installed, as pROC does for the AUC (D-40). (4) `R/data_check.R` and `R/pprof.R` are removed; the directives move to `R/pprof-package.R`.
 - Alternatives considered: dropping caret and olsrr entirely, keeping the one-time comparison in `dev/design/phase8-facts/04_data_check.txt` (the equality would no longer be rechecked); `check_data()` on the raw variables rather than the design matrix (factors could not be checked for VIF, and the wrapper could not share the computation).
@@ -718,7 +718,7 @@ The Phase 8 decisions below are proposed with the Phase 8 plan (`dev/design/PHAS
 ### DEC-074: Minimum versions
 
 - Date: 2026-10-05
-- Status: proposed
+- Status: accepted with the Phase 8 plan (2026-10-05)
 - Context: DESCRIPTION declares `R (>= 4.1.0)`, ggplot2, lme4, and Matrix without versions. pprof's R code needs R 4.0, its tests R 4.1 (F12); the current Matrix and MASS need R ≥ 4.4, ggplot2 4 needs R ≥ 4.1 (F2); nothing below R 4.4.0 has been tested. The plot fixtures and the plot guard were recorded under ggplot2 4.0.3 (D-36). The lme4-backed results are compared only under the manifest's lme4 and Matrix (DEC-020). M-12 asks the owners for the minimum R version.
 - Decision: (1) A CI job at the declared minimum, R 4.1; if it fails, Linux jobs with oldrel-2 to oldrel-4 find the lowest R that passes, `Depends` states that version, and the owners may choose a higher one (M-12). (2) `ggplot2 (>= 4.0.0)`. (3) No new minimum for lme4 and Matrix; the documentation states that lme4-backed results are compared with pprof 1.0.3 under lme4 2.0-6 and Matrix 1.7-6.
 - Alternatives considered: keeping `R (>= 4.1.0)` untested (a requirement that may be false); requiring R ≥ 4.4 outright (excludes versions that may work); ggplot2 without a version (users of ggplot2 3 would run plot code the fixtures never checked).
@@ -727,7 +727,7 @@ The Phase 8 decisions below are proposed with the Phase 8 plan (`dev/design/PHAS
 ### DEC-075: The old plots
 
 - Date: 2026-10-05
-- Status: proposed
+- Status: accepted with the Phase 8 plan (2026-10-05)
 - Context: `plot.logis_fe()` rebuilds the model from the old object and again inside `test.logis_fe()` (F9), which DEC-039 left to Phase 8. The horizontal `caterpillar_plot()` keeps pprof 1.0.3's `geom_errorbarh()`, which ggplot2 4 deprecates, with a warning at creation and a message at every build; `geom_errorbar(orientation = "y")` draws the same bars, with a different built `width` column (F8, D-36). DEC-055 keeps the reference's drawing code as the record of the old appearance.
 - Decision: (1) `plot.logis_fe()` builds the model once and converts the score test's result to the old flags with the code `test.logis_fe()` uses. (2) `caterpillar_plot()` draws horizontal bars with `geom_errorbar(orientation = "y", width = h)`, where pprof 1.0.3 passed `height = h`; the plot guard of Phase 6 must show the built plots identical except that `width` column. (3) The other old methods keep rebuilding the model on each call (DEC-032, DEC-039); the final benchmark report measures the cost again.
 - Alternatives considered: keeping `geom_errorbarh()` (the message on every print of a horizontal plot, and a function ggplot2 will remove); caching rebuilt models (rejected in DEC-039).
@@ -736,7 +736,7 @@ The Phase 8 decisions below are proposed with the Phase 8 plan (`dev/design/PHAS
 ### DEC-076: The fixtures in the tarball
 
 - Date: 2026-10-05
-- Status: proposed
+- Status: accepted with the Phase 8 plan (2026-10-05)
 - Context: The tarball is 5,760,081 bytes, over the 5,000,000 at which `R CMD check --as-cran` notes it; the shipped fixtures make up 4.76 MB of its content, and four of their datasets, 1.33 MB, are copies of the bundled `ExampleDataBinary` and `ExampleDataLinear`, which the generator builds from `data/` (F4, F5). Brief §6: keep the fixtures shipped to CRAN small. Fixtures are never edited and are regenerated only with approval.
 - Decision: the four dataset files are left out of the build (`.Rbuildignore`); when a dataset's file is absent, the fixture loader builds it from the bundled data as `dev/reference/datasets.R` does; where the file is present (the repository, CI's reference jobs), a test checks that the built object is `identical()` to it. No fixture file changes.
 - Alternatives considered: justifying the note (CRAN asks for the minimum necessary size, and the copies are avoidable); moving cases to the full set (a regeneration); recompressing the RDS files (editing fixtures).
@@ -745,7 +745,7 @@ The Phase 8 decisions below are proposed with the Phase 8 plan (`dev/design/PHAS
 ### DEC-077: The release shape
 
 - Date: 2026-10-05
-- Status: proposed
+- Status: accepted with the Phase 8 plan (2026-10-05)
 - Context: DESCRIPTION says 1.0.3 with Date 2026-02-08, and NEWS has no versioned heading; with version 2.0.0 and a versioned heading, `--as-cran` reports neither (F4). Seven old logistic RE and CRE examples take over 5 s (F4). D-02 and D-25 plan a check of the help against `formals()`; the help's 38 statements of defaults agree today (F7). The site address answers 404, and pkgdown needs it for `check_pkgdown()` and the redirects (F8, DEC-066). The version and the release are the project lead's and the owners' decisions.
 - Decision: (1) Version 2.0.0 from step 5, without a `Date` field. (2) NEWS as "# pprof 2.0.0" in sections: the new interface and migration, deprecations, changes in the old functions, performance, dependencies, documentation; nothing dropped. (3) The slow examples fit providers 1 to 20, as the new fits' examples do. (4) A test compares every stated default in the help with `formals()`. (5) `cran-comments.md` (build-ignored) records the test environments, the check results, the justified notes, and the reverse dependencies. (6) The site address stays; its publication is a precondition of the release for the owners, and its note is justified in `cran-comments.md` until then; if the owners decide not to publish, the address, the redirects, and the configuration check go together. (7) No CITATION file.
 - Alternatives considered: a development version such as `1.0.3.9000` (noted by `--as-cran`, and the final review would not check the release's version); `\donttest{}` for the slow examples (unchecked by default); removing the address now (the redirects of the old articles would go, for a site the owners may publish).
@@ -754,7 +754,7 @@ The Phase 8 decisions below are proposed with the Phase 8 plan (`dev/design/PHAS
 ### DEC-078: clang-format
 
 - Date: 2026-10-05
-- Status: proposed
+- Status: accepted with the Phase 8 plan (2026-10-05)
 - Context: Brief §9 asks for clang-format for C++, and `.claude/rules/cpp.md` says to format with it; there is no `.clang-format`, and clang-format is not installed (F3). The core follows a Google-like style, with 3 of its 1,686 lines wider than 120 characters (F10).
 - Decision: `.clang-format` based on Google style with a 120-column limit, include sorting and comment reflow off; one commit formats `src/core/`, `src/logistic/`, and `src/rcpp_logistic.cpp` (not the generated `RcppExports.cpp`), shown to change only whitespace by comparing each file without whitespace; CI's lint job checks the format with the same clang-format version. clang-format is installed as the project lead approves (proposed: the `clang-format` npm package in a scratch folder, and the same package in CI).
 - Alternatives considered: no formatting (brief §9 unmet); LLVM through winget (a larger installation).
@@ -763,7 +763,7 @@ The Phase 8 decisions below are proposed with the Phase 8 plan (`dev/design/PHAS
 ### DEC-079: Memory and the final benchmarks
 
 - Date: 2026-10-05
-- Status: proposed
+- Status: accepted with the Phase 8 plan (2026-10-05)
 - Context: DEC-044 accepted two memory exceptions: the load-order transient of caret (about 67 MB at Phase 6) until caret leaves, and the 50-covariate `logis_fe()` peak, to investigate. That peak was 2.6 to 2.7 GB against 2.1 to 2.4 GB at Phase 4, 8.5% above the baseline at Phase 5, and below it at Phase 6, with 360 MB of variation between runs (F13). Brief §3.6 and criterion 8: no unexplained regression.
 - Decision: (1) The 50-covariate task is measured alternately with the pinned reference (`run_paired.R`, at least three rounds, peak process memory and `gc()`'s maximum). If the working tree is more than 10% and 50 MB above in every round, the engine's and the variance routine's temporaries are investigated, and only a change that leaves every result bitwise identical is made (the reference suite and `identical()` fits on the scenario); otherwise the exception is closed with the measurements. (2) The transient is measured after caret leaves. (3) The final benchmark report compares a full run of the working tree with the baselines and re-measures every flagged task (DEC-038), including the old methods' rebuild cost (DEC-039).
 - Alternatives considered: rewriting the engine's linear algebra to save memory (changes the order of floating-point operations, and so the iteration path); accepting the exception without measuring (criterion 8 asks for an explanation).
