@@ -563,6 +563,8 @@ R version: keep `R (>= 4.1.0)`, the current requirement, which the native pipe n
 | `bar_plot(test(fit))` | `plot_flags(test_providers(fit))` | `bar_plot()` |
 | `data_check(Y, Z, ProvID)` | `check_data(formula, data, provider)` | `data_check()` |
 
+As built in Phase 7: the migration guide (`vignettes/migration.Rmd`, §I.4) gives this table with a migration path for each row; `plot_volume()` (DEC-059) and `profile_providers()` are new, without an old counterpart; `check_data()` comes in Phase 8, so the guide tells users to keep `data_check()`.
+
 ### I.2 How the wrappers work
 
 - They live only in `R/compat-*.R` and contain translation logic only (brief §8).
@@ -584,6 +586,26 @@ As built in Phase 6: `caterpillar_plot()` and `bar_plot()` are wrappers too (DEC
 ### I.4 Migration guide (Phase 7)
 
 A vignette with the table above, worked before-and-after examples for each workflow (fit, test, standardize, intervals, plots), the list of Class A behavior changes (errors that became results), the new argument vocabulary, and the changed default thread count (DEC-001).
+
+As built in Phase 7 (DEC-064): `vignettes/migration.Rmd`, "Migrating from pprof 1.0.3". Its table is §I.1's with a migration path for each row (`data_check()` has no replacement until `check_data()`, Phase 8); its argument table is NAMING §4's "Replaces" column; each workflow (fitting in the three input formats, tests, measures, intervals, covariates, the funnel plot, and the linear FE, RE, CRE, and Firth fits) runs the old and the new call and stops the build unless the numbers are identical (18 comparisons). The user documentation cites no register IDs; its list of changes maps to the register as follows:
+
+| Item of the guide | Register |
+|---|---|
+| Formulas with transformed terms, interactions, factor levels with spaces | D-18 |
+| Factor provider IDs when providers are excluded | D-41 |
+| Settings that returned meaningless fits now raise errors (`threads` < 1, `backtrack` with BAN, non-binary outcomes, non-positive `max.iter`, `tol`, `bound`) | D-22, D-23, D-39 |
+| `logis_firth()` with several threads; singular information | D-05, D-42 |
+| `linear_re()` and `logis_re()` vector interface | D-11 |
+| Screening warning count; "not converged"; pROC and ggplot2 messages | D-01, D-03, D-36 |
+| `confint()` with character and factor IDs and any provider column name | D-19, D-28, D-29 |
+| Integer IDs in `parm`; integer `null`; a `null` of several values | D-27, D-14, D-45 |
+| `test = "robust_wald"`; standard score statistic not computable | D-06, D-04 |
+| `summary(test = "lr")` with two covariates; RE summaries without the lme4 fit | D-30, D-46 |
+| One thread in the logistic RE and CRE `confint()` | D-21 |
+| `plot(test = "exact")`; classed errors of `caterpillar_plot()` and `bar_plot()`; `bar_plot()`'s data frame | D-07, DEC-055, D-49 |
+| The new interface: results, integer flags, `confint()`, quiet fits, one thread, compact models, classed conditions, visible results | DEC-012, D-15, DEC-011, DEC-008, DEC-001, DEC-005, NAMING §6, D-51 |
+
+Not listed because users never saw it: D-08 (partial matching, which worked). Unchanged and so not listed: the behaviors awaiting sign-off (D-10, D-24, D-31, D-32, D-34, D-43) and those signed off (D-12, D-13).
 
 ---
 
