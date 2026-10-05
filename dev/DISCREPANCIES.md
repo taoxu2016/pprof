@@ -36,7 +36,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-14 | `null` validation | A | verified; fixed (Phases 3 and 5) | Integer `null` accepted by `test()`, rejected by `SM_output()`, `confint()`, `plot()` |
 | D-15 | `test` methods | Presentation | verified; integer flags in the new API, the factor in the wrappers (Phases 3 and 5) | Flags are factors whose levels depend on the data |
 | D-16 | `test.linear_fe` | none (made explicit) | verified | Reference distribution chosen by a hidden attribute |
-| D-17 | `data_check` | C | verified | Stops on any missing value; fits delete incomplete rows |
+| D-17 | `data_check` | C | verified; fixed in the help (Phase 7) | Stops on any missing value; fits delete incomplete rows |
 | D-18 | FE formula interface | A | verified; fixed in the data layer (Phase 2) | Transformed and interaction terms fail; factor levels with spaces break the design matrix |
 | D-19 | `confint.logis_fe(option = "SM")` | A | verified | Non-numeric IDs misalign intervals with providers (61 of 100 in the example) |
 | D-20 | `logis_fe(threads > 1)` | none (tolerance) | verified | Element-wise OpenMP information block differs from BLAS at 1e-15 relative |
@@ -54,7 +54,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-32 | `confint.linear_fe` | B (question M-8) | verified; reproduced in the new API and the wrappers (Phase 5); awaiting sign-off | Uses t for the simplified variance and z for the full variance, the reverse of `test.linear_fe` |
 | D-33 | interval attributes | C | verified; results carry the level as a number, the wrappers keep the attributes (Phases 3 and 5) | `confidence_level` is "95 %" (FE) or "0.95 %" (RE/CRE); `logis_cre` rate interval labeled "RE logis" |
 | D-34 | provider ordering | B | verified; reproduced (Phases 3 to 5); awaiting sign-off for (2) | Character IDs are ordered by the session's collation locale, which also fixes the bootstrap draw order |
-| D-35 | bundled data docs | C | verified | `ExampleDataBinary` has 7,944 observations, documented as 7,994 |
+| D-35 | bundled data docs | C | verified; fixed (Phase 7) | `ExampleDataBinary` has 7,944 observations, documented as 7,994 |
 | D-36 | messages and side effects | Presentation | verified; the plot warnings fixed in the wrappers (Phase 6) but `geom_errorbarh()`'s | `linear_fe`, `linear_re`, `logis_re` always print messages; attaching pprof prints a `car` message; `bar_plot()` triggers a ggplot2 deprecation warning, and `caterpillar_plot(use_flag = TRUE)` an unused-argument warning under ggplot2 4 |
 | D-37 | vignettes | C | verified | Describe a different clamp, nonexistent functions, and calls that now fail |
 | D-38 | `logis_fe` with collinear covariates | C | verified | Unidentified estimates with variances near 7e13 and no rank-deficiency warning |
@@ -69,6 +69,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-47 | `caterpillar_plot()`, `bar_plot()` colours | Presentation | verified; reproduced in the wrappers, fixed in the new plots (Phase 6) | Colours go to the flags present in sorted order, so the same colour can mean higher, lower, or as expected, unlike the funnel plot |
 | D-48 | `caterpillar_plot()`, `bar_plot()` help | C | verified; fixed in the help (Phase 6) | `bar_width` has no effect; the input is called `test_df`; infinite limits are said to arise for providers with all or no events and to be shortened |
 | D-49 | `bar_plot()`'s plot data | Presentation | verified; documented (Phase 6) | The plot's data are a data frame, where pprof 1.0.3's are dplyr's grouped tibble; the data and the built plot are the same |
+| D-50 | `test_providers()` help | C | verified; fixed in the help (Phase 7) | Says the estimates of providers with no events or only events sit at the effect bound; at the default settings they are where the iterations stopped |
 
 ---
 
@@ -352,8 +353,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: document; or make the new `check_data()` report missingness instead of stopping.
 - Recommendation: document the behavior in the compatibility wrapper `data_check()` (unchanged); the new `check_data()` returns a report object that includes missingness, with the same thresholds for variation, correlation, and VIF (DEC-010).
 - Decision owner: project lead.
-- Status: verified (V16.1). The documentation fix (the help of the `data_check()` wrapper states the behavior) was approved for Phase 7 with its plan (2026-10-05); the function and `check_data()` stay in Phase 8.
-- Regression test: planned.
+- Status: verified (V16.1). The documentation fix was approved for Phase 7 with its plan (2026-10-05) and made in step 1: the help of `data_check()` says that it warns for each variable with missing values and then stops with the percentage of incomplete observations, while the fitting functions drop those observations (confirmed on `ExampleDataBinary` with three missing values, 2026-10-05). The function and `check_data()` stay in Phase 8.
+- Regression test: not applicable for the help (documentation); `check_data()` gets its tests in Phase 8.
 
 ### D-18: FE formula interface handles only plain column names
 
@@ -611,8 +612,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: fix the documentation.
 - Recommendation: fix.
 - Decision owner: project lead.
-- Status: verified (V16.7).
-- Regression test: documentation test that reads dimensions from the data.
+- Status: verified (V16.7); fixed in Phase 7, step 1: the documentation of the bundled data, moved from `R/Data.R` to `R/data-bundled.R`, says 7944 observations.
+- Regression test: `tests/testthat/test-data-bundled.R` (the numbers of observations, covariates, providers, children, and schools that the help of the three data sets states, against the data).
 
 ### D-36: Unconditional messages and side effects
 
@@ -839,3 +840,25 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: project lead.
 - Status: verified (2026-10-04, Phase 6, step 3); documented in NEWS.
 - Regression test: `tests/testthat/test-compat-plots.R` ("bar_plot()'s data are a data frame with the group index ggplot2 adds to dplyr's grouped data"); the fixtures compare `as.data.frame()` of the plot data.
+
+### D-50: The help says that the estimates of providers with no events or only events sit at the effect bound
+
+- Component: the help of `test_providers()` (`R/profile-tests.R`, written in Phase 3), and the comments above `warn_wald_unreliable()` (`R/conditions.R`) and `profile_wald_caution()` (`R/profile-spec.R`).
+- Class (proposed): C
+- Description: The help said that Wald tests warn when they cover providers with no events or only events, "whose estimates sit at the effect bound". At the default settings they need not. The maximum likelihood estimate of such a provider's effect is infinite, so each iteration moves its fitted effect further toward the bound (K-15), and the fit stops when the stopping rule is met (K-16), wherever these effects are then. The iterations are those of pprof 1.0.3, so the same holds there. Found while gathering facts for the Phase 7 vignettes (2026-10-05).
+- Minimal reproducible example:
+  ```r
+  data(ExampleDataBinary)
+  d <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+  fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, d, "hospital")
+  provider_estimates(fit)[c("40", "49", "81")]  # -10.71 -8.08 -6.23 (8 iterations)
+  median(provider_estimates(fit)) - 10          # -10.93, the bound
+  ```
+  With `stop_rule = "all"` and `tol = 1e-10` (14 iterations) all three providers are at the bound.
+- Affected outputs: documentation.
+- Statistical impact: none on any result. The example shows that the estimates of these providers, and so their Wald statistics and standard errors and their directly standardized measures, depend on the iteration at which the fit stops, which D-24 and question M-4 concern.
+- Options: fix the help.
+- Recommendation: fix.
+- Decision owner: project lead.
+- Status: verified (2026-10-05); fixed in Phase 7, step 1: the help says that the maximum likelihood estimates are infinite, that the fitted effects move toward the bound with every iteration, and that the estimates and standard errors depend on when the fit stopped; the two comments say the same.
+- Regression test: not applicable (documentation).
