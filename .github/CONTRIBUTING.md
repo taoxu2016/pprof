@@ -13,6 +13,11 @@ When creating an issue, include:
 -   Expected vs. actual behavior
 -   Your R version, OS, and `pprof` version
 
+## Developer documentation
+
+-   To add a model, read the vignette "Adding a model to pprof" (`vignette("adding-a-model", package = "pprof")`).
+-   To change pprof itself, read [`dev/DEVELOPER_GUIDE.md`](../dev/DEVELOPER_GUIDE.md): the map of the repository, the rule that pprof reproduces the statistical behavior of pprof 1.0.3, and the commands.
+
 ## Submitting code changes
 
 1.  [Fork](https://github.com/UM-KevinHe/pprof/fork) the repository.
