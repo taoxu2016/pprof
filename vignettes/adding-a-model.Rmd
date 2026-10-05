@@ -79,6 +79,13 @@ toy_fit <- function(formula, data, provider, min_provider_size = 1) {
 }
 ```
 
+The vectors a model stores for each observation, here the linear predictor, are in the
+order of the prepared data, not of the input data frame: `data_prepare()` sorts the
+observations by provider, and `prepared$row_index` gives each one's row in the input data.
+A model estimated on the input data frame, for example with `glm()`, puts its values in
+that order with `values[prepared$row_index]`; values in another order pass the object's
+checks but give wrong results.
+
 The model then needs four methods: the inference it supports, the expected outcome of each
 observation for a given provider effect, the numeric value of the norm, and its family
 specification. A package registers them in its NAMESPACE (see "Registering the methods"
@@ -169,7 +176,30 @@ tryCatch(test_providers(toy, test = "wald"),
 
 The shared methods read the fields that `new_pprof_model()` fills. A generic without a
 shared method raises `pprof_error_unsupported_inference` for a model that does not
-implement it, so a model implements only what its capabilities need.
+implement it, so a model implements only what its capabilities need. Some points that are
+easy to miss:
+
+- `null_effect()` receives a `null` that pprof has already checked: one of the
+  specification's `null_options`, or a single finite number, which the method can return as
+  it is.
+- `provider_estimate_se()` has no shared method, even when the object stores
+  `provider_effect_variance`; a model with Wald inference implements it, for example as
+  `sqrt(model$provider_effect_variance)`. With `provider_wald` or `interval_wald` declared,
+  `provider_effects()` and `profile_providers()` call it for the standard errors even without
+  intervals.
+- A model's own methods can raise pprof's condition classes with base R, for example
+  `stop(errorCondition("No lambda is selected.", class = c("pprof_error_invalid_input", "pprof_error")))`.
+
+## Fitting into the rest of R
+
+The standard methods `coef()`, `vcov()`, `nobs()`, and `formula()` are shared and read the
+object. `fitted()`, `residuals()`, `predict()`, and `logLik()` are each model's own:
+`augment()` uses `fitted()` and `residuals(type = "response")`, and `AIC()` and `BIC()` use
+`logLik()`. Besides the fields that `new_pprof_model()` fills, `print()`, `summary()`, and
+`glance()` show these when the object has them: `loglik`, `aic`, `bic`, and `auc`;
+`spec$method`; and `convergence`, a list whose `iterations`, `converged`, `stop_rule`, and
+`tol` they report. `names(fit)` and `str(fit$convergence)` of a `fit_logistic_fe()` model
+show complete examples.
 
 ## The family specification
 
@@ -184,14 +214,15 @@ implement it, so a model implements only what its capabilities need.
 | `indirect_numerator` | the sum compared with the expected one: `"observed"` outcomes, or `"predicted"` (then `predicted_outcome()` gives it) | `"observed"` | `"observed"` | `"predicted"` |
 | `measures` | the measures | `"ratio"`, `"rate"` | `"difference"` | as the outcome's |
 
-The other fields are needed only by some functions, and those with a default take the
-behavior of logistic fixed-effect models when they are left out:
+The other fields are needed only by some functions. A field left out takes the default in
+the table, which is the behavior of logistic fixed-effect models, except for
+`wald_caution`, which logistic fixed-effect models set to `TRUE`:
 
 | Field | Needed for | Default |
 |---|---|---|
 | `variance_function(mean)` | the null variance of indirect standardization, and the funnel precision | none (the variance is then missing) |
-| `mean_function(eta)` | intervals of the standardized measures | none |
-| `direct_expected(effects, linear_predictor, threads)` | direct standardization | none |
+| `mean_function(eta)` | intervals of the standardized measures; the expected outcome for a linear predictor `eta` | none |
+| `direct_expected(effects, linear_predictor, threads)` | direct standardization: given the effects of all the included providers (unnamed, in provider order), the linear predictor of all observations, and the thread count, it returns, for each effect, the total outcome expected in the whole population if every observation had that effect (a vector as long as `effects`) | none |
 | `funnel` | funnel limits: a list with `measure`, `target`, `floor`, `test`, `precision(expected, variance)` (or with a third argument `n_obs`), and `half_width(critical, precision)` | none |
 | `test_default` | the test of `test_providers()` when `test` is not given | `"exact"` |
 | `comparison` | `"ratio"` (observed over expected) or `"difference"` (per observation) | `"ratio"` |
@@ -200,10 +231,9 @@ behavior of logistic fixed-effect models when they are left out:
 | `one_sided_extremes` | one-sided measure limits for providers with no events or only events | `TRUE` |
 | `wald` | the distributions of the Wald tests and intervals: `test` and `interval`, `"normal"` or `"t"`, and `df` | normal |
 | `coefficient_wald` | the rule of the coefficients' Wald tests and intervals | normal, two-sided |
-| `wald_caution` | warn when Wald inference covers providers with no events or only events | `FALSE` |
+| `wald_caution` | warn when Wald inference covers providers with no events or only events | `FALSE` (logistic fixed effects: `TRUE`) |
 
-`profile_spec()` of a fitted model shows a complete example, for instance
-`names(profile_spec(fit_logistic_fe(...)))`.
+`str(profile_spec(fit))` of a fitted model shows a complete specification with its values.
 
 ## Capabilities
 
@@ -327,8 +357,10 @@ unpenalized. Nothing in it changes the existing models or the profiling code.
 
 ## Further reading
 
-The repository's `dev/` directory holds the design documents behind this guide:
+The help pages `?data_prepare`, `?new_pprof_model`, and `?model_contract` document the
+developer interface. The package's source repository (<https://github.com/UM-KevinHe/pprof>)
+holds the design documents behind this guide, which are not installed with the package:
 `dev/design/ARCHITECTURE.md` (the layers, the model objects, the contract, and the
-capabilities), `dev/NAMING.md` (names, arguments, classes, and conditions), and
-`dev/DEVELOPER_GUIDE.md` (for contributors to pprof itself). The help pages `?data_prepare`,
-`?new_pprof_model`, and `?model_contract` document the developer interface.
+capabilities), `dev/NAMING.md` (names, arguments, classes, and conditions),
+`dev/DEVELOPER_GUIDE.md` (for contributors to pprof itself), and the test of this guide's
+toy model, `tests/testthat/test-extension-toy-model.R`.

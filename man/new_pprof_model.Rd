@@ -34,7 +34,8 @@ without covariates).}
 provider order.}
 
 \item{linear_predictor}{The covariate linear predictor of each observation, in the order of
-\code{data}.}
+the observations in \code{data}, which \code{\link[=data_prepare]{data_prepare()}} sorts by provider (\code{data$row_index}
+gives each one's row in the input data).}
 
 \item{spec}{The model specification: a list with the element \code{family} (a string) and the
 settings of the fit.}
@@ -42,7 +43,8 @@ settings of the fit.}
 \item{...}{Further named fields of the model class.}
 
 \item{provider_effect_variance}{The variance of each provider effect, named like
-\code{provider_effects}, or \code{NULL}.}
+\code{provider_effects}, or \code{NULL}. Kept for the model's own methods; the standard errors
+that profiling uses come from the model's \code{\link[=provider_estimate_se]{provider_estimate_se()}} method.}
 
 \item{convergence}{\code{NULL}, or a list of convergence diagnostics (iterations, whether the fit
 converged, the final criterion, the stopping rule, the tolerance, the iteration limit).}

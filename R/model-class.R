@@ -83,12 +83,14 @@ model_input_order <- function(model, values) {
 #' @param provider_effects Effects of the included providers, named by provider ID, in
 #'   provider order.
 #' @param linear_predictor The covariate linear predictor of each observation, in the order of
-#'   `data`.
+#'   the observations in `data`, which [data_prepare()] sorts by provider (`data$row_index`
+#'   gives each one's row in the input data).
 #' @param spec The model specification: a list with the element `family` (a string) and the
 #'   settings of the fit.
 #' @param ... Further named fields of the model class.
 #' @param provider_effect_variance The variance of each provider effect, named like
-#'   `provider_effects`, or `NULL`.
+#'   `provider_effects`, or `NULL`. Kept for the model's own methods; the standard errors
+#'   that profiling uses come from the model's [provider_estimate_se()] method.
 #' @param convergence `NULL`, or a list of convergence diagnostics (iterations, whether the fit
 #'   converged, the final criterion, the stopping rule, the tolerance, the iteration limit).
 #' @param call The call of the fit function.
