@@ -24,6 +24,9 @@
 #'   with the model's own provider effects (for the random-effect models, lme4's fitted
 #'   values), the numerator of their indirectly standardized measures.
 #'
+#' `vignette("adding-a-model", package = "pprof")` explains the contract, the family
+#' specification, and the capabilities, and builds a model from scratch.
+#'
 #' @param model A model object inheriting from `pprof_model`.
 #' @param effect A provider effect: a single value, or one value per included provider in
 #'   provider order.

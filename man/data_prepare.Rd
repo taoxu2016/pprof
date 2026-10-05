@@ -46,7 +46,8 @@ Builds the \code{pprof_data} object that every fit function starts from: the res
 covariate design matrix, each observation's provider in the provider order, the provider
 table with its screening indicators, and the map back to the rows of \code{data}. It is part of
 the interface for developers of new models: a fit function builds its data with
-\code{data_prepare()} and its object with \code{\link[=new_pprof_model]{new_pprof_model()}}.
+\code{data_prepare()} and its object with \code{\link[=new_pprof_model]{new_pprof_model()}}; see
+\code{vignette("adding-a-model", package = "pprof")}.
 }
 \details{
 The steps reproduce the reference implementation (pprof 1.0.3) for every input it

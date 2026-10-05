@@ -1,0 +1,334 @@
+---
+title: "Adding a model to pprof"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Adding a model to pprof}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE, comment = "#>",
+  fig.width = 6, fig.height = 4, dpi = 96, fig.retina = 1, out.width = "100%"
+)
+```
+
+pprof is built so that a new model plugs into its provider profiling (tests and flags,
+standardized measures, intervals, funnel limits, and plots) without any change to that
+code. A model supplies its estimates and a few methods, the *model contract*, and declares
+which inference it supports. This vignette is for statisticians and programmers who want
+to add a model, in pprof itself or in a package of their own. It explains the contract,
+builds a small model from scratch, and walks through the design of a larger one.
+
+## How pprof is organized
+
+pprof has five layers, each using only the layers below it:
+
+| Layer | What it does | Functions |
+|---|---|---|
+| data | parses the formula, drops incomplete rows, builds the design matrix, indexes and screens the providers | `data_prepare()` |
+| model | estimates a model and builds its object | `fit_logistic_fe()` and the other fits, `new_pprof_model()` |
+| inference | p-values, flags, exact and score tests, test inversion, coefficient tests | used by the profiling functions |
+| profiling | tests, measures, effects, funnel limits | `test_providers()`, `standardize_providers()`, `provider_effects()`, `funnel_limits()`, `profile_providers()` |
+| presentation | printing, tidy outputs, plots | `print()`, `tidy()`, `plot_funnel()`, ... |
+
+The profiling functions never read a model's fields. They call the contract's generic
+functions, and they take what differs between families of models, such as the measures, the
+norm, or the funnel limits, from a *family specification* that the model returns. A model
+also lists its *capabilities*; asking it for anything else raises an error of class
+`pprof_error_unsupported_inference`.
+
+## What a fit function does
+
+1. Check its arguments.
+2. Prepare the data with `data_prepare()`: the response, the design matrix, each
+   observation's provider, the provider table, and, if asked, the screening of small
+   providers.
+3. Estimate the model.
+4. Build the object with `new_pprof_model()`, which fills the fields every model shares and
+   checks them, and adds the model's own fields.
+5. Declare its capabilities with a method for `inference_capabilities()`.
+6. Implement the contract's generics that have no shared method, and any whose shared
+   method does not fit.
+
+## A model in a few lines
+
+The smallest useful model has a binary outcome, no covariates, and an effect for each
+provider equal to the logit of its event rate. Its fit function uses `data_prepare()` and
+`new_pprof_model()`:
+
+```{r toy-fit, message = FALSE}
+library(pprof)
+
+toy_fit <- function(formula, data, provider, min_provider_size = 1) {
+  prepared <- data_prepare(formula, data, provider, min_provider_size = min_provider_size, event_counts = TRUE)
+  if (ncol(prepared$design) > 0L) stop("The toy model has no covariates.")
+  providers <- prepared$providers[prepared$providers$included, , drop = FALSE]
+  effects <- stats::qlogis(providers$n_events / providers$n_obs)
+  names(effects) <- providers$provider_id
+  new_pprof_model(
+    prepared,
+    coefficients = numeric(),
+    vcov = matrix(numeric(), 0L, 0L),
+    provider_effects = effects,
+    linear_predictor = rep(0, length(prepared$response)),
+    spec = list(family = "toy", min_provider_size = min_provider_size),
+    class = "pprof_toy_model"
+  )
+}
+```
+
+The model then needs four methods: the inference it supports, the expected outcome of each
+observation for a given provider effect, the numeric value of the norm, and its family
+specification. A package registers them in its NAMESPACE (see "Registering the methods"
+below); a script, like this vignette, registers them with `.S3method()`.
+
+```{r toy-methods}
+# The position of each observation's provider among the included providers.
+toy_effect_position <- function(model) {
+  match(provider_index(model), which(provider_table(model)$included))
+}
+
+.S3method("inference_capabilities", "pprof_toy_model", function(model) {
+  c("provider_exact", "provider_score", "standardize_indirect", "funnel")
+})
+
+.S3method("expected_outcome", "pprof_toy_model", function(model, effect, ...) {
+  effect <- if (length(effect) == 1L) rep(effect, length(provider_estimates(model))) else effect
+  stats::plogis(effect[toy_effect_position(model)] + linear_predictor(model))
+})
+
+.S3method("null_effect", "pprof_toy_model", function(model, null, ...) {
+  if (identical(null, "median")) stats::median(provider_estimates(model)) else null
+})
+
+.S3method("profile_spec", "pprof_toy_model", function(model) {
+  list(
+    family = "toy", effect = "gamma", null_default = "median", null_options = "median",
+    indirect_numerator = "observed", measures = "ratio",
+    variance_function = function(mean) mean * (1 - mean),
+    funnel = list(
+      measure = "ratio", target = 1, floor = 0, test = "score",
+      precision = function(expected, variance) expected^2 / variance,
+      half_width = function(critical, precision) critical / sqrt(precision)
+    )
+  )
+})
+```
+
+Five hospitals of 10 to 14 patients:
+
+```{r toy-data}
+sizes <- 10:14
+events <- c(3L, 5L, 2L, 8L, 6L)
+toy_data <- data.frame(
+  y = unlist(Map(function(n, k) c(rep(1, k), rep(0, n - k)), sizes, events)),
+  hospital = rep(sprintf("hospital %d", 1:5), sizes)
+)
+toy <- toy_fit(y ~ 1, toy_data, "hospital")
+toy
+```
+
+The profiling functions and the plots now work on it, unchanged:
+
+```{r toy-profiling}
+test_providers(toy)$table
+measures <- standardize_providers(toy)
+measures$table
+# The indirect ratio is the number of events over the number expected at the median effect.
+all.equal(measures$table$estimate, events / (sizes * plogis(median(provider_estimates(toy)))))
+profile <- profile_providers(toy)
+plot_funnel(profile)
+```
+
+Inference the model does not declare is refused with a classed error:
+
+```{r toy-unsupported}
+tryCatch(test_providers(toy, test = "wald"),
+         pprof_error_unsupported_inference = function(e) conditionMessage(e))
+```
+
+## The model contract
+
+| Generic | Returns | Shared method |
+|---|---|---|
+| `provider_table(model)` | the provider table: `provider_id`, `provider_value`, `n_obs`, `n_events` (binary outcomes), `included`, `no_events`, `all_events` | yes |
+| `provider_estimates(model)` | the effects of the included providers, named by provider ID, in provider order | yes |
+| `provider_index(model)` | for each observation, its provider's row in the provider table | yes |
+| `linear_predictor(model)` | for each observation, the covariates' linear predictor | yes |
+| `observed_outcome(model)` | for each observation, the outcome | yes |
+| `inference_capabilities(model)` | the names of the capabilities the model supports | yes, declaring none |
+| `expected_outcome(model, effect)` | for each observation, the expected outcome if its provider's effect were `effect` (one value, or one per included provider) | no |
+| `null_effect(model, null)` | the number that a choice of `null` (such as `"median"`) stands for | no |
+| `profile_spec(model)` | the family specification | no |
+| `predicted_outcome(model)` | for each observation, the model's prediction with its own provider effect | no |
+| `provider_estimate_se(model)` | the standard errors of the effects | no |
+| `provider_test(model, test, ...)` | the per-provider results of a test that needs the model's internals | no |
+| `refit_without(model, covariates, data)` | the model refit without some covariates | no |
+
+The shared methods read the fields that `new_pprof_model()` fills. A generic without a
+shared method raises `pprof_error_unsupported_inference` for a model that does not
+implement it, so a model implements only what its capabilities need.
+
+## The family specification
+
+`profile_spec()` returns a list. Six fields are required:
+
+| Field | Meaning | Logistic FE | Linear FE | Random effects |
+|---|---|---|---|---|
+| `family` | a name | `"logistic_fe"` | `"linear_fe"` | the model's |
+| `effect` | the name of the effect | `"gamma"` | `"gamma"` | `"alpha"` |
+| `null_default` | the default norm | `"median"` | `"median"` | `0` |
+| `null_options` | the named norms `null_effect()` understands | `"median"` | `"median"`, `"mean"` | none |
+| `indirect_numerator` | the sum compared with the expected one: `"observed"` outcomes, or `"predicted"` (then `predicted_outcome()` gives it) | `"observed"` | `"observed"` | `"predicted"` |
+| `measures` | the measures | `"ratio"`, `"rate"` | `"difference"` | as the outcome's |
+
+The other fields are needed only by some functions, and those with a default take the
+behavior of logistic fixed-effect models when they are left out:
+
+| Field | Needed for | Default |
+|---|---|---|
+| `variance_function(mean)` | the null variance of indirect standardization, and the funnel precision | none (the variance is then missing) |
+| `mean_function(eta)` | intervals of the standardized measures | none |
+| `direct_expected(effects, linear_predictor, threads)` | direct standardization | none |
+| `funnel` | funnel limits: a list with `measure`, `target`, `floor`, `test`, `precision(expected, variance)` (or with a third argument `n_obs`), and `half_width(critical, precision)` | none |
+| `test_default` | the test of `test_providers()` when `test` is not given | `"exact"` |
+| `comparison` | `"ratio"` (observed over expected) or `"difference"` (per observation) | `"ratio"` |
+| `direct_reference` | the total of direct standardization: `"observed"` or `"null_expected"` | `"observed"` |
+| `direct_limits` | how direct limits sum over the population: `"mean_function"` or `"direct_expected"` | `"mean_function"` |
+| `one_sided_extremes` | one-sided measure limits for providers with no events or only events | `TRUE` |
+| `wald` | the distributions of the Wald tests and intervals: `test` and `interval`, `"normal"` or `"t"`, and `df` | normal |
+| `coefficient_wald` | the rule of the coefficients' Wald tests and intervals | normal, two-sided |
+| `wald_caution` | warn when Wald inference covers providers with no events or only events | `FALSE` |
+
+`profile_spec()` of a fitted model shows a complete example, for instance
+`names(profile_spec(fit_logistic_fe(...)))`.
+
+## Capabilities
+
+| Capability | What it enables | What the model provides |
+|---|---|---|
+| `provider_exact`, `provider_bootstrap` | the exact and bootstrap tests, for binary outcomes | `expected_outcome()`, `null_effect()` |
+| `provider_score` | the modified score test, for binary outcomes | the same |
+| `provider_score_standard` | the standard score test | `provider_test(model, "score_standard", ...)` |
+| `provider_wald` | Wald tests | `provider_estimate_se()`; `wald` in the specification for t |
+| `interval_exact`, `interval_score` | exact and score intervals of the effects and measures, for binary outcomes | `expected_outcome()`; `mean_function` for measures |
+| `interval_wald` | Wald intervals | `provider_estimate_se()`; `mean_function` for measures |
+| `standardize_indirect` | indirect standardization | `expected_outcome()`; `variance_function` for the variance |
+| `standardize_direct` | direct standardization | `direct_expected` |
+| `funnel` | funnel limits and `plot_funnel()` | `funnel`, and the test it names |
+| `coef_wald` | `confint()`, `summary()`, and Wald coefficient tests | `coefficients` and `vcov` in the object; `coefficient_wald` if not normal |
+| `coef_lr`, `coef_score` | likelihood-ratio and score coefficient tests | `refit_without()` |
+
+Declare only what the model supports and what its authors have checked; the capability
+list is where that decision is recorded.
+
+## Registering the methods
+
+- **In a script**, as above, with `.S3method(generic, class, method)`.
+- **In another package**, with roxygen2's `@exportS3Method` tag on each method, which writes
+  the registration into the package's NAMESPACE:
+
+  ```r
+  #' @exportS3Method pprof::expected_outcome
+  expected_outcome.mymodel <- function(model, effect, ...) {
+    # ...
+  }
+  ```
+
+  The package imports pprof, uses `data_prepare()` and `new_pprof_model()`, and names its
+  classes with its own prefix.
+- **In pprof itself**, in a file `R/model-<name>.R` with the fit function, the methods, and
+  their roxygen tags, following the naming convention of the repository's `dev/NAMING.md`
+  (classes `pprof_<name>`, arguments from its vocabulary). No other R file changes.
+
+## Testing a model
+
+- Check that the contract works: the fit validates (`validate_pprof_model()`), the profiling
+  functions run, and undeclared inference raises `pprof_error_unsupported_inference`, as
+  pprof's own test of this toy model does (`tests/testthat/test-extension-toy-model.R` in the
+  repository).
+- Check the numbers against an independent implementation where one exists, as pprof checks
+  its models against `glm()`, `lm()`, lme4, and logistf.
+- Check the edge cases: providers with no events or only events, a single provider, missing
+  values, small providers.
+- In pprof itself, `R CMD check`, `lintr`, and the architecture test (which checks that each
+  file calls only its own and lower layers) must pass.
+
+## Compiled code
+
+An estimation engine in C++ lives in `src/<module>/`, free of Rcpp types, with a thin
+adapter `src/rcpp_<module>.cpp` whose exported functions are named
+`cpp_<module>_<action>()`. R compiles files in subdirectories only when they are listed, so
+each new object file goes into `OBJECTS` in both `src/Makevars` and `src/Makevars.win`; after
+changing the adapter, `Rcpp::compileAttributes()` regenerates the glue. Thread counts come
+only from a `threads` argument, and parallel regions call no R API.
+
+## Walk-through: a group lasso model
+
+A larger example, as a design rather than code: logistic provider fixed effects with a
+group lasso penalty on the covariate coefficients, minimizing
+$-\ell(\gamma, \beta) + \lambda \sum_g w_g \lVert \beta_g \rVert_2$ with the provider effects
+unpenalized. Nothing in it changes the existing models or the profiling code.
+
+1. **Interface.** `fit_logistic_grouplasso(formula, data, provider, groups = NULL,
+   lambda = NULL, n_lambda = 100, lambda_min_ratio = 1e-3, group_weights = NULL,
+   standardize = TRUE, min_provider_size = 10, effect_bound = 10, tol = 1e-7,
+   max_iter = 10000, threads = 1, verbose = FALSE)`, with the shared arguments named as in
+   the other fits.
+2. **Data.** `data_prepare()` as it is. The default groups come from the design matrix's
+   `assign` attribute, which maps each column to its formula term, so the columns of a factor
+   form one group:
+
+   ```{r assign}
+   data(ExampleDataBinary)
+   example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+   example$z5_level <- cut(example$z5, quantile(example$z5, 0:3 / 3), labels = c("low", "mid", "high"),
+                           include.lowest = TRUE)
+   design <- data_prepare(y ~ z1 + z5_level + I(z1^2), example, "hospital")$design
+   colnames(design)
+   attr(design, "assign")
+   ```
+
+3. **Standardization of the covariates** inside the model's own code, because it belongs to
+   this estimator: each group centered and orthonormalized, the coefficients reported on the
+   original scale.
+4. **Engine.** Block coordinate descent in `src/penalized/`, alternating Newton steps for
+   the provider effects (keeping them within `effect_bound` of their median, as the other
+   logistic fits do) with proximal steps for each group of coefficients, along a path of
+   λ from the smallest value at which every coefficient is 0, with warm starts; an adapter
+   `src/rcpp_penalized.cpp`.
+5. **Object.** Built with `new_pprof_model()`, with class
+   `c("pprof_logistic_grouplasso", "pprof_model")` and its own fields: the λ path, the
+   coefficient and effect paths, the degrees of freedom and deviance per λ, the convergence
+   per λ, and the selected λ, none at first.
+6. **Coefficient paths.** `coef(fit)` returns the path, and `coef(fit, lambda = x)` the
+   solution at a value of the path or refit at another; nothing is interpolated, so every
+   reported number is a solution.
+7. **Selection.** `select_lambda(fit, criterion = c("cv", "bic", "aic"))` sets the selected
+   λ and the linear predictor there.
+8. **Profiling at the selected λ.** `provider_estimates()` and `linear_predictor()` read
+   the selected solution, `expected_outcome()` is the logistic one, and `profile_spec()` is
+   that of logistic fixed effects, so the exact and bootstrap tests, the modified score test,
+   the standardized measures, and the exact and score intervals work unchanged, conditional on
+   the selected covariates. Before a λ is selected, these methods raise
+   `pprof_error_invalid_input`.
+9. **Capabilities.** Penalization and selection make the information-based variances
+   unsuitable, so the model would not declare `coef_wald`, `coef_lr`, `coef_score`,
+   `provider_wald`, `interval_wald`, or `provider_score_standard`, and asking for them raises
+   `pprof_error_unsupported_inference`. Whether the conditional tests of step 8 should be
+   offered at all is a methodological decision for the model's authors, recorded in the
+   capability list.
+10. **Files.** `R/model-logistic-grouplasso.R` (the fit, the methods, the capabilities),
+    `R/model-grouplasso-path.R` (`coef()`, `select_lambda()`), `R/plot-coefficient-path.R`,
+    the C++ engine and adapter, two lines in each Makevars file, the tests, and an entry in
+    this guide. No existing R file changes.
+
+## Further reading
+
+The repository's `dev/` directory holds the design documents behind this guide:
+`dev/design/ARCHITECTURE.md` (the layers, the model objects, the contract, and the
+capabilities), `dev/NAMING.md` (names, arguments, classes, and conditions), and
+`dev/DEVELOPER_GUIDE.md` (for contributors to pprof itself). The help pages `?data_prepare`,
+`?new_pprof_model`, and `?model_contract` document the developer interface.

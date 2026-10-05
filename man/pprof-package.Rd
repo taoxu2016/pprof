@@ -43,8 +43,8 @@ results with ggplot2 and return the plot.
 \code{vignette("pprof", package = "pprof")} goes through an analysis,
 \code{vignette("models", package = "pprof")} describes the models and what each supports,
 \code{vignette("statistical-methods", package = "pprof")} gives the formulas behind the results,
-and \code{vignette("migration", package = "pprof")} maps the functions of pprof 1.0.3 to the
-new ones.
+\code{vignette("migration", package = "pprof")} maps the functions of pprof 1.0.3 to the new
+ones, and \code{vignette("adding-a-model", package = "pprof")} shows how to add a model.
 }
 
 \section{The interface of pprof 1.0.3}{

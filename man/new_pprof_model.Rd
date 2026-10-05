@@ -65,6 +65,7 @@ takes the \code{\link[=data_prepare]{data_prepare()}} output and the estimates, 
 adds the family's own fields from \code{...}, and checks the result with \code{validate_pprof_model()}.
 Objects are compact: they keep per-observation vectors (response, linear predictor,
 provider index, input row) but not the design matrix, unless \code{keep_data = TRUE}.
+\code{vignette("adding-a-model", package = "pprof")} shows how a new model uses it.
 }
 \examples{
 # A model without covariates whose provider effects are the empirical logits of the

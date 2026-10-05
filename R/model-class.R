@@ -74,6 +74,7 @@ model_input_order <- function(model, values) {
 #' adds the family's own fields from `...`, and checks the result with `validate_pprof_model()`.
 #' Objects are compact: they keep per-observation vectors (response, linear predictor,
 #' provider index, input row) but not the design matrix, unless `keep_data = TRUE`.
+#' `vignette("adding-a-model", package = "pprof")` shows how a new model uses it.
 #'
 #' @param data A `pprof_data` object from [data_prepare()].
 #' @param coefficients Covariate coefficients, a named numeric vector (empty for models

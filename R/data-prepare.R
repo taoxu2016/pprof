@@ -4,7 +4,8 @@
 #' covariate design matrix, each observation's provider in the provider order, the provider
 #' table with its screening indicators, and the map back to the rows of `data`. It is part of
 #' the interface for developers of new models: a fit function builds its data with
-#' `data_prepare()` and its object with [new_pprof_model()].
+#' `data_prepare()` and its object with [new_pprof_model()]; see
+#' `vignette("adding-a-model", package = "pprof")`.
 #'
 #' The steps reproduce the reference implementation (pprof 1.0.3) for every input it
 #' supports:

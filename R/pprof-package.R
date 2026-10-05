@@ -33,8 +33,8 @@
 #' `vignette("pprof", package = "pprof")` goes through an analysis,
 #' `vignette("models", package = "pprof")` describes the models and what each supports,
 #' `vignette("statistical-methods", package = "pprof")` gives the formulas behind the results,
-#' and `vignette("migration", package = "pprof")` maps the functions of pprof 1.0.3 to the
-#' new ones.
+#' `vignette("migration", package = "pprof")` maps the functions of pprof 1.0.3 to the new
+#' ones, and `vignette("adding-a-model", package = "pprof")` shows how to add a model.
 #'
 #' @section The interface of pprof 1.0.3:
 #' [logis_fe()], [logis_firth()], [linear_fe()], [linear_re()], [logis_re()],

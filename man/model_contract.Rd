@@ -87,6 +87,9 @@ them. \code{predicted_outcome()} is needed only by families whose specification 
 with the model's own provider effects (for the random-effect models, lme4's fitted
 values), the numerator of their indirectly standardized measures.
 }
+
+\code{vignette("adding-a-model", package = "pprof")} explains the contract, the family
+specification, and the capabilities, and builds a model from scratch.
 }
 \examples{
 data(ExampleDataBinary)
