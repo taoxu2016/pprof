@@ -7,21 +7,21 @@ name: rewrite-sanitizers
 
 on:
   pull_request:
-    branches: ["rewrite/**"]
+    branches: ["main", "rewrite/**"]
   workflow_dispatch:
 
 permissions: read-all
 
 jobs:
   sanitizers:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: rocker/r-devel-san:latest
     env:
       ASAN_OPTIONS: "detect_leaks=0:abort_on_error=0:halt_on_error=0"
       UBSAN_OPTIONS: "print_stacktrace=1:halt_on_error=0"
       OMP_THREAD_LIMIT: 2
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install the dependencies with the sanitized R
         run: |
@@ -34,20 +34,28 @@ jobs:
       - name: Check with the sanitizers
         run: RDsan CMD check --no-manual --ignore-vignettes pprof_*.tar.gz || true
 
+      - name: Report the check in annotations
+        if: always()
+        run: RDsan --vanilla -s -f .github/scripts/ci-annotate.R --args check .
+
       - name: Fail on sanitizer reports or check errors
         run: |
           if grep -rEl "runtime error:|ERROR: AddressSanitizer|ERROR: LeakSanitizer" pprof.Rcheck; then
-            grep -rEh -A 20 "runtime error:|ERROR: AddressSanitizer" pprof.Rcheck | head -200
+            grep -rEh -A 20 "runtime error:|ERROR: AddressSanitizer|ERROR: LeakSanitizer" pprof.Rcheck | head -200 \
+              > sanitizer-report.txt
+            cat sanitizer-report.txt
+            RDsan --vanilla -s -f .github/scripts/ci-annotate.R --args tail "Sanitizer report" sanitizer-report.txt 80
             exit 1
           fi
           if grep -q "^Status: .*ERROR" pprof.Rcheck/00check.log; then
             cat pprof.Rcheck/00check.log
             exit 1
           fi
+          echo "::notice title=Sanitizers::no sanitizer report"
 
       - name: Upload the check directory
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: sanitizer-check
           path: pprof.Rcheck

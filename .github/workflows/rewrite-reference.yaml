@@ -1,47 +1,87 @@
-# The full reference suite (DEC-020, DEC-026; brief §3.1, §6).
+# The full reference suite (DEC-020, DEC-026, DEC-071; brief §3.1, §3.4, §6; criterion 1).
 #
-# Runs every case of the core and full fixture sets with validation/run-reference.R on Linux,
-# with R 4.4.0 and packages from the CRAN snapshot that built the reference library
-# (2026-10-01, DEC-017), so that lme4 and Matrix match the fixture manifest. The job fails if
-# they do not match, instead of skipping the lme4-backed cases, and fails if any case fails.
-# The equivalence report is uploaded as an artifact.
+# The pinned job runs every case of the core and full fixture sets with validation/run-reference.R
+# on Linux, with R 4.4.0 and packages from the CRAN snapshot that built the reference library
+# (2026-10-01, DEC-017), so that lme4 and Matrix match the fixture manifest; it fails if they do
+# not match, instead of skipping the lme4-backed cases. The macOS and Windows jobs run the same
+# suite with R release and the current CRAN packages, so that the tolerances are checked on every
+# system (brief §3.4); there the lme4-backed cases run only if lme4 and Matrix equal the
+# manifest's versions, and the report lists them as skipped otherwise. Any failing case fails
+# the job. The reports are uploaded as artifacts, and their summaries and failing cases are
+# copied into annotations (.github/scripts/ci-annotate.R).
 name: rewrite-reference
 
 on:
   push:
-    branches: ["rewrite/**"]
+    branches: ["main", "rewrite/**"]
   pull_request:
-    branches: ["rewrite/**"]
+    branches: ["main", "rewrite/**"]
   workflow_dispatch:
 
 permissions: read-all
 
 jobs:
   reference:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.config.os }}
+    name: reference ${{ matrix.config.os }} (R ${{ matrix.config.r }})
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: ubuntu-24.04, r: "4.4.0", pinned: true}
+          - {os: macos-latest, r: "release", pinned: false}
+          - {os: windows-latest, r: "release", pinned: false}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       OMP_THREAD_LIMIT: 1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: r-lib/actions/setup-r@v2
         with:
-          r-version: "4.4.0"
-          use-public-rspm: false
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: ${{ !matrix.config.pinned }}
 
       - name: Use the CRAN snapshot of the reference library
+        if: matrix.config.pinned
         run: echo 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2026-10-01"))' >> ~/.Rprofile
 
-      # Every package comes from the snapshot, so upgrading takes the snapshot's versions;
-      # without it, R's bundled Matrix would be kept.
+      # Every package of the pinned job comes from the snapshot, so upgrading takes the snapshot's
+      # versions; without it, R's bundled Matrix would be kept.
       - uses: r-lib/actions/setup-r-dependencies@v2
+        id: dependencies
+        continue-on-error: true
         with:
           extra-packages: any::devtools, Matrix, lme4
           needs: check
-          upgrade: "TRUE"
+          upgrade: ${{ matrix.config.pinned && 'TRUE' || 'FALSE' }}
+
+      # The action's own log is not readable without signing in: replay its resolution and
+      # installation, and copy the end of the output into an annotation.
+      - name: Report a failure to install the dependencies
+        if: steps.dependencies.outcome == 'failure'
+        shell: bash
+        run: |
+          Rscript -e '
+            lib <- file.path(tempdir(), "pak")
+            dir.create(lib)
+            install.packages("pak", lib = lib, repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s",
+                                                               .Platform$pkgType, R.Version()$os, R.Version()$arch))
+            library(pak, lib.loc = lib)
+            Sys.setenv(PKGCACHE_HTTP_VERSION = "2")
+            print(getOption("repos"))
+            options(width = 200)
+            print(pak::repo_status())
+            pak::lockfile_create(c("deps::.", "any::sessioninfo", "any::devtools", "Matrix", "lme4"),
+                                 lockfile = "diagnose.lock", upgrade = ${{ matrix.config.pinned && 'TRUE' || 'FALSE' }},
+                                 dependencies = c("Config/Needs/check", "all"))
+            pak::lockfile_install("diagnose.lock")
+          ' > dependencies.log 2>&1 || true
+          Rscript .github/scripts/ci-annotate.R tail "Installing the dependencies failed; the replay ends" dependencies.log 70
+          exit 1
 
       - name: Require the fixture manifest's lme4 and Matrix
+        if: matrix.config.pinned
         shell: Rscript {0}
         run: |
           wanted <- jsonlite::read_json("tests/testthat/fixtures/reference/manifest.json")$numerically_relevant_packages
@@ -51,11 +91,19 @@ jobs:
           }
 
       - name: Run the reference suite
-        run: Rscript validation/run-reference.R validation/equivalence-report-ci.md
+        shell: bash
+        run: |
+          set -o pipefail
+          Rscript validation/run-reference.R validation/equivalence-report-ci.md 2>&1 | tee reference-run.log
+
+      - name: Report the suite in annotations
+        if: always() && steps.dependencies.outcome == 'success'
+        run: Rscript .github/scripts/ci-annotate.R report validation/equivalence-report-ci.md reference-run.log
 
       - name: Upload the equivalence report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
-          name: equivalence-report
+          name: equivalence-report-${{ runner.os }}
           path: validation/equivalence-report-ci.md
+          if-no-files-found: ignore

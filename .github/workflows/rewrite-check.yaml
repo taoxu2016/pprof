@@ -1,15 +1,19 @@
-# R CMD check of the rewrite branches (DEC-026; brief §9).
+# R CMD check of the rewrite (DEC-026, DEC-071; brief §9): Linux, macOS, and Windows with R
+# release, devel, and oldrel-1, failing on errors and warnings. Heavy reference cases skip here,
+# as on CRAN; rewrite-reference.yaml runs all of them.
 #
-# Fails on errors only for now: the package still carries the reference's warning and notes
-# (see dev/PROJECT_CONTEXT.md §10). The threshold becomes "warning" once the rewrite reaches
-# zero warnings. Heavy reference cases skip here, as on CRAN; rewrite-reference.yaml runs all.
+# The jobs marked `probe` look for the lowest R version the package works with (DEC-074): they
+# do not fail the workflow, and they leave the matrix once DESCRIPTION states that version.
+#
+# Every job copies the check's results into annotations (.github/scripts/ci-annotate.R), which
+# the public GitHub API returns without signing in.
 name: rewrite-check
 
 on:
   push:
-    branches: ["rewrite/**"]
+    branches: ["main", "rewrite/**"]
   pull_request:
-    branches: ["rewrite/**"]
+    branches: ["main", "rewrite/**"]
   workflow_dispatch:
 
 permissions: read-all
@@ -18,20 +22,29 @@ jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
     name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})
+    continue-on-error: ${{ matrix.config.probe == true }}
     strategy:
       fail-fast: false
       matrix:
         config:
-          - {os: ubuntu-latest, r: "release"}
-          - {os: ubuntu-latest, r: "devel", http-user-agent: "release"}
-          - {os: ubuntu-latest, r: "oldrel-1"}
+          - {os: ubuntu-24.04, r: "release"}
+          - {os: ubuntu-24.04, r: "devel", http-user-agent: "release"}
+          - {os: ubuntu-24.04, r: "oldrel-1"}
           - {os: macos-latest, r: "release"}
+          - {os: macos-latest, r: "devel"}
+          - {os: macos-latest, r: "oldrel-1"}
           - {os: windows-latest, r: "release"}
+          - {os: windows-latest, r: "devel"}
+          - {os: windows-latest, r: "oldrel-1"}
+          - {os: ubuntu-24.04, r: "oldrel-2", probe: true}
+          - {os: ubuntu-24.04, r: "oldrel-3", probe: true}
+          - {os: ubuntu-24.04, r: "oldrel-4", probe: true}
+          - {os: ubuntu-24.04, r: "4.1", probe: true}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -49,5 +62,9 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           args: 'c("--no-manual", "--as-cran")'
-          error-on: '"error"'
+          error-on: '"warning"'
           upload-snapshots: true
+
+      - name: Report the check in annotations
+        if: always()
+        run: Rscript .github/scripts/ci-annotate.R check check

@@ -4,20 +4,20 @@ name: rewrite-pkgdown
 
 on:
   push:
-    branches: ["rewrite/**"]
+    branches: ["main", "rewrite/**"]
   pull_request:
-    branches: ["rewrite/**"]
+    branches: ["main", "rewrite/**"]
   workflow_dispatch:
 
 permissions: read-all
 
 jobs:
   pkgdown:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -43,7 +43,7 @@ jobs:
         run: pkgdown::build_site(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: pkgdown-site
           path: docs
