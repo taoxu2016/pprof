@@ -56,7 +56,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-34 | provider ordering | B | verified; reproduced (Phases 3 to 5); awaiting sign-off for (2) | Character IDs are ordered by the session's collation locale, which also fixes the bootstrap draw order |
 | D-35 | bundled data docs | C | verified; fixed (Phase 7) | `ExampleDataBinary` has 7,944 observations, documented as 7,994 |
 | D-36 | messages and side effects | Presentation | verified; the plot warnings fixed in the wrappers (Phase 6) but `geom_errorbarh()`'s | `linear_fe`, `linear_re`, `logis_re` always print messages; attaching pprof prints a `car` message; `bar_plot()` triggers a ggplot2 deprecation warning, and `caterpillar_plot(use_flag = TRUE)` an unused-argument warning under ggplot2 4 |
-| D-37 | vignettes | C | verified | Describe a different clamp, nonexistent functions, and calls that now fail |
+| D-37 | vignettes | C | verified; resolved (Phase 7: vignettes replaced, built and checked) | Describe a different clamp, nonexistent functions, and calls that now fail |
 | D-38 | `logis_fe` with collinear covariates | C | verified | Unidentified estimates with variances near 7e13 and no rank-deficiency warning |
 | D-39 | `logis_fe`, `logis_firth` inputs | A | decided (fix) | Non-binary outcomes, `max.iter` <= 0, `tol` <= 0, and `bound` <= 0 return meaningless or unfitted results without a warning |
 | D-40 | AUC without pROC | none (tolerance) | verified; decided (option 1, Phase 3 gate) | The Mann-Whitney AUC equals pROC's bitwise in 57 of 59 fits and differs in the last bit in 2 |
@@ -70,6 +70,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-48 | `caterpillar_plot()`, `bar_plot()` help | C | verified; fixed in the help (Phase 6) | `bar_width` has no effect; the input is called `test_df`; infinite limits are said to arise for providers with all or no events and to be shortened |
 | D-49 | `bar_plot()`'s plot data | Presentation | verified; documented (Phase 6) | The plot's data are a data frame, where pprof 1.0.3's are dplyr's grouped tibble; the data and the built plot are the same |
 | D-50 | `test_providers()` help | C | verified; fixed in the help (Phase 7) | Says the estimates of providers with no events or only events sit at the effect bound; at the default settings they are where the iterations stopped |
+| D-51 | the new interface's results | Presentation | verified; fix proposed for the project lead's decision (Phase 7 check-in) | Every fit and profiling function returns its result invisibly, so calling one at the console prints nothing, where pprof 1.0.3's functions print |
 
 ---
 
@@ -640,8 +641,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: correct the vignettes now, or replace them with vignettes for the new API.
 - Recommendation: replace them in Phase 7, written for the new API and built and checked as part of the package (brief §9); until then, leave the excluded vignettes unchanged.
 - Decision owner: project lead.
-- Status: verified by reading the vignettes against the code and the audit results (V10.2, V13.21, BEHAVIOR_SPECS §9); the Phase 7 planning items above verified by running the vignettes' code and reading them against the code (2026-10-04). The Phase 7 plan, approved on 2026-10-05, replaces the vignettes (`dev/design/PHASE7_PLAN.md`, DEC-062).
-- Regression test: vignettes are built during `R CMD check` from Phase 7 on.
+- Status: verified by reading the vignettes against the code and the audit results (V10.2, V13.21, BEHAVIOR_SPECS §9); the Phase 7 planning items above verified by running the vignettes' code and reading them against the code (2026-10-04). The Phase 7 plan, approved on 2026-10-05, replaces the vignettes (`dev/design/PHASE7_PLAN.md`, DEC-062). Resolved in Phase 7, step 2 (2026-10-05): the five vignettes and the two flowcharts are removed; the new `pprof.Rmd`, `models.Rmd`, and `statistical-methods.Rmd`, written for the new interface, are built by `R CMD build` and re-built by `R CMD check`. Each item above is addressed: the clamp uses the median of the current effects (`statistical-methods.Rmd`); the functions named exist; the Wald test warns; both score tests are described as computed; the families are seven, in a table instead of the flowchart; no link to another package's site; the direct-ratio interval statement and the linear FE variance are corrected (`dev/design/PHASE7_WORDING.md`, W14, W27, W29, N2 to N4).
+- Regression test: vignettes are built during `R CMD check` from Phase 7 on (`R CMD check --as-cran --no-manual`, 2026-10-05: "checking re-building of vignette outputs ... OK").
 
 ### D-38: Collinear covariates give unidentified estimates without a rank-deficiency warning
 
@@ -862,3 +863,24 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: project lead.
 - Status: verified (2026-10-05); fixed in Phase 7, step 1: the help says that the maximum likelihood estimates are infinite, that the fitted effects move toward the bound with every iteration, and that the estimates and standard errors depend on when the fit stopped; the two comments say the same.
 - Regression test: not applicable (documentation).
+
+### D-51: The functions of the new interface return their results invisibly
+
+- Component: the constructors `new_pprof_result()` (`R/results.R`), `new_pprof_model()` (`R/model-class.R`), `new_pprof_logistic_fe()`, `new_pprof_logistic_firth()`, `new_pprof_linear_fe()`, `new_pprof_mixed()`, and `new_pprof_data()`, which return the value of their validators, and the validators end with `invisible(x)`.
+- Class (proposed): Presentation (brief §3.2: printing). No number changes.
+- Description: Every fit function (`fit_logistic_fe()` and the six others), every profiling function (`provider_effects()`, `test_providers()`, `standardize_providers()`, `profile_providers()`, `funnel_limits()`), `test_coefficients()`, `summary()` of a model, and `data_prepare()` return their results invisibly, so that calling one at the console, or as the last expression of a chunk in a vignette, prints nothing; assigning the result and then printing it works. pprof 1.0.3's functions (`logis_fe()` and the others, `test()`, `SM_output()`, `confint()`, `summary()`) return visibly and print, as model and test functions in R usually do; the compatibility wrappers still do. `confint()`, `tidy()`, `glance()`, `augment()`, and the plot functions return visibly. Found while writing the Phase 7 vignettes (2026-10-05).
+- Minimal reproducible example:
+  ```r
+  data(ExampleDataBinary)
+  d <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+  fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, d, "hospital")
+  withVisible(summary(fit))$visible         # FALSE: summary(fit) prints nothing
+  withVisible(test_providers(fit))$visible  # FALSE
+  ```
+- Affected outputs: console printing only.
+- Statistical impact: none.
+- Options: (1) the constructors return the object visibly (validate it, then return it), with a test that every exported function that returns a model or a result returns it visibly; (2) leave as is and document it.
+- Recommendation: (1). It changes executable code, which Phase 7 does not do (DEC-061), so it is proposed to the project lead at the Phase 7 check-in; meanwhile the vignettes assign results before printing them, which works either way.
+- Decision owner: project lead.
+- Status: verified (2026-10-05, `withVisible()` on every exported function, the working tree at `4e8b136`); fix proposed.
+- Regression test: with the fix, a test of the visibility of every exported function's result.

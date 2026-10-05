@@ -1,0 +1,7 @@
+pandoc 3.12; rmarkdown 2.32; knitr 1.52
+vignette | elapsed s | exit status | HTML KB | figures | warnings
+baseline.Rmd | 3.6 | 0 | 12 | 1 | none
+models.Rmd | 5.8 | 0 | 45 | 0 | in the document: #&gt; Warning: 3 of 100 providers have fewer than 60 complete observations and were
+pprof.Rmd | 7.2 | 0 | 116 | 6 | none
+statistical-methods.Rmd | 4.7 | 0 | 57 | 0 | in the document: #&gt; Warning: Wald tests and intervals are unreliable for providers with no events
+total of the package's vignettes: 17.7 s, 219 KB of HTML
