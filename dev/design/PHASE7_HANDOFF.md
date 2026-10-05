@@ -58,7 +58,7 @@ New: the migration guide (vignette, ARCHITECTURE §I.4) and the developer guide 
 ## 5. Carried over from Phase 6 (approved at its gate, 2026-10-04)
 
 - For Phase 8: building the model once in `plot.logis_fe()` (it rebuilds it twice, about 0.04 s on 1e5 observations; DEC-039); the minimum ggplot2 version, which the plot fixtures need at 4.x, and replacing `geom_errorbarh()` (D-36); `data_check()` and `check_data()` with the removal of caret, olsrr, and globals (DEC-054); the once-per-session deprecation warnings (DEC-033); DEC-044's investigation of the 50-covariate `logis_fe()` peak.
-- `rewrite/phase-6` is not pushed; its pull request would go into `rewrite/phase-5`, until the earlier phases are merged into `rewrite/v2`.
+- `rewrite/phase-6` was pushed to the fork at `8aa85cc` after the gate; its pull request goes into `rewrite/phase-5`, until the earlier phases are merged into `rewrite/v2`. `rewrite/phase-7` is not pushed.
 - One-off scripts of Phase 6 (`dev/design/phase6-facts/`): the plot guard (`08_plot_guard.R`) and the renders (`07_render_new_plots.R`), which a vignette author can reuse to look at the plots.
 
 ## 6. Lessons from Phase 6
