@@ -71,6 +71,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-49 | `bar_plot()`'s plot data | Presentation | verified; documented (Phase 6) | The plot's data are a data frame, where pprof 1.0.3's are dplyr's grouped tibble; the data and the built plot are the same |
 | D-50 | `test_providers()` help | C | verified; fixed in the help (Phase 7) | Says the estimates of providers with no events or only events sit at the effect bound; at the default settings they are where the iterations stopped |
 | D-51 | the new interface's results | Presentation | verified; fixed (Phase 7, approved at the check-in) | Every fit and profiling function returned its result invisibly, so calling one at the console printed nothing, where pprof 1.0.3's functions print |
+| D-52 | `data_check` with one covariate | A | verified; fix proposed (Phase 8 plan) | Stops inside `cor()` with "supply both 'x' and 'y' or a matrix-like 'x'" after the variation check |
 
 ---
 
@@ -884,3 +885,23 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: project lead.
 - Status: verified (2026-10-05, `withVisible()` on every exported function, the working tree at `4e8b136`); option (1) approved by the project lead at the Phase 7 check-in (2026-10-05), as an exception to DEC-061's rule that Phase 7 changes no executable code; fixed: the seven constructors validate their object and then return it visibly. No number changes; the old interface is unaffected.
 - Regression test: `tests/testthat/test-visibility.R` (the seven fits, the five profiling functions, `test_coefficients()`, `summary()`, `data_prepare()`, and `new_pprof_model()` return their objects visibly).
+
+### D-52: `data_check` fails with one covariate
+
+- Component: `data_check` (`R/data_check.R`, the correlation check: `cor <- cor(data[,Z.char])`).
+- Class (proposed): A
+- Description: With one covariate, `data[, Z.char]` drops to a vector, so `cor()` stops with "supply both 'x' and 'y' or a matrix-like 'x'" after the missingness and variation checks have passed and printed their messages. The VIF check that follows would fail too: `olsrr::ols_vif_tol()` stops with "attempt to use zero-length variable name" for a model with one covariate. With two or more covariates the checks run. Found while gathering facts for the Phase 8 plan (2026-10-05).
+- Minimal reproducible example:
+  ```r
+  data(ExampleDataBinary)
+  data_check(ExampleDataBinary$Y, ExampleDataBinary$Z[, 1, drop = FALSE], ExampleDataBinary$ProvID)
+  #> Error in cor(data[, Z.char]) : supply both 'x' and 'y' or a matrix-like 'x'
+  ```
+  (`dev/design/phase8-facts/04_data_check.R`, the `one_covariate` input: 5 messages, then the error.)
+- Affected outputs: `data_check()` for one covariate: an error instead of the remaining checks.
+- Statistical impact: none (no model result depends on the data check, DEC-010).
+- Options: (1) reproduce the error in the wrapper; (2) complete the checks: no pair of covariates to correlate, and no VIF warning (the VIF of a single covariate is 1).
+- Recommendation: (2), in `check_data()` and the `data_check()` wrapper (Phase 8, DEC-073), with a regression test, listed in the migration guide with the other errors that became results.
+- Decision owner: project lead.
+- Status: verified (2026-10-05, Phase 8 planning, on the working tree at `a089bc5`, whose `R/data_check.R` differs from `5260838` only in its roxygen comments); fix proposed with the Phase 8 plan.
+- Regression test: planned in `tests/testthat/test-check-data.R` (Phase 8, step 3).

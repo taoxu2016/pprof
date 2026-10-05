@@ -1,0 +1,49 @@
+## R functions with no reference in R/ or NAMESPACE (394 top-level functions in R/; 99 registered S3 methods count as referenced)
+
+- `warn_deprecated()` in R/conditions.R; used in: test-shared-conditions.R
+- `.fix_unused_globals()` in R/pprof.R; used in: nothing
+- `cpp_logistic_firth_log_determinant()` in R/RcppExports.R; used in: test-cpp-firth.R
+- `new_pprof_data_check()` in R/results.R; used in: test-results.R
+- `validate_pprof_provider_effects()` in R/results.R; used in: test-results.R
+- `validate_pprof_provider_tests()` in R/results.R; used in: test-results.R
+- `validate_pprof_measures()` in R/results.R; used in: test-results.R
+- `validate_pprof_profile()` in R/results.R; used in: test-results.R
+- `validate_pprof_funnel()` in R/results.R; used in: test-results.R
+- `validate_pprof_coefficient_tests()` in R/results.R; used in: test-results.R
+- `validate_pprof_summary()` in R/results.R; used in: test-results.R
+- `validate_pprof_data_check()` in R/results.R; used in: test-results.R
+
+## Rcpp exports and their R callers (other than R/RcppExports.R)
+- cpp_logistic_fe_serbin: R model-logistic-fe.R; tests helper-logistic-engine.R, test-cpp-information-blocks.R, test-cpp-logistic-engines.R
+- cpp_logistic_fe_ban: R model-logistic-fe.R; tests helper-logistic-engine.R, test-cpp-logistic-engines.R
+- cpp_logistic_firth: R model-logistic-firth.R; tests helper-logistic-engine.R, test-cpp-firth.R
+- cpp_logistic_firth_log_determinant: R none; tests test-cpp-firth.R
+- cpp_logistic_variance: R model-logistic-fe.R; tests test-cpp-information-blocks.R, test-cpp-logistic-engines.R, test-cpp-reference-engines.R
+- cpp_logistic_score_standard: R model-logistic-fe.R; tests test-cpp-information-blocks.R, test-cpp-logistic-engines.R
+- cpp_logistic_direct_expected: R model-logistic-fe.R; tests test-cpp-information-blocks.R
+
+## The reference's files and the lint exclusions
+- test-architecture.R, lines naming files of R/ as legacy: architecture_legacy_files <- c( / "RcppExports.R", "data_check.R", "pprof.R" / if (name == "RcppExports.R") return(2L) / # RcppExports.R only defines functions; its own calls are not checked. / if (basename(files[k]) == "RcppExports.R") next / layered <- files[!basename(files) %in% setdiff(architecture_legacy_files, "RcppExports.R")]
+- .lintr: linters: linters_with_defaults( line_length_linter(120), object_length_linter(40), object_usage_linter = NULL ) exclusions: list( "tests/testthat/helper-reference-cases.R", "tests/testthat/helper-audit-ports.R", "R/RcppExports.R", "R/data_check.R", "R/pprof.R", "tests/testthat/test-SM_output.R", "tests/testthat/test-confint.R", "tests/testthat/test-linear_cre.R", "tests/testthat/test-linear_fe.R", "tests/testthat/test-linear_re.R", "tests/testthat/test-logis_cre.R", "tests/testthat/test-logis_fe.R", "tests/testthat/test-logis_re.R", "tests/testthat/test-plots.R", "tests/testthat/test-summary.R", "tests/testthat/test-test.R" ) encoding: "UTF-8"
+
+## .Rbuildignore patterns that match no tracked file or directory
+- `^\.Rproj\.user$`
+- `^src/.*\.tmp$`
+- `^pprof/docs/deps/bootstrap-5\.3\.1/fonts/.+`
+- `^docs/`
+- `^pprof/src/.*\.dll$`
+- `^src/.*\.dll$`
+- `^.*\.o$`
+- `^.*\.so$`
+- `^.*\.dylib$`
+- `^vignettes/articles$`
+- `^doc$`
+- `^Meta$`
+- `^CLAUDE\.local\.md$`
+
+## Tracked files that look like leftovers
+- none
+- workflows: rewrite-bench.yaml, rewrite-check.yaml, rewrite-coverage.yaml, rewrite-pkgdown.yaml, rewrite-reference.yaml, rewrite-sanitizers.yaml, rhub.yaml, test-pprof-package.yml
+
+## Line widths of the C++ sources (for a clang-format column limit; RcppExports.cpp is generated)
+- 26 files, 1686 lines; widest 142 characters; over 100: 58; over 110: 18; over 120: 3
