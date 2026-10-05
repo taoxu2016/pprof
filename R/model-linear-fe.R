@@ -148,6 +148,7 @@ new_pprof_linear_fe <- function(data, estimates, spec, call = NULL, keep_data = 
     call = call, keep_data = keep_data, class = "pprof_linear_fe"
   )
   validate_pprof_linear_fe(model)
+  model
 }
 
 validate_pprof_linear_fe <- function(x) {

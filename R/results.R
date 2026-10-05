@@ -31,8 +31,12 @@ result_count_columns <- c("n_obs", "n_missing")
 result_numeric_columns <- c("observed", "expected", "estimate", "std_error", "statistic", "p_value", "lower", "upper",
                             "precision", "level")
 
+# Constructors validate their object and return it visibly, so that a result prints when it
+# is not assigned (D-51); validators return their argument invisibly.
 new_pprof_result <- function(table, settings, class) {
-  validate_pprof_result(structure(c(list(table = table), settings), class = c(class, "pprof_result")))
+  x <- structure(c(list(table = table), settings), class = c(class, "pprof_result"))
+  validate_pprof_result(x)
+  x
 }
 
 validate_pprof_result <- function(x) {

@@ -280,7 +280,9 @@ logistic_fe_report_convergence <- function(convergence, method, verbose) {
 # The model object (ARCHITECTURE §D.1): the shared fields, plus the fit statistics and the
 # convergence diagnostics.
 new_pprof_logistic_fe <- function(data, estimates, spec, call = NULL, keep_data = FALSE) {
-  validate_pprof_logistic_fe(logistic_fe_model(data, estimates, spec, call, keep_data, class = "pprof_logistic_fe"))
+  model <- logistic_fe_model(data, estimates, spec, call, keep_data, class = "pprof_logistic_fe")
+  validate_pprof_logistic_fe(model)
+  model
 }
 
 # The fields of logistic fixed-effect models, which Firth models share (DEC-004), with

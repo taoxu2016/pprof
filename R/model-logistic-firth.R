@@ -125,6 +125,7 @@ new_pprof_logistic_firth <- function(data, estimates, spec, call = NULL, keep_da
                              class = c("pprof_logistic_firth", "pprof_logistic_fe"),
                              penalized_loglik = estimates$penalized_loglik)
   validate_pprof_logistic_firth(model)
+  model
 }
 
 validate_pprof_logistic_firth <- function(x) {

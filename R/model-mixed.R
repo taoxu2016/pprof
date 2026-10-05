@@ -193,6 +193,7 @@ new_pprof_mixed <- function(data, estimates, spec, call = NULL, keep_data = FALS
   if (!is.null(estimates$sigma)) model$sigma <- estimates$sigma
   if (keep_data) model$engine_fit <- estimates$fit
   validate_pprof_mixed(model)
+  model
 }
 
 validate_pprof_mixed <- function(x) {

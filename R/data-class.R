@@ -15,6 +15,7 @@ new_pprof_data <- function(formula, terms, xlevels, response_name, provider_name
     class = "pprof_data"
   )
   validate_pprof_data(x)
+  x
 }
 
 # Internal consistency of a `pprof_data` object. Every check failure is reported as

@@ -141,7 +141,10 @@ new_pprof_model <- function(data, coefficients, vcov, provider_effects, linear_p
     n_excluded_obs = data$n_excluded_obs, package_version = utils::packageVersion("pprof"),
     data = if (keep_data) data else NULL
   )
-  validate_pprof_model(structure(c(shared, extra), class = c(class, "pprof_model")))
+  # Validated, then returned visibly, so that a model prints when it is not assigned (D-51).
+  model <- structure(c(shared, extra), class = c(class, "pprof_model"))
+  validate_pprof_model(model)
+  model
 }
 
 #' @rdname new_pprof_model
