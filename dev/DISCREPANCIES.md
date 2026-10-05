@@ -68,6 +68,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-46 | RE and CRE `summary()` without the lme4 fit | A | verified; fixed in the wrappers (Phase 5) | Fails when `attr(, "model")` is missing, though the intervals need only the stored covariance |
 | D-47 | `caterpillar_plot()`, `bar_plot()` colours | Presentation | verified; reproduced in the wrappers, fixed in the new plots (Phase 6) | Colours go to the flags present in sorted order, so the same colour can mean higher, lower, or as expected, unlike the funnel plot |
 | D-48 | `caterpillar_plot()`, `bar_plot()` help | C | verified; fixed in the help (Phase 6) | `bar_width` has no effect; the input is called `test_df`; infinite limits are said to arise for providers with all or no events and to be shortened |
+| D-49 | `bar_plot()`'s plot data | Presentation | verified; documented (Phase 6) | The plot's data are a data frame, where pprof 1.0.3's are dplyr's grouped tibble; the data and the built plot are the same |
 
 ---
 
@@ -824,3 +825,17 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: project lead.
 - Status: verified (2026-10-04, Phase 6 planning); the recommendation was approved with the Phase 6 plan (2026-10-04). Fixed in the help of the wrappers (Phase 6, step 3).
 - Regression test: `tests/testthat/test-compat-plots.R` ("bar_plot()'s bar_width has no effect, as its help says (D-48)").
+
+### D-49: `bar_plot()`'s plot data are a data frame instead of a grouped tibble
+
+- Component: `bar_plot()` (`R/compat-plots.R`, `compat_bar_table()`; in pprof 1.0.3, `R/bar_plot.R:71-75`, the dplyr summary).
+- Class (proposed): Presentation (brief §3.2: container types)
+- Description: pprof 1.0.3 gives ggplot2 the result of `group_by() |> summarise() |> group_by() |> mutate()`, a grouped tibble, to which ggplot2 4 adds the column `.group`, the index of the size group. The wrapper of Phase 6 builds the same table in base R (DEC-055, DEC-057): a data frame with the columns `size`, `category`, `count`, `value`, and `.group`, the same rows, types, levels, and values. So `class(bar_plot(x)$data)` is `"data.frame"` instead of `c("grouped_df", "tbl_df", "tbl", "data.frame")`; `as.data.frame()` of either is identical, and so are the built layers, scales, guides, and theme.
+- Minimal reproducible example: `class(bar_plot(test(fit))$data)` on a `logis_fe()` fit of the binary example (`dev/design/phase6-facts/05_bar_plot_without_dplyr.R`; the guard `08_plot_guard.R` lists the 79 records where this is the only difference).
+- Affected outputs: the class of the plot object's `data`.
+- Statistical impact: none.
+- Options: (1) a data frame; (2) keep dplyr to build a grouped tibble.
+- Recommendation: (1), which DEC-057 implies; stated in NEWS.
+- Decision owner: project lead.
+- Status: verified (2026-10-04, Phase 6, step 3); documented in NEWS.
+- Regression test: `tests/testthat/test-compat-plots.R` ("bar_plot()'s data are a data frame with the group index ggplot2 adds to dplyr's grouped data"); the fixtures compare `as.data.frame()` of the plot data.
