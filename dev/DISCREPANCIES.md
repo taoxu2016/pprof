@@ -70,7 +70,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-48 | `caterpillar_plot()`, `bar_plot()` help | C | verified; fixed in the help (Phase 6) | `bar_width` has no effect; the input is called `test_df`; infinite limits are said to arise for providers with all or no events and to be shortened |
 | D-49 | `bar_plot()`'s plot data | Presentation | verified; documented (Phase 6) | The plot's data are a data frame, where pprof 1.0.3's are dplyr's grouped tibble; the data and the built plot are the same |
 | D-50 | `test_providers()` help | C | verified; fixed in the help (Phase 7) | Says the estimates of providers with no events or only events sit at the effect bound; at the default settings they are where the iterations stopped |
-| D-51 | the new interface's results | Presentation | verified; fix proposed for the project lead's decision (Phase 7 check-in) | Every fit and profiling function returns its result invisibly, so calling one at the console prints nothing, where pprof 1.0.3's functions print |
+| D-51 | the new interface's results | Presentation | verified; fixed (Phase 7, approved at the check-in) | Every fit and profiling function returned its result invisibly, so calling one at the console printed nothing, where pprof 1.0.3's functions print |
 
 ---
 
@@ -882,5 +882,5 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) the constructors return the object visibly (validate it, then return it), with a test that every exported function that returns a model or a result returns it visibly; (2) leave as is and document it.
 - Recommendation: (1). It changes executable code, which Phase 7 does not do (DEC-061), so it is proposed to the project lead at the Phase 7 check-in; meanwhile the vignettes assign results before printing them, which works either way.
 - Decision owner: project lead.
-- Status: verified (2026-10-05, `withVisible()` on every exported function, the working tree at `4e8b136`); fix proposed.
-- Regression test: with the fix, a test of the visibility of every exported function's result.
+- Status: verified (2026-10-05, `withVisible()` on every exported function, the working tree at `4e8b136`); option (1) approved by the project lead at the Phase 7 check-in (2026-10-05), as an exception to DEC-061's rule that Phase 7 changes no executable code; fixed: the seven constructors validate their object and then return it visibly. No number changes; the old interface is unaffected.
+- Regression test: `tests/testthat/test-visibility.R` (the seven fits, the five profiling functions, `test_coefficients()`, `summary()`, `data_prepare()`, and `new_pprof_model()` return their objects visibly).

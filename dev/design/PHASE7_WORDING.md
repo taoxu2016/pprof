@@ -1,5 +1,7 @@
 # Phase 7: wording of methodology in the vignettes
 
+Approved by the project lead at the check-in (2026-10-05) as proposed: every item below, including the added claims and guidance and the statement not carried (N1).
+
 The wording list of DEC-065, for the check-in after step 2 of the Phase 7 plan. It gives every sentence of the vignettes `pprof.Rmd`, `models.Rmd`, and `statistical-methods.Rmd` that states a statistical property, an interpretation, or guidance, with its source and its kind:
 
 - **carried**: a statement of pprof 1.0.3's documentation that agrees with the code, kept (reworded where noted);
