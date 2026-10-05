@@ -90,6 +90,11 @@ random-effect models, the standard deviation of the conditional mode, as the mod
 for linear fixed-effect models with \code{provider_variance = "full"}, which use Student's t
 with n - m - p degrees of freedom (n observations, m providers, p coefficients), as
 pprof 1.0.3's \code{test()} does.
+
+The conditional modes of random-effect models are shrunk toward 0, so their tests compare
+shrunk estimates with their conditional standard deviations;
+\code{vignette("statistical-methods", package = "pprof")} describes how often these tests flag
+providers, compared with the fixed-effect tests.
 }
 \examples{
 data(ExampleDataBinary)

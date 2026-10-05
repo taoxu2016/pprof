@@ -59,7 +59,9 @@ A \code{pprof_profile} result: a \code{table} with one row per provider in provi
 Runs the profiling steps for a model and collects their results: the provider effects
 (\code{\link[=provider_effects]{provider_effects()}}), the tests and flags (\code{\link[=test_providers]{test_providers()}}), the indirectly
 standardized measures with optional intervals (\code{\link[=standardize_providers]{standardize_providers()}}), and, for
-models that support funnel plots, the funnel limits (\code{\link[=funnel_limits]{funnel_limits()}}).
+models that support funnel plots, the funnel limits (\code{\link[=funnel_limits]{funnel_limits()}}). For random-effect
+models, the tests and intervals use the shrunk conditional modes; see \code{\link[=test_providers]{test_providers()}}
+and \code{vignette("statistical-methods", package = "pprof")}.
 }
 \examples{
 data(ExampleDataBinary)

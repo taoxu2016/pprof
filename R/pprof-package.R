@@ -29,6 +29,11 @@
 #' [plot_funnel()], [plot_caterpillar()], [plot_flags()], and [plot_volume()] draw the
 #' results with ggplot2 and return the plot.
 #'
+#' @section Vignettes:
+#' `vignette("pprof", package = "pprof")` goes through an analysis,
+#' `vignette("models", package = "pprof")` describes the models and what each supports, and
+#' `vignette("statistical-methods", package = "pprof")` gives the formulas behind the results.
+#'
 #' @section The interface of pprof 1.0.3:
 #' [logis_fe()], [logis_firth()], [linear_fe()], [linear_re()], [logis_re()],
 #' [linear_cre()], and [logis_cre()], the `test()`, `SM_output()`, `confint()`, `summary()`,

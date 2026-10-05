@@ -38,8 +38,10 @@
 #' (direct). For linear fixed-effect models the intervals use the distribution of the Wald
 #' intervals of [provider_effects()]: Student's t with n - m - p degrees of freedom with
 #' `provider_variance = "simplified"` and the normal with `"full"`, the reverse of the tests
-#' of [test_providers()]. These are the measures and intervals of pprof 1.0.3's
-#' `SM_output()` and `confint()`, whose results they reproduce.
+#' of [test_providers()]. For random-effect models, the intervals carry those of the shrunk
+#' conditional modes (see [provider_effects()] and
+#' `vignette("statistical-methods", package = "pprof")`). These are the measures and
+#' intervals of pprof 1.0.3's `SM_output()` and `confint()`, whose results they reproduce.
 #'
 #' @inheritParams test_providers
 #' @param standardization `"indirect"`, `"direct"`, or both.

@@ -38,6 +38,13 @@ funnel plot, and \code{\link[=profile_providers]{profile_providers()}} runs all 
 results with ggplot2 and return the plot.
 }
 
+\section{Vignettes}{
+
+\code{vignette("pprof", package = "pprof")} goes through an analysis,
+\code{vignette("models", package = "pprof")} describes the models and what each supports, and
+\code{vignette("statistical-methods", package = "pprof")} gives the formulas behind the results.
+}
+
 \section{The interface of pprof 1.0.3}{
 
 \code{\link[=logis_fe]{logis_fe()}}, \code{\link[=logis_firth]{logis_firth()}}, \code{\link[=linear_fe]{linear_fe()}}, \code{\link[=linear_re]{linear_re()}}, \code{\link[=logis_re]{logis_re()}},

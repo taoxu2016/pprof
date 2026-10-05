@@ -47,6 +47,11 @@
 #' with n - m - p degrees of freedom (n observations, m providers, p coefficients), as
 #' pprof 1.0.3's `test()` does.
 #'
+#' The conditional modes of random-effect models are shrunk toward 0, so their tests compare
+#' shrunk estimates with their conditional standard deviations;
+#' `vignette("statistical-methods", package = "pprof")` describes how often these tests flag
+#' providers, compared with the fixed-effect tests.
+#'
 #' @param model A model object, such as a [fit_logistic_fe()] fit.
 #' @param test `"exact"`, `"bootstrap"`, `"score"`, or `"wald"`; `NULL` for the family's
 #'   default test: `"exact"` for logistic fixed-effect models, `"wald"` for the others.

@@ -5,7 +5,9 @@
 #' Runs the profiling steps for a model and collects their results: the provider effects
 #' ([provider_effects()]), the tests and flags ([test_providers()]), the indirectly
 #' standardized measures with optional intervals ([standardize_providers()]), and, for
-#' models that support funnel plots, the funnel limits ([funnel_limits()]).
+#' models that support funnel plots, the funnel limits ([funnel_limits()]). For random-effect
+#' models, the tests and intervals use the shrunk conditional modes; see [test_providers()]
+#' and `vignette("statistical-methods", package = "pprof")`.
 #'
 #' @inheritParams test_providers
 #' @param interval The interval of the standardized measures: `"none"`, `"exact"`,

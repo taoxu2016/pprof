@@ -20,7 +20,11 @@
 #'   `"full"`, the reverse of their tests, as pprof 1.0.3 does.
 #'
 #' Logistic fixed-effect and Firth models offer all three intervals; linear fixed-effect,
-#' random-effect, and correlated random-effect models only the Wald interval.
+#' random-effect, and correlated random-effect models only the Wald interval. For
+#' random-effect models, the Wald interval is centred on the conditional mode, which is shrunk
+#' toward 0, with its conditional standard deviation;
+#' `vignette("statistical-methods", package = "pprof")` describes how often such intervals
+#' cover a provider's effect.
 #'
 #' @inheritParams test_providers
 #' @param interval `"none"`, `"exact"`, `"score"`, or `"wald"`.

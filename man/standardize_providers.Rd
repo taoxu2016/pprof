@@ -93,8 +93,10 @@ has lower limit 0 and one with only events upper limit n_i / E_i (indirect) or n
 (direct). For linear fixed-effect models the intervals use the distribution of the Wald
 intervals of \code{\link[=provider_effects]{provider_effects()}}: Student's t with n - m - p degrees of freedom with
 \code{provider_variance = "simplified"} and the normal with \code{"full"}, the reverse of the tests
-of \code{\link[=test_providers]{test_providers()}}. These are the measures and intervals of pprof 1.0.3's
-\code{SM_output()} and \code{confint()}, whose results they reproduce.
+of \code{\link[=test_providers]{test_providers()}}. For random-effect models, the intervals carry those of the shrunk
+conditional modes (see \code{\link[=provider_effects]{provider_effects()}} and
+\code{vignette("statistical-methods", package = "pprof")}). These are the measures and
+intervals of pprof 1.0.3's \code{SM_output()} and \code{confint()}, whose results they reproduce.
 }
 \examples{
 data(ExampleDataBinary)
