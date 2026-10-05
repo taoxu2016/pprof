@@ -1,6 +1,6 @@
 # Phase 7 plan: documentation
 
-Proposed on 2026-10-04 for the project lead's approval; nothing is implemented. Branch `rewrite/phase-7`, created from `rewrite/phase-6` at `8aa85cc` (stacked until Phases 1 to 6 are merged into `rewrite/v2`), clean at `7d6d696` when this plan was written. The brief gives Phase 7 no gate; this plan proposes one (DEC-061).
+Approved by the project lead on 2026-10-05, with every recommendation of "Questions for the project lead": pandoc installed with winget, its current release (step 0); the gate and the check-in, with the namespace comparison in place of the gate's benchmark comparison (DEC-061); decisions DEC-061 to DEC-068 (`dev/DECISIONS.md`), with `docs/` removed in this phase, the developer guide in both places, and `R/Data.R` moved; D-17's help fix in this phase; D-37's extension. The project lead answered M-21 (keep the statements that agree with the code, correct those that do not, and add important claims or guidance that the documentation lacks; DEC-065 as amended) and left the documentation part of M-20 to Claude's recommendation (DEC-069). Every action on GitHub is limited to the fork (`origin`, `taoxu2016/pprof`); nothing is done on the upstream repository (`UM-KevinHe/pprof`). Branch `rewrite/phase-7`, created from `rewrite/phase-6` at `8aa85cc` (stacked until Phases 1 to 6 are merged into `rewrite/v2`), clean at `7d6d696` when this plan was written. The brief gives Phase 7 no gate; this phase ends with `/phase-gate` and a stop (DEC-061).
 
 The facts in "Facts gathered" were confirmed by running the working tree at `7d6d696` on 2026-10-04 (`dev/design/phase7-facts/`). Treat anything else here as a hypothesis to confirm by running code before relying on it (CLAUDE.md).
 
@@ -17,7 +17,7 @@ Phase 7 delivers:
 - a pkgdown configuration for the new interface, a site that builds cleanly locally and in CI, and `docs/` removed from the repository (DEC-066);
 - the documents: the register (D-17, D-35, D-37), NEWS, ARCHITECTURE, NAMING, PROJECT_CONTEXT.
 
-No executable code changes: the R and C++ code that computes, prints, and plots stays as it is, and a comparison of the installed namespaces before and after shows it (step 6). The documentation states what the code does, including the behaviors awaiting sign-off, and takes no methodology position (DEC-065).
+No executable code changes: the R and C++ code that computes, prints, and plots stays as it is, and a comparison of the installed namespaces before and after shows it (step 6). The documentation states what the code does, including the behaviors awaiting sign-off; the methodological statements it carries, corrects, or adds follow DEC-065 as amended by the answer to M-21, and the operating characteristics of the RE and CRE procedures follow DEC-069.
 
 ### Scoping questions of the handoff
 
@@ -45,10 +45,10 @@ Any change to executable code, including fixes for problems found while document
 
 Work in this order. Commit small, scoped commits with explicit paths, and check `git show --stat` after each commit that removes files (Phase 6 lesson); add a dated entry to PROJECT_CONTEXT §10 at the end of each step. Step 1 can start without pandoc; steps 2 to 6 need it.
 
-### Step 0: Pandoc (needs approval: installing software)
+### Step 0: Pandoc (approved 2026-10-05)
 
 - **Why.** Vignettes rendered with rmarkdown and the pkgdown site need pandoc, and none is on this machine (F1). Without it, `R CMD build` cannot build the vignettes, and `R CMD check` cannot check README.md and NEWS.md (one of the current notes, F2).
-- **Proposed.** Pandoc 3.x for the current user, either with winget (`winget install --id JohnMacFarlane.Pandoc -e`; pandoc's Windows installer installs per user, without administrator rights) or as the portable zip of pandoc's GitHub release in a user folder, with `RSTUDIO_PANDOC` pointing to it in the R sessions. The committed site was built with pandoc 3.7.0.2 (F5); CI's `setup-pandoc` takes the current release. The project lead chooses the way and the version.
+- **As approved.** Pandoc's current release for the current user, installed with winget (`winget install --id JohnMacFarlane.Pandoc -e`; pandoc's Windows installer installs per user, without administrator rights), the release CI's `setup-pandoc` also takes. The alternatives were the portable zip with `RSTUDIO_PANDOC`, and pandoc 3.7.0.2, which built the committed site (F5).
 - **Checks.** `rmarkdown::pandoc_available()` is TRUE; `R CMD check --as-cran --no-manual --no-tests` on the unchanged tree records the notes with pandoc present, the baseline of the later steps.
 
 ### Step 1: Help pages and the data documentation (DEC-068)
@@ -112,8 +112,9 @@ Work in this order. Commit small, scoped commits with explicit paths, and check 
 - **Must state as the code does,** without calling it a defect or announcing a change (DEC-065):
   - the Class B behaviors awaiting sign-off: D-10 (the LR and score refits use pprof 1.0.3's default settings), D-24 (the default stopping rule stops as soon as the smallest of the three criteria falls below `tol`), D-31 (logistic RE and CRE covariate p-values 2(1 − Φ(z)), above 1 for negative estimates), D-32 (linear FE intervals use t with the simplified variance and normal with the full, the reverse of the tests), D-34 (provider order follows the session's collation), D-43 (the linear FE funnel draws limits from σ/sqrt(n_i) and flags from the fit's test);
   - the signed-off behaviors: D-12 (Firth's unpenalized variance, log-likelihood, AIC, and BIC), D-13 (CRE provider means computed before incomplete rows are deleted);
-  - the open questions, described as computed and not decided: M-4 (D-24), M-5 (D-10), M-7 (the "standard" score test, D-26), M-8 (D-32), M-9 (exact funnel limits unsupported), M-10 (D-31), M-11 (D-34), M-12 (the deprecation timeline: warnings from 2.0.0, the old functions kept at least through the next minor release, removal open), M-13 (screening by size only in the logistic FE models), M-14 (predicted over expected outcomes in RE indirect measures), M-15 (α rather than α/2 for the single finite limit of providers with no events or only events), M-17 (collinear covariates: a warning, numbers as computed), M-18 (D-43), M-19 (a provider variance of 0 leaves every flag missing), M-20 (no statement on the size, power, or coverage of the RE and CRE tests and intervals), M-21 (statements carried over from pprof 1.0.3's documentation).
-- **Must not:** describe a proposed change as current behavior; say that a behavior will change; cite or summarize `validation/simulation-report.md`; recommend a model or a test beyond what pprof 1.0.3's documentation says; show a number that the shown code does not compute; cite register IDs in user documentation (ARCHITECTURE §I.4 keeps the mapping).
+  - the open questions, described as computed and not decided: M-4 (D-24), M-5 (D-10), M-7 (the "standard" score test, D-26), M-8 (D-32), M-9 (exact funnel limits unsupported), M-10 (D-31), M-11 (D-34), M-12 (the deprecation timeline: warnings from 2.0.0, the old functions kept at least through the next minor release, removal open), M-13 (screening by size only in the logistic FE models), M-14 (predicted over expected outcomes in RE indirect measures), M-15 (α rather than α/2 for the single finite limit of providers with no events or only events), M-17 (collinear covariates: a warning, numbers as computed), M-18 (D-43), M-19 (a provider variance of 0 leaves every flag missing), and the part of M-20 that stays open (whether the operating characteristics of the RE and CRE procedures are intended).
+- **Must describe** (answers of 2026-10-05): the operating characteristics of the RE and CRE tests and intervals, as DEC-069 sets out (M-20's documentation part); and, under M-21, pprof 1.0.3's methodological statements that agree with the code, corrected where they do not, together with the important claims and guidance the documentation lacks, each derived from the code's formulas or established and cited, and each in the wording list of the check-in (DEC-065).
+- **Must not:** describe a proposed change as current behavior; say that a behavior will change; recommend changing a procedure; cite a reference that has not been checked against its source; show a number that the shown code does not compute; cite register IDs in user documentation (ARCHITECTURE §I.4 keeps the mapping).
 - **Code:** unchanged (DEC-061), checked by the namespace comparison; no fixture regenerated; no tolerance changed; the reference suite run at the gate.
 
 ## Facts gathered (2026-10-04, at `7d6d696`)
@@ -162,6 +163,7 @@ Recorded in `dev/DECISIONS.md` with status "proposed":
 | DEC-066 | The pkgdown site: a new configuration, the site URL in DESCRIPTION, a clean local build, a CI workflow that builds it, no deployment, redirects for the old articles, and `docs/` removed and git-ignored, with GitHub Pages switched by the owners before the rewrite reaches `main` |
 | DEC-067 | The README: plain Markdown for the new interface, its code run by a test, the reference link fixed, the owners' contacts unchanged |
 | DEC-068 | Help pages and the data documentation: examples on every user-facing page, `@family` cross-links, D-32 and D-34 stated, register IDs moved from the rendered help into source comments, `R/Data.R` moved to `R/data-bundled.R` with D-35 fixed and examples for the new interface, a package page `?pprof` |
+| DEC-069 | (Added with the approval, 2026-10-05.) The documentation describes the operating characteristics of the RE and CRE tests and intervals: the methods vignette derives them for the linear RE model, computes them for the example fit, and cites the literature and the repository's simulation study; the help of the profiling functions points to it; no procedure changes |
 
 ## Questions for the project lead
 
@@ -173,8 +175,8 @@ Recorded in `dev/DECISIONS.md` with status "proposed":
 
 ## Questions for the methodology owners (defaults reproduce the reference)
 
-- **M-21 (new; PROJECT_CONTEXT §9).** The vignettes of pprof 1.0.3 state statistical properties and interpretations that the new vignettes could carry over (listed in §9). Should they keep, revise, or drop them, and may the documentation add guidance on choosing models and tests? Default: keep the statements that agree with the code, corrected where they contradict it (D-37); add no new statement of properties and no guidance on choosing models or tests.
-- **M-20 (open, in play).** Default: the documentation describes the RE and CRE tests and intervals by their formulas and says nothing about their size, power, or coverage.
+- **M-21 (new; PROJECT_CONTEXT §9).** The vignettes of pprof 1.0.3 state statistical properties and interpretations that the new vignettes could carry over (listed in §9). Should they keep, revise, or drop them, and may the documentation add guidance on choosing models and tests? Proposed default: keep the statements that agree with the code, corrected where they contradict it (D-37); add no new statement of properties and no guidance on choosing models or tests. **Answered by the project lead (2026-10-05):** keep the statements that agree with the code, correct those that do not, and add important claims or guidance that the documentation lacks (DEC-065 as amended).
+- **M-20 (open, in play).** Proposed default: the documentation describes the RE and CRE tests and intervals by their formulas and says nothing about their size, power, or coverage. **Documentation part left to Claude's recommendation by the project lead (2026-10-05):** the documentation describes the operating characteristics (DEC-069). Whether they are intended, and any change to the procedures (Class B), stays with the methodology owners.
 - In play, described as computed: M-4, M-5, M-7, M-8, M-9, M-10, M-11, M-12, M-13, M-14, M-15, M-17, M-18, M-19 (see "What the documentation may change"). M-16 (who signs off) remains open; the check-in's wording list is for whoever signs off.
 
 ## Risks

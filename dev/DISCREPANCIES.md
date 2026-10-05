@@ -352,7 +352,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: document; or make the new `check_data()` report missingness instead of stopping.
 - Recommendation: document the behavior in the compatibility wrapper `data_check()` (unchanged); the new `check_data()` returns a report object that includes missingness, with the same thresholds for variation, correlation, and VIF (DEC-010).
 - Decision owner: project lead.
-- Status: verified (V16.1).
+- Status: verified (V16.1). The documentation fix (the help of the `data_check()` wrapper states the behavior) was approved for Phase 7 with its plan (2026-10-05); the function and `check_data()` stay in Phase 8.
 - Regression test: planned.
 
 ### D-18: FE formula interface handles only plain column names
@@ -639,7 +639,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: correct the vignettes now, or replace them with vignettes for the new API.
 - Recommendation: replace them in Phase 7, written for the new API and built and checked as part of the package (brief §9); until then, leave the excluded vignettes unchanged.
 - Decision owner: project lead.
-- Status: verified by reading the vignettes against the code and the audit results (V10.2, V13.21, BEHAVIOR_SPECS §9); the Phase 7 planning items above verified by running the vignettes' code and reading them against the code (2026-10-04). The Phase 7 plan replaces the vignettes (`dev/design/PHASE7_PLAN.md`, DEC-062), awaiting approval.
+- Status: verified by reading the vignettes against the code and the audit results (V10.2, V13.21, BEHAVIOR_SPECS §9); the Phase 7 planning items above verified by running the vignettes' code and reading them against the code (2026-10-04). The Phase 7 plan, approved on 2026-10-05, replaces the vignettes (`dev/design/PHASE7_PLAN.md`, DEC-062).
 - Regression test: vignettes are built during `R CMD check` from Phase 7 on.
 
 ### D-38: Collinear covariates give unidentified estimates without a rank-deficiency warning
