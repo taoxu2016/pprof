@@ -45,6 +45,7 @@ Suggests:
     withr
 URL: https://github.com/UM-KevinHe/pprof
 BugReports: https://github.com/UM-KevinHe/pprof/issues
+VignetteBuilder: knitr
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3

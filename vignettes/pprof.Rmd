@@ -1,172 +1,279 @@
 ---
-title: "Getting Started with pprof"
-output: 
-  rmarkdown::html_vignette:
-    self_contained: yes
-    mode: selfcontained
+title: "Getting started with pprof"
+output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting Started with pprof}
+  %\VignetteIndexEntry{Getting started with pprof}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+  collapse = TRUE, comment = "#>",
+  fig.width = 6, fig.height = 4, dpi = 96, fig.retina = 1, out.width = "100%"
 )
 ```
 
-```{=html}
-<style>
-body {
-  text-align: justify
-}
-</style>
-```
+Provider profiling compares health care providers, such as hospitals, dialysis
+facilities, or transplant centers, on an outcome of the people they treat, after
+adjusting for those people's characteristics, which the providers do not control. The
+same methods apply to other units, such as schools. pprof fits a risk-adjustment model
+with an effect for each provider, and then, for every provider, tests whether its outcomes
+are higher or lower than expected, computes standardized measures with intervals, and
+draws plots of the results.
 
-## Introduction
+This vignette goes through an analysis of the simulated binary outcomes in
+`ExampleDataBinary`, then of a continuous outcome. The other vignettes go further:
+`vignette("models", package = "pprof")` describes the seven models and what each
+supports, `vignette("statistical-methods", package = "pprof")` gives the formulas behind
+every result, and `vignette("migration", package = "pprof")` shows how code written for
+pprof 1.0.3 maps to the functions used here.
 
-The `pprof` software package is designed to provide different risk-adjustment models for data with various types of outcomes, specifically focusing on the field of provider profiling. In addition to model fitting, the package equips a suite of functions for calculating standardized measures, conducting statistical inference, and generating various plots to aid in the interpretation of results. Currently, the package supports logistic fixed effect and logistic random effect models for binary outcomes, as well as linear fixed effect and linear random effect models for continuous outcomes. It is under ongoing development, with plans to incorporate additional models and more robust testing methods.
+## The data
 
-This tutorial provides a brief overview of the package’s structure and a detailed guide of how to utilize the various functions. Simulated example data (`ExampleDataBinary`) with binary outcomes will be used as an illustration, alongside a real data set with continuous outcomes (`ecls_data`) to demonstrate its application with continuous outcomes. Throughout the tutorial, we will cover the key features and capabilities of `pprof`, presenting examples and use cases to illustrate its functionality comprehensively.
+pprof works on a data frame with one row per observation (here, a patient): the outcome,
+the risk factors, and a column that identifies the provider. The bundled example is a
+list, so we put it into a data frame first.
 
-## Installation
-
-```{r ,include=TRUE,eval=FALSE}
-require("devtools")
-require("remotes")
-remotes::install_github("UM-KevinHe/pprof", ref = "main")
-```
-
-------------------------------------------------------------------------
-
-## Package Workflow Overview
-
-This section presents the structure and workflow of the `pprof` package. Generally, for datasets with continuous outcomes, either a fixed effect model or a random effect model can be fitted, while for binary outcomes, the current version only supports the fixed effect model. For the calculation of standardized measures, both indirect and direct standardization methods are provided for all models. Regarding hypothesis testing of provider effects, `pprof` includes the flagging based on each provider's performance, categorizing them as 1 (statistically higher), 0 (as expected), or -1 (statistically lower). Confidence intervals are provided for both provider effects and standardized measures. Additionally, various visualizations are equipped to facilitate interpretation of the results. These include caterpillar plots for the confidence intervals of standardized measures, bar plots showing flagging percentages overall and stratified by provider sizes, and funnel plots for indirect standardized measures in fixed effect models. These visualizations offer multiple perspectives for understanding the results effectively.
-
-![](Charts/pprof_flowchart.png){width="3000"}
-
-## Model Fitting
-
-`pprof` package introduces three different fitting functions: `logis_fe` for logistic fixed effect model, `linear_fe` for linear fixed effect model, and `linear_re` for linear random effect mode.
-
-The simulated dataset `ExampleDataBinary` is used as an example in this section.
-
-```{r}
+```{r data, message = FALSE}
 library(pprof)
 data(ExampleDataBinary)
-outcome <- ExampleDataBinary$Y
-covar <- ExampleDataBinary$Z
-ID <- ExampleDataBinary$ProvID
-data <- data.frame(outcome, covar, ID)
+example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+head(example)
 ```
 
-Each model function supports three different ways to input data. Users have the flexibility to choose the one that best suits their data availability and convenience. Firstly, users can provide a formula and the whole dataset.
-
-```{r}
-formula_fe <- as.formula("outcome ~ id(ID) + z1 + z2 + z3 + z4 + z5")
-fit_fe <- logis_fe(formula = formula_fe, data = data, message = F)
+```{r data-sizes, include = FALSE}
+sizes <- table(example$hospital)
 ```
 
-Additionally, users also input the whole dataset, along with the column names of the outcome vector, the covariate matrix/data frame, and the provider identifier vector.
+`example` holds `r nrow(example)` patients of `r length(sizes)` hospitals, with
+`r min(sizes)` to `r max(sizes)` patients each, a binary outcome `y`, and five risk
+factors `z1` to `z5`.
 
-```{r}
-colnames(data)
-Y.char <- colnames(data)[1]
-Z.char <- colnames(data)[2:6]
-ID.char <- colnames(data)[7]
-fit_fe <- logis_fe(data = data, Y.char = Y.char, Z.char = Z.char, ProvID.char = ID.char, message = F)
+## Fitting a model
+
+For a binary outcome, `fit_logistic_fe()` fits the logistic model
+logit P(y~ij~ = 1) = γ~i~ + z~ij~'β, with a fixed effect γ~i~ for each hospital i and
+coefficients β for the risk factors, by maximum likelihood, with the serial blockwise
+inversion Newton algorithm (SerBIN, Wu et al. 2022) or the block ascent Newton algorithm
+(He et al. 2013). The formula gives the outcome and the risk factors; the provider column
+is named separately.
+
+```{r fit}
+fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, data = example, provider = "hospital")
+fit
 ```
 
-Finally, the function also accepts the outcome vector, the covariate matrix/data frame, and the provider identifier vector.
-
-```{r}
-fit_fe <- logis_fe(Y = outcome, Z = covar, ProvID = ID, message = F)
+```{r fit-facts, include = FALSE}
+providers <- provider_table(fit)
 ```
 
-By default, each model fitting function automatically removes all observations containing missing values. If users encounter data-related issues, they can utilize our built-in function `data_check` to perform data quality checks. This function can assist in examining missingness, variation, correlation, and the variance inflation factor (VIF) of variables to ensure data quality before fitting a model.
+Before fitting, `fit_logistic_fe()` drops rows with a missing value, and it excludes
+providers with fewer than `min_provider_size` complete observations (10 by default), with
+a warning; no hospital of the example is excluded. Providers whose patients all have the
+same outcome are kept, although their effects cannot be estimated: the maximum likelihood
+estimate of the effect of a provider without events is minus infinity. pprof keeps every
+effect within `effect_bound` (10 by default) of the median effect, so these estimates stay
+finite, but they depend on when the iterations stop, and Wald tests and intervals are
+unreliable for them. The example has `r sum(providers$no_events)` hospitals without
+events and `r sum(providers$all_events)` with only events.
 
-The logistic fixed effect model provides two algorithmic approaches: the Serial Blockwise Inversion Newton (SerBIN) algorithm (See [Logis FE](https://um-kevinhe.github.io/ppsrr/articles/Logis-FE.html) for more details) and the Block Ascent Newton algorithm. The preferred method can be specified by setting the `method` argument, allowing users to choose the algorithm that best fits their computational needs and model requirements.
+The fit stops when its convergence criterion falls below `tol`, and `fit$convergence`
+records the iterations and the criteria. The default stopping rule, `"any"`, stops as soon
+as one of three criteria is below `tol`; on large data, check the criteria in
+`fit$convergence`, or fit again with `stop_rule = "all"`, which waits for all three
+(see `vignette("models", package = "pprof")`).
 
-## Standardized Measures
+## Covariates
 
-Based on the results obtained from the fitted model, users can easily calculate direct or indirect standardized measures as per their specific requirements. The `SM_output` function simply necessitates the users to input the object returned from the model functions and specify the desired type of measure. Additionally, the observed outcomes and "expected" outcomes are included in case users wish to calculate standardized measures under different definitions.
+`summary()` and `confint()` give Wald tests and intervals for the coefficients of the
+risk factors, as `summary()` did in pprof 1.0.3:
 
-```{r}
-SR <- SM_output(fit_fe, stdz = "indirect")
-head(SR$indirect.ratio)
-head(SR$indirect.rate)
-head(SR$OE$OE_indirect)
+```{r covariates}
+fit_summary <- summary(fit)
+fit_summary
+confint(fit)
 ```
 
-## Hypothesis Testing for Provider Effects
+`test_coefficients()` also gives likelihood-ratio and score tests. They refit the model
+without each covariate, so they need the data:
 
-The `test` function is designed to conduct hypothesis testing for provider effects and identify outlier providers. It returns a four-column dataframe, where the "flag" column indicates whether a provider is flagged as an outlier. The other three columns provide the p-values, corresponding test statistics, and the standard errors of provider effects. Users have the flexibility to choose between two-sided and one-sided tests by specifying the `alternative` argument. In cases when the number of providers is very large, outputting all results at once may become cumbersome. To address this, users can opt to display results only for the providers of particular interest by setting the `parm` argument to the corresponding provider ID. This selective output feature makes it easier for users to focus on specific providers without being overwhelmed by extensive data.
-
-```{r}
-test(fit_fe, parm = c(16:20, 61:65))
+```{r covariates-lr}
+test_coefficients(fit, test = "lr", data = example)$table
 ```
 
-## Hypothesis Testing for Covariate Coefficients
+## Testing providers
 
-Additionally, we offer the `summary` function to provides the test statistics for the covariate coefficients. The output dataframe may include the estimates, standard errors, p-values, and confindence intervals.
+`test_providers()` tests each hospital's effect against a norm, by default the median of
+the hospital effects, and flags the hospital as higher than expected (1), as expected (0),
+or lower than expected (-1). For logistic fixed-effect models, the default test is exact:
+under the null hypothesis, a hospital's number of events is a sum of independent
+Bernoulli outcomes, one per patient, with the probabilities the model gives its patients
+at the norm, so it has a Poisson-binomial distribution.
 
-```{r}
-summary(fit_fe)
+```{r tests}
+tests <- test_providers(fit)
+head(tests$table)
+table(tests$table$flag)
 ```
 
-## Confidence Interval
+At level 0.95, `r sum(tests$table$flag == 1)` hospitals are flagged as higher and
+`r sum(tests$table$flag == -1)` as lower than expected. `test = "score"`, `"wald"`, and
+`"bootstrap"` choose other tests, and `level`, `alternative`, `null`, and `providers` the
+level, a one-sided alternative, another norm, and the hospitals to report.
 
-Both the confidence intervals for provider effects and standardized measures can be obtained from the function `confint` by specifying the value of argument `option`. The function will return a three-column data frame that provides the estimates, along with the corresponding upper and lower bounds of the confidence intervals.
+Each hospital is tested on its own, at the chosen level, without an adjustment for
+multiple testing. Even if no hospital differed from the norm, about 1 in 20 hospitals
+would be flagged at level 0.95, here about `r round(0.05 * length(sizes))` of
+`r length(sizes)`. Jones, Ohlssen and Spiegelhalter (2008) discuss false discovery rates
+for comparing many providers.
 
-```{r}
-confint(fit_fe, parm = c(55:60), option = "gamma")
-confint(fit_fe, parm = c(80:85), option = "SM")
+## Standardized measures
+
+A standardized measure compares a hospital's outcomes with the outcomes expected for its
+patients. By default, `standardize_providers()` computes indirectly standardized ratios
+and rates:
+
+```{r measures}
+measures <- standardize_providers(fit)
+head(measures$table)
 ```
 
-## Plotting
+For hospital i, the observed count O~i~ is its number of events, and the expected count
+E~i~ is the number of events its patients would have if the hospital's effect were the
+norm, the median effect: the number expected if hospital i performed at the norm. The
+indirectly standardized ratio is O~i~ / E~i~; a ratio above 1 means more events than
+expected for these patients. The rate is the ratio times the overall event rate,
+`r round(measures$population_rate, 2)`%, kept within 0% and 100%.
 
-The caterpillar plot is a type of visualization used to display confidence intervals for estimated parameters, often employed to identify outliers or assess the variability across groups or providers. In `pprof`, the `caterpillar_plot` function is used to generate such plots, providing a clear representation of standardized measures and their associated confidence intervals. To use this function, users need to input a dataframe returned by our built-in `confint` function, with the `option` argument set to "SM" to ensure standardized measures are visualized.
+Direct standardization, `standardization = "direct"`, applies each hospital's effect to
+all the patients in the data: the ratio is the number of events the whole population
+would have with that hospital's effect, over the number it has. The two answer different
+questions. An indirect ratio compares a hospital with the norm for its own patients, so
+two hospitals with different patients are compared with different expectations; direct
+ratios apply every hospital's effect to the same patients, so they put the hospitals on a
+common footing.
 
-```{r, fig = TRUE, warning = FALSE}
-CI_SM <- confint(fit_fe, option = "SM")
-caterpillar_plot(CI_SM$CI.indirect_ratio, use_flag = T, errorbar_width = 0.5, errorbar_size = 1)
+With `interval`, the table also has the limits of an interval. The exact and score
+intervals come from inverting the corresponding tests:
+
+```{r measures-intervals}
+measures <- standardize_providers(fit, interval = "exact")
+head(measures$table[measures$table$measure == "ratio", ])
 ```
 
-Additionally, a bar plot is also provided to visualize the overall flagging percentage, as well as the percentages stratified by provider sizes. The providers are divided into a specified number of groups, set by the `group_num` argument, where the number of providers is approximately equal across all groups. The flagging percentage for each group is then displayed, giving insights into variations in provider performance. For this plot, users need to input the dataframe returned from the `test` function. This visualization offers an effective way to interpret the performance distribution across different provider groups.
+## Provider effects
 
-```{r, fig = TRUE, warning = FALSE}
-test_df <- test(fit_fe)
-bar_plot(test_df, group_num = 4)
+`provider_effects()` gives the estimated effects themselves, with their standard errors
+and, optionally, intervals, here for the first six hospitals:
+
+```{r effects}
+effects <- provider_effects(fit, interval = "exact", providers = 1:6)
+effects$table
 ```
 
-The current version of `pprof` also supports the funnel plot through the `plot` function, an effective graphical tool for identifying healthcare providers with unusual performance. This function can visualize the indirect standardized differences for the linear fixed effect model and the indirect standardized ratios for the logistic fixed effect model, offering valuable insights into variations in provider performance.
+## Everything at once
 
-```{r, fig = TRUE, warning = FALSE}
-plot(fit_fe, alpha = 0.05)
+`profile_providers()` runs the tests, the measures, the effects, and, where the model
+supports it, the funnel limits, and gathers what a report needs in one table:
+
+```{r profile}
+profile <- profile_providers(fit)
+head(profile$table)
 ```
 
-## Real Data Example
+The component results are kept as `profile$tests`, `profile$measures`, `profile$effects`,
+and `profile$funnel`; `interval` adds intervals to the measures.
 
-### Early Childhood Longitudinal Study (ECLS) Dataset
+## Plots
 
-In this section, we further show the usage of the package by analyzing the Early Childhood Longitudinal Study (ECLS) dataset. We use fifth-grade cross-sectional data, focusing on students' mathematical assessment scores as the continuous outcome, with the continuous predictor household income and the categorical predictor gender. Due to the small number of observations for some schools, we fit the model using all available observations but exclude schools with fewer than five records when generating caterpillat plot and bar plot. This ensures a more reliable and interpretable graphical representation of the results.
+Every plot function takes a result and returns a ggplot object, which ggplot2's functions
+can change further.
 
-```{r}
+A funnel plot shows each hospital's indirect ratio against its precision, with control
+limits around 1 (one or more levels: `funnel_limits(fit, level = c(0.95, 0.998))`):
+
+```{r funnel}
+plot_funnel(profile)
+```
+
+```{r funnel-facts, include = FALSE}
+score_flags <- test_providers(fit, test = "score")$table$flag
+```
+
+The limits are those of the score test, and the colours are its flags at the first level,
+so a hospital is flagged when its point lies outside those limits (a test-specific funnel
+plot, Wu et al. 2023). The score test's flags can differ from the exact test's, here for
+`r sum(score_flags != tests$table$flag)` hospital.
+
+A caterpillar plot shows the measures with their intervals, in increasing order, against
+the reference line:
+
+```{r caterpillar}
+plot_caterpillar(measures, measure = "ratio", use_flag = TRUE)
+```
+
+`plot_flags()` shows the shares of flags in groups of hospitals of similar size, and
+`plot_volume()` the measures against the number of patients:
+
+```{r flags-volume}
+plot_flags(tests)
+plot_volume(profile)
+```
+
+## Tidy outputs
+
+`tidy()`, `glance()`, and `augment()` turn models and results into tibbles:
+
+```{r tidy}
+tidy(fit)
+glance(fit)
+head(augment(fit))
+```
+
+## A continuous outcome
+
+`ecls_data` holds the math scores of fifth-grade children and the schools they attend.
+`fit_linear_fe()` fits a linear model with a fixed effect for each school:
+
+```{r ecls}
 data(ecls_data)
-formula_ecls <- as.formula("Math_Score ~ Income + id(School_ID) + Child_Sex")
-fit_ecls <- linear_fe(formula = formula_ecls, data = ecls_data)
-
-obs_counts <- table(ecls_data$School_ID)
-schools_with_5_or_more <- as.numeric(names(obs_counts[obs_counts >= 5]))
-
-# Caterpillar Plot
-CI_ecls <- confint(fit_ecls, parm = schools_with_5_or_more)
-caterpillar_plot(CI_ecls$CI.indirect, use_flag = T)
-# Bar Plot
-test_ecls <- test(fit_ecls, parm = schools_with_5_or_more)
-bar_plot(test_ecls)
-# Funnel Plot
-plot(fit_ecls, alpha = 0.05)
+ecls_fit <- fit_linear_fe(Math_Score ~ Income + Child_Sex, data = ecls_data, provider = "School_ID")
+coef(ecls_fit)
 ```
+
+```{r ecls-sizes, include = FALSE}
+school_sizes <- table(ecls_data$School_ID)
+```
+
+For a continuous outcome, the measures are differences: a school's indirect difference is
+its mean observed score minus its mean expected score. Of the `r length(school_sizes)`
+schools, `r sum(school_sizes == 1)` have a single child, whose effect rests on one score.
+As the vignette of pprof 1.0.3 did, the plots below show the
+`r sum(school_sizes >= 5)` schools with at least five children.
+
+```{r ecls-profile}
+larger <- names(school_sizes)[school_sizes >= 5]
+ecls_profile <- profile_providers(ecls_fit, interval = "wald", providers = larger)
+plot_funnel(ecls_profile)
+plot_flags(ecls_profile$tests)
+```
+
+## References
+
+He K, Kalbfleisch JD, Li Y, Li Y (2013). Evaluating hospital readmission rates in dialysis
+facilities; adjusting for hospital effects. *Lifetime Data Analysis*, 19, 490-512.
+<https://doi.org/10.1007/s10985-013-9264-6>
+
+Jones HE, Ohlssen DI, Spiegelhalter DJ (2008). Use of the false discovery rate when
+comparing multiple health care providers. *Journal of Clinical Epidemiology*, 61(3),
+232-240. <https://doi.org/10.1016/j.jclinepi.2007.04.017>
+
+Wu W, Kuriakose JP, Weng W, Burney RE, He K (2023). Test-specific funnel plots for
+healthcare provider profiling leveraging individual- and summary-level information.
+*Health Services and Outcomes Research Methodology*, 23(1), 45-58.
+<https://doi.org/10.1007/s10742-022-00285-9>
+
+Wu W, Yang Y, Kang J, He K (2022). Improving large-scale estimation and inference for
+profiling health care providers. *Statistics in Medicine*, 41(15), 2840-2853.
+<https://doi.org/10.1002/sim.9387>

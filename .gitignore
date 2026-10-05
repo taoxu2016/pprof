@@ -25,3 +25,7 @@ CLAUDE.local.md
 *.Rcheck/
 # Isolated reference library for fixture generation (dev/reference/setup_reference_library.R)
 dev/reference/lib/
+# Vignettes built locally (devtools::build_vignettes())
+/doc/
+/Meta/
+inst/doc

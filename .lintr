@@ -4,7 +4,6 @@ linters: linters_with_defaults(
     object_usage_linter = NULL
   )
 exclusions: list(
-    "vignettes",
     "tests/testthat/helper-reference-cases.R", "tests/testthat/helper-audit-ports.R",
     "R/RcppExports.R",
     "R/data_check.R", "R/pprof.R",

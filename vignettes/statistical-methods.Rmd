@@ -1,0 +1,507 @@
+---
+title: "Statistical methods"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Statistical methods}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+This vignette states what pprof computes: the models, how they are fitted, and the
+formulas of its tests, standardized measures, intervals, and funnel limits, with the
+numerical conventions of the code where they matter. The results are those of pprof 1.0.3,
+which pprof reproduces. A few short computations check formulas against the package.
+`vignette("pprof", package = "pprof")` shows the functions in use.
+
+```{r data, message = FALSE}
+library(pprof)
+data(ExampleDataBinary)
+example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, data = example, provider = "hospital")
+```
+
+## Notation
+
+Provider $i = 1, \ldots, m$ has observations $j = 1, \ldots, n_i$, and $n = \sum_i n_i$.
+Observation $ij$ has the outcome $Y_{ij}$ and the covariates (risk factors) $Z_{ij}$, a
+vector of length $p$ with coefficients $\beta$. Provider effects are $\gamma_i$ in
+fixed-effect models and $\alpha_i$ in random-effect models. Tests and intervals use
+$a = 1 - {}$`level` (computed in floating point, so $1 - 0.95$ is not exactly $0.05$),
+$z_q$ is the $q$ quantile of the standard normal distribution, $\Phi$ its distribution
+function, and $\operatorname{plogis}(x) = 1 / (1 + e^{-x})$.
+
+## Models
+
+Risk adjustment accounts for the patient characteristics that providers do not control,
+such as age and comorbidities, so that providers are compared on the outcomes expected for
+their own patients rather than on raw averages. It accounts only for the characteristics
+in the model: differences between providers' patients that the covariates do not capture
+remain in the provider effects, and may explain much of the variation between providers
+(Xia et al. 2022).
+
+**Fixed effects.** For binary and continuous outcomes,
+$$
+\operatorname{logit} P(Y_{ij} = 1) = \gamma_i + Z_{ij}^\top \beta,
+\qquad
+Y_{ij} = \gamma_i + Z_{ij}^\top \beta + \epsilon_{ij}, \quad \epsilon_{ij} \sim N(0, \sigma^2).
+$$
+An overall intercept $\mu$ and provider deviations $\alpha_i$ are not separately
+identifiable in these models, so the effects $\gamma_i = \mu + \alpha_i$ are estimated
+directly, and the design matrix has no intercept.
+
+**Random effects.** The effects are $\alpha_i \sim N(0, \sigma_\alpha^2)$, independent of
+the covariates, around an intercept $\mu$:
+$\operatorname{logit} P(Y_{ij} = 1) = \mu + \alpha_i + Z_{ij}^\top \beta$ and
+$Y_{ij} = \mu + \alpha_i + Z_{ij}^\top \beta + \epsilon_{ij}$. The model pools information
+across providers and shrinks the estimated effects toward 0, the more so the larger the
+residual variance is relative to $\sigma_\alpha^2$ and the fewer observations a provider
+has.
+
+**Correlated random effects.** Each covariate $x$ named in `within_between` is replaced by
+its provider mean $\bar x_i$ and the deviation $x_{ij} - \bar x_i$, each with its own
+coefficient (Mundlak 1978), so that the effects may be correlated with the provider means.
+The means are computed over every row of the data with a value of $x$, before rows with
+missing values are dropped.
+
+**Data.** Rows with a missing outcome, provider, or covariate are dropped. The design
+matrix is that of `model.matrix()` with the session's contrasts. Providers are ordered as
+`factor()` orders their IDs (numbers numerically, strings in the collation order of the
+session's locale). The logistic fixed-effect models exclude providers with fewer than
+`min_provider_size` complete observations (10 by default); the other models keep every
+provider.
+
+## Estimation
+
+### Logistic fixed effects
+
+The log-likelihood is
+$$
+\ell(\gamma, \beta) = \sum_{i=1}^m \sum_{j=1}^{n_i}
+\left\{ Y_{ij} (\gamma_i + Z_{ij}^\top \beta) - \log\left(1 + e^{\gamma_i + Z_{ij}^\top \beta}\right) \right\}.
+$$
+With $p_{ij} = \operatorname{plogis}(\gamma_i + Z_{ij}^\top \beta)$ and weights
+$w_{ij} = p_{ij}(1 - p_{ij})$, the information matrix has a diagonal block for the provider
+effects, $D = \operatorname{diag}(D_i)$ with $D_i = \sum_j w_{ij}$; a cross block with
+columns $B_i = \sum_j w_{ij} Z_{ij}$; and the covariate block
+$I_{\beta\beta} = \sum_{ij} w_{ij} Z_{ij} Z_{ij}^\top$. With thousands of providers, inverting
+the whole matrix is the bottleneck of Newton's method. The serial blockwise inversion
+Newton algorithm (SerBIN, `method = "serbin"`, Wu et al. 2022) inverts it through its
+blocks: with the Schur complement $S = I_{\beta\beta} - \sum_i B_i B_i^\top / D_i$ and the
+scores $U_{\gamma_i} = \sum_j (Y_{ij} - p_{ij})$ and $U_\beta = \sum_{ij} (Y_{ij} - p_{ij}) Z_{ij}$,
+the Newton step is
+$$
+d_\beta = S^{-1} \Big( U_\beta - \sum_i B_i U_{\gamma_i} / D_i \Big), \qquad
+d_{\gamma_i} = \big( U_{\gamma_i} - B_i^\top d_\beta \big) / D_i .
+$$
+The block ascent Newton algorithm (`method = "ban"`, He et al. 2013) alternates a Newton
+step for the provider effects, with $\beta$ fixed, and one for $\beta$.
+
+The code follows pprof 1.0.3 in these details:
+
+- Every provider effect starts at the logit of the overall event rate, and $\beta$ at 0.
+- Weights that are exactly 0 are replaced by $10^{-20}$ in the provider block and, for
+  SerBIN, in the covariate block.
+- With `backtrack = TRUE`, the step is shortened by Armijo backtracking: its length $v$
+  starts at 1 and is multiplied by 0.6 until
+  $\ell(\theta + v d) - \ell(\theta) \ge 0.01\, v\, U^\top d$.
+- After every update, each effect is kept within `effect_bound` ($b = 10$) of the median of
+  the updated effects: $\gamma_i \leftarrow \min\{\max(\gamma_i, \tilde\gamma - b), \tilde\gamma + b\}$,
+  with $\tilde\gamma$ the median of the effects just computed. (pprof 1.0.3's vignette said
+  the median of the previous iteration's effects; the code has always used the current one.)
+- There are three convergence criteria: the largest absolute change of a coefficient, the
+  change of the log-likelihood relative to its new value, $|\Delta\ell / \ell|$, and the
+  change relative to the gain since the starting values, $|\Delta\ell / (\ell - \ell_0)|$.
+  The stopping rule `"any"` (the default) stops as soon as the smallest of the three is below
+  `tol`, `"all"` when the largest is, and the other rules use one criterion. Because the two
+  log-likelihood criteria shrink as the data grow, a fit on large data with `"any"` can stop
+  while the provider effects still change. SerBIN runs at most `max_iter` + 1 iterations,
+  BAN at most `max_iter`; a fit that reaches the limit warns.
+
+A provider without events has an effect whose maximum likelihood estimate is
+$-\infty$ (one with only events, $+\infty$). The bound keeps such effects finite, but each
+iteration moves them further toward it, so their estimates depend on when the fit stops,
+and Wald tests and intervals are unreliable for them.
+
+The variances use probabilities kept within $[10^{-10}, 1 - 10^{-10}]$:
+$\operatorname{Var}(\hat\beta) = S^{-1}$ and
+$\operatorname{Var}(\hat\gamma_i) = 1 / D_i + J_i^\top S^{-1} J_i$ with $J_i = B_i / D_i$.
+The log-likelihood counts $m + p$ parameters in AIC and BIC, and the AUC is that of the
+fitted probabilities.
+
+### Firth's penalty
+
+`fit_logistic_firth()` maximizes the penalized log-likelihood
+$\ell^*(\gamma, \beta) = \ell(\gamma, \beta) + \tfrac12 \log \det I(\gamma, \beta)$ (Firth 1993),
+whose score adds to each residual $Y_{ij} - p_{ij}$ the term $h_{ij}(1/2 - p_{ij})$, with
+$h_{ij}$ the leverage of observation $ij$. Each iteration takes a full Newton step without
+a line search and keeps the effects within the bound. The fit stops when the largest change
+of a coefficient is below `tol`, the only stopping rule, or after `max_iter` iterations
+(1,000 by default). Weights that are exactly 0 are replaced by $10^{-10}$. As in pprof 1.0.3, the
+variances, the log-likelihood, AIC, and BIC are those of the unpenalized likelihood at the
+Firth estimates; the penalized log-likelihood is kept as `penalized_loglik`.
+
+The penalty removes the leading term of the bias of the maximum likelihood estimates
+(Firth 1993) and gives finite estimates when a provider's outcomes are all the same
+(Heinze and Schemper 2002); `vignette("models", package = "pprof")` shows both fits for
+the example's providers without events.
+
+### Linear fixed effects
+
+To avoid a design matrix with a column for every provider, `fit_linear_fe()` profiles the
+provider effects out. For fixed $\beta$, the least-squares estimate of $\gamma_i$ is
+$\bar Y_i - \bar Z_i^\top \beta$, and the coefficients come from the data centered within
+providers, $\tilde Y_{ij} = Y_{ij} - \bar Y_i$ and $\tilde Z_{ij} = Z_{ij} - \bar Z_i$:
+$$
+\hat\beta = \Big( \sum_{ij} \tilde Z_{ij} \tilde Z_{ij}^\top \Big)^{-1} \sum_{ij} \tilde Z_{ij} \tilde Y_{ij},
+\qquad
+\hat\gamma_i = \bar Y_i - \bar Z_i^\top \hat\beta .
+$$
+Under the model these estimates are unbiased. The residual variance is
+$\hat\sigma^2 = \mathrm{SSR} / (n - m - p)$, and
+$\operatorname{Var}(\hat\beta) = \hat\sigma^2 (\sum_{ij} \tilde Z_{ij} \tilde Z_{ij}^\top)^{-1}$.
+The variance of $\hat\gamma_i$ is
+$\hat\sigma^2 \{ 1 / n_i + \bar Z_i^\top (\sum_{ij} \tilde Z_{ij} \tilde Z_{ij}^\top)^{-1} \bar Z_i \}$;
+`provider_variance = "full"` uses this, and `"simplified"`, the default, its first term
+$\hat\sigma^2 / n_i$, which leaves out the uncertainty of $\hat\beta$. The log-likelihood is
+that of the normal model at $\hat\sigma^2 = \mathrm{SSR} / n$, with $m + p + 1$ parameters in
+AIC and BIC.
+
+### Random and correlated random effects
+
+The random-effect models are fitted by lme4 (Bates et al. 2015): `lmer()` (restricted
+maximum likelihood) and `glmer()` with the binomial family (Laplace approximation), with
+the formula `outcome ~ covariates + (1 | provider)`. The provider effects are lme4's
+conditional modes $\hat\alpha_i$. Their standard deviations are the conditional ones: for
+the linear random-effect model, $s_i = \sqrt{R_i \hat\sigma^2 / n_i}$ with the shrinkage
+factor $R_i = \hat\sigma_\alpha^2 / (\hat\sigma_\alpha^2 + \hat\sigma^2 / n_i)$, and for the
+other models those of lme4.
+
+## Provider tests
+
+The null value, or norm, is the median of the estimated effects for fixed-effect models
+(`null = "median"`, the default), for linear fixed-effect models also their mean weighted
+by provider size (`"mean"`), and for random-effect models a number, 0 by default. A
+two-sided test computes the upper-tail probability $P$ of the observed statistic under the
+null, reports the p-value $2 \min(P, 1 - P)$, and flags the provider 1 (higher than
+expected) if $P < a/2$, -1 (lower) if $P > 1 - a/2$, and 0 otherwise. A one-sided test
+reports the probability of the tested tail and flags the provider in that direction when
+it is below $a$.
+
+For logistic fixed-effect models, the null probability of observation $ij$ is
+$p^0_{ij} = \operatorname{plogis}(\gamma_0 + Z_{ij}^\top \hat\beta)$, kept within
+$[10^{-10}, 1 - 10^{-10}]$ by the exact, bootstrap, and modified score tests, and
+$O_i = \sum_j Y_{ij}$ is the provider's number of events.
+
+- **Exact** (the default). Under the null, $O_i$ is a sum of independent Bernoulli
+  variables with probabilities $p^0_{ij}$, so it has a Poisson-binomial distribution, and
+  the test asks how likely a count as extreme as the observed $o$ is. The two-sided test
+  uses the mid-p probability $P = P(O_i > o) + \tfrac12 P(O_i = o)$, which counts half the
+  probability of the observed count and so is less conservative than counting all of it;
+  the statistic is $z_{1-P}$. The one-sided tests use $P(O_i \ge o)$ (`"greater"`) and
+  $P(O_i \le o)$ (`"less"`).
+- **Bootstrap.** The same distribution, simulated: `n_resamples` totals per provider,
+  each a sum of Bernoulli draws with probabilities $p^0_{ij}$, give $P$ as the share of
+  totals above $o$ plus half the share equal to it (one-sided: at least $o$, at most
+  $o$). The test estimates the exact test's probabilities by simulation, with a Monte Carlo
+  error that shrinks as `n_resamples` grows (pprof 1.0.3's vignette called the two
+  consistent). The draws use R's random number generator, so set a seed.
+- **Score.** The modified score test (`score_type = "modified"`, the default) uses
+  $z_i = \sum_j (Y_{ij} - p^0_{ij}) / \sqrt{\sum_j p^0_{ij}(1 - p^0_{ij})}$ with the
+  coefficients $\hat\beta$ of the full model, instead of refitting the model under the null
+  for each provider. The test called standard (`score_type = "standard"`) does not refit
+  either: at the full model's estimates, it divides the same score, computed with
+  probabilities that are not kept within the bounds, by $\sqrt{V_i}$ with
+  $V_i = I_{ii} - I_{\beta i}^\top S_i^{*-1} I_{\beta i}$, where
+  $I_{ii} = \sum_j p^0_{ij}(1 - p^0_{ij})$, $I_{\beta i} = \sum_j p^0_{ij}(1 - p^0_{ij}) Z_{ij}$,
+  and $S_i^*$ is the Schur complement of the full model's information with the null weights
+  in place of provider $i$'s weights and without provider $i$'s effect. The variance so
+  accounts for the estimation of $\beta$ and of the other providers' effects.
+- **Wald.** $z_i = (\hat\gamma_i - \gamma_0) / \operatorname{se}(\hat\gamma_i)$, compared with
+  the normal distribution. It is not valid for providers without events or with only
+  events, whose estimates depend on when the fit stopped, and the function warns when it
+  covers them.
+
+The two-sided p-value of the exact test, computed by hand with the poibin package for the
+first hospital, and the bootstrap test against the exact test:
+
+```{r exact-by-hand}
+tests <- test_providers(fit)
+rows <- provider_index(fit) == 1
+p0 <- plogis(tests$null_value + linear_predictor(fit)[rows])
+p0 <- pmin(pmax(p0, 1e-10), 1 - 1e-10)
+o <- sum(observed_outcome(fit)[rows])
+upper <- 1 - poibin::ppoibin(o, p0) + 0.5 * poibin::dpoibin(o, p0)
+c(by_hand = 2 * min(upper, 1 - upper), pprof = tests$table$p_value[1])
+set.seed(1)
+bootstrap <- test_providers(fit, test = "bootstrap", n_resamples = 2000)
+max(abs(bootstrap$table$p_value - tests$table$p_value))
+```
+
+With 2,000 resamples, the bootstrap p-values differ from the exact ones by up to a few
+hundredths, the order of their Monte Carlo error.
+
+**Linear fixed effects.** $z_i = (\hat\gamma_i - \gamma_0) / \operatorname{se}(\hat\gamma_i)$,
+compared with the normal distribution with the simplified variance and with Student's t
+with $n - m - p$ degrees of freedom with the full variance, as in pprof 1.0.3.
+
+**Random and correlated random effects.**
+$z_i = (\hat\alpha_i - \alpha_0) / s_i$, compared with the normal distribution, with the
+conditional standard deviation $s_i$. When lme4 estimates $\sigma_\alpha^2$ as 0, every
+$\hat\alpha_i$ and $s_i$ is 0 and every flag is missing.
+
+### What the random-effect tests and intervals do
+
+The random-effect statistic divides a shrunk estimate by its conditional standard
+deviation, and this sets how often it flags a provider. In the linear random-effect model,
+with the variance components taken as known, $\hat\alpha_i = R_i (\alpha_i + \bar\epsilon_i)$,
+where $\bar\epsilon_i$ is the provider's mean error, with variance $\sigma^2 / n_i$. For a
+provider without an effect ($\alpha_i = 0$), $\hat\alpha_i / s_i$ is normal with mean 0 and
+variance $R_i < 1$, so the test flags it with probability
+$2\{1 - \Phi(z_{1-a/2} / \sqrt{R_i})\}$, less than $a$, and the less the smaller the
+provider. The interval $\hat\alpha_i \pm z_{1-a/2}\, s_i$ is the posterior interval of
+$\alpha_i$: averaged over effects drawn from $N(0, \sigma_\alpha^2)$, it covers the effect
+with probability $1 - a$, but for a given provider the coverage depends on the effect,
+above $1 - a$ for an effect near 0 and below it, down to 0, for a large one, because the
+estimate is shrunk toward 0 (Morris 1983).
+
+For the linear random-effect fit of `ExampleDataLinear`, whose providers have 54 to 99
+observations, and for the same data cut to 10 observations per provider:
+
+```{r re-size, message = FALSE}
+data(ExampleDataLinear)
+continuous <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID, ExampleDataLinear$Z)
+flag_probability <- function(model) {
+  variance <- model$variance_components$provider
+  shrinkage <- variance / (variance + model$sigma^2 / provider_table(model)$n_obs)
+  probability <- 2 * (1 - pnorm(qnorm(0.975) / sqrt(shrinkage)))
+  c(shrinkage_min = min(shrinkage), shrinkage_max = max(shrinkage),
+    flag_probability_min = min(probability), flag_probability_max = max(probability))
+}
+re_fit <- fit_linear_re(y ~ z1 + z2 + z3 + z4 + z5, continuous, "hospital")
+flag_probability(re_fit)
+first_ten <- continuous[ave(seq_len(nrow(continuous)), continuous$hospital, FUN = seq_along) <= 10, ]
+flag_probability(fit_linear_re(y ~ z1 + z2 + z3 + z4 + z5, first_ten, "hospital"))
+```
+
+At level 0.95, a provider without an effect is flagged with probability
+`r sprintf("%.1f%%", 100 * min(flag_probability(re_fit)[3:4]))` to
+`r sprintf("%.1f%%", 100 * max(flag_probability(re_fit)[3:4]))` in the full data, and
+about 1% with 10 observations per provider, against 5% for the fixed-effect test. The
+logistic random-effect and the correlated random-effect models behave in the same way, the
+logistic ones approximately.
+
+A simulation study in the package's source repository (`validation/simulation-report.md`:
+50 providers, 200 replicates per model, six outlying providers with effects of ±0.8 on the
+log-odds scale or ±0.5 units, the other providers without an effect, each model at its
+defaults) found:
+
+| Models | Providers without an effect flagged | Outlying providers flagged | Intervals covering the effect: providers without an effect | Intervals covering the effect: outlying providers |
+|---|---|---|---|---|
+| fixed effects (exact or Wald test) | 5.0% to 5.5% | 77.2% to 86.4% | 94.5% to 94.8% | 95.0% to 96.1% |
+| random and correlated random effects (Wald test) | 0.7% to 0.9% | 46.2% to 60.3% | 99.1% to 99.3% | 38.1% to 44.5% |
+
+Without any provider effect, about half of the random-effect fits were singular, with every
+flag missing.
+
+The random-effect flags and intervals so answer a different question from the fixed-effect
+ones, and the two kinds of flags are not interchangeable. Jones and Spiegelhalter (2011)
+and Ohlssen, Sharples and Spiegelhalter (2007) discuss ways of identifying unusual
+providers with hierarchical models.
+
+### Many providers
+
+Each provider is tested at the chosen level, without an adjustment for multiplicity, so
+with $m$ providers about $a\, m$ are flagged by chance when no provider differs from the
+norm (with calibrated tests). Jones, Ohlssen and Spiegelhalter (2008) discuss false
+discovery rates for comparing many providers.
+
+## Standardized measures
+
+**Logistic fixed effects.** The indirectly standardized ratio of provider $i$ is
+$O_i / E_i$, with the expected count
+$E_i = \sum_j \operatorname{plogis}(\gamma_0 + Z_{ij}^\top \hat\beta)$: the number of events
+expected for the provider's patients if the provider performed at the norm (He and
+Schaubel 2014; Jones, Ohlssen and Spiegelhalter 2008). A ratio above 1 means more events
+than expected. The directly standardized ratio of provider $k$ is $E^{(k)} / O$, with
+$O = \sum_{ij} Y_{ij}$ and
+$E^{(k)} = \sum_{ij} \operatorname{plogis}(\hat\gamma_k + Z_{ij}^\top \hat\beta)$, summed over
+all observations: the number of events expected in the whole population if every provider
+performed as provider $k$ (He 2019). It lies between 0 and $n / O$, the limits as
+$\hat\gamma_k \to -\infty$ and $+\infty$. An indirect ratio compares a provider with the norm
+for its own patients, so the expectations of providers with different patients differ;
+direct ratios apply every provider's effect to the same patients. Rates are ratios times
+the population rate $100\, O / n$, in percent, kept within 0 and 100 (a rate computed this
+way can exceed 100%).
+
+The indirect ratios, computed by hand:
+
+```{r ratio-by-hand}
+measures <- standardize_providers(fit, measure = "ratio")
+expected <- plogis(measures$null_value + linear_predictor(fit))
+by_hand <- tapply(observed_outcome(fit), provider_index(fit), sum) / tapply(expected, provider_index(fit), sum)
+all.equal(as.vector(by_hand), measures$table$estimate)
+```
+
+**Linear fixed effects.** The indirect difference is $(O_i - E_i) / n_i$ with
+$O_i = \sum_j Y_{ij}$ and $E_i = \sum_j (\gamma_0 + Z_{ij}^\top \hat\beta)$, and the direct
+difference of provider $k$ is
+$\{\sum_{ij} (\hat\gamma_k + Z_{ij}^\top \hat\beta) - \sum_{ij} (\gamma_0 + Z_{ij}^\top \hat\beta)\} / n$;
+both equal the provider's $\hat\gamma - \gamma_0$ up to rounding.
+
+**Random and correlated random effects.** The numerator of the indirect measures is the
+sum of the model's fitted values over the provider's observations, which include the
+estimated effect $\hat\alpha_i$, not the observed outcomes (predicted over expected, as in
+pprof 1.0.3); the expected values use the null effect, 0 by default. Logistic models give
+$\sum_j \hat p_{ij} / \sum_j \operatorname{plogis}(\hat\mu + \alpha_0 + Z_{ij}^\top \hat\beta)$
+and the direct ratio $\sum_{ij} \operatorname{plogis}(\hat\mu + \hat\alpha_k + Z_{ij}^\top \hat\beta) / O$;
+linear models the differences
+$\{\sum_j \hat Y_{ij} - \sum_j (\hat\mu + \alpha_0 + Z_{ij}^\top \hat\beta)\} / n_i$ and
+$\{\sum_{ij} (\hat\mu + \hat\alpha_k + Z_{ij}^\top \hat\beta) - \sum_{ij} Y_{ij}\} / n$.
+
+## Intervals
+
+**Provider effects of logistic fixed-effect models.** The exact and score intervals
+invert the two-sided tests: the limits are the effects at which the test's $P$ equals
+$a/2$ and $1 - a/2$, found with `uniroot()` in brackets that widen from the estimate in
+steps of 5 (three attempts; a limit without a root is infinite). For a provider without
+events, the interval is $(-\infty, U]$, and for one with only events $[L, +\infty)$; the
+finite limit solves its equation at $a$, not $a/2$, as in pprof 1.0.3. The Wald interval is
+$\hat\gamma_i \pm z_{1-a/2} \operatorname{se}(\hat\gamma_i)$.
+
+**Standardized measures.** The limits of the effect are carried through the measure's
+sums: for the indirect ratio,
+$\big[\sum_j \operatorname{plogis}(\gamma_L + Z_{ij}^\top \hat\beta) / E_i,\;
+\sum_j \operatorname{plogis}(\gamma_U + Z_{ij}^\top \hat\beta) / E_i\big]$, and for the
+direct ratio the same sums over all observations, divided by $O$. A provider without events
+gets the lower limit 0, and one with only events the upper limit $n_i / E_i$ (direct:
+$n / O$). Because the expected count is that of the null effect, the interval of the
+indirect ratio contains 1 exactly when the effect's interval contains $\gamma_0$, and the
+interval of the direct ratio contains the direct ratio at $\gamma_0$ exactly when the
+effect's interval contains $\gamma_0$. (pprof 1.0.3's vignette named the provider's own
+direct ratio here.) One-sided
+intervals use $z_{1-a}$ and leave the other side open ($\pm\infty$ for effects; 0 or the
+upper bound for ratios).
+
+**Linear fixed effects.** $\hat\gamma_i \pm c\, \operatorname{se}(\hat\gamma_i)$, with $c$ the
+$1 - a/2$ quantile of Student's t with $n - m - p$ degrees of freedom with the simplified
+variance and of the normal distribution with the full variance, the reverse of the tests,
+as in pprof 1.0.3; the differences' intervals shift by the same amounts.
+
+**Random and correlated random effects.** $\hat\alpha_i \pm z_{1-a/2}\, s_i$, carried
+through the measures' sums.
+
+The Wald interval of the effects, by hand (the function warns, because three hospitals have
+no events):
+
+```{r wald-by-hand}
+effects <- provider_effects(fit, interval = "wald")
+by_hand <- effects$table$estimate + qnorm(1 - (1 - 0.95) / 2) * effects$table$std_error
+all.equal(by_hand, effects$table$upper)
+```
+
+## Covariates
+
+Every model has Wald tests of the coefficients. Logistic fixed-effect models use
+$z = (\hat\beta - \beta_0) / \operatorname{se}$, the p-value $2\{1 - \Phi(|z|)\}$, and the
+interval $\hat\beta \pm z_{1-a/2} \operatorname{se}$; linear fixed-effect models Student's t
+with $n - m - p$ degrees of freedom; linear random-effect and correlated random-effect
+models Student's t with $n - p - m + 1$ degrees of freedom ($p$ counting the intercept) and
+lme4's Wald intervals; logistic random-effect and correlated random-effect models the
+p-value $2\{1 - \Phi(z)\}$, as in pprof 1.0.3, which exceeds 1 for negative estimates, and
+lme4's Wald intervals.
+
+For logistic fixed-effect models, `test_coefficients()` also gives likelihood-ratio and
+score tests. As in pprof 1.0.3, the model without the tested covariate is refit with the
+default settings of `fit_logistic_fe()`, whatever settings the model used; the
+likelihood-ratio statistic is the difference of the two $-2\ell$, computed with the effects
+kept within 10 of their median, and the score statistic is the squared score of the
+covariate over its efficient information; both are compared with the chi-square
+distribution with one degree of freedom.
+
+## Funnel limits
+
+For logistic fixed-effect models, the precision of provider $i$ is $E_i^2 / V_i$, with
+$V_i = \sum_j p^0_{ij}(1 - p^0_{ij})$ (probabilities not kept within bounds), and the limits
+at precision $w$ are $1 \pm z_{1-a/2} / \sqrt{w}$, the lower one at least 0. These are the
+limits of the score statistic $(O_i - E_i) / \sqrt{V_i}$, and the providers are coloured by
+the modified score test at the first level, so a provider is flagged when its point lies
+outside them (Spiegelhalter 2005; Wu et al. 2023). For linear fixed-effect models, the
+precision is $n_i$ and the limits are $0 \pm z_{1-a/2}\, \hat\sigma / \sqrt{n_i}$, with flags
+from the Wald test; with the full provider variance, the limits still use
+$\hat\sigma^2 / n_i$ and the normal distribution while the test uses the full variance and
+Student's t, so a point outside the limits may not be flagged, as in pprof 1.0.3. Exact
+funnel limits are not available, and random-effect models have no funnel plot.
+
+## Numerical conventions
+
+| Convention | Value |
+|---|---|
+| Weights that are exactly 0 (SerBIN, BAN, the standard score test) | replaced by $10^{-20}$ |
+| Weights that are exactly 0 (Firth) | replaced by $10^{-10}$ |
+| Probabilities in variances and in the exact, bootstrap, and modified score tests | kept within $[10^{-10}, 1 - 10^{-10}]$ |
+| Armijo backtracking | sufficient increase 0.01, step multiplied by 0.6 |
+| Provider effects | kept within `effect_bound` (10) of their median |
+| Firth's log-determinant | provider blocks at least $10^{-12}$; ridge $10^{-8}$ if the Cholesky factorization fails |
+| Interval search | brackets in steps of 5, three attempts |
+| Rates | kept within 0 and 100 |
+
+## References
+
+Bates D, Mächler M, Bolker B, Walker S (2015). Fitting linear mixed-effects models using
+lme4. *Journal of Statistical Software*, 67(1), 1-48. <https://doi.org/10.18637/jss.v067.i01>
+
+Firth D (1993). Bias reduction of maximum likelihood estimates. *Biometrika*, 80(1),
+27-38. <https://doi.org/10.1093/biomet/80.1.27>
+
+He K (2019). Indirect and direct standardization for evaluating transplant centers.
+*Journal of Hospital Administration*, 8(1), 9-14. <https://doi.org/10.5430/jha.v8n1p9>
+
+He K, Kalbfleisch JD, Li Y, Li Y (2013). Evaluating hospital readmission rates in dialysis
+facilities; adjusting for hospital effects. *Lifetime Data Analysis*, 19, 490-512.
+<https://doi.org/10.1007/s10985-013-9264-6>
+
+He K, Schaubel DE (2014). Semiparametric methods for center effect measures based on the
+ratio of survival functions. *Lifetime Data Analysis*, 20(4), 619-644.
+<https://doi.org/10.1007/s10985-014-9293-9>
+
+Heinze G, Schemper M (2002). A solution to the problem of separation in logistic
+regression. *Statistics in Medicine*, 21(16), 2409-2419. <https://doi.org/10.1002/sim.1047>
+
+Jones HE, Ohlssen DI, Spiegelhalter DJ (2008). Use of the false discovery rate when
+comparing multiple health care providers. *Journal of Clinical Epidemiology*, 61(3),
+232-240. <https://doi.org/10.1016/j.jclinepi.2007.04.017>
+
+Jones HE, Spiegelhalter DJ (2011). The identification of "unusual" health-care providers
+from a hierarchical model. *The American Statistician*, 65(3), 154-163.
+<https://doi.org/10.1198/tast.2011.10190>
+
+Morris CN (1983). Parametric empirical Bayes inference: theory and applications. *Journal
+of the American Statistical Association*, 78(381), 47-55.
+<https://doi.org/10.1080/01621459.1983.10477920>
+
+Mundlak Y (1978). On the pooling of time series and cross section data. *Econometrica*,
+46(1), 69-85. <https://doi.org/10.2307/1913646>
+
+Ohlssen DI, Sharples LD, Spiegelhalter DJ (2007). A hierarchical modelling framework for
+identifying unusual performance in health care providers. *Journal of the Royal
+Statistical Society: Series A*, 170(4), 865-890. <https://doi.org/10.1111/j.1467-985X.2007.00487.x>
+
+Spiegelhalter DJ (2005). Funnel plots for comparing institutional performance.
+*Statistics in Medicine*, 24(8), 1185-1202. <https://doi.org/10.1002/sim.1970>
+
+Wu W, Kuriakose JP, Weng W, Burney RE, He K (2023). Test-specific funnel plots for
+healthcare provider profiling leveraging individual- and summary-level information.
+*Health Services and Outcomes Research Methodology*, 23(1), 45-58.
+<https://doi.org/10.1007/s10742-022-00285-9>
+
+Wu W, Yang Y, Kang J, He K (2022). Improving large-scale estimation and inference for
+profiling health care providers. *Statistics in Medicine*, 41(15), 2840-2853.
+<https://doi.org/10.1002/sim.9387>
+
+Xia L, He K, Li Y, Kalbfleisch JD (2022). Accounting for total variation and robustness in
+profiling health care providers. *Biostatistics*, 23(1), 257-273.
+<https://doi.org/10.1093/biostatistics/kxaa024>

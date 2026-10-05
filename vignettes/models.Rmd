@@ -1,0 +1,317 @@
+---
+title: "Models and what they support"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Models and what they support}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE, comment = "#>",
+  fig.width = 6, fig.height = 4, dpi = 96, fig.retina = 1, out.width = "100%"
+)
+```
+
+pprof fits seven models. Every fit takes a formula with the outcome and the risk
+factors, a data frame, and the name of the column that identifies the providers, and
+returns a model that the profiling functions (`test_providers()`,
+`standardize_providers()`, `provider_effects()`, `funnel_limits()`, and
+`profile_providers()`) work with. This vignette describes the models, what each assumes,
+and what each supports. `vignette("pprof", package = "pprof")` shows a complete analysis,
+and `vignette("statistical-methods", package = "pprof")` gives the formulas.
+
+```{r data, message = FALSE}
+library(pprof)
+data(ExampleDataBinary)
+data(ExampleDataLinear)
+binary <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
+continuous <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID, ExampleDataLinear$Z)
+risk <- y ~ z1 + z2 + z3 + z4 + z5
+```
+
+## The seven models
+
+| Outcome | Fixed effects | Random effects | Correlated random effects |
+|---|---|---|---|
+| binary | `fit_logistic_fe()`, `fit_logistic_firth()` | `fit_logistic_re()` | `fit_logistic_cre()` |
+| continuous | `fit_linear_fe()` | `fit_linear_re()` | `fit_linear_cre()` |
+
+- **Fixed effects.** Each provider's effect γ~i~ is a parameter, estimated from the
+  provider's own observations: by maximum likelihood for `fit_logistic_fe()`, by Firth's
+  penalized likelihood for `fit_logistic_firth()`, and by least squares for
+  `fit_linear_fe()`. Nothing is assumed about how the effects vary across providers.
+- **Random effects.** The effects are α~i~, drawn from a normal distribution with mean 0
+  and variance σ^2^~α~ around an overall intercept, and the model is fitted by lme4
+  (Bates et al. 2015): `lmer()` for continuous outcomes, by restricted maximum likelihood,
+  and `glmer()` for binary outcomes, by the Laplace approximation. The reported effects are
+  the conditional modes, which are shrunk toward 0, the more so the fewer observations a
+  provider has. The model assumes that the effects are independent of the risk factors.
+- **Correlated random effects.** The random-effect model, with each risk factor named in
+  `within_between` split into its provider mean and the deviation from that mean, each
+  with its own coefficient (Mundlak 1978). The effects may then be correlated with the
+  provider means of those risk factors.
+
+### Choosing a model
+
+The models answer different questions, and pprof leaves the choice to the analyst; these
+points, from the literature, bear on it.
+
+- If the provider effects are correlated with the risk factors, for example because
+  sicker patients go to particular hospitals, the random-effect model's estimates of the
+  coefficients, and with them of the effects, are biased, while the fixed-effect model's
+  are not, and the correlated random-effect model removes the correlation with the provider
+  means of the decomposed risk factors (Mundlak 1978; Hsiao 2022). In a linear model with
+  every risk factor decomposed, the within-provider coefficients of the correlated
+  random-effect model are the fixed-effect coefficients (shown below).
+- The random-effect estimates borrow strength from the other providers and are shrunk
+  toward the overall average. Profiling is about the providers at the extremes, and Xia et
+  al. (2022) prefer the fixed-effect estimates for profiling when the variation between
+  providers is entirely due to the quality of their care.
+- The tests and intervals of random-effect models compare the shrunk estimates with their
+  conditional standard deviations; their flags answer a different question from the
+  fixed-effect flags and are not interchangeable with them.
+  `vignette("statistical-methods", package = "pprof")` describes how often they flag a
+  provider and how often their intervals cover its effect.
+- For binary outcomes, Firth's penalty reduces the small-sample bias of the maximum
+  likelihood estimates and keeps the estimates finite when a provider's patients all have
+  the same outcome (Firth 1993; Heinze and Schemper 2002), which matters for small
+  providers and rare events.
+
+## What each model supports
+
+Each model declares the inference it supports, and the profiling functions refuse, with a
+`pprof_error_unsupported_inference` error, what a model does not declare. The table below
+is computed from fits of the example data (the logistic random-effect models on the first
+20 hospitals, to keep this vignette fast).
+
+```{r fits, message = FALSE}
+small <- binary[binary$hospital <= 20, ]
+fits <- list(
+  fit_logistic_fe = fit_logistic_fe(risk, binary, "hospital"),
+  fit_logistic_firth = fit_logistic_firth(risk, binary, "hospital"),
+  fit_logistic_re = fit_logistic_re(risk, small, "hospital"),
+  fit_logistic_cre = fit_logistic_cre(risk, small, "hospital", within_between = c("z1", "z2")),
+  fit_linear_fe = fit_linear_fe(risk, continuous, "hospital"),
+  fit_linear_re = fit_linear_re(risk, continuous, "hospital"),
+  fit_linear_cre = fit_linear_cre(risk, continuous, "hospital", within_between = c("z1", "z2"))
+)
+declared <- function(fit, prefix) {
+  capabilities <- inference_capabilities(fit)
+  paste(sub(prefix, "", grep(prefix, capabilities, value = TRUE)), collapse = ", ")
+}
+support <- data.frame(
+  model = names(fits),
+  provider_tests = vapply(fits, declared, "", prefix = "^provider_"),
+  default_test = vapply(fits, function(fit) {
+    test <- profile_spec(fit)$test_default
+    if (is.null(test)) "exact" else test
+  }, ""),
+  intervals = vapply(fits, declared, "", prefix = "^interval_"),
+  default_null = vapply(fits, function(fit) as.character(profile_spec(fit)$null_default), ""),
+  measures = vapply(fits, function(fit) paste(profile_spec(fit)$measures, collapse = ", "), ""),
+  indirect_numerator = vapply(fits, function(fit) profile_spec(fit)$indirect_numerator, ""),
+  funnel = vapply(fits, function(fit) "funnel" %in% inference_capabilities(fit), NA),
+  coefficient_tests = vapply(fits, declared, "", prefix = "^coef_"),
+  row.names = NULL
+)
+knitr::kable(support)
+```
+
+Three differences between the families are worth stating:
+
+- Indirect measures compare a provider's observed outcomes with those expected under the
+  norm for the fixed-effect models, but its predicted outcomes, which include its estimated
+  effect, for the random-effect models ("predicted" in the table), as in pprof 1.0.3.
+- Logistic models give ratios and rates; linear models give differences.
+- The norm is the median of the provider effects for the fixed-effect models (linear
+  fixed-effect models also offer `null = "mean"`), and 0 for the random-effect models;
+  `null` can always be a number.
+
+## Fixed-effect models
+
+### Small providers and providers with extreme outcomes
+
+`fit_logistic_fe()` and `fit_logistic_firth()` exclude providers with fewer than
+`min_provider_size` complete observations (10 by default), with a warning of class
+`pprof_warning_screening`; the other models keep every provider. The example's hospitals
+have at least 50 patients each, so a larger threshold shows the screening:
+
+```{r screening}
+screened <- fit_logistic_fe(risk, binary, "hospital", min_provider_size = 60)
+screened$n_excluded_providers
+```
+
+A provider without events has an effect whose maximum likelihood estimate is minus
+infinity, and one with only events plus infinity. `fit_logistic_fe()` keeps every effect
+within `effect_bound` of the median effect, so these effects stay finite, but each
+iteration moves them further toward the bound, and where they end depends on when the fit
+stops. The example has three hospitals without events:
+
+```{r extreme}
+fit <- fits$fit_logistic_fe
+providers <- provider_table(fit)
+no_events <- providers$provider_id[providers$no_events]
+tight <- fit_logistic_fe(risk, binary, "hospital", stop_rule = "all", tol = 1e-10)
+data.frame(
+  hospital = no_events,
+  default_fit = provider_estimates(fit)[no_events],
+  tight_fit = provider_estimates(tight)[no_events],
+  firth = provider_estimates(fits$fit_logistic_firth)[no_events],
+  bound = median(provider_estimates(fit)) - 10,
+  row.names = NULL
+)
+```
+
+The default fit stops after `r fit$convergence$iterations` iterations, before these
+effects reach the bound; the tight fit takes `r tight$convergence$iterations` and puts all
+three at the bound. Firth's estimates are finite maxima of the penalized likelihood. The
+exact and score tests, their intervals, and the indirect measures use these effects only
+through the median effect, the norm, which does not change while they stay below it; Wald
+tests and intervals use them directly, so they warn when they cover such providers.
+
+### Convergence
+
+The fit stops when its stopping rule's criterion falls below `tol`. There are three
+criteria: the largest change of a coefficient, the change of the log-likelihood relative
+to its value, and the change relative to the gain since the starting values. The default
+rule, `"any"`, stops as soon as the smallest of the three is below `tol`, as pprof 1.0.3
+does; `"all"` waits for the largest. The log-likelihood criteria shrink as the data grow,
+so on large data a fit with `"any"` can stop while the provider effects still change. The
+object keeps the criteria of every iteration:
+
+```{r convergence}
+fit$convergence$criteria
+max(abs(coef(tight) - coef(fit)))
+```
+
+On large data, check these criteria, or compare the fit with one using
+`stop_rule = "all"`.
+
+### SerBIN and BAN
+
+`method = "serbin"` (the default) updates the provider effects and the coefficients
+together, inverting the information matrix through its block structure (Wu et al. 2022);
+`method = "ban"` alternates between them (He et al. 2013). Both maximize the same
+likelihood and differ only in the path they take and where their stopping rule stops them:
+
+```{r methods}
+ban <- fit_logistic_fe(risk, binary, "hospital", method = "ban")
+c(serbin = fit$convergence$iterations, ban = ban$convergence$iterations)
+max(abs(coef(ban) - coef(fit)))
+```
+
+### Firth's penalty
+
+`fit_logistic_firth()` maximizes the penalized likelihood of Firth (1993). Its models
+work with every function for `fit_logistic_fe()` models. As in pprof 1.0.3, the variances,
+the log-likelihood, AIC, and BIC are those of the unpenalized likelihood at the Firth
+estimates; the penalized log-likelihood is kept as `penalized_loglik`.
+
+### Linear fixed effects
+
+`fit_linear_fe()` estimates the coefficients by least squares within providers and each
+provider's effect from its mean outcome. `provider_variance` chooses the variance of the
+estimated effects: `"simplified"` (the default) σ^2^ / n~i~, or `"full"`, which adds the
+uncertainty of the coefficients. The Wald tests use the normal distribution with the
+simplified variance and Student's t with the full variance; the intervals do the reverse,
+as in pprof 1.0.3.
+
+```{r linear-fe}
+full <- fit_linear_fe(risk, continuous, "hospital", provider_variance = "full")
+head(data.frame(
+  simplified = provider_effects(fits$fit_linear_fe)$table$std_error,
+  full = provider_effects(full)$table$std_error
+))
+```
+
+## Random-effect models
+
+`fit_linear_re()` and `fit_logistic_re()` call lme4 with the formula
+`outcome ~ risk factors + (1 | provider)`, and pass any further arguments, such as
+`control`, to `lmer()` or `glmer()`. The object keeps lme4's convergence messages in
+`fit$convergence`, and the lme4 fit itself with `keep_data = TRUE`.
+
+When lme4 estimates the provider variance as 0 (a singular fit), every provider effect and
+its standard deviation are 0, the test statistics are undefined, and every flag is
+missing, as in pprof 1.0.3. `plot_flags()` shows such providers as "no flag". Simulated
+data without provider effects show it:
+
+```{r singular, message = FALSE}
+set.seed(1)
+simulated <- data.frame(clinic = rep(1:20, each = 10), x = rnorm(200))
+simulated$y <- 1 + 0.5 * simulated$x + rnorm(200)
+singular <- fit_linear_re(y ~ x, simulated, "clinic")
+singular$convergence$singular
+table(test_providers(singular)$table$flag, useNA = "ifany")
+```
+
+## Correlated random-effect models
+
+`fit_linear_cre()` and `fit_logistic_cre()` replace each risk factor named in
+`within_between` by its provider mean (`<name>_bar`) and its deviation from that mean
+(`<name>_within`). As in pprof 1.0.3, the provider means are computed over every row of the
+data, before rows with missing values are dropped.
+
+With every risk factor decomposed, the within-provider coefficients of the linear model
+are the fixed-effect coefficients:
+
+```{r cre}
+decomposed <- fit_linear_cre(risk, continuous, "hospital", within_between = paste0("z", 1:5))
+within <- coef(decomposed)[paste0("z", 1:5, "_within")]
+max(abs(within - coef(fits$fit_linear_fe)))
+```
+
+## Methods that need the risk factors
+
+Models keep, for every observation, what the profiling needs (the outcome, the linear
+predictor, the provider), but not the matrix of risk factors. The standard score test and
+the likelihood-ratio and score tests of the coefficients need it: fit with
+`keep_data = TRUE`, or pass the data again.
+
+```{r data-required}
+standard <- test_providers(fit, test = "score", score_type = "standard", data = binary)
+head(standard$table, 3)
+```
+
+Without either, these functions stop with an error of class `pprof_error_data_required`.
+
+## Other methods
+
+Models have the usual methods: `coef()`, `vcov()`, `confint()`, `summary()`, `nobs()`,
+`formula()`, `logLik()` (and so `AIC()` and `BIC()`), `fitted()`, `residuals()`,
+`predict()` (also for new data), and `tidy()`, `glance()`, and `augment()`.
+
+```{r methods-of-models}
+predict(fit, newdata = binary[c(1, 500, 1000), ], type = "response")
+AIC(fit)
+```
+
+## References
+
+Bates D, Mächler M, Bolker B, Walker S (2015). Fitting linear mixed-effects models using
+lme4. *Journal of Statistical Software*, 67(1), 1-48. <https://doi.org/10.18637/jss.v067.i01>
+
+Firth D (1993). Bias reduction of maximum likelihood estimates. *Biometrika*, 80(1),
+27-38. <https://doi.org/10.1093/biomet/80.1.27>
+
+He K, Kalbfleisch JD, Li Y, Li Y (2013). Evaluating hospital readmission rates in dialysis
+facilities; adjusting for hospital effects. *Lifetime Data Analysis*, 19, 490-512.
+<https://doi.org/10.1007/s10985-013-9264-6>
+
+Heinze G, Schemper M (2002). A solution to the problem of separation in logistic
+regression. *Statistics in Medicine*, 21(16), 2409-2419. <https://doi.org/10.1002/sim.1047>
+
+Hsiao C (2022). *Analysis of Panel Data*, 4th edition. Cambridge University Press.
+
+Mundlak Y (1978). On the pooling of time series and cross section data. *Econometrica*,
+46(1), 69-85. <https://doi.org/10.2307/1913646>
+
+Wu W, Yang Y, Kang J, He K (2022). Improving large-scale estimation and inference for
+profiling health care providers. *Statistics in Medicine*, 41(15), 2840-2853.
+<https://doi.org/10.1002/sim.9387>
+
+Xia L, He K, Li Y, Kalbfleisch JD (2022). Accounting for total variation and robustness in
+profiling health care providers. *Biostatistics*, 23(1), 257-273.
+<https://doi.org/10.1093/biostatistics/kxaa024>
