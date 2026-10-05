@@ -82,6 +82,7 @@ profiling health care providers. \emph{Statistics in Medicine}, 41(15), 2840-285
 Useful links:
 \itemize{
   \item \url{https://github.com/UM-KevinHe/pprof}
+  \item \url{https://um-kevinhe.github.io/pprof/}
   \item Report bugs at \url{https://github.com/UM-KevinHe/pprof/issues}
 }
 
