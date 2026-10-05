@@ -377,6 +377,8 @@ A new model is a module: its own `R/model-<name>.R` file (and `src/<module>/` fi
 
 Phase 2 proves this with a test-only toy model defined in `tests/testthat/helper-toy-model.R`: a binary-outcome model with provider effects and no covariates, fit in closed form, which registers its contract methods and capabilities in the test environment. The tests show that `test_providers()`, `standardize_providers()`, `profile_providers()`, and `plot_funnel()` work on it unchanged, and that an undeclared capability (Wald) raises `pprof_error_unsupported_inference`. Phase 2 implemented the part of this proof that the layers existing then allow (DEC-024): the toy model uses `data_prepare()`, `new_pprof_model()`, the contract generics, and the capability checks, registering its methods with `.S3method()`; each later phase adds its profiling and plotting functions to `test-extension-toy-model.R`.
 
+As built in Phase 7 (DEC-063): the vignette "Adding a model to pprof" (`vignettes/adding-a-model.Rmd`, §E.5) uses this toy model as its worked example, defined and registered in the vignette, with results identical to the test's, and shows registration in another package's NAMESPACE (`@exportS3Method pprof::<generic>`) as well as in pprof.
+
 ### E.5 Walk-through: adding Group Lasso
 
 Target model: logistic (or linear) provider fixed effects with a group lasso penalty on the covariate coefficients, minimizing −ℓ(γ, β) + λ Σ_g w_g ‖β_g‖₂, with provider effects unpenalized. Nothing below changes the existing families.
