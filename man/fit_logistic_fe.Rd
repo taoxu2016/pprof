@@ -93,6 +93,15 @@ of every iteration are kept in the object. SerBIN runs at most \code{max_iter + 
 and BAN at most \code{max_iter}; a fit that reaches the limit without meeting the stopping rule
 warns with class \code{pprof_warning_not_converged}.
 }
+\section{Provider order}{
+
+Providers are ordered as \code{\link[=factor]{factor()}} orders their IDs: numbers numerically and strings in
+the collation order of the session's locale, as in pprof 1.0.3, so the same string IDs can
+come in another order in another locale. The provider table, the provider effects, and
+the rows of every result follow this order, and so does the bootstrap test of logistic
+fixed-effect models when it draws its samples.
+}
+
 \examples{
 data(ExampleDataBinary)
 example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
@@ -108,3 +117,13 @@ facilities; adjusting for hospital effects. \emph{Lifetime Data Analysis}, 19, 4
 Wu W, Yang Y, Kang J, He K (2022). Improving large-scale estimation and inference for
 profiling health care providers. \emph{Statistics in Medicine}, 41(15), 2840-2853.
 }
+\seealso{
+Other fitting functions:
+\code{\link[=fit_linear_cre]{fit_linear_cre()}},
+\code{\link[=fit_linear_fe]{fit_linear_fe()}},
+\code{\link[=fit_linear_re]{fit_linear_re()}},
+\code{\link[=fit_logistic_cre]{fit_logistic_cre()}},
+\code{\link[=fit_logistic_firth]{fit_logistic_firth()}},
+\code{\link[=fit_logistic_re]{fit_logistic_re()}}
+}
+\concept{fitting functions}

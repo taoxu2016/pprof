@@ -73,7 +73,8 @@ warn_undefined_statistics <- function(message, ..., call = NULL) {
 }
 
 # Wald tests or intervals were computed for providers with no events or only events, whose
-# effect estimates sit at the effect bound (K-67).
+# maximum likelihood estimates are infinite: their fitted effects move toward the effect
+# bound with every iteration, so they depend on when the fit stopped (K-67, D-50).
 warn_wald_unreliable <- function(message, ..., call = NULL) {
   warn_pprof("pprof_warning_wald_unreliable", message, ..., call = call)
 }

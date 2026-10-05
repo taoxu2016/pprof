@@ -44,6 +44,15 @@ The provider effects are the conditional modes of the random intercepts. As in p
 1.0.3, their standard deviations are sqrt(R_i sigma^2 / n_i), with the shrinkage factor
 R_i = var_alpha / (var_alpha + sigma^2 / n_i) for the n_i observations of provider i.
 }
+\section{Provider order}{
+
+Providers are ordered as \code{\link[=factor]{factor()}} orders their IDs: numbers numerically and strings in
+the collation order of the session's locale, as in pprof 1.0.3, so the same string IDs can
+come in another order in another locale. The provider table, the provider effects, and
+the rows of every result follow this order, and so does the bootstrap test of logistic
+fixed-effect models when it draws its samples.
+}
+
 \examples{
 data(ExampleDataLinear)
 example <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID,
@@ -52,3 +61,13 @@ fit <- fit_linear_re(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
 fit$coefficients
 head(fit$provider_effects)
 }
+\seealso{
+Other fitting functions:
+\code{\link[=fit_linear_cre]{fit_linear_cre()}},
+\code{\link[=fit_linear_fe]{fit_linear_fe()}},
+\code{\link[=fit_logistic_cre]{fit_logistic_cre()}},
+\code{\link[=fit_logistic_fe]{fit_logistic_fe()}},
+\code{\link[=fit_logistic_firth]{fit_logistic_firth()}},
+\code{\link[=fit_logistic_re]{fit_logistic_re()}}
+}
+\concept{fitting functions}

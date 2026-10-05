@@ -506,7 +506,7 @@ summary.linear_cre <- function(object, parm, level = 0.95, null = 0, ...) {
 #'
 #' @details
 #' As in pprof 1.0.3, the p-value is computed as 2 (1 - pnorm(z)), which exceeds 1 for
-#' coefficients with a negative statistic; this is awaiting a decision of the methodology owners.
+#' coefficients with a negative statistic.
 #'
 #' @examples
 #' \donttest{

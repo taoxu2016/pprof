@@ -23,6 +23,8 @@
 #'   with the fields of [fit_linear_re()] models except the residual standard deviation;
 #'   `fitted` holds lme4's fitted probabilities.
 #'
+#' @inheritSection fit_logistic_fe Provider order
+#' @family fitting functions
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

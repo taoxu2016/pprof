@@ -18,8 +18,9 @@ all included providers.}
 }
 \value{
 A \code{pprof_provider_effects} result: a \code{table} with one row per provider in provider
-order (\code{provider_id}, \code{n_obs}, \code{estimate}, \code{std_error} where the model provides it, and
-\code{lower} and \code{upper} with an interval) and the settings \code{interval} and \code{level}.
+order (see "Provider order" in \code{\link[=fit_logistic_fe]{fit_logistic_fe()}}; \code{provider_id}, \code{n_obs}, \code{estimate},
+\code{std_error} where the model provides it, and \code{lower} and \code{upper} with an interval) and
+the settings \code{interval} and \code{level}.
 }
 \description{
 The estimated provider effects, their standard errors where the model provides them,
@@ -37,8 +38,7 @@ root in any bracket is infinite.
 fixed-effect models it warns with class \code{pprof_warning_wald_unreliable} when it covers
 providers with no events or only events. Linear fixed-effect models use
 qt(1 - alpha / 2, n - m - p) with \code{provider_variance = "simplified"} and qnorm with
-\code{"full"}, the reverse of their tests, as pprof 1.0.3 does (D-32, awaiting a decision
-of the methodology owners).
+\code{"full"}, the reverse of their tests, as pprof 1.0.3 does.
 }
 
 Logistic fixed-effect and Firth models offer all three intervals; linear fixed-effect,
@@ -51,3 +51,11 @@ example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$Prov
 fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
 head(provider_effects(fit, interval = "score", providers = 1:5)$table)
 }
+\seealso{
+Other provider profiling:
+\code{\link[=funnel_limits]{funnel_limits()}},
+\code{\link[=profile_providers]{profile_providers()}},
+\code{\link[=standardize_providers]{standardize_providers()}},
+\code{\link[=test_providers]{test_providers()}}
+}
+\concept{provider profiling}

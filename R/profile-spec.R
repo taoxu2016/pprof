@@ -148,7 +148,8 @@ profile_has_capability <- function(model, capability) {
 }
 
 # Families whose specification sets wald_caution warn when Wald inference covers providers
-# with no events or only events, whose estimates sit at the effect bound. The reference
+# with no events or only events, whose maximum likelihood estimates are infinite (their
+# fitted effects move toward the effect bound with every iteration; D-50). The reference
 # warns on every Wald test and interval of logistic fixed effects (K-67).
 profile_wald_caution <- function(model, spec, rows) {
   if (!isTRUE(spec$wald_caution)) return(invisible(NULL))

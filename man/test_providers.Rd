@@ -46,9 +46,9 @@ was fit without \code{keep_data = TRUE}.}
 }
 \value{
 A \code{pprof_provider_tests} result: a \code{table} with one row per provider in provider
-order (\code{provider_id}, \code{n_obs}, \code{statistic}, \code{p_value}, \code{flag}, and for the Wald test
-\code{std_error}) and the settings \code{test}, \code{level}, \code{alternative}, \code{null_value}, and
-\code{score_type} or \code{n_resamples} where they apply.
+order (see "Provider order" in \code{\link[=fit_logistic_fe]{fit_logistic_fe()}}; \code{provider_id}, \code{n_obs}, \code{statistic},
+\code{p_value}, \code{flag}, and for the Wald test \code{std_error}) and the settings \code{test}, \code{level},
+\code{alternative}, \code{null_value}, and \code{score_type} or \code{n_resamples} where they apply.
 }
 \description{
 Tests each provider against the null value and flags it as higher than expected (1), as
@@ -77,8 +77,10 @@ p-value and flags it when it is below alpha. These are the tests of pprof 1.0.3'
 
 A standard score statistic that is not finite gets a missing p-value and flag, with a
 \code{pprof_warning_undefined_statistics} warning. Wald tests warn with class
-\code{pprof_warning_wald_unreliable} when they cover providers with no events or only events,
-whose estimates sit at the effect bound.
+\code{pprof_warning_wald_unreliable} when they cover providers with no events or only events:
+the maximum likelihood estimates of their effects are infinite, so their fitted effects
+move toward the effect bound with every iteration, and their estimates and standard
+errors depend on when the fit stopped.
 
 Linear fixed-effect, random-effect, and correlated random-effect models have only the
 Wald test, which is their default: z = (estimate - null) / se, with the standard error of
@@ -97,3 +99,11 @@ fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital
 tests <- test_providers(fit)
 table(tests$table$flag)
 }
+\seealso{
+Other provider profiling:
+\code{\link[=funnel_limits]{funnel_limits()}},
+\code{\link[=profile_providers]{profile_providers()}},
+\code{\link[=provider_effects]{provider_effects()}},
+\code{\link[=standardize_providers]{standardize_providers()}}
+}
+\concept{provider profiling}

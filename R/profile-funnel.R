@@ -1,21 +1,22 @@
 # Funnel-plot control limits (K-110, K-111).
 
+# The help below states K-110 (logistic FE) and K-111 (linear FE); the linear FE limits and
+# flags of fits with the full provider variance keep D-43 (awaiting sign-off).
 #' Funnel-plot control limits
 #'
 #' The control limits of a funnel plot of the indirectly standardized measures, with the
-#' providers' points. For logistic fixed-effect models (K-110), the points are the indirect
+#' providers' points. For logistic fixed-effect models, the points are the indirect
 #' ratios, a provider's precision is E_i^2 / V_i, with E_i the expected number of events
 #' under the null and V_i its null variance (see [standardize_providers()]); at precision w
 #' the limits are target -/+ qnorm(1 - alpha / 2) sqrt(1 / w) with alpha = 1 - `level`, and
 #' the lower limit is at least 0. The providers are flagged by the modified score test of
-#' [test_providers()] at the first level. For linear fixed-effect models (K-111), the points
+#' [test_providers()] at the first level. For linear fixed-effect models, the points
 #' are the indirect differences, a provider's precision is its number of observations n_i,
 #' the limits are target -/+ qnorm(1 - alpha / 2) sqrt(1 / n_i) sigma, without a floor, and
 #' the providers are flagged by the Wald test. With `provider_variance = "full"`, the limits
 #' still use sigma^2 / n_i while the Wald test uses the full variance and t, so a point
-#' outside the limits may not be flagged (D-43, awaiting a decision of the methodology
-#' owners). These are the limits and flags of pprof 1.0.3's funnel plots. Random-effect
-#' models have no funnel plot.
+#' outside the limits may not be flagged. These are the limits and flags of pprof 1.0.3's
+#' funnel plots. Random-effect models have no funnel plot.
 #'
 #' @inheritParams test_providers
 #' @param level One or more confidence levels, each giving a pair of limits; the providers
@@ -28,6 +29,7 @@
 #'   `null_value`, and `test`, and `providers`, a data frame with one row per provider
 #'   (`provider_id`, `n_obs`, `observed`, `expected`, `variance`, `precision`, `estimate`,
 #'   `flag`).
+#' @family provider profiling
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

@@ -1,5 +1,8 @@
 # Tests and intervals for covariate coefficients (K-100 to K-105).
 
+# The help below states the family rules K-100 (logistic FE Wald), K-101 and K-102 (LR and
+# score, with D-10's refits at the default settings), K-103 (linear FE), K-104 (linear RE
+# and CRE), and K-105 (logistic RE and CRE, whose p-value keeps D-31, awaiting sign-off).
 #' Tests of the covariate coefficients
 #'
 #' Tests each covariate coefficient of a model against `null`. The Wald test is available
@@ -8,15 +11,15 @@
 #'
 #' Wald tests and intervals of the other families, with alpha = 1 - `level`:
 #'
-#' - linear fixed effects (K-103): p-value 2 (1 - pt(|z|, n - m - p)), interval
+#' - linear fixed effects: p-value 2 (1 - pt(|z|, n - m - p)), interval
 #'   beta -/+ qt(1 - alpha / 2, n - m - p) se, for n observations, m providers, and p
 #'   coefficients;
-#' - linear random and correlated random effects (K-104), intercept included: p-value
+#' - linear random and correlated random effects, intercept included: p-value
 #'   2 (1 - pt(|z|, n - p - m + 1)) with p counting the intercept, and lme4's Wald interval
 #'   beta + se qnorm(a) at a = alpha / 2 and 1 - alpha / 2;
-#' - logistic random and correlated random effects (K-105), intercept included: p-value
-#'   2 (1 - pnorm(z)), which exceeds 1 for negative estimates (D-31, kept as in pprof 1.0.3
-#'   until the methodology owners decide), and lme4's Wald interval.
+#' - logistic random and correlated random effects, intercept included: p-value
+#'   2 (1 - pnorm(z)), as in pprof 1.0.3, which exceeds 1 for negative estimates, and lme4's
+#'   Wald interval.
 #'
 #' For logistic fixed-effect models:
 #'
@@ -49,6 +52,15 @@
 #' @return A `pprof_coefficient_tests` result: a `table` with one row per coefficient
 #'   (`term`, `estimate`, `statistic`, `p_value`, and for the Wald test `std_error`,
 #'   `lower`, and `upper`) and the settings `test`, `level`, and `null_value`.
+#' @family covariate inference
+#' @examples
+#' data(ExampleDataBinary)
+#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+#'                       ExampleDataBinary$Z)
+#' fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+#' test_coefficients(fit)$table
+#' # The likelihood-ratio test refits the model without each covariate, so it needs the data.
+#' test_coefficients(fit, test = "lr", data = example)$table
 #' @export
 test_coefficients <- function(model, test = "wald", parm = NULL, level = 0.95, null = 0, data = NULL) {
   if (!inherits(model, "pprof_model")) {
@@ -85,6 +97,14 @@ test_coefficients <- function(model, test = "wald", parm = NULL, level = 0.95, n
 #' @param ... Not used.
 #'
 #' @return A matrix with one row per coefficient and the lower and upper limits.
+#' @family covariate inference
+#' @examples
+#' data(ExampleDataBinary)
+#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+#'                       ExampleDataBinary$Z)
+#' fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+#' confint(fit)
+#' confint(fit, parm = "z1", level = 0.9)
 #' @importFrom stats confint
 #' @export
 confint.pprof_model <- function(object, parm, level = 0.95, ...) {

@@ -36,7 +36,7 @@
 #' The first value in the vector is used as the significance level for flagging each provider, utilizing the
 #'   \code{\link{test.logis_fe}} function.
 #'
-#' @seealso \code{\link{logis_fe}}, \code{\link{SM_output.linear_re}}, \code{\link{test.logis_fe}}
+#' @seealso \code{\link{logis_fe}}, \code{\link{SM_output.logis_fe}}, \code{\link{test.logis_fe}}
 #'
 #' @return A ggplot object representing the funnel plot.
 #'
@@ -295,8 +295,7 @@ compat_funnel_plot <- function(plot_data,
 #'   \code{\link{test.linear_fe}} function.
 #' The control limits are target -/+ qnorm(1 - alpha / 2) sigma / sqrt(n_i) whatever variance of the provider effects
 #'   the fit used, while the flags of a fit with the full variance come from the t test of
-#'   \code{\link{test.linear_fe}}, so that a provider outside the limits may not be flagged; this is as in pprof 1.0.3
-#'   and awaiting a decision of the methodology owners.
+#'   \code{\link{test.linear_fe}}, so that a provider outside the limits may not be flagged; this is as in pprof 1.0.3.
 #'
 #' @seealso \code{\link{linear_fe}}, \code{\link{SM_output.linear_fe}}, \code{\link{test.linear_fe}}
 #'

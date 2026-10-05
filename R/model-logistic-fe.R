@@ -70,6 +70,14 @@ logistic_fe_stop_rules <- c("any", "all", "coefficients", "relative_loglik", "re
 #' Wu W, Yang Y, Kang J, He K (2022). Improving large-scale estimation and inference for
 #' profiling health care providers. *Statistics in Medicine*, 41(15), 2840-2853.
 #'
+#' @section Provider order:
+#' Providers are ordered as [factor()] orders their IDs: numbers numerically and strings in
+#' the collation order of the session's locale, as in pprof 1.0.3, so the same string IDs can
+#' come in another order in another locale. The provider table, the provider effects, and
+#' the rows of every result follow this order, and so does the bootstrap test of logistic
+#' fixed-effect models when it draws its samples.
+#'
+#' @family fitting functions
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
@@ -335,6 +343,17 @@ validate_pprof_logistic_fe <- function(x, family = "logistic_fe") {
 #'   without an effect (absent from the fit or excluded by screening, which warns), give NA.
 #' @param ... Not used.
 #'
+#' @family model methods
+#' @examples
+#' data(ExampleDataBinary)
+#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+#'                       ExampleDataBinary$Z)
+#' fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+#' head(fitted(fit))
+#' head(residuals(fit, type = "pearson"))
+#' predict(fit, newdata = example[c(1, 500, 1000), ], type = "response")
+#' logLik(fit)
+#' AIC(fit)
 #' @name logistic_fe_methods
 NULL
 

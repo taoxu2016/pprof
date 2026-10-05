@@ -36,6 +36,7 @@ generics::augment
 #' glance(fit)
 #' head(augment(fit))
 #' tidy(test_providers(fit))
+#' @family model methods
 #' @name pprof_tidy
 NULL
 

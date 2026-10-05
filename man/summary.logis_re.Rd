@@ -40,7 +40,7 @@ effect logistic model. This is the interface of pprof 1.0.3, kept for existing c
 }
 \details{
 As in pprof 1.0.3, the p-value is computed as 2 (1 - pnorm(z)), which exceeds 1 for
-coefficients with a negative statistic; this is awaiting a decision of the methodology owners.
+coefficients with a negative statistic.
 }
 \examples{
 \donttest{

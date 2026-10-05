@@ -65,9 +65,10 @@ model_input_order <- function(model, values) {
   stats::setNames(values[input_order], model$row_index[input_order])
 }
 
+# The constructor of ARCHITECTURE §E.2: what every fit function must do.
 #' Build a provider-profiling model object
 #'
-#' The constructor that every fit function uses to build its object (ARCHITECTURE §E.2). It
+#' The constructor that every fit function uses to build its object. It
 #' takes the [data_prepare()] output and the estimates, fills the fields that all models share
 #' (among them `data_spec`, what is needed to build a design matrix for new data),
 #' adds the family's own fields from `...`, and checks the result with `validate_pprof_model()`.
@@ -95,6 +96,21 @@ model_input_order <- function(model, values) {
 #'
 #' @return An object of class `c(class, "pprof_model")`.
 #'
+#' @examples
+#' # A model without covariates whose provider effects are the empirical logits of the
+#' # providers' event rates, built with the shared data layer and constructor.
+#' data(ExampleDataBinary)
+#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID)
+#' prepared <- data_prepare(y ~ 1, example, "hospital", event_counts = TRUE)
+#' providers <- prepared$providers
+#' effects <- stats::qlogis((providers$n_events + 0.5) / (providers$n_obs + 1))
+#' names(effects) <- providers$provider_id
+#' model <- new_pprof_model(prepared, coefficients = numeric(), vcov = matrix(numeric(), 0, 0),
+#'                          provider_effects = effects,
+#'                          linear_predictor = rep(0, length(prepared$response)),
+#'                          spec = list(family = "event rates"), class = "event_rate_model")
+#' class(model)
+#' head(provider_estimates(model))
 #' @keywords internal
 #' @export
 new_pprof_model <- function(data, coefficients, vcov, provider_effects, linear_predictor, spec, ...,

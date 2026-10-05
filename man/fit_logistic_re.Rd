@@ -45,6 +45,15 @@ approximation. Every provider is included, whatever its size.
 The provider effects are the conditional modes of the random intercepts and their
 standard deviations lme4's conditional standard deviations, as in pprof 1.0.3.
 }
+\section{Provider order}{
+
+Providers are ordered as \code{\link[=factor]{factor()}} orders their IDs: numbers numerically and strings in
+the collation order of the session's locale, as in pprof 1.0.3, so the same string IDs can
+come in another order in another locale. The provider table, the provider effects, and
+the rows of every result follow this order, and so does the bootstrap test of logistic
+fixed-effect models when it draws its samples.
+}
+
 \examples{
 data(ExampleDataBinary)
 example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
@@ -54,3 +63,13 @@ fit <- fit_logistic_re(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital
 fit$coefficients
 head(fit$provider_effects)
 }
+\seealso{
+Other fitting functions:
+\code{\link[=fit_linear_cre]{fit_linear_cre()}},
+\code{\link[=fit_linear_fe]{fit_linear_fe()}},
+\code{\link[=fit_linear_re]{fit_linear_re()}},
+\code{\link[=fit_logistic_cre]{fit_logistic_cre()}},
+\code{\link[=fit_logistic_fe]{fit_logistic_fe()}},
+\code{\link[=fit_logistic_firth]{fit_logistic_firth()}}
+}
+\concept{fitting functions}

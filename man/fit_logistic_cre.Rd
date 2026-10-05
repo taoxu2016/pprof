@@ -46,10 +46,19 @@ from that mean (\verb{<name>_within}), as \code{\link[=fit_linear_cre]{fit_linea
 }
 \details{
 As in pprof 1.0.3, the provider means are computed over every row of \code{data} before rows
-with missing values are dropped (D-13), the provider variance is the
-\code{vcov} column of lme4's variance components (K-51), and the standard deviations of the
-provider effects are lme4's conditional standard deviations.
+with missing values are dropped, the provider variance is the \code{vcov} column of lme4's
+variance components, and the standard deviations of the provider effects are lme4's
+conditional standard deviations.
 }
+\section{Provider order}{
+
+Providers are ordered as \code{\link[=factor]{factor()}} orders their IDs: numbers numerically and strings in
+the collation order of the session's locale, as in pprof 1.0.3, so the same string IDs can
+come in another order in another locale. The provider table, the provider effects, and
+the rows of every result follow this order, and so does the bootstrap test of logistic
+fixed-effect models when it draws its samples.
+}
+
 \examples{
 data(ExampleDataBinary)
 example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
@@ -59,3 +68,13 @@ fit <- fit_logistic_cre(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospita
                         within_between = c("z1", "z2"))
 fit$coefficients
 }
+\seealso{
+Other fitting functions:
+\code{\link[=fit_linear_cre]{fit_linear_cre()}},
+\code{\link[=fit_linear_fe]{fit_linear_fe()}},
+\code{\link[=fit_linear_re]{fit_linear_re()}},
+\code{\link[=fit_logistic_fe]{fit_logistic_fe()}},
+\code{\link[=fit_logistic_firth]{fit_logistic_firth()}},
+\code{\link[=fit_logistic_re]{fit_logistic_re()}}
+}
+\concept{fitting functions}

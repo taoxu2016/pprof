@@ -12,9 +12,9 @@
 #' `outcome ~ <name>_within + <name>_bar + <other covariates> + (1 | provider)`.
 #'
 #' As in pprof 1.0.3, the provider means are computed over every row of `data`, with
-#' missing values of the covariate removed, before rows with missing values are dropped
-#' (D-13), and the standard deviations of the provider effects are
-#' lme4's conditional standard deviations.
+#' missing values of the covariate removed, before rows with missing values are dropped, and
+#' the standard deviations of the provider effects are lme4's conditional standard
+#' deviations.
 #'
 #' @inheritParams fit_linear_re
 #' @param formula A two-sided formula: the outcome on the left and the covariates on the
@@ -26,6 +26,8 @@
 #'   with the fields of [fit_linear_re()] models; `spec$within_between` records the split
 #'   covariates.
 #'
+#' @inheritSection fit_logistic_fe Provider order
+#' @family fitting functions
 #' @examples
 #' data(ExampleDataLinear)
 #' example <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID,

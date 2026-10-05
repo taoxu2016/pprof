@@ -1,5 +1,7 @@
 # Provider effects with standard errors and intervals (K-90).
 
+# The help below states K-90 to K-94; the distributions of the linear FE intervals keep D-32
+# (awaiting sign-off).
 #' Provider effects
 #'
 #' The estimated provider effects, their standard errors where the model provides them,
@@ -15,8 +17,7 @@
 #'   fixed-effect models it warns with class `pprof_warning_wald_unreliable` when it covers
 #'   providers with no events or only events. Linear fixed-effect models use
 #'   qt(1 - alpha / 2, n - m - p) with `provider_variance = "simplified"` and qnorm with
-#'   `"full"`, the reverse of their tests, as pprof 1.0.3 does (D-32, awaiting a decision
-#'   of the methodology owners).
+#'   `"full"`, the reverse of their tests, as pprof 1.0.3 does.
 #'
 #' Logistic fixed-effect and Firth models offer all three intervals; linear fixed-effect,
 #' random-effect, and correlated random-effect models only the Wald interval.
@@ -25,8 +26,10 @@
 #' @param interval `"none"`, `"exact"`, `"score"`, or `"wald"`.
 #'
 #' @return A `pprof_provider_effects` result: a `table` with one row per provider in provider
-#'   order (`provider_id`, `n_obs`, `estimate`, `std_error` where the model provides it, and
-#'   `lower` and `upper` with an interval) and the settings `interval` and `level`.
+#'   order (see "Provider order" in [fit_logistic_fe()]; `provider_id`, `n_obs`, `estimate`,
+#'   `std_error` where the model provides it, and `lower` and `upper` with an interval) and
+#'   the settings `interval` and `level`.
+#' @family provider profiling
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

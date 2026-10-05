@@ -60,8 +60,7 @@ of pprof 1.0.3.
 \details{
 The intervals use the t distribution with n - m - p degrees of freedom when the fit used the
 simplified variance of the provider effects and the normal distribution when it used the full
-variance, the reverse of \code{\link{test.linear_fe}}, as in pprof 1.0.3 (this is awaiting a
-decision of the methodology owners).
+variance, the reverse of \code{\link{test.linear_fe}}, as in pprof 1.0.3.
 }
 \examples{
 data(ExampleDataLinear)

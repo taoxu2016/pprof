@@ -37,3 +37,21 @@ returns the log-likelihood with m + p + 1 degrees of freedom (m providers, p
 coefficients, and the residual variance), so \code{AIC()} and \code{BIC()} agree with the fit's
 \code{aic} and \code{bic}.
 }
+\examples{
+data(ExampleDataLinear)
+example <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID,
+                      ExampleDataLinear$Z)
+fit <- fit_linear_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+head(fitted(fit))
+head(residuals(fit))
+predict(fit, newdata = example[c(1, 500, 1000), ])
+logLik(fit)
+}
+\seealso{
+Other model methods:
+\code{\link{logistic_fe_methods}},
+\code{\link{mixed_methods}},
+\code{\link{pprof_model_methods}},
+\code{\link{pprof_tidy}}
+}
+\concept{model methods}

@@ -70,6 +70,15 @@ As in pprof 1.0.3, the variances, the log-likelihood, AIC, and BIC are the unpen
 quantities at the Firth estimates, and the tests, intervals, and standardized measures are
 those of \code{\link[=fit_logistic_fe]{fit_logistic_fe()}}. The penalized log-likelihood is kept as \code{penalized_loglik}.
 }
+\section{Provider order}{
+
+Providers are ordered as \code{\link[=factor]{factor()}} orders their IDs: numbers numerically and strings in
+the collation order of the session's locale, as in pprof 1.0.3, so the same string IDs can
+come in another order in another locale. The provider table, the provider effects, and
+the rows of every result follow this order, and so does the bootstrap test of logistic
+fixed-effect models when it draws its samples.
+}
+
 \examples{
 data(ExampleDataBinary)
 example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
@@ -82,3 +91,13 @@ fit$penalized_loglik
 Firth D (1993). Bias reduction of maximum likelihood estimates. \emph{Biometrika}, 80(1),
 27-38.
 }
+\seealso{
+Other fitting functions:
+\code{\link[=fit_linear_cre]{fit_linear_cre()}},
+\code{\link[=fit_linear_fe]{fit_linear_fe()}},
+\code{\link[=fit_linear_re]{fit_linear_re()}},
+\code{\link[=fit_logistic_cre]{fit_logistic_cre()}},
+\code{\link[=fit_logistic_fe]{fit_logistic_fe()}},
+\code{\link[=fit_logistic_re]{fit_logistic_re()}}
+}
+\concept{fitting functions}

@@ -82,5 +82,5 @@ individual- and summary-level information. \emph{Health Services and Outcomes Re
 \cr
 }
 \seealso{
-\code{\link{logis_fe}}, \code{\link{SM_output.linear_re}}, \code{\link{test.logis_fe}}
+\code{\link{logis_fe}}, \code{\link{SM_output.logis_fe}}, \code{\link{test.logis_fe}}
 }

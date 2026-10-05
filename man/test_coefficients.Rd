@@ -40,15 +40,15 @@ likelihood-ratio and score tests for logistic fixed-effect and Firth models only
 \details{
 Wald tests and intervals of the other families, with alpha = 1 - \code{level}:
 \itemize{
-\item linear fixed effects (K-103): p-value 2 (1 - pt(|z|, n - m - p)), interval
+\item linear fixed effects: p-value 2 (1 - pt(|z|, n - m - p)), interval
 beta -/+ qt(1 - alpha / 2, n - m - p) se, for n observations, m providers, and p
 coefficients;
-\item linear random and correlated random effects (K-104), intercept included: p-value
+\item linear random and correlated random effects, intercept included: p-value
 2 (1 - pt(|z|, n - p - m + 1)) with p counting the intercept, and lme4's Wald interval
 beta + se qnorm(a) at a = alpha / 2 and 1 - alpha / 2;
-\item logistic random and correlated random effects (K-105), intercept included: p-value
-2 (1 - pnorm(z)), which exceeds 1 for negative estimates (D-31, kept as in pprof 1.0.3
-until the methodology owners decide), and lme4's Wald interval.
+\item logistic random and correlated random effects, intercept included: p-value
+2 (1 - pnorm(z)), as in pprof 1.0.3, which exceeds 1 for negative estimates, and lme4's
+Wald interval.
 }
 
 For logistic fixed-effect models:
@@ -72,3 +72,18 @@ providers that the model includes. These two tests test against 0 only, and need
 covariates: the model must have been fit with \code{keep_data = TRUE}, or \code{data} must be the
 data it was fit to. A model with one covariate has no null model for them.
 }
+\examples{
+data(ExampleDataBinary)
+example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+                      ExampleDataBinary$Z)
+fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+test_coefficients(fit)$table
+# The likelihood-ratio test refits the model without each covariate, so it needs the data.
+test_coefficients(fit, test = "lr", data = example)$table
+}
+\seealso{
+Other covariate inference:
+\code{\link[=confint.pprof_model]{confint.pprof_model()}},
+\code{\link[=summary.pprof_model]{summary.pprof_model()}}
+}
+\concept{covariate inference}

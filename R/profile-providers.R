@@ -11,11 +11,12 @@
 #' @param interval The interval of the standardized measures: `"none"`, `"exact"`,
 #'   `"score"`, or `"wald"`.
 #'
-#' @return A `pprof_profile` result: a `table` with one row per provider (`provider_id`,
-#'   `n_obs`, `observed`, `expected`, `statistic`, `p_value`, `flag`), the component results
-#'   `effects`, `tests`, `measures`, and `funnel` (`NULL` for models without funnel
-#'   limits), and the settings `test`, `level`, `alternative`, `null_value`, and
-#'   `interval`.
+#' @return A `pprof_profile` result: a `table` with one row per provider in provider order
+#'   (see "Provider order" in [fit_logistic_fe()]; `provider_id`, `n_obs`, `observed`,
+#'   `expected`, `statistic`, `p_value`, `flag`), the component results `effects`, `tests`,
+#'   `measures`, and `funnel` (`NULL` for models without funnel limits), and the settings
+#'   `test`, `level`, `alternative`, `null_value`, and `interval`.
+#' @family provider profiling
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

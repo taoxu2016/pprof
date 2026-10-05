@@ -17,7 +17,8 @@
 #' @param label_size Size of the percentage labels.
 #'
 #' @return A ggplot object.
-#' @seealso [test_providers()], [plot_funnel()], [plot_volume()]
+#' @seealso [test_providers()]
+#' @family plots
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

@@ -28,7 +28,8 @@
 #' @param line_width Width of the intervals and the reference line.
 #'
 #' @return A ggplot object.
-#' @seealso [standardize_providers()], [provider_effects()], [plot_funnel()]
+#' @seealso [standardize_providers()], [provider_effects()]
+#' @family plots
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

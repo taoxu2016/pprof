@@ -81,8 +81,8 @@ the Firth estimates, and the object has class \code{"logis_fe"}, so the methods 
 
 Unlike pprof 1.0.3, the formula may contain transformed terms, interactions, and factors whose levels contain
 spaces; the outcome must be 0/1 or logical; \code{max.iter}, \code{tol}, and \code{bound} must be positive and \code{threads} at
-least 1; two threads give the same results as one, where pprof 1.0.3 stopped early (D-05); a singular
-information matrix gives an error, where pprof 1.0.3 ended the R session (D-42); factor provider IDs work when
+least 1; two threads give the same results as one, where pprof 1.0.3 stopped early; a singular
+information matrix gives an error, where pprof 1.0.3 ended the R session; factor provider IDs work when
 providers are excluded; and the screening warning counts only the providers actually excluded.
 }
 \examples{

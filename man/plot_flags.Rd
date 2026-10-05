@@ -34,5 +34,11 @@ fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital
 plot_flags(test_providers(fit))
 }
 \seealso{
-\code{\link[=test_providers]{test_providers()}}, \code{\link[=plot_funnel]{plot_funnel()}}, \code{\link[=plot_volume]{plot_volume()}}
+\code{\link[=test_providers]{test_providers()}}
+
+Other plots:
+\code{\link[=plot_caterpillar]{plot_caterpillar()}},
+\code{\link[=plot_funnel]{plot_funnel()}},
+\code{\link[=plot_volume]{plot_volume()}}
 }
+\concept{plots}

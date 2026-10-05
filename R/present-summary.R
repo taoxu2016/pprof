@@ -14,6 +14,7 @@
 #' @return A `pprof_summary` result: a `table` with one row per coefficient (`term`,
 #'   `estimate`, `std_error`, `statistic`, `p_value`, `lower`, `upper`), `level`, the
 #'   model's `family` and `method`, and `fit`, a one-row data frame of [glance()].
+#' @family covariate inference
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

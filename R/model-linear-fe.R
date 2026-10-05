@@ -36,6 +36,8 @@
 #'   (`sigma`), the log-likelihood (`loglik`), and AIC and BIC (`aic`, `bic`). The setting
 #'   `provider_variance` is part of `spec`.
 #'
+#' @inheritSection fit_logistic_fe Provider order
+#' @family fitting functions
 #' @examples
 #' data(ExampleDataLinear)
 #' example <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID,
@@ -184,6 +186,16 @@ validate_pprof_linear_fe <- function(x) {
 #'   absent from the fit (which warns), give NA.
 #' @param ... Not used.
 #'
+#' @family model methods
+#' @examples
+#' data(ExampleDataLinear)
+#' example <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID,
+#'                       ExampleDataLinear$Z)
+#' fit <- fit_linear_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+#' head(fitted(fit))
+#' head(residuals(fit))
+#' predict(fit, newdata = example[c(1, 500, 1000), ])
+#' logLik(fit)
 #' @name linear_fe_methods
 NULL
 

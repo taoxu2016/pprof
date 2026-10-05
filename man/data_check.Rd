@@ -29,6 +29,10 @@ The function performs the following checks:
 }
 If issues arise when using the model functions \code{logis_fe}, \code{linear_fe} and \code{linear_re},
 this function can be called for data quality checking purposes.
+
+When any value of \code{Y}, \code{Z}, or \code{ProvID} is missing, the function warns for each variable with missing values
+and then stops with an error that gives the percentage of incomplete observations, so the other checks run only
+on complete data. The fitting functions do not stop: they drop the incomplete observations.
 }
 \examples{
 data(ExampleDataBinary)

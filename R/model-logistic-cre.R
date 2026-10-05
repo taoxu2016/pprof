@@ -10,9 +10,9 @@
 #' `outcome ~ <name>_within + <name>_bar + <other covariates> + (1 | provider)`.
 #'
 #' As in pprof 1.0.3, the provider means are computed over every row of `data` before rows
-#' with missing values are dropped (D-13), the provider variance is the
-#' `vcov` column of lme4's variance components (K-51), and the standard deviations of the
-#' provider effects are lme4's conditional standard deviations.
+#' with missing values are dropped, the provider variance is the `vcov` column of lme4's
+#' variance components, and the standard deviations of the provider effects are lme4's
+#' conditional standard deviations.
 #'
 #' @inheritParams fit_linear_cre
 #' @param formula A two-sided formula: the binary outcome (0 and 1, or `FALSE` and `TRUE`)
@@ -24,6 +24,8 @@
 #'   with the fields of [fit_logistic_re()] models; `spec$within_between` records the split
 #'   covariates.
 #'
+#' @inheritSection fit_logistic_fe Provider order
+#' @family fitting functions
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

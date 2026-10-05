@@ -40,6 +40,8 @@
 #' Firth D (1993). Bias reduction of maximum likelihood estimates. *Biometrika*, 80(1),
 #' 27-38.
 #'
+#' @inheritSection fit_logistic_fe Provider order
+#' @family fitting functions
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

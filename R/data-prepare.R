@@ -41,6 +41,14 @@
 #'   `n_excluded_obs`. Observations of excluded providers are not part of `response`,
 #'   `design`, `provider_index`, or `row_index`; the provider table lists every provider.
 #'
+#' @examples
+#' data(ExampleDataBinary)
+#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+#'                       ExampleDataBinary$Z)
+#' prepared <- data_prepare(y ~ z1 + z2, example, "hospital", min_provider_size = 10,
+#'                          event_counts = TRUE)
+#' dim(prepared$design)
+#' head(prepared$providers)
 #' @keywords internal
 #' @export
 data_prepare <- function(formula, data, provider, within_between = NULL, min_provider_size = NULL,

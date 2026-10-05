@@ -26,3 +26,21 @@
 the number of observations used in the fit (after screening), and \code{formula()} the model
 formula.
 }
+\examples{
+data(ExampleDataBinary)
+example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+                      ExampleDataBinary$Z)
+fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+coef(fit)
+vcov(fit)[1:2, 1:2]
+nobs(fit)
+formula(fit)
+}
+\seealso{
+Other model methods:
+\code{\link{linear_fe_methods}},
+\code{\link{logistic_fe_methods}},
+\code{\link{mixed_methods}},
+\code{\link{pprof_tidy}}
+}
+\concept{model methods}

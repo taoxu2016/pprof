@@ -31,8 +31,8 @@ the indirect differences, the precision is the provider's number of observations
 limits are target -/+ z sigma / sqrt(n_i) around the target 0, and the flags come from the
 Wald test (\code{plot()} of \code{linear_fe} fits). With \code{provider_variance = "full"} the limits still
 use sigma^2 / n_i while the Wald test uses the full variance and the t distribution, so a
-point outside the limits may not be flagged; this is as in pprof 1.0.3 and awaiting a
-decision of the methodology owners. Random-effect models have no funnel plot.
+point outside the limits may not be flagged, as in pprof 1.0.3. Random-effect models have
+no funnel plot.
 
 Providers whose flag is missing are shown as "no flag". The plot is returned, not printed;
 change its appearance with ggplot2's functions, for example
@@ -46,5 +46,11 @@ fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital
 plot_funnel(funnel_limits(fit, level = c(0.95, 0.99)))
 }
 \seealso{
-\code{\link[=funnel_limits]{funnel_limits()}}, \code{\link[=plot_caterpillar]{plot_caterpillar()}}, \code{\link[=plot_flags]{plot_flags()}}, \code{\link[=plot_volume]{plot_volume()}}
+\code{\link[=funnel_limits]{funnel_limits()}}
+
+Other plots:
+\code{\link[=plot_caterpillar]{plot_caterpillar()}},
+\code{\link[=plot_flags]{plot_flags()}},
+\code{\link[=plot_volume]{plot_volume()}}
 }
+\concept{plots}

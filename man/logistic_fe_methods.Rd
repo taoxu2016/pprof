@@ -38,3 +38,22 @@ names of \code{newdata}). \code{logLik()} returns the log-likelihood with m + p 
 freedom (m providers, p coefficients), so \code{AIC()} and \code{BIC()} agree with the fit's \code{aic}
 and \code{bic}.
 }
+\examples{
+data(ExampleDataBinary)
+example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+                      ExampleDataBinary$Z)
+fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+head(fitted(fit))
+head(residuals(fit, type = "pearson"))
+predict(fit, newdata = example[c(1, 500, 1000), ], type = "response")
+logLik(fit)
+AIC(fit)
+}
+\seealso{
+Other model methods:
+\code{\link{linear_fe_methods}},
+\code{\link{mixed_methods}},
+\code{\link{pprof_model_methods}},
+\code{\link{pprof_tidy}}
+}
+\concept{model methods}

@@ -47,3 +47,11 @@ glance(fit)
 head(augment(fit))
 tidy(test_providers(fit))
 }
+\seealso{
+Other model methods:
+\code{\link{linear_fe_methods}},
+\code{\link{logistic_fe_methods}},
+\code{\link{mixed_methods}},
+\code{\link{pprof_model_methods}}
+}
+\concept{model methods}

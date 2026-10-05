@@ -31,3 +31,9 @@ example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$Prov
 fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
 summary(fit)
 }
+\seealso{
+Other covariate inference:
+\code{\link[=confint.pprof_model]{confint.pprof_model()}},
+\code{\link[=test_coefficients]{test_coefficients()}}
+}
+\concept{covariate inference}

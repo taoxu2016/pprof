@@ -62,8 +62,7 @@ The first value in the vector is used as the significance level for flagging eac
 \code{\link{test.linear_fe}} function.
 The control limits are target -/+ qnorm(1 - alpha / 2) sigma / sqrt(n_i) whatever variance of the provider effects
 the fit used, while the flags of a fit with the full variance come from the t test of
-\code{\link{test.linear_fe}}, so that a provider outside the limits may not be flagged; this is as in pprof 1.0.3
-and awaiting a decision of the methodology owners.
+\code{\link{test.linear_fe}}, so that a provider outside the limits may not be flagged; this is as in pprof 1.0.3.
 }
 \examples{
 data(ExampleDataLinear)

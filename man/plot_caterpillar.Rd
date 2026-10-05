@@ -59,5 +59,11 @@ fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital
 plot_caterpillar(standardize_providers(fit, measure = "ratio", interval = "wald"), use_flag = TRUE)
 }
 \seealso{
-\code{\link[=standardize_providers]{standardize_providers()}}, \code{\link[=provider_effects]{provider_effects()}}, \code{\link[=plot_funnel]{plot_funnel()}}
+\code{\link[=standardize_providers]{standardize_providers()}}, \code{\link[=provider_effects]{provider_effects()}}
+
+Other plots:
+\code{\link[=plot_flags]{plot_flags()}},
+\code{\link[=plot_funnel]{plot_funnel()}},
+\code{\link[=plot_volume]{plot_volume()}}
 }
+\concept{plots}

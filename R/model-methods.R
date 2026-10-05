@@ -10,6 +10,16 @@
 #' @param object,x A model object, of a class that inherits from `pprof_model`.
 #' @param ... Not used.
 #'
+#' @family model methods
+#' @examples
+#' data(ExampleDataBinary)
+#' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+#'                       ExampleDataBinary$Z)
+#' fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+#' coef(fit)
+#' vcov(fit)[1:2, 1:2]
+#' nobs(fit)
+#' formula(fit)
 #' @name pprof_model_methods
 NULL
 

@@ -39,3 +39,20 @@ new data that contain the covariates and the provider column; correlated random-
 models predict only for their own observations. \code{logLik()} returns lme4's
 log-likelihood with lme4's degrees of freedom.
 }
+\examples{
+data(ExampleDataLinear)
+example <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID,
+                      ExampleDataLinear$Z)
+fit <- fit_linear_re(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+head(fitted(fit))
+predict(fit, newdata = example[c(1, 500, 1000), ])
+logLik(fit)
+}
+\seealso{
+Other model methods:
+\code{\link{linear_fe_methods}},
+\code{\link{logistic_fe_methods}},
+\code{\link{pprof_model_methods}},
+\code{\link{pprof_tidy}}
+}
+\concept{model methods}

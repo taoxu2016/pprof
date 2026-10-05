@@ -54,6 +54,15 @@ a provider effect is sigma^2 / n_i (\code{provider_variance = "simplified"}, as 
 by default) or sigma^2 (1 / n_i + mean(z_i)' (Z'Z)^-1 mean(z_i)) (\code{"full"}). The
 log-likelihood, AIC, and BIC count m + p + 1 parameters.
 }
+\section{Provider order}{
+
+Providers are ordered as \code{\link[=factor]{factor()}} orders their IDs: numbers numerically and strings in
+the collation order of the session's locale, as in pprof 1.0.3, so the same string IDs can
+come in another order in another locale. The provider table, the provider effects, and
+the rows of every result follow this order, and so does the bootstrap test of logistic
+fixed-effect models when it draws its samples.
+}
+
 \examples{
 data(ExampleDataLinear)
 example <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID,
@@ -62,3 +71,13 @@ fit <- fit_linear_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
 fit$coefficients
 fit$sigma
 }
+\seealso{
+Other fitting functions:
+\code{\link[=fit_linear_cre]{fit_linear_cre()}},
+\code{\link[=fit_linear_re]{fit_linear_re()}},
+\code{\link[=fit_logistic_cre]{fit_logistic_cre()}},
+\code{\link[=fit_logistic_fe]{fit_logistic_fe()}},
+\code{\link[=fit_logistic_firth]{fit_logistic_firth()}},
+\code{\link[=fit_logistic_re]{fit_logistic_re()}}
+}
+\concept{fitting functions}

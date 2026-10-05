@@ -66,4 +66,13 @@ together with their observations. With \code{event_counts = TRUE}, the provider 
 counts events and flags included providers with no events or only events.
 }
 }
+\examples{
+data(ExampleDataBinary)
+example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+                      ExampleDataBinary$Z)
+prepared <- data_prepare(y ~ z1 + z2, example, "hospital", min_provider_size = 10,
+                         event_counts = TRUE)
+dim(prepared$design)
+head(prepared$providers)
+}
 \keyword{internal}

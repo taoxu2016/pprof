@@ -49,11 +49,11 @@ was fit without \code{keep_data = TRUE}.}
 \item{threads}{The number of threads for the standard score test.}
 }
 \value{
-A \code{pprof_profile} result: a \code{table} with one row per provider (\code{provider_id},
-\code{n_obs}, \code{observed}, \code{expected}, \code{statistic}, \code{p_value}, \code{flag}), the component results
-\code{effects}, \code{tests}, \code{measures}, and \code{funnel} (\code{NULL} for models without funnel
-limits), and the settings \code{test}, \code{level}, \code{alternative}, \code{null_value}, and
-\code{interval}.
+A \code{pprof_profile} result: a \code{table} with one row per provider in provider order
+(see "Provider order" in \code{\link[=fit_logistic_fe]{fit_logistic_fe()}}; \code{provider_id}, \code{n_obs}, \code{observed},
+\code{expected}, \code{statistic}, \code{p_value}, \code{flag}), the component results \code{effects}, \code{tests},
+\code{measures}, and \code{funnel} (\code{NULL} for models without funnel limits), and the settings
+\code{test}, \code{level}, \code{alternative}, \code{null_value}, and \code{interval}.
 }
 \description{
 Runs the profiling steps for a model and collects their results: the provider effects
@@ -69,3 +69,11 @@ fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital
 profile <- profile_providers(fit)
 head(profile$table)
 }
+\seealso{
+Other provider profiling:
+\code{\link[=funnel_limits]{funnel_limits()}},
+\code{\link[=provider_effects]{provider_effects()}},
+\code{\link[=standardize_providers]{standardize_providers()}},
+\code{\link[=test_providers]{test_providers()}}
+}
+\concept{provider profiling}

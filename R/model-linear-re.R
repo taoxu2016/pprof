@@ -33,6 +33,8 @@
 #'   deviation (`sigma`), lme4's log-likelihood, AIC, and BIC (`loglik`, `aic`, `bic`),
 #'   and lme4's convergence diagnostics (`convergence`).
 #'
+#' @inheritSection fit_logistic_fe Provider order
+#' @family fitting functions
 #' @examples
 #' data(ExampleDataLinear)
 #' example <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID,

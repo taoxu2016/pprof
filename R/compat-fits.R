@@ -232,6 +232,8 @@ compat_screening_report <- function(model) {
   invisible(NULL)
 }
 
+# The help below lists the fixes the wrapper applies: D-18 (formulas), D-39 (input checks),
+# D-05 (threads), D-42 (singular information), D-41 (factor IDs), and D-01 (the warning).
 #' Main function for fitting the fixed effect logistic model using firth correction
 #'
 #' Fixed effects (FE) models suffer from separation issues when all outcomes in a cluster are the same,
@@ -261,8 +263,8 @@ compat_screening_report <- function(model) {
 #'
 #' Unlike pprof 1.0.3, the formula may contain transformed terms, interactions, and factors whose levels contain
 #' spaces; the outcome must be 0/1 or logical; `max.iter`, `tol`, and `bound` must be positive and `threads` at
-#' least 1; two threads give the same results as one, where pprof 1.0.3 stopped early (D-05); a singular
-#' information matrix gives an error, where pprof 1.0.3 ended the R session (D-42); factor provider IDs work when
+#' least 1; two threads give the same results as one, where pprof 1.0.3 stopped early; a singular
+#' information matrix gives an error, where pprof 1.0.3 ended the R session; factor provider IDs work when
 #' providers are excluded; and the screening warning counts only the providers actually excluded.
 #'
 #' @seealso \code{\link{fit_logistic_firth}}, \code{\link{data_check}}

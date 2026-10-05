@@ -38,19 +38,18 @@ precision (\code{level}, \code{precision}, \code{lower}, \code{upper}), the sett
 }
 \description{
 The control limits of a funnel plot of the indirectly standardized measures, with the
-providers' points. For logistic fixed-effect models (K-110), the points are the indirect
+providers' points. For logistic fixed-effect models, the points are the indirect
 ratios, a provider's precision is E_i^2 / V_i, with E_i the expected number of events
 under the null and V_i its null variance (see \code{\link[=standardize_providers]{standardize_providers()}}); at precision w
 the limits are target -/+ qnorm(1 - alpha / 2) sqrt(1 / w) with alpha = 1 - \code{level}, and
 the lower limit is at least 0. The providers are flagged by the modified score test of
-\code{\link[=test_providers]{test_providers()}} at the first level. For linear fixed-effect models (K-111), the points
+\code{\link[=test_providers]{test_providers()}} at the first level. For linear fixed-effect models, the points
 are the indirect differences, a provider's precision is its number of observations n_i,
 the limits are target -/+ qnorm(1 - alpha / 2) sqrt(1 / n_i) sigma, without a floor, and
 the providers are flagged by the Wald test. With \code{provider_variance = "full"}, the limits
 still use sigma^2 / n_i while the Wald test uses the full variance and t, so a point
-outside the limits may not be flagged (D-43, awaiting a decision of the methodology
-owners). These are the limits and flags of pprof 1.0.3's funnel plots. Random-effect
-models have no funnel plot.
+outside the limits may not be flagged. These are the limits and flags of pprof 1.0.3's
+funnel plots. Random-effect models have no funnel plot.
 }
 \examples{
 data(ExampleDataBinary)
@@ -60,3 +59,11 @@ fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital
 funnel <- funnel_limits(fit, level = c(0.95, 0.99))
 head(funnel$table)
 }
+\seealso{
+Other provider profiling:
+\code{\link[=profile_providers]{profile_providers()}},
+\code{\link[=provider_effects]{provider_effects()}},
+\code{\link[=standardize_providers]{standardize_providers()}},
+\code{\link[=test_providers]{test_providers()}}
+}
+\concept{provider profiling}

@@ -5,6 +5,9 @@
 # computed here for every model that declares them. Tests that need the model's internals,
 # such as the standard score test, come from the model's provider_test() method.
 
+# The help below describes the "standard" score test as computed (D-26, M-7), and the
+# estimates of providers with no events or only events as they are at the default settings
+# (D-50).
 #' Tests and flags for providers
 #'
 #' Tests each provider against the null value and flags it as higher than expected (1), as
@@ -30,8 +33,10 @@
 #'
 #' A standard score statistic that is not finite gets a missing p-value and flag, with a
 #' `pprof_warning_undefined_statistics` warning. Wald tests warn with class
-#' `pprof_warning_wald_unreliable` when they cover providers with no events or only events,
-#' whose estimates sit at the effect bound.
+#' `pprof_warning_wald_unreliable` when they cover providers with no events or only events:
+#' the maximum likelihood estimates of their effects are infinite, so their fitted effects
+#' move toward the effect bound with every iteration, and their estimates and standard
+#' errors depend on when the fit stopped.
 #'
 #' Linear fixed-effect, random-effect, and correlated random-effect models have only the
 #' Wald test, which is their default: z = (estimate - null) / se, with the standard error of
@@ -60,9 +65,10 @@
 #' @param threads The number of threads for the standard score test.
 #'
 #' @return A `pprof_provider_tests` result: a `table` with one row per provider in provider
-#'   order (`provider_id`, `n_obs`, `statistic`, `p_value`, `flag`, and for the Wald test
-#'   `std_error`) and the settings `test`, `level`, `alternative`, `null_value`, and
-#'   `score_type` or `n_resamples` where they apply.
+#'   order (see "Provider order" in [fit_logistic_fe()]; `provider_id`, `n_obs`, `statistic`,
+#'   `p_value`, `flag`, and for the Wald test `std_error`) and the settings `test`, `level`,
+#'   `alternative`, `null_value`, and `score_type` or `n_resamples` where they apply.
+#' @family provider profiling
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

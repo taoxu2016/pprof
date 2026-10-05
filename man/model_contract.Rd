@@ -88,4 +88,16 @@ with the model's own provider effects (for the random-effect models, lme4's fitt
 values), the numerator of their indirectly standardized measures.
 }
 }
+\examples{
+data(ExampleDataBinary)
+example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+                      ExampleDataBinary$Z)
+fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+head(provider_table(fit))
+inference_capabilities(fit)
+null <- null_effect(fit, "median")
+# The expected outcome of each observation if its provider's effect were the null value.
+head(expected_outcome(fit, null))
+names(profile_spec(fit))
+}
 \keyword{internal}

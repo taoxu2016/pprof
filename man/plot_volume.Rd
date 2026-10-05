@@ -47,5 +47,11 @@ fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital
 plot_volume(profile_providers(fit, interval = "score"))
 }
 \seealso{
-\code{\link[=profile_providers]{profile_providers()}}, \code{\link[=standardize_providers]{standardize_providers()}}, \code{\link[=plot_caterpillar]{plot_caterpillar()}}
+\code{\link[=profile_providers]{profile_providers()}}, \code{\link[=standardize_providers]{standardize_providers()}}
+
+Other plots:
+\code{\link[=plot_caterpillar]{plot_caterpillar()}},
+\code{\link[=plot_flags]{plot_flags()}},
+\code{\link[=plot_funnel]{plot_funnel()}}
 }
+\concept{plots}

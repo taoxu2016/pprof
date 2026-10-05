@@ -1,5 +1,7 @@
 # Funnel plots from funnel_limits() or profile_providers() results.
 
+# The help below states D-43 (awaiting sign-off) for linear FE fits with the full provider
+# variance.
 #' Funnel plot
 #'
 #' Plots each provider's indirectly standardized measure against its precision, with the
@@ -14,8 +16,8 @@
 #' limits are target -/+ z sigma / sqrt(n_i) around the target 0, and the flags come from the
 #' Wald test (`plot()` of `linear_fe` fits). With `provider_variance = "full"` the limits still
 #' use sigma^2 / n_i while the Wald test uses the full variance and the t distribution, so a
-#' point outside the limits may not be flagged; this is as in pprof 1.0.3 and awaiting a
-#' decision of the methodology owners. Random-effect models have no funnel plot.
+#' point outside the limits may not be flagged, as in pprof 1.0.3. Random-effect models have
+#' no funnel plot.
 #'
 #' Providers whose flag is missing are shown as "no flag". The plot is returned, not printed;
 #' change its appearance with ggplot2's functions, for example
@@ -27,7 +29,8 @@
 #' @param line_width Width of the control limits and the target line.
 #'
 #' @return A ggplot object.
-#' @seealso [funnel_limits()], [plot_caterpillar()], [plot_flags()], [plot_volume()]
+#' @seealso [funnel_limits()]
+#' @family plots
 #' @examples
 #' data(ExampleDataBinary)
 #' example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

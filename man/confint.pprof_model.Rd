@@ -29,3 +29,17 @@ inference for coefficients raise \code{pprof_error_unsupported_inference}. Inter
 provider effects and standardized measures come from \code{\link[=provider_effects]{provider_effects()}} and
 \code{\link[=standardize_providers]{standardize_providers()}}.
 }
+\examples{
+data(ExampleDataBinary)
+example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
+                      ExampleDataBinary$Z)
+fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+confint(fit)
+confint(fit, parm = "z1", level = 0.9)
+}
+\seealso{
+Other covariate inference:
+\code{\link[=summary.pprof_model]{summary.pprof_model()}},
+\code{\link[=test_coefficients]{test_coefficients()}}
+}
+\concept{covariate inference}

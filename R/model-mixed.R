@@ -244,6 +244,15 @@ validate_pprof_mixed <- function(x) {
 #'   absent from the fit (which warns), give NA.
 #' @param ... Not used.
 #'
+#' @family model methods
+#' @examples
+#' data(ExampleDataLinear)
+#' example <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$ProvID,
+#'                       ExampleDataLinear$Z)
+#' fit <- fit_linear_re(y ~ z1 + z2 + z3 + z4 + z5, example, provider = "hospital")
+#' head(fitted(fit))
+#' predict(fit, newdata = example[c(1, 500, 1000), ])
+#' logLik(fit)
 #' @name mixed_methods
 NULL
 
