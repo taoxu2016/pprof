@@ -1,7 +1,7 @@
 # Equivalence report: package under test versus the pprof 1.0.3 reference
 
-Generated 2026-10-05 01:27:27 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
-Package under test: pprof 1.0.3 from the working tree at commit 1cab919.
+Generated 2026-10-05 14:32:23 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Package under test: pprof 1.0.3 from the working tree at commit a5f3c46.
 Fixtures: core set generated at 9c1fba1, full set generated at 9c1fba1.
 
 ## Summary
