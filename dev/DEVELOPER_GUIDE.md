@@ -43,7 +43,7 @@ Run from the repository root.
 | Lint | `Rscript -e 'lintr::lint_package()'` |
 | Coverage | `Rscript -e 'covr::package_coverage()'` |
 | Reference suite, differential tests | `Rscript validation/run-reference.R`, `Rscript validation/run-differential.R` |
-| The site | `Rscript -e 'pkgdown::build_site()'` |
+| The site | `Rscript -e 'pkgdown::build_site(override = list(destination = "<a folder outside the repository>"))'`; CI builds it on every push to a `rewrite/**` branch. pkgdown renders every Markdown file at the root, so a local build also renders `CLAUDE.md` (CI removes it first) |
 
 Building the vignettes and the site needs pandoc. Examples, tests, and vignettes use at most two threads; package code never calls `set.seed()`.
 
@@ -59,4 +59,4 @@ Building the vignettes and the site needs pandoc. Examples, tests, and vignettes
 
 ## Continuous integration
 
-`.github/workflows/`: `rewrite-check.yaml` (R CMD check on Linux, macOS, and Windows), `rewrite-reference.yaml` (the reference suite with pinned lme4 and Matrix), `rewrite-coverage.yaml`, `rewrite-sanitizers.yaml` (the C++ code under sanitizers), and `rewrite-bench.yaml` (benchmarks, on demand).
+`.github/workflows/`: `rewrite-check.yaml` (R CMD check on Linux, macOS, and Windows), `rewrite-reference.yaml` (the reference suite with pinned lme4 and Matrix), `rewrite-coverage.yaml`, `rewrite-sanitizers.yaml` (the C++ code under sanitizers), `rewrite-bench.yaml` (benchmarks, on demand), and `rewrite-pkgdown.yaml` (builds the site and keeps it as an artifact; publishing it is the package owners' decision, and the site is no longer committed in `docs/`).

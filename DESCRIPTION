@@ -43,7 +43,7 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     withr
-URL: https://github.com/UM-KevinHe/pprof
+URL: https://github.com/UM-KevinHe/pprof, https://um-kevinhe.github.io/pprof/
 BugReports: https://github.com/UM-KevinHe/pprof/issues
 VignetteBuilder: knitr
 Encoding: UTF-8

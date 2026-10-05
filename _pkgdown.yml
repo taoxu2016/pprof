@@ -7,10 +7,6 @@ template:
     heading_font: {google: "Roboto Slab"}
     code_font: {google: "JetBrains Mono"}
 
-
-vignettes:
-  - vignettes/pprof.Rmd
-
 authors:
   - name: "Xiaohan Liu"
   - name: "Lingfeng Luo"
@@ -19,38 +15,91 @@ authors:
     href: "https://www.um-kevinhe-group.org/"
 
 navbar:
- components:
-   articles:
-    text: Appendix
-    menu:
-    - text: Risk-adjustment Model
-      href: articles/Risk-adjustment_Model.html
-    - text: Logistic Fixed Effect Model
-      href: articles/Logis-FE.html
-    - text: Linear Fixed Effect Model
-      href: articles/Linear-FE.html
+  components:
+    articles:
+      text: Articles
+      menu:
+      - text: Models and what they support
+        href: articles/models.html
+      - text: Statistical methods
+        href: articles/statistical-methods.html
+      - text: Migrating from pprof 1.0.3
+        href: articles/migration.html
+      - text: -------
+      - text: Adding a model to pprof
+        href: articles/adding-a-model.html
+
+articles:
+- title: Using pprof
+  navbar: ~
+  contents:
+  - pprof
+  - models
+  - statistical-methods
+  - migration
+- title: Developing pprof
+  contents:
+  - adding-a-model
 
 reference:
-- title: Model Fitting Functions
+- title: The package
+  contents:
+  - pprof-package
+- title: Fitting models
+  contents:
+  - fit_logistic_fe
+  - fit_logistic_firth
+  - fit_logistic_re
+  - fit_logistic_cre
+  - fit_linear_fe
+  - fit_linear_re
+  - fit_linear_cre
+- title: Profiling providers
+  contents:
+  - test_providers
+  - standardize_providers
+  - provider_effects
+  - funnel_limits
+  - profile_providers
+- title: Covariates
+  contents:
+  - summary.pprof_model
+  - confint.pprof_model
+  - test_coefficients
+- title: Plots
+  contents:
+  - plot_funnel
+  - plot_caterpillar
+  - plot_flags
+  - plot_volume
+- title: Methods and tidy outputs
+  contents:
+  - pprof_model_methods
+  - logistic_fe_methods
+  - linear_fe_methods
+  - mixed_methods
+  - pprof_tidy
+- title: Example data
+  contents:
+  - ExampleDataBinary
+  - ExampleDataLinear
+  - ecls_data
+- title: For model developers
+  desc: The interface for adding a model; see the article "Adding a model to pprof".
+  contents:
+  - data_prepare
+  - new_pprof_model
+  - model_contract
+- title: The interface of pprof 1.0.3
+  desc: Kept for existing code; see the article "Migrating from pprof 1.0.3".
   contents:
   - logis_fe
+  - logis_firth
   - logis_re
   - logis_cre
-  - logis_firth
   - linear_fe
   - linear_re
   - linear_cre
-- title: Standardized Measure Calculation
-  contents:
-  - SM_output
-  - SM_output.logis_fe
-  - SM_output.logis_re
-  - SM_output.logis_cre
-  - SM_output.linear_fe
-  - SM_output.linear_re
-  - SM_output.linear_cre
-- title: Hypothesis Testing for Provider Effects
-  contents:
   - test
   - test.logis_fe
   - test.logis_re
@@ -58,31 +107,30 @@ reference:
   - test.linear_fe
   - test.linear_re
   - test.linear_cre
-- title: Confidence Interval for Provider Effects
-  contents:
+  - SM_output
+  - SM_output.logis_fe
+  - SM_output.logis_re
+  - SM_output.logis_cre
+  - SM_output.linear_fe
+  - SM_output.linear_re
+  - SM_output.linear_cre
   - confint.logis_fe
   - confint.logis_re
   - confint.logis_cre
   - confint.linear_fe
   - confint.linear_re
   - confint.linear_cre
-- title: Summary Statistics for Covariate Estimates
-  contents:
   - summary.logis_fe
   - summary.logis_re
   - summary.linear_fe
-  - summary.linear_re
-- title: Plotting Functions
-  contents:
-  - bar_plot
-  - caterpillar_plot
   - plot.logis_fe
   - plot.linear_fe
-- title: Helper Function
-  contents:
+  - caterpillar_plot
+  - bar_plot
   - data_check
-- title: Example Data Sets
-  contents:
-  - ExampleDataBinary
-  - ecls_data
-  - ExampleDataLinear
+
+redirects:
+  - ["articles/Quick-start.html", "articles/pprof.html"]
+  - ["articles/Risk-adjustment_Model.html", "articles/statistical-methods.html"]
+  - ["articles/Logis-FE.html", "articles/statistical-methods.html"]
+  - ["articles/Linear-FE.html", "articles/statistical-methods.html"]

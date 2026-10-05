@@ -29,3 +29,5 @@ dev/reference/lib/
 /doc/
 /Meta/
 inst/doc
+# The pkgdown site is built in CI, not committed (DEC-015, DEC-066)
+docs/
