@@ -1,0 +1,66 @@
+## 1. Classes with a method for each contract generic (pprof's S3 table)
+provider_table: default, pprof_model
+provider_estimates: default, pprof_model
+provider_index: default, pprof_model
+linear_predictor: default, pprof_model
+observed_outcome: default, pprof_model
+expected_outcome: default, pprof_linear_fe, pprof_logistic_fe, pprof_mixed, pprof_model
+predicted_outcome: default, pprof_mixed, pprof_model
+null_effect: default, pprof_linear_fe, pprof_logistic_fe, pprof_mixed, pprof_model
+profile_spec: default, pprof_linear_fe, pprof_logistic_fe, pprof_mixed, pprof_model
+inference_capabilities: default, pprof_linear_fe, pprof_logistic_fe, pprof_mixed, pprof_model
+provider_estimate_se: default, pprof_linear_fe, pprof_logistic_fe, pprof_mixed, pprof_model
+provider_test: default, pprof_logistic_fe, pprof_model
+refit_without: default, pprof_logistic_fe, pprof_model
+
+## 2. Family specifications and capabilities
+logistic_fe class: pprof_logistic_fe > pprof_model
+  specification fields: family, effect, null_default, null_options, test_default, indirect_numerator, comparison, measures, mean_function, variance_function, direct_expected, direct_reference, direct_limits, one_sided_extremes, wald, coefficient_wald, funnel, wald_caution
+  capabilities: coef_wald, coef_lr, coef_score, provider_exact, provider_bootstrap, provider_score, provider_score_standard, provider_wald, interval_exact, interval_score, interval_wald, standardize_indirect, standardize_direct, funnel
+  object fields: call, formula, terms, data_spec, spec, providers, coefficients, vcov, provider_effects, provider_effect_variance, response, linear_predictor, provider_index, row_index, convergence, n_obs, n_providers, n_excluded_providers, n_excluded_obs, package_version, data, loglik, aic, bic, auc
+logistic_firth class: pprof_logistic_firth > pprof_logistic_fe > pprof_model
+  specification fields: family, effect, null_default, null_options, test_default, indirect_numerator, comparison, measures, mean_function, variance_function, direct_expected, direct_reference, direct_limits, one_sided_extremes, wald, coefficient_wald, funnel, wald_caution
+  capabilities: coef_wald, coef_lr, coef_score, provider_exact, provider_bootstrap, provider_score, provider_score_standard, provider_wald, interval_exact, interval_score, interval_wald, standardize_indirect, standardize_direct, funnel
+  object fields: call, formula, terms, data_spec, spec, providers, coefficients, vcov, provider_effects, provider_effect_variance, response, linear_predictor, provider_index, row_index, convergence, n_obs, n_providers, n_excluded_providers, n_excluded_obs, package_version, data, loglik, aic, bic, auc, penalized_loglik
+linear_fe class: pprof_linear_fe > pprof_model
+  specification fields: family, effect, null_default, null_options, test_default, indirect_numerator, comparison, measures, mean_function, direct_expected, direct_reference, direct_limits, one_sided_extremes, wald, coefficient_wald, funnel, wald_caution
+  capabilities: coef_wald, provider_wald, interval_wald, standardize_indirect, standardize_direct, funnel
+  object fields: call, formula, terms, data_spec, spec, providers, coefficients, vcov, provider_effects, provider_effect_variance, response, linear_predictor, provider_index, row_index, convergence, n_obs, n_providers, n_excluded_providers, n_excluded_obs, package_version, data, sigma, loglik, aic, bic
+linear_re class: pprof_linear_re > pprof_mixed > pprof_model
+  specification fields: family, effect, null_default, null_options, test_default, indirect_numerator, comparison, measures, mean_function, direct_expected, direct_reference, direct_limits, one_sided_extremes, wald, coefficient_wald, wald_caution
+  capabilities: coef_wald, provider_wald, interval_wald, standardize_indirect, standardize_direct
+  object fields: call, formula, terms, data_spec, spec, providers, coefficients, vcov, provider_effects, provider_effect_variance, response, linear_predictor, provider_index, row_index, convergence, n_obs, n_providers, n_excluded_providers, n_excluded_obs, package_version, data, fitted, provider_effect_sd, variance_components, loglik, loglik_df, aic, bic, sigma
+logistic_re class: pprof_logistic_re > pprof_mixed > pprof_model
+  specification fields: family, effect, null_default, null_options, test_default, indirect_numerator, comparison, measures, mean_function, direct_expected, direct_reference, direct_limits, one_sided_extremes, wald, coefficient_wald, wald_caution
+  capabilities: coef_wald, provider_wald, interval_wald, standardize_indirect, standardize_direct
+  object fields: call, formula, terms, data_spec, spec, providers, coefficients, vcov, provider_effects, provider_effect_variance, response, linear_predictor, provider_index, row_index, convergence, n_obs, n_providers, n_excluded_providers, n_excluded_obs, package_version, data, fitted, provider_effect_sd, variance_components, loglik, loglik_df, aic, bic
+linear_cre class: pprof_linear_cre > pprof_mixed > pprof_model
+  specification fields: family, effect, null_default, null_options, test_default, indirect_numerator, comparison, measures, mean_function, direct_expected, direct_reference, direct_limits, one_sided_extremes, wald, coefficient_wald, wald_caution
+  capabilities: coef_wald, provider_wald, interval_wald, standardize_indirect, standardize_direct
+  object fields: call, formula, terms, data_spec, spec, providers, coefficients, vcov, provider_effects, provider_effect_variance, response, linear_predictor, provider_index, row_index, convergence, n_obs, n_providers, n_excluded_providers, n_excluded_obs, package_version, data, fitted, provider_effect_sd, variance_components, loglik, loglik_df, aic, bic, sigma
+logistic_cre class: pprof_logistic_cre > pprof_mixed > pprof_model
+  specification fields: family, effect, null_default, null_options, test_default, indirect_numerator, comparison, measures, mean_function, direct_expected, direct_reference, direct_limits, one_sided_extremes, wald, coefficient_wald, wald_caution
+  capabilities: coef_wald, provider_wald, interval_wald, standardize_indirect, standardize_direct
+  object fields: call, formula, terms, data_spec, spec, providers, coefficients, vcov, provider_effects, provider_effect_variance, response, linear_predictor, provider_index, row_index, convergence, n_obs, n_providers, n_excluded_providers, n_excluded_obs, package_version, data, fitted, provider_effect_sd, variance_components, loglik, loglik_df, aic, bic
+
+## 3. The toy model of the extension proof, from outside the package
+pprof functions the toy model calls: data_prepare, linear_predictor, new_pprof_model, provider_estimates, provider_index, provider_table
+of which not exported: none
+class: pprof_toy_model > pprof_model; validate_pprof_model() returns it unchanged: TRUE
+  test_providers(): ok
+  test_providers('score'): ok
+  standardize_providers(): ok
+  provider_effects(): ok
+  funnel_limits(): ok
+  profile_providers(): ok
+  plot_funnel(profile_providers()) built: ok
+  plot_flags(test_providers(), group_count = 2) built: ok
+  plot_volume(profile_providers()) built: ok
+  tidy(test_providers()): ok
+  print(toy): ok
+  test_providers('wald') (undeclared): error pprof_error_unsupported_inference: Models of class 'pprof_toy_model' do not support 'provider_wald'.
+  provider_effects(interval = 'exact') (undeclared): error pprof_error_unsupported_inference: Models of class 'pprof_toy_model' do not support 'interval_exact'.
+  standardize_providers('direct') (undeclared): error pprof_error_unsupported_inference: Models of class 'pprof_toy_model' do not support 'standardize_direct'.
+  coef(toy): ok
+  summary(toy): error pprof_error_unsupported_inference: Models of class 'pprof_toy_model' do not support 'coef_wald'.
+  confint(toy): error pprof_error_unsupported_inference: Models of class 'pprof_toy_model' do not support 'coef_wald'.

@@ -1,0 +1,24 @@
+pkgdown 2.2.1; knitr 1.52; rmarkdown 2.32
+rmarkdown::pandoc_available(): FALSE
+markdown package installed: FALSE
+
+## 1. pkgdown::check_pkgdown()
+error: In DESCRIPTION, URL is missing package url (https://um-kevinhe.github.io/pprof). ℹ See details in `vignette(pkgdown::metadata)`.
+
+## 2. Help topics missing from the reference index of _pkgdown.yml
+listed: 39; topics (not internal): 62; internal: 4
+not listed (24): confint.pprof_model, fit_linear_cre, fit_linear_fe, fit_linear_re, fit_logistic_cre, fit_logistic_fe, fit_logistic_firth, fit_logistic_re, funnel_limits, linear_fe_methods, logistic_fe_methods, mixed_methods, plot_caterpillar, plot_flags, plot_funnel, plot_volume, pprof_model_methods, pprof_tidy, profile_providers, provider_effects, standardize_providers, summary.pprof_model, test_coefficients, test_providers
+internal topics: data_prepare, model_contract, new_pprof_model, reexports
+
+## 3. The committed site, docs/
+files: 305; size: 8.2 MB
+by top-level entry: 404.html 1; articles 16; authors.html 1; bootstrap-toc.css 1; bootstrap-toc.js 1; CONTRIBUTING.html 1; deps 217; docsearch.css 1; docsearch.js 1; index.html 1; katex-auto.js 1; LICENSE-text.html 1; LICENSE.html 1; lightswitch.js 1; link.svg 1; pkgdown.css 1; pkgdown.js 1; pkgdown.yml 1; reference 54; search.json 1; sitemap.xml 1
+docs/pkgdown.yml: pandoc 3.7.0.2; pkgdown 2.1.1; last_built 2026-01-16T18:58Z; articles: Linear-FE, Logis-FE, pprof, Quick-start, Risk-adjustment_Model
+reference pages: 46; of the current topics, absent from docs/reference: confint.pprof_model, data_prepare, fit_linear_cre, fit_linear_fe, fit_linear_re, fit_logistic_cre, fit_logistic_fe, fit_logistic_firth, fit_logistic_re, funnel_limits, linear_fe_methods, logistic_fe_methods, mixed_methods, model_contract, new_pprof_model, plot_caterpillar, plot_flags, plot_funnel, plot_volume, pprof_model_methods, pprof_tidy, profile_providers, provider_effects, reexports, standardize_providers, summary.pprof_model, test_coefficients, test_providers
+git log of docs/ (last commit): d210d45|2026-10-02|repo: remove leftover configure and cleanup scripts and .DS_Store files
+
+## 4. Vignettes and the build
+vignettes/: Charts/pprof flowchart (v1).png, Charts/pprof flowchart (v2).png, Linear-FE.Rmd, Logis-FE.Rmd, pprof.Rmd, Quick-start.Rmd, Risk-adjustment_Model.Rmd
+DESCRIPTION VignetteBuilder: absent
+.Rbuildignore lines about vignettes, docs, pkgdown, README: ^pprof/docs/deps/bootstrap-5\.3\.1/fonts/.+ ; # Exclude pkgdown configuration ; ^_pkgdown\.yml$ ; # Exclude pkgdown-generated docs ; ^docs/ ; # Exclude vignettes folder ; ^vignettes/
+image referenced by pprof.Rmd: vignettes/Charts/pprof_flowchart.png exists: FALSE

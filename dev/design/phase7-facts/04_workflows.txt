@@ -1,0 +1,119 @@
+# Part 1. The new API by family
+
+## Logistic fixed effects, ExampleDataBinary (7,944 observations, 100 providers) (running total before: 0.0 s)
+  0.05 s  fit_logistic_fe()
+  0.01 s  print() and summary()
+  0.00 s  confint()
+  0.16 s  test_coefficients(test = 'lr', data =)
+  0.18 s  test_coefficients(test = 'score', data =)
+  0.07 s  test_providers() (exact)
+  0.00 s  test_providers('score')
+  0.05 s  test_providers('score', score_type = 'standard', data =)
+  0.00 s  test_providers('wald')  [warnings: Wald tests and intervals are unreliable for providers with no events or only events (3 of ]
+  4.94 s  test_providers('bootstrap') (10,000 resamples)
+  1.40 s  provider_effects(interval = 'exact')
+  0.03 s  provider_effects(interval = 'score')
+  0.02 s  standardize_providers() (indirect ratio and rate)
+  0.03 s  standardize_providers(c('indirect', 'direct'))
+  1.40 s  standardize_providers(interval = 'exact')
+  1.51 s  standardize_providers(c('indirect', 'direct'), interval = 'exact')
+  0.05 s  standardize_providers(interval = 'score')
+  0.00 s  funnel_limits(level = c(0.95, 0.998))
+  0.07 s  profile_providers()
+  1.50 s  profile_providers(interval = 'exact')
+  0.53 s  plot_funnel(funnel), drawn
+  0.20 s  plot_caterpillar(measures_exact, use_flag = TRUE), drawn
+  0.22 s  plot_flags(tests), drawn
+  0.28 s  plot_volume(profile_exact), drawn
+  0.00 s  tidy(), glance(), augment()
+
+## Firth, ExampleDataBinary (running total before: 12.7 s)
+  0.06 s  fit_logistic_firth()
+  1.47 s  test_providers() and standardize_providers(interval = 'exact')
+
+## Linear fixed effects, ExampleDataLinear (7,901 observations, 100 providers) (running total before: 14.2 s)
+  0.01 s  fit_linear_fe()
+  0.02 s  fit_linear_fe(provider_variance = 'full')
+  0.00 s  summary() and confint()
+  0.00 s  test_providers()
+  0.01 s  standardize_providers(c('indirect', 'direct'), interval = 'wald')
+  0.01 s  profile_providers(interval = 'wald')
+  0.23 s  plot_funnel(lprofile), drawn
+  0.21 s  plot_volume(lprofile), drawn
+
+## Linear fixed effects, ecls_data (9,101 children, 2,275 schools) (running total before: 14.7 s)
+  0.03 s  fit_linear_fe(Math_Score ~ Income + Child_Sex, provider = 'School_ID')
+  0.05 s  profile_providers(interval = 'wald')
+  0.22 s  plot_funnel(eprofile), drawn
+  0.00 s  plot_flags(eprofile$tests), drawn  ERROR: The provider sizes do not split into 4 groups; use a smaller `group_count`.
+
+## Random effects, full example data (running total before: 15.0 s)
+  0.11 s  fit_linear_re(), ExampleDataLinear
+  5.38 s  fit_logistic_re(), ExampleDataBinary
+  0.09 s  fit_linear_cre(within_between = c('z1', 'z2')), ExampleDataLinear
+  6.18 s  fit_logistic_cre(within_between = c('z1', 'z2')), ExampleDataBinary
+  0.00 s  linear RE summary(), test_providers(), standardize_providers(c('indirect', 'direct'), interval = 'wald')
+  0.14 s  logistic RE summary(), test_providers(), standardize_providers(c('indirect', 'direct'), interval = 'wald')
+  0.01 s  linear CRE summary(), test_providers(), standardize_providers(c('indirect', 'direct'), interval = 'wald')
+  0.15 s  logistic CRE summary(), test_providers(), standardize_providers(c('indirect', 'direct'), interval = 'wald')
+
+## Random effects, providers 1 to 20 (as the help examples) (running total before: 27.1 s)
+  0.69 s  fit_logistic_re(), 20 providers
+  0.99 s  fit_logistic_cre(), 20 providers
+  0.02 s  fit_linear_re(), 20 providers
+
+Part 1 total: 28.8 s
+
+# Part 2. Before and after: pprof 1.0.3's interface against the new API
+
+## logis_fe() against fit_logistic_fe() (running total before: 0.0 s)
+  0.05 s  logis_fe(y ~ id(hospital) + z1 + ... + z5, data, message = FALSE)
+  coefficients: old$coefficient$beta vs coef(fit): identical (5 values)
+  provider effects: old$coefficient$gamma vs provider_effects(fit)$table$estimate: identical (100 values)
+  vcov: old$variance$beta vs vcov(fit): identical (25 values)
+  0.08 s  test(old)
+  test(old)$`p value` vs test_providers(fit)$table$p_value: identical (100 values)
+  flags: test(old)$flag (factor) vs test_providers(fit)$table$flag: identical (100 values)
+  0.00 s  SM_output(old) (threads = 2 by default)
+  SM_output(old)$indirect.ratio vs standardize_providers(fit) ratio: identical (100 values)
+  SM_output(old)$indirect.rate vs standardize_providers(fit) rate: identical (100 values)
+  1.38 s  confint(old, option = 'gamma') (exact)
+  confint(old, option = 'gamma') limits vs provider_effects(fit, interval = 'exact'): identical (200 values)
+  1.42 s  confint(old) (SM, exact, indirect, ratio and rate)
+  confint(old)$CI.indirect_ratio limits vs standardize_providers(fit, interval = 'exact'): identical (200 values)
+  0.02 s  summary(old) (Wald)
+  summary(old) estimates and limits vs test_coefficients(fit): identical (15 values)
+  0.14 s  summary(old, test = 'lr')
+  summary(old, test = 'lr')$stat vs test_coefficients(fit, 'lr', data =)$table$statistic: identical (5 values)
+  0.33 s  plot(old), drawn
+  0.20 s  plot_funnel(funnel_limits(fit)), drawn
+  funnel points: plot(old) layer 1 indicator vs funnel_limits(fit)$providers$estimate: identical (100 values)
+  0.16 s  caterpillar_plot(confint(old)$CI.indirect_ratio), drawn
+  0.24 s  bar_plot(test(old)), drawn
+  0.18 s  plot_flags(test_providers(fit)), drawn
+
+## linear_fe() against fit_linear_fe() (running total before: 4.2 s)
+  0.01 s  linear_fe(y ~ id(hospital) + z1 + ... + z5, data)
+  coefficients: identical (5 values)
+  test(): p-values: identical (100 values)
+  test(): flags: identical (100 values)
+  confint(old)$CI.indirect limits vs standardize_providers(fit, interval = 'wald'): identical (200 values)
+
+## linear_re() against fit_linear_re() (running total before: 4.2 s)
+  0.11 s  linear_re(y ~ (1 | hospital) + z1 + ... + z5, data)
+  fixed effects: old$coefficient$FE vs coef(fit): identical (6 values)
+  random effects: old$coefficient$RE vs provider_estimates(fit): identical (100 values)
+  test(): p-values: identical (100 values)
+  SM_output(old)$indirect.difference vs standardize_providers(fit): identical (100 values)
+
+## linear_cre() against fit_linear_cre() (running total before: 4.3 s)
+  0.18 s  linear_cre(data, Y.char, wb.char = c('z1', 'z2'), other.char, ProvID.char)
+  fixed effects (sorted; the term order may differ): identical (8 values)
+  names: old (Intercept) z1_within z2_within z1_bar z2_bar z3 z4 z5; new (Intercept) z1_within z2_within z1_bar z2_bar z3 z4 z5
+
+## logis_firth() against fit_logistic_firth() (running total before: 4.5 s)
+  0.05 s  logis_firth(y ~ id(hospital) + z1 + ... + z5, data, message = FALSE)
+  coefficients: identical (5 values)
+  provider effects: identical (100 values)
+
+Part 2 total: 4.5 s

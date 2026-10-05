@@ -1,0 +1,197 @@
+# Phase 7 plan: documentation
+
+Proposed on 2026-10-04 for the project lead's approval; nothing is implemented. Branch `rewrite/phase-7`, created from `rewrite/phase-6` at `8aa85cc` (stacked until Phases 1 to 6 are merged into `rewrite/v2`), clean at `7d6d696` when this plan was written. The brief gives Phase 7 no gate; this plan proposes one (DEC-061).
+
+The facts in "Facts gathered" were confirmed by running the working tree at `7d6d696` on 2026-10-04 (`dev/design/phase7-facts/`). Treat anything else here as a hypothesis to confirm by running code before relying on it (CLAUDE.md).
+
+## Goal and scope
+
+Brief §4: "Developer guide, user documentation, vignettes, migration guide." Brief §8: for each breaking change, the old interface, the new interface, the migration path, and whether a wrapper remains, in a migration table and a user-facing migration vignette. Brief §9: roxygen2 with markdown, a pkgdown site, and vignettes built from source and checked; whether generated site output belongs in the repository (DEC-015 decided that it does not). Brief §12: criterion 11 (another statistician or programmer can add a model by following the developer guide, without reverse-engineering the package) and criterion 7 (the extension proof passes, and the Group Lasso walk-through shows that group methods can be added as independent modules). Earlier decisions and entries give Phase 7 the migration guide of ARCHITECTURE §I.4 (with DEC-001, DEC-008, DEC-011, and the timing of DEC-033), the replacement of the old vignettes (D-37), D-35, the documentation of the model-contract generics in the developer guide (NAMING §3.1), and the site built in CI instead of a committed `docs/` (DEC-015).
+
+Phase 7 delivers:
+
+- five vignettes, built and checked with the package (DEC-062): "Getting started with pprof", "Models and what they support", "Statistical methods", "Migrating from pprof 1.0.3" (DEC-064), and "Adding a model to pprof", the developer guide for model authors (DEC-063);
+- `dev/DEVELOPER_GUIDE.md`, the guide for contributors to pprof itself (DEC-063);
+- help pages: an example on every user-facing page of the new interface, cross-links by role, the two statements users still lack (D-32 for measure intervals, D-34 for provider order), a package page `?pprof`, and the data documentation fixed (D-35) and written for the new interface (DEC-068); `data_check()`'s help states D-17, if approved;
+- a README for the new interface (DEC-067);
+- a pkgdown configuration for the new interface, a site that builds cleanly locally and in CI, and `docs/` removed from the repository (DEC-066);
+- the documents: the register (D-17, D-35, D-37), NEWS, ARCHITECTURE, NAMING, PROJECT_CONTEXT.
+
+No executable code changes: the R and C++ code that computes, prints, and plots stays as it is, and a comparison of the installed namespaces before and after shows it (step 6). The documentation states what the code does, including the behaviors awaiting sign-off, and takes no methodology position (DEC-065).
+
+### Scoping questions of the handoff
+
+1. **The gate: stop with `/phase-gate`** (DEC-061), with one check-in after step 2 on the wording of methodology. The brief requires no gate, but the vignettes join the package build, which changes `R CMD check` on every platform, and the user-facing text describes methods whose wording is the owners' to approve (M-16, M-20, M-21).
+2. **The developer guide: both places** (DEC-063). A vignette for people who add a model, inside pprof or in a package of their own: shipped, checked by `R CMD check`, and built on the toy model of the extension proof, which runs from outside the package on exported functions alone (F9). A document in `dev/` for contributors to pprof itself, because fixtures, equivalence tests, and the conventions register do not belong in a shipped vignette.
+3. **Vignettes and articles: all five vignettes are built and checked** (DEC-062); no pkgdown-only article. Their code takes about 15 to 20 s on this machine (F7) when the heavy calls use the 20-provider subset of the help examples or fewer resamples: the bootstrap test with 10,000 resamples takes 4.9 s, and the full-data logistic RE and CRE fits 5.4 s and 6.2 s. `vignettes/articles/` is kept for material that cannot meet the budget; none is planned.
+4. **The pkgdown site: rewrite the configuration, build the site in CI, remove `docs/`** (DEC-066), as DEC-015 decided; publishing stays with the owners. The site at `https://um-kevinhe.github.io/pprof/` is served from the upstream's `main`, so `docs/` must not disappear from `main` before the owners switch GitHub Pages to a CI deployment; the switch becomes a precondition of merging the rewrite into `main`. The alternative is to keep `docs/` until Phase 8.
+5. **The README: rewrite it for the new interface** (DEC-067), as plain Markdown, with a test that runs its code.
+6. **The version number and the release shape of NEWS: Phase 8.** Phase 7 adds bullets to the development NEWS. The documentation calls the old interface "the interface of pprof 1.0.3" and dates the deprecation warnings "from pprof 2.0.0", as NEWS does.
+7. **`R/Data.R`: move it to `R/data-bundled.R`** (NAMING §8), fix D-35, and write its examples for the new interface (DEC-068), so that the data documentation is touched once.
+
+Proposed in addition: **D-17's documentation in this phase.** D-17 (Class C) recommends stating in `data_check()`'s help that it stops on any missing value while the fits delete incomplete rows; the handoff assigns D-17 to Phase 8 with `check_data()`. The help fix is documentation and fits this phase; the function, `check_data()`, and their dependencies stay in Phase 8.
+
+### Items carried over from Phase 6 (handoff §5)
+
+- **For Phase 8, unchanged:** building the model once in `plot.logis_fe()` (DEC-039); the minimum ggplot2 version and `geom_errorbarh()` (D-36); `data_check()`, `check_data()`, and the removal of caret, olsrr, and globals (DEC-054); the once-per-session deprecation warnings (DEC-033); DEC-044's investigation of the 50-covariate peak. Phase 7 documents the state they leave: the migration guide says when the warnings start, `data_check()`'s help states D-17, and nothing documents `check_data()` before it exists.
+- **Branches:** `rewrite/phase-6` was pushed at `8aa85cc`, and its pull request goes into `rewrite/phase-5`; nothing to do in Phase 7. `rewrite/phase-7` stays local until the project lead asks for a push; the new CI workflow (step 5) can be seen running only after one.
+- **One-off scripts of Phase 6:** `dev/design/phase6-facts/07_render_new_plots.R` is reused to look at the plots while writing; the plot guard is not needed, since no plot code changes.
+
+### Out of scope
+
+Any change to executable code, including fixes for problems found while documenting (they go to the register, for Phase 8 unless the project lead decides otherwise); the version number, NEWS's release shape, a CITATION file, and the CRAN submission (Phase 8); `check_data()` and the deprecation warnings (Phase 8); deploying the site; fixture regeneration; any Class B change; any answer to a methodology question.
+
+## Steps
+
+Work in this order. Commit small, scoped commits with explicit paths, and check `git show --stat` after each commit that removes files (Phase 6 lesson); add a dated entry to PROJECT_CONTEXT §10 at the end of each step. Step 1 can start without pandoc; steps 2 to 6 need it.
+
+### Step 0: Pandoc (needs approval: installing software)
+
+- **Why.** Vignettes rendered with rmarkdown and the pkgdown site need pandoc, and none is on this machine (F1). Without it, `R CMD build` cannot build the vignettes, and `R CMD check` cannot check README.md and NEWS.md (one of the current notes, F2).
+- **Proposed.** Pandoc 3.x for the current user, either with winget (`winget install --id JohnMacFarlane.Pandoc -e`; pandoc's Windows installer installs per user, without administrator rights) or as the portable zip of pandoc's GitHub release in a user folder, with `RSTUDIO_PANDOC` pointing to it in the R sessions. The committed site was built with pandoc 3.7.0.2 (F5); CI's `setup-pandoc` takes the current release. The project lead chooses the way and the version.
+- **Checks.** `rmarkdown::pandoc_available()` is TRUE; `R CMD check --as-cran --no-manual --no-tests` on the unchanged tree records the notes with pandoc present, the baseline of the later steps.
+
+### Step 1: Help pages and the data documentation (DEC-068)
+
+- **Files.**
+  - The roxygen blocks of the new interface's pages: `R/inference-coefficients.R` (`test_coefficients()`, `confint.pprof_model`), `R/model-*.R` (the fits and the methods pages), `R/profile-*.R`, `R/present-*.R`, `R/plot-*.R`, and the developer pages in `R/model-contract.R`, `R/model-class.R`, and `R/data-prepare.R`; of the old interface's pages, only `logis_firth`'s (`R/compat-fits.R`), for its register IDs.
+  - `R/Data.R` moved to `R/data-bundled.R` (`git mv`); `R/pprof-package.R` (new, the package page); the roxygen of `data_check()` in `R/data_check.R` (D-17, if approved).
+  - `tests/testthat/test-architecture.R` (`Data.R` leaves the legacy list), `.lintr` (`R/Data.R` leaves the exclusions), `tests/testthat/test-data-bundled.R` (new: the counts in the data help equal the data's, D-35's planned regression test), `man/` regenerated.
+- **Approach.**
+  - Examples for the user-facing pages without one (F3): `test_coefficients()`, `confint.pprof_model`, and the methods pages `pprof_model_methods`, `logistic_fe_methods`, `linear_fe_methods`, and `mixed_methods`; and short ones for the developer pages `model_contract`, `new_pprof_model`, and `data_prepare`. Each runs in under 1 s, using the 20-provider subset for logistic RE and CRE fits, as the fit pages do. The generics `test()` and `SM_output()` keep pointing to their methods.
+  - `@family` tags on the new interface's pages, by role (fitting functions, provider profiling, covariate inference, plots, model methods), so that each page lists its siblings under "See also". The old interface's pages keep their links.
+  - The statements users lack (F4): `standardize_providers()` says that the measure intervals of linear FE models use the distribution of the provider-effect intervals (t with the simplified variance, normal with the full), the reverse of the tests (D-32); the fit functions say how providers are ordered (as `factor()` orders the IDs: numbers numerically, strings in the collation order of the session's locale; D-34), and the profiling functions that their rows follow that order.
+  - The data documentation: 7,944 observations (D-35), every other count checked against the data by the new test, examples that build the data frame the new interface takes and fit it (`fit_logistic_fe()`, `fit_linear_fe()`, `fit_linear_re()`); the descriptions otherwise unchanged, as the owners wrote them.
+  - Register IDs leave the rendered help (F4): the seven pages that cite K-, D-, or M-IDs say the same thing without them, and the IDs move into plain `#` comments beside the roxygen text, so the source keeps the traceability.
+  - `?pprof`: what the package does, the main functions by role, the vignettes, and the references of the README. `R/pprof.R` keeps its directives until Phase 8.
+  - `data_check()`: its help states that it stops when any value is missing, while the fits delete incomplete rows (D-17).
+- **Checks.** `devtools::document()` changes only the intended Rd files and leaves NAMESPACE unchanged; the new test and the architecture test pass; `01_help_pages.R` again: no user-facing page without an example, no new example over 1 s; `lintr` on the changed files; `R CMD check --as-cran --no-manual` without tests: no new warning or note.
+
+### Step 2: The user vignettes (DEC-062, DEC-065), then the check-in
+
+- **Files.** `DESCRIPTION` (`VignetteBuilder: knitr`); `.Rbuildignore` (no longer excludes `vignettes/`); `.gitignore` (`inst/doc`, `doc`, `Meta`); `.lintr` (drops the `vignettes` exclusion); the five old vignettes and `vignettes/Charts/` removed; `vignettes/pprof.Rmd`, `vignettes/models.Rmd`, and `vignettes/statistical-methods.Rmd` (new); `dev/design/phase7-facts/06_vignette_times.R` (renders each vignette into scratch with `rmarkdown::render()` and reports its time and the size of its HTML).
+- **Approach.**
+  - **Getting started** (`pprof.Rmd`; readers: analysts who know R and regression and are new to pprof): the data (one row per observation; the bundled lists made into data frames); a logistic FE fit and its printout; the covariates (`summary()`, `confint()`, `test_coefficients()`); provider tests and flags; standardized measures and their intervals; `provider_effects()`; `profile_providers()`; the four plots; `tidy()`, `glance()`, and `augment()`; a continuous outcome (`fit_linear_fe()` on `ecls_data`, whose 1,195 one-child schools need a smaller `group_count` or a provider subset in `plot_flags()`, F12); where to read next.
+  - **Models** (`models.Rmd`): the seven fits by outcome and kind of effect; the shared and the family-specific arguments; what each family supports, computed in the vignette from `inference_capabilities()` and `profile_spec()` (the default test, the null options, the measures, the numerator of indirect measures, the funnel); fixed-effect specifics (screening, providers with no events or only events, the effect bound, the stopping rule and the convergence diagnostics, Firth); random-effect specifics (lme4's calls and arguments, its convergence messages, a provider variance estimated as 0 and the missing flags that follow, M-19); the within-between decomposition and the order of its steps (D-13); `keep_data` and the methods that need the covariates; `predict()`, `fitted()`, and `residuals()`.
+  - **Statistical methods** (`statistical-methods.Rmd`; readers: statisticians who need the formulas): the models; estimation (SerBIN and BAN with the line search, the clamp around the median of the current effects, the criteria and the stopping rules; Firth; linear demeaning and the two provider variances; the lme4 calls); provider tests; standardized measures; intervals; covariate inference; funnel limits; each as the code computes it (PROJECT_CONTEXT §5.7), with the behaviors awaiting sign-off stated as they are (DEC-065). Short code checks recompute a few results by hand and compare them with the package's (an exact-test p-value from poibin, an indirect ratio O/E, a Wald interval). It replaces "Risk-adjustment Model", "Logistic Fixed Effect Model", and "Linear Fixed Effect Model", keeping their mathematics where it agrees with the code and correcting what contradicts it (D-37, F6).
+  - **Conventions** (DEC-062): numbers in the text are inline R; one thread; a seed before random draws; no `eval = FALSE` except installation code; deliberate warnings and errors shown and explained; figures few and sized for the budget.
+- **Checks.** Each vignette renders without errors or unexplained warnings; times and HTML sizes (`06_vignette_times.R`) within the budget; `R CMD build` and `R CMD check --as-cran --no-manual` without tests: the vignettes build and re-build, with no new warning or note (no installed-size note in particular); `lintr` on the vignettes; each item of D-37 and F6 addressed (listed in the §10 entry).
+- **Check-in** with the project lead (DEC-061): the drafted vignettes (rendered into scratch, not committed) and the wording list of DEC-065, which gives every sentence that states a statistical property, an interpretation, or guidance, its source in pprof 1.0.3's documentation, and any correction made to it.
+
+### Step 3: The migration guide (DEC-064)
+
+- **Files.** `vignettes/migration.Rmd`; ARCHITECTURE §I.1 (a migration-path column) and §I.4 (as built: each change the guide lists, with its register entry).
+- **Approach.** As DEC-064: a summary; the migration table; the argument vocabulary; before-and-after examples for each workflow that run both calls and check in code that the numbers are identical (the pairs of F8, and the input formats of each family: `id()` formulas, `(1 | id)` formulas, column names, vectors, and the CRE column interface); the result shapes and the changed defaults and meanings (DEC-001, DEC-005, DEC-008, DEC-011, DEC-012); the behavior changes of the old functions in user terms (the Class A fixes, D-01, D-03, D-21, D-36, D-49); what does not change; the timeline.
+- **Checks.** Renders within the budget; every equality check passes; the list of behavior changes checked against the register (every Class A entry fixed in the wrappers appears in the guide, or is noted in ARCHITECTURE §I.4 as invisible to users, such as D-08); `lintr`.
+
+### Step 4: The developer guide (DEC-063)
+
+- **Files.** `vignettes/adding-a-model.Rmd`; `dev/DEVELOPER_GUIDE.md`; `.github/CONTRIBUTING.md` (links to both); the roxygen of `model_contract`, `new_pprof_model()`, and `data_prepare()` (a link to the vignette); ARCHITECTURE §E.4 and §E.5 (pointers to the guide, and the walk-through as updated).
+- **Approach.** As DEC-063. The worked example is the toy model of `tests/testthat/helper-toy-model.R`, defined in the vignette, registered with `.S3method()`, then profiled and plotted; an undeclared capability shows `pprof_error_unsupported_inference`. A table states which contract generics have shared methods and which a model must implement (F9), and the family specification's required fields and optional ones with their defaults. The Group Lasso walk-through follows ARCHITECTURE §E.5 with the contract as built (`new_pprof_model()`'s arguments, `profile_spec()`'s fields, the design matrix's `assign` attribute for the default groups, F10), as a design, not code. `dev/DEVELOPER_GUIDE.md` links the design documents, the commands (CLAUDE.md, PROJECT_CONTEXT §8), the equivalence policy (brief §3), the fixture rules, the discrepancy protocol, the CI workflows, and NAMING §9's checklist, without repeating them.
+- **Checks.** Renders within the budget; the toy model's results in the vignette equal those of the extension test; `lintr`; and a test of criterion 11: a subagent with no context of this project gets only the vignette and the installed package, is asked to add a small model through the contract, and reports what it needed beyond the guide; the guide closes the gaps it finds.
+
+### Step 5: The README and the site (DEC-066, DEC-067)
+
+- **Files.** `README.md`; `tests/testthat/test-readme.R` (new; `skip_on_cran()`, and skipped where README.md is not found, as under `R CMD check`); `_pkgdown.yml`; `DESCRIPTION` (`URL`); `.github/workflows/rewrite-pkgdown.yaml` (new); `docs/` removed and added to `.gitignore`.
+- **Approach.** As DEC-066 and DEC-067. The site redirects the addresses of the old articles (`articles/Logis-FE.html` and the others) to the new vignettes.
+- **Checks.** `pkgdown::check_pkgdown()` reports no problem; `pkgdown::build_site()` into a scratch destination finishes without errors or warnings, with every help topic in the reference index and every vignette as an article; the README test passes; `R CMD check` checks README.md without a note; the workflow runs on the first push the project lead approves.
+
+### Step 6: Documents and checks
+
+- **Documents.** The register: D-17 (if approved), D-35, and D-37 resolved, with their regression checks (D-35: the data-documentation test; D-37: the vignettes built by `R CMD check`); NEWS (the vignettes, the README, the help, the site); ARCHITECTURE §B.2 (the new files), §E.4, §E.5, §I.1, and §I.4; NAMING §8 (the data file); PROJECT_CONTEXT §5.8 (D-35), §5.9 (documentation and CI), §7 (file locations), §10, and the status line.
+- **Code unchanged (DEC-061).** `dev/design/phase7-facts/07_code_unchanged.R` builds and installs pprof from `7d6d696` (through `git archive`) and from the working tree into two scratch libraries, and compares every function of the two namespaces (deparsed, so comments do not count), the exports, the registered S3 methods, and the data sets: all must be identical.
+- **Checks.** `devtools::document()` changes nothing; `lintr::lint_package()`; `devtools::test()`; `R CMD check --as-cran --no-manual` with tests; coverage (the R code is unchanged, so a coverage different from Phase 6's 96.28% is investigated); the reference suite (`validation/run-reference.R`). The differential tests and the benchmarks are not rerun, because no executable code changes, which the namespace comparison shows (DEC-061).
+
+### Step 7: Gate
+
+`/phase-gate`, then stop for approval (DEC-061).
+
+## What the documentation may change and what it must state as the code does
+
+- **May change** (Class C fixes and presentation): the wording of help pages and vignettes; examples; cross-links; the README; the site; text that contradicts the code (D-17, D-35, D-37, and F6's further items); behavior the help is silent on (D-32 for measure intervals, D-34).
+- **Must state as the code does,** without calling it a defect or announcing a change (DEC-065):
+  - the Class B behaviors awaiting sign-off: D-10 (the LR and score refits use pprof 1.0.3's default settings), D-24 (the default stopping rule stops as soon as the smallest of the three criteria falls below `tol`), D-31 (logistic RE and CRE covariate p-values 2(1 − Φ(z)), above 1 for negative estimates), D-32 (linear FE intervals use t with the simplified variance and normal with the full, the reverse of the tests), D-34 (provider order follows the session's collation), D-43 (the linear FE funnel draws limits from σ/sqrt(n_i) and flags from the fit's test);
+  - the signed-off behaviors: D-12 (Firth's unpenalized variance, log-likelihood, AIC, and BIC), D-13 (CRE provider means computed before incomplete rows are deleted);
+  - the open questions, described as computed and not decided: M-4 (D-24), M-5 (D-10), M-7 (the "standard" score test, D-26), M-8 (D-32), M-9 (exact funnel limits unsupported), M-10 (D-31), M-11 (D-34), M-12 (the deprecation timeline: warnings from 2.0.0, the old functions kept at least through the next minor release, removal open), M-13 (screening by size only in the logistic FE models), M-14 (predicted over expected outcomes in RE indirect measures), M-15 (α rather than α/2 for the single finite limit of providers with no events or only events), M-17 (collinear covariates: a warning, numbers as computed), M-18 (D-43), M-19 (a provider variance of 0 leaves every flag missing), M-20 (no statement on the size, power, or coverage of the RE and CRE tests and intervals), M-21 (statements carried over from pprof 1.0.3's documentation).
+- **Must not:** describe a proposed change as current behavior; say that a behavior will change; cite or summarize `validation/simulation-report.md`; recommend a model or a test beyond what pprof 1.0.3's documentation says; show a number that the shown code does not compute; cite register IDs in user documentation (ARCHITECTURE §I.4 keeps the mapping).
+- **Code:** unchanged (DEC-061), checked by the namespace comparison; no fixture regenerated; no tolerance changed; the reference suite run at the gate.
+
+## Facts gathered (2026-10-04, at `7d6d696`)
+
+The scripts and their outputs are in `dev/design/phase7-facts/` (run from the repository root, `Rscript <script> <output> [<library>]`). Scripts 01, 03, 04, and 05 ran on the working tree built with `R CMD build --no-build-vignettes` and installed into a scratch library, so that `devtools::test()` could run at the same time; F2 is a plain `devtools::test()` run; F4 is a search of `man/`.
+
+- **F1. Environment.** R 4.4.0 (ucrt), knitr 1.52, rmarkdown 2.32, pkgdown 2.2.1, roxygen2 8.1.0, bslib 0.12.0, downlit 0.4.5, ggplot2 4.0.3, lme4 2.0-6. Pandoc is not installed: `rmarkdown::pandoc_available()` is FALSE, `RSTUDIO_PANDOC` is unset, and no `pandoc.exe` exists under the user profile, `Program Files`, or the usual RStudio, Quarto, and conda locations. The markdown package is not installed. winget is available (02).
+- **F2. Baseline.** `devtools::test()`: 61 files, 1,088 tests, 7,342 expectations, 0 failed, 0 skipped, 0 warnings (339 s), the Phase 6 gate's counts. Not rerun this session: the gate checks' 1 warning (CRAN incoming feasibility: the version and the Date) and 4 notes (the current time cannot be verified; README.md and NEWS.md cannot be checked without pandoc; NEWS.md has no versioned entry; the slow examples, at the Phase 6 gate seven old logistic RE and CRE examples), from the §10 records.
+- **F3. Help pages (01).** 66 pages, 4 of them internal (`data_prepare`, `model_contract`, `new_pprof_model`, `reexports`); every export has a help alias. Pages without examples: `test_coefficients`, `confint.pprof_model`, `pprof_model_methods`, `logistic_fe_methods`, `linear_fe_methods`, `mixed_methods`, the generics `test` and `SM_output`, and the four internal pages. "See also" sections exist on the old fit pages and the plot pages only; the other new pages link inline. Every page of the old interface names its replacement, except `data_check`, whose replacement does not exist yet. The examples take 51.4 s in all; the slowest are old logistic RE and CRE examples on the full data (`summary.logis_re` 9.8 s; `confint.logis_cre`, `SM_output.logis_cre`, and `test.logis_cre` 5.2 to 5.8 s; their `logis_re` counterparts 4.5 to 4.6 s); the new fits' examples use providers 1 to 20 and take under 1 s each.
+- **F4. Behaviors awaiting sign-off in the help (search of `man/`).** D-10 in `test_coefficients` and `summary.logis_fe`; D-24 in `fit_logistic_fe` and `logis_fe`; D-31 in `summary.logis_re` and `test_coefficients`; D-32 in `provider_effects` and `confint.linear_fe`, not in `standardize_providers`; D-34 only in the internal `data_prepare`; D-43 in `plot_funnel`, `funnel_limits`, `plot.linear_fe`, and `test.linear_fe`. M-19's behavior in the RE and CRE fit pages and `plot_flags`. Nothing on the size, power, or coverage of the RE and CRE procedures (M-20). No help page mentions phases or the rewrite, but seven cite register IDs that users cannot look up, since `dev/` is not shipped: `standardize_providers` (K-80 to K-84), `test_coefficients` (K-103 to K-105, D-31), `funnel_limits` (K-110, K-111, D-43), `provider_effects` (D-32), `logis_firth` (D-05, D-42), `fit_linear_cre` (D-13), and `fit_logistic_cre` (D-13, K-51).
+- **F5. The site (02).** `pkgdown::check_pkgdown()` stops at its first problem: "In DESCRIPTION, URL is missing package url (https://um-kevinhe.github.io/pprof)". The reference index lists 39 topics, all of the old interface; 24 user-facing topics are missing, the whole new interface. `docs/`: 305 files, 8.2 MB, built on 2026-01-16 with pkgdown 2.1.1 and pandoc 3.7.0.2; 46 reference pages, none of the new interface; articles of the five old vignettes and three stale pages whose sources are gone (`Articles.html` and `Models.html` of November 2024, and `srrFE.html`, the "Getting Started" page of another package, srrFE, of May 2024). The last commit touching `docs/` is `d210d45` (Phase 2, `.DS_Store` files). `DESCRIPTION` has no `VignetteBuilder`; `.Rbuildignore` excludes `vignettes/`, `docs/`, and `_pkgdown.yml`.
+- **F6. The old vignettes (03, and reading them against the code).** The 12 code chunks of `pprof.Rmd` all run on the current package through the wrappers (3 s; the exact measure intervals 1.6 s). Its flowchart `Charts/pprof_flowchart.png` does not exist (the folder holds `pprof flowchart (v1).png` and `(v2).png`), so the committed site shows a broken image; the flowcharts list only old names, and the second places `logis_fe` and `logis_firth` under "Random Effects, Binary Outcomes". Every chunk of `Quick-start.Rmd` fails: `fe_data_prep()`, `SR_output()`, `test_fe()`, and `summary_fe_covar()` do not exist, in pprof 1.0.3 either. The three appendix vignettes have no code. Beyond D-37's list: `Logis-FE.Rmd` says that a direct ratio's interval covers DSR_k when the effect interval covers γ0 (by construction it covers the direct ratio at γ0), and `Linear-FE.Rmd` gives σ²/n_i as the variance of γ̂_i, which is the simplified option of `option.gamma.var` only (K-42).
+- **F7. Run times of the candidate workflows (04, part 1; elapsed seconds, one thread).**
+
+  | Workflow | Time |
+  |---|---|
+  | Logistic FE on `ExampleDataBinary`: fit, summary, `confint()`, LR and score coefficient tests, exact, score, standard score, and Wald provider tests, measures with and without intervals, funnel limits, profiles, four plots drawn, tidy outputs | 7.8 s without the bootstrap test, which takes 4.9 s (10,000 resamples) |
+  | of which exact intervals (`provider_effects()`, `standardize_providers()`, `profile_providers()`, each) | 1.4 to 1.5 s |
+  | of which each plot built and drawn | 0.2 to 0.5 s |
+  | Firth fit, its tests and exact measure intervals | 1.5 s |
+  | Linear FE on `ExampleDataLinear` (both variances, tests, measures, profile, two plots) | 0.5 s |
+  | Linear FE on `ecls_data` (2,275 schools: fit, profile, funnel) | 0.3 s |
+  | `fit_linear_re()`, `fit_linear_cre()` on the full data | 0.1 s each |
+  | `fit_logistic_re()`, `fit_logistic_cre()` on the full data | 5.4 s, 6.2 s |
+  | the same on providers 1 to 20 | 0.7 s, 1.0 s |
+  | RE and CRE tests and measures with Wald intervals, per fit | at most 0.15 s |
+
+- **F8. Before and after (04, part 2).** Each call of the old interface gives numbers identical to the new call that replaces it: `logis_fe()` and `fit_logistic_fe()` (coefficients, provider effects, covariance); `test()` and `test_providers()` (p-values; flags, the factor's labels against the integers); `SM_output()` and `standardize_providers()` (ratios and rates); `confint(option = "gamma")` and `provider_effects(interval = "exact")`; `confint()` and `standardize_providers(interval = "exact")`; `summary()` (Wald, and `test = "lr"`) and `test_coefficients()` with `confint()`; the funnel points of `plot()` and `funnel_limits()`; and the same for `linear_fe()`, `linear_re()`, `linear_cre()` (the coefficient names are equal too), and `logis_firth()`. Part 2 takes 4.5 s.
+- **F9. The developer interface (05).** `provider_table()`, `provider_estimates()`, `provider_index()`, `linear_predictor()`, and `observed_outcome()` have shared methods for `pprof_model`; `expected_outcome()`, `null_effect()`, `profile_spec()`, `inference_capabilities()`, and `provider_estimate_se()` have methods for the three built-in families (`pprof_logistic_fe`, `pprof_linear_fe`, `pprof_mixed`); `predicted_outcome()` for `pprof_mixed`; `provider_test()` and `refit_without()` for `pprof_logistic_fe` only. The toy model of the extension proof, sourced from `helper-toy-model.R` into a session with pprof attached by `library()`, calls only exported functions, validates, and runs `test_providers()`, `standardize_providers()`, `provider_effects()`, `funnel_limits()`, `profile_providers()`, `plot_funnel()`, `plot_flags()`, `plot_volume()`, `tidy()`, and `print()`; undeclared requests (Wald tests, exact intervals, direct standardization, `summary()`, `confint()`) raise `pprof_error_unsupported_inference`. The specification fields and capabilities of each family are listed in the output.
+- **F10. The Group Lasso walk-through's prerequisites.** The design matrix from `data_prepare()` keeps `assign` (for `y ~ x + g + I(x^2)` with a three-level factor `g`: `1 2 2 3`) and its contrasts, so each formula term can be one default group, as ARCHITECTURE §E.5 assumes; `src/Makevars` lists every object file explicitly, so §E.4's exception (new C++ files go into `OBJECTS`) still holds.
+- **F11. CI.** `rewrite-check.yaml` sets up pandoc on its five platforms; `rewrite-sanitizers.yaml` builds with `--no-build-vignettes` and checks with `--ignore-vignettes`; no workflow builds the site; the legacy `test-pprof-package.yml` and `rhub.yaml` are unchanged.
+- **F12. `ecls_data`.** `plot_flags()` with the default `group_count = 4` fails on the linear FE tests of `ecls_data` with the classed error "The provider sizes do not split into 4 groups; use a smaller `group_count`", because 1,195 of the 2,275 schools have one child (04).
+- **F13. Other documentation.** There is no package help page: `R/pprof.R` holds the package directives with `@noRd`. README.md describes the old interface, says the package can be installed "via CRAN or github" but shows only GitHub, and links its last reference to `.../doi/full/10.1002/sim.938` (DESCRIPTION cites `doi:10.1002/sim.9387`). `.github/CONTRIBUTING.md` asks contributors to update NEWS.md and to sign a CLA.
+
+## Decisions proposed
+
+Recorded in `dev/DECISIONS.md` with status "proposed":
+
+| ID | Decision |
+|---|---|
+| DEC-061 | Phase 7 scope: ends with `/phase-gate` and a stop; one check-in after step 2 on the wording of methodology; no executable code changes, checked by comparing the installed namespaces, which replaces the gate's benchmark comparison; the version number, NEWS's release shape, `check_data()`, and the deprecation warnings in Phase 8 |
+| DEC-062 | Five vignettes, all built and checked by `R CMD check`, with a run-time budget (each at most 10 s of code, all at most 30 s, on this machine) and conventions (inline numbers, one thread, seeds, no unevaluated code, an installed `doc/` under 1 MB); the old vignettes and their images removed; the vignettes linted |
+| DEC-063 | The developer guide: the vignette "Adding a model to pprof" for model authors, with the toy model as a runnable example and the Group Lasso walk-through; `dev/DEVELOPER_GUIDE.md` for contributors to pprof itself |
+| DEC-064 | The migration guide: the table with a migration path, the argument vocabulary, before-and-after examples checked in code, the result shapes and changed defaults, the behavior changes in user terms, what does not change, and the timeline |
+| DEC-065 | How the documentation treats behavior under review and methodology: behaviors awaiting sign-off stated as computed; open questions undecided in text; statements of properties, interpretations, and guidance only from pprof 1.0.3's documentation where they agree with the code (M-21); a wording list for the check-in |
+| DEC-066 | The pkgdown site: a new configuration, the site URL in DESCRIPTION, a clean local build, a CI workflow that builds it, no deployment, redirects for the old articles, and `docs/` removed and git-ignored, with GitHub Pages switched by the owners before the rewrite reaches `main` |
+| DEC-067 | The README: plain Markdown for the new interface, its code run by a test, the reference link fixed, the owners' contacts unchanged |
+| DEC-068 | Help pages and the data documentation: examples on every user-facing page, `@family` cross-links, D-32 and D-34 stated, register IDs moved from the rendered help into source comments, `R/Data.R` moved to `R/data-bundled.R` with D-35 fixed and examples for the new interface, a package page `?pprof` |
+
+## Questions for the project lead
+
+1. Pandoc (step 0): may it be installed, and how (winget for the current user, or the portable zip with `RSTUDIO_PANDOC`), and which version (3.7.0.2, the committed site's, or the current release)?
+2. The gate and the check-in (DEC-061), including the namespace comparison in place of the benchmark comparison at the gate, or a full benchmark run (about 30 minutes) as at earlier gates.
+3. DEC-061 to DEC-068, in particular: every vignette in `R CMD check` under the budget (DEC-062); the developer guide in both places (DEC-063); removing `docs/` now, with the Pages precondition, or keeping it until Phase 8 (DEC-066); moving `R/Data.R` (DEC-068).
+4. D-17's help fix in Phase 7 rather than Phase 8.
+5. The register: D-37's description extended with F6's further items.
+
+## Questions for the methodology owners (defaults reproduce the reference)
+
+- **M-21 (new; PROJECT_CONTEXT §9).** The vignettes of pprof 1.0.3 state statistical properties and interpretations that the new vignettes could carry over (listed in §9). Should they keep, revise, or drop them, and may the documentation add guidance on choosing models and tests? Default: keep the statements that agree with the code, corrected where they contradict it (D-37); add no new statement of properties and no guidance on choosing models or tests.
+- **M-20 (open, in play).** Default: the documentation describes the RE and CRE tests and intervals by their formulas and says nothing about their size, power, or coverage.
+- In play, described as computed: M-4, M-5, M-7, M-8, M-9, M-10, M-11, M-12, M-13, M-14, M-15, M-17, M-18, M-19 (see "What the documentation may change"). M-16 (who signs off) remains open; the check-in's wording list is for whoever signs off.
+
+## Risks
+
+- **Pandoc.** Steps 2 to 6 cannot be completed without it; installing it needs approval.
+- **Check time.** `R CMD check` runs the vignettes' code twice (build and re-build), and on CRAN their time adds to the examples' and the tests'. Mitigation: the budget of DEC-062, measured at step 2 and at the gate.
+- **Installed size.** Figures embedded in the HTML can push the installed `doc/` over 1 MB, which gives an `R CMD check` note. Mitigation: few figures, modest sizes and resolution, the size measured for each vignette.
+- **Methodology in prose.** The methods vignette and the migration guide are where a sentence could take a position, or present a behavior awaiting sign-off as settled or as wrong. Mitigation: DEC-065, the wording list, the check-in; the owners can revise the text before the release.
+- **Drift.** The vignettes, the README, and the help examples run in `R CMD check` or the tests; the developer guide's toy model repeats the extension test's, and both run.
+- **Deprecation warnings (Phase 8).** The old calls in the migration guide will warn once Phase 8 adds the warnings; Phase 8 decides how the vignette shows them.
+- **The site.** Removing `docs/` takes the upstream site down if the rewrite reaches `main` before GitHub Pages is switched; the CI workflow can be seen running only after a push; pkgdown's template fetches its fonts when the site is built, so building needs network access.
+- **Criterion 11 is a judgment.** The subagent test of step 4 gives evidence, not proof; a reading by the owners is the real test.
+- **The owners' text.** The old vignettes are the owners' writing; their mathematics carries into the methods vignette, the git history keeps the rest, and the check-in shows what changed.
+
+## Register items in scope
+
+- Fix (Class C): D-35 (the data documentation), D-37 (the vignettes, with F6's further items), D-17 (the documentation of `data_check()`, if approved).
+- State as the code does (Class B awaiting sign-off): D-10, D-24, D-31, D-32, D-34, D-43. Signed off, preserved: D-12, D-13. Described as computed: D-26 (M-7), D-38 (M-17).
+- Listed in the migration guide in user terms: the Class A fixes D-04, D-05, D-06, D-07, D-11, D-14, D-18, D-19, D-21, D-22, D-23, D-27, D-28, D-29, D-30, D-39, D-41, D-42, D-45, D-46; the messages D-01, D-03, D-36; the presentation changes D-09, D-15, D-47, D-49.
+- Unchanged: D-36's `geom_errorbarh()` message (Phase 8); D-08 (no effect visible to users).
