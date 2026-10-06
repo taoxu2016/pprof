@@ -130,11 +130,19 @@ test_that("check_data() checks its arguments", {
 test_that("data_check() gives pprof 1.0.3's messages, warnings, and errors (D-17)", {
   ids <- reference_case_ids("data_check")
   skip_if(length(ids) == 0L, "Reference fixtures not available")
+  # summary.lm() warns of an "essentially perfect fit" when the residual variance of exactly
+  # collinear columns falls below a threshold, which rounding decides: it warns on Linux for
+  # data_check-collinear, and pprof 1.0.3 did not on the fixtures' platform. Off that platform
+  # these warnings are left out of both sides (DEC-080).
+  platform <- reference_platform()
+  comparable <- function(warnings) {
+    if (platform$ok) warnings else warnings[!grepl("essentially perfect fit", warnings, fixed = TRUE)]
+  }
   for (id in ids) {
     fixture <- reference_fixture(id)$result
     result <- reference_run(id)
     expect_identical(result$messages, fixture$messages, label = paste(id, "messages"))
-    expect_identical(result$warnings, fixture$warnings, label = paste(id, "warnings"))
+    expect_identical(comparable(result$warnings), comparable(fixture$warnings), label = paste(id, "warnings"))
     expect_identical(result$outcome, fixture$outcome, label = paste(id, "outcome"))
     if (identical(fixture$outcome, "error")) {
       expect_identical(result$error$message, fixture$error$message, label = paste(id, "error"))
