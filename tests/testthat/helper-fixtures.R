@@ -132,6 +132,13 @@ reference_platform <- function(set = "core") {
          paste(sprintf("%s %s (fixtures: %s)", names(here)[!same], here[!same], there[!same]), collapse = "; "))
 }
 
+# Cases whose outcome itself depends on the platform (D-53): a covariate that is constant within
+# providers makes the information matrix exactly singular, and whether LAPACK detects that (the
+# fit fails, as pprof 1.0.3's does on the fixtures' platform) or not (OpenBLAS on Linux, where the
+# fit returns estimates that are not identified) differs between platforms. Off the fixtures'
+# platform their outcome is not compared either.
+reference_platform_outcome_cases <- "logis_fe-constant"
+
 reference_platform_skip_message <- function(platform) {
   paste("the fixtures' numbers are compared on the platform that produced them, and CI compares this",
         "platform with fixtures pprof 1.0.3 produces here (DEC-080):", platform$detail)
@@ -170,6 +177,9 @@ expect_reference_case <- function(id, set = "core") {
   partial <- grep("partial match", res$warnings, value = TRUE, fixed = TRUE)
   testthat::expect(length(partial) == 0,
                    sprintf("Case %s triggered partial matching: %s", id, paste(unique(partial), collapse = "; ")))
+  if (!platform$ok && id %in% reference_platform_outcome_cases) {
+    testthat::skip(reference_platform_skip_message(platform))
+  }
   if (!is.null(override$check)) {
     # The per-case expectations compare numbers derived from the fixtures.
     if (!platform$ok) testthat::skip(reference_platform_skip_message(platform))

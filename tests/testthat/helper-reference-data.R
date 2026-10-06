@@ -143,7 +143,12 @@ expect_reference_data <- function(id, set = "core") {
 
   rebuilt <- reference_fixture_value(reference_rebuild_data_include(prepared, translation),
                                      reference_manifest(set)$max_full_length)
-  diffs <- reference_compare(rebuilt, expected[["data_include"]], reference_tolerance("exact"), path = "data_include")
+  # Computed columns (provider means, sums of long vectors, numbers kept as text) depend on the
+  # platform's floating point and number formatting, so their values are compared on the
+  # fixtures' platform (DEC-080); everything else everywhere.
+  platform <- reference_platform(set)
+  diffs <- reference_compare(rebuilt, expected[["data_include"]], reference_tolerance("exact"), path = "data_include",
+                             numeric = platform$ok)
   testthat::expect(is.null(diffs),
                    sprintf("Case %s: data_include differs:\n%s", id,
                            paste(sprintf("  %s [%s] %s", diffs$path, diffs$kind, diffs$detail), collapse = "\n")))
@@ -164,5 +169,6 @@ expect_reference_data <- function(id, set = "core") {
   included_ids <- prepared$providers$provider_id[prepared$providers$included]
   testthat::expect(identical(rownames(effects), included_ids),
                    sprintf("Case %s: provider order differs from the reference", id))
+  if (!platform$ok) testthat::skip(reference_platform_skip_message(platform))
   invisible(prepared)
 }

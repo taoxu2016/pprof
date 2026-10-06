@@ -14,14 +14,14 @@
 # Flag columns in provider-test tables follow the boundary rule (brief §3.4): a flag may
 # differ only for a provider whose p-value lies within the probability tolerance of the
 # decision threshold; such rows are returned with kind "flag_boundary" and are reported,
-# not treated as failures.
-# With `numeric = FALSE` (on a platform other than the fixtures', DEC-080), finite doubles,
-# and the double summaries of signatures, are not compared; everything else is, as above:
-# classes, names, dimensions, attributes, row names, the positions of NA, NaN, and infinite
-# values, every non-double value, and flags. In every family the reported p-value of a two-sided test is
+# not treated as failures. In every family the reported p-value of a two-sided test is
 # 2 * min(p, 1 - p), where p is the upper tail probability that the flag compares with
 # alpha/2 and 1 - alpha/2, and that of a one-sided test is the tail the flag compares with
 # alpha, so every threshold corresponds to alpha = 1 - level on the reported p-value.
+# With `numeric = FALSE` (on a platform other than the fixtures', DEC-080), finite doubles,
+# the double summaries of signatures, and numbers the reference kept as text are not compared;
+# everything else is, as above: classes, names, dimensions, attributes, row names, the
+# positions of NA, NaN, and infinite values, every other value, and flags.
 
 reference_mismatch <- function(path, kind, detail) {
   data.frame(path = if (nzchar(path)) path else "<root>", kind = kind, detail = detail, stringsAsFactors = FALSE)
@@ -51,9 +51,21 @@ reference_compare_double <- function(a, b, tol, path, numeric = TRUE) {
   reference_mismatch(path, "numeric", detail)
 }
 
+# Text holding numbers that the reference formatted (the p-values of the old summaries, and the
+# columns of the data of RE fits with character provider IDs, D-11): every value parses as a
+# number and some have a decimal point or an exponent, which provider IDs and labels do not.
+reference_formatted_numbers <- function(x) {
+  values <- x[!is.na(x)]
+  if (!is.character(values) || length(values) == 0L) return(FALSE)
+  numbers <- suppressWarnings(as.numeric(sub("^[<>]\\s*", "", values)))
+  !anyNA(numbers) && any(grepl("[.eE]", values))
+}
+
 reference_compare_signature <- function(a, b, tol, path, numeric = TRUE) {
   special_fields <- c("sum", "abs_sum", "min", "max", "sample", "bits_md5", "dimnames", "names", "attributes")
-  exact_fields <- setdiff(names(b), special_fields)
+  # Off the fixtures' platform, formatted numbers are numbers: their checksum and sample are not compared.
+  formatted <- !numeric && identical(b$type, "character") && reference_formatted_numbers(b$sample)
+  exact_fields <- setdiff(names(b), c(special_fields, if (formatted) "md5"))
   out <- NULL
   for (f in exact_fields) {
     if (!identical(a[[f]], b[[f]])) out <- rbind(out, reference_mismatch(paste0(path, "#", f), "signature", "differs"))
@@ -84,7 +96,7 @@ reference_compare_signature <- function(a, b, tol, path, numeric = TRUE) {
       }
     }
     out <- rbind(out, reference_compare_double(a$sample, b$sample, tol, paste0(path, "#sample")))
-  } else if (!identical(a$sample, b$sample)) {
+  } else if (!formatted && !identical(a$sample, b$sample)) {
     out <- rbind(out, reference_mismatch(paste0(path, "#sample"), "signature", "sample differs"))
   }
   out
@@ -175,6 +187,10 @@ reference_compare <- function(a, b, tol, path = "", alpha = NULL, numeric = TRUE
     va <- as.vector(a)
     vb <- as.vector(b)
     return(rbind(out, reference_compare_double(va, vb, tol, path, numeric)))
+  }
+  if (!numeric && reference_formatted_numbers(b)) {
+    if (!identical(is.na(a), is.na(b))) out <- rbind(out, reference_mismatch(path, "missing", "NA positions differ"))
+    return(out)
   }
   if (!identical(as.vector(unclass(a)), as.vector(unclass(b)))) {
     differing <- sum(as.vector(unclass(a)) != as.vector(unclass(b)), na.rm = TRUE)
