@@ -53,7 +53,21 @@ platform <- function() {
   paste0(R.version.string, "; ", utils::sessionInfo()$running, "; ", R.version$platform,
          "; BLAS: ", if (nzchar(blas)) blas else "R's internal BLAS",
          "; LAPACK: ", La_library(), " ", La_version(),
-         "; CXX17: ", config("CXX17"), " ", config("CXX17FLAGS"))
+         "; CXX17: ", config("CXX17"), " ", config("CXX17FLAGS"), "; CPU: ", cpu())
+}
+
+# The runner's processor: hosted runners of one image can differ in it, and some floating-point
+# results with it (Phase 8: the lme4-backed cases on the fixtures' platform, D-53).
+cpu <- function() {
+  identifier <- Sys.getenv("PROCESSOR_IDENTIFIER")
+  if (nzchar(identifier)) return(identifier)
+  if (file.exists("/proc/cpuinfo")) {
+    model <- grep("^model name", readLines("/proc/cpuinfo", warn = FALSE), value = TRUE)
+    if (length(model)) return(trimws(sub("^model name\\s*:", "", model[1])))
+  }
+  brand <- tryCatch(system2("sysctl", c("-n", "machdep.cpu.brand_string"), stdout = TRUE, stderr = FALSE),
+                    error = function(e) "", warning = function(w) "")
+  if (length(brand) && nzchar(brand[1])) brand[1] else "?"
 }
 
 # Failures in the output of a testthat run (testthat.Rout.fail, or a log that holds it): one
