@@ -6,7 +6,8 @@
 #' Fit a fixed effect logistic model via Serial blockwise inversion Newton (SerBIN) or block
 #' ascent Newton (BAN) algorithm. This is the interface of pprof 1.0.3, kept for existing
 #' code; it calls [fit_logistic_fe()], whose estimates are identical, and returns the object
-#' of pprof 1.0.3.
+#' of pprof 1.0.3. It is deprecated as of pprof 2.0.0 and warns once per session; see
+#' `vignette("migration", package = "pprof")`.
 #'
 #' @param formula a two-sided formula object describing the model to be fitted,
 #' with the response variable on the left of a ~ operator and covariates on the right,
@@ -149,6 +150,7 @@ logis_fe <- function(formula = NULL, data = NULL,
                      Y = NULL, Z = NULL, ProvID = NULL, # nolint: object_name_linter.
                      method = "SerBIN", max.iter = 10000, tol = 1e-5, bound = 10, # nolint: object_name_linter.
                      cutoff = 10, backtrack = TRUE, stop = "or", threads = 1, message = TRUE) {
+  compat_deprecate("logis_fe")
   inputs <- compat_fe_inputs(formula, data, Y.char, Z.char, ProvID.char, Y, Z, ProvID)
   if (isTRUE(message)) base::message("Input format: ", inputs$format, ".")
   settings <- compat_logis_fe_settings(method, max.iter, tol, bound, cutoff, backtrack, stop, threads)
@@ -241,7 +243,8 @@ compat_screening_report <- function(model) {
 #' Firth's corrected logistic regression (FLR) overcomes this limitation and
 #' outperforms both FE and random effects (RE) models in terms of bias and RMSE.
 #' This is the interface of pprof 1.0.3, kept for existing code; it calls [fit_logistic_firth()],
-#' whose estimates are identical, and returns the object of pprof 1.0.3.
+#' whose estimates are identical, and returns the object of pprof 1.0.3. It is deprecated as of
+#' pprof 2.0.0 and warns once per session; see `vignette("migration", package = "pprof")`.
 #'
 #' @inheritParams logis_fe
 #' @param max.iter maximum iteration number if the stopping criterion is not satisfied. The default value is 1,000.
@@ -302,6 +305,7 @@ logis_firth <- function(formula = NULL, data = NULL,
                         Y = NULL, Z = NULL, ProvID = NULL, # nolint: object_name_linter.
                         max.iter = 1000, tol = 1e-5, bound = 10, # nolint: object_name_linter.
                         cutoff = 10, threads = 1, message = TRUE) {
+  compat_deprecate("logis_firth")
   inputs <- compat_fe_inputs(formula, data, Y.char, Z.char, ProvID.char, Y, Z, ProvID)
   if (isTRUE(message)) base::message("Input format: ", inputs$format, ".")
   settings <- compat_logis_firth_settings(max.iter, cutoff)
@@ -353,7 +357,8 @@ compat_logis_firth_report <- function(model, threads) {
 #'
 #' Fit a fixed effect linear model via profile likelihood. This is the interface of pprof
 #' 1.0.3, kept for existing code; it calls [fit_linear_fe()] and returns the object of
-#' pprof 1.0.3.
+#' pprof 1.0.3. It is deprecated as of pprof 2.0.0 and warns once per session; see
+#' `vignette("migration", package = "pprof")`.
 #'
 #' @inheritParams logis_fe
 #' @param Y a numeric vector representing the response variable.
@@ -445,6 +450,7 @@ linear_fe <- function(formula = NULL, data = NULL,
                       Y = NULL, Z = NULL, ProvID = NULL, # nolint: object_name_linter.
                       Y.char = NULL, Z.char = NULL, ProvID.char = NULL, # nolint: object_name_linter.
                       option.gamma.var = "simplified") { # nolint: object_name_linter.
+  compat_deprecate("linear_fe")
   inputs <- compat_fe_inputs(formula, data, Y.char, Z.char, ProvID.char, Y, Z, ProvID)
   # D-36: linear_fe() always reports the input format.
   base::message("Input format: ", inputs$format, ".")
@@ -465,7 +471,8 @@ compat_provider_variance <- function(option) {
 #'
 #' Fit a random effect linear model via \code{\link[lme4]{lmer}} from the \code{lme4} package. This is the
 #' interface of pprof 1.0.3, kept for existing code; it fits the model with the same call as pprof 1.0.3 and
-#' returns the object of pprof 1.0.3. [fit_linear_re()] is the new interface.
+#' returns the object of pprof 1.0.3. [fit_linear_re()] is the new interface. It is deprecated as
+#' of pprof 2.0.0 and warns once per session; see `vignette("migration", package = "pprof")`.
 #'
 #' @param formula a two-sided formula object describing the model to be fitted,
 #' with the response variable on the left of a ~ operator and covariates on the right,
@@ -566,6 +573,7 @@ compat_provider_variance <- function(option) {
 linear_re <- function(formula = NULL, data = NULL,
                       Y = NULL, Z = NULL, ProvID = NULL, # nolint: object_name_linter.
                       Y.char = NULL, Z.char = NULL, ProvID.char = NULL, ...) { # nolint: object_name_linter.
+  compat_deprecate("linear_re")
   inputs <- compat_re_inputs(formula, data, Y.char, Z.char, ProvID.char, Y, Z, ProvID)
   # D-36: the random-effect fits always report the input format.
   base::message("Input format: ", inputs$format, ".")
@@ -576,7 +584,8 @@ linear_re <- function(formula = NULL, data = NULL,
 #'
 #' Fit a random effect logistic model via \code{\link[lme4]{glmer}} from the \code{lme4} package. This is the
 #' interface of pprof 1.0.3, kept for existing code; it fits the model with the same call as pprof 1.0.3 and
-#' returns the object of pprof 1.0.3. [fit_logistic_re()] is the new interface.
+#' returns the object of pprof 1.0.3. [fit_logistic_re()] is the new interface. It is deprecated
+#' as of pprof 2.0.0 and warns once per session; see `vignette("migration", package = "pprof")`.
 #'
 #' @inheritParams linear_re
 #' @param \dots additional arguments passed to \code{\link[lme4]{glmer}} for further customization.
@@ -664,6 +673,7 @@ linear_re <- function(formula = NULL, data = NULL,
 logis_re <- function(formula = NULL, data = NULL,
                      Y = NULL, Z = NULL, ProvID = NULL, # nolint: object_name_linter.
                      Y.char = NULL, Z.char = NULL, ProvID.char = NULL, ...) { # nolint: object_name_linter.
+  compat_deprecate("logis_re")
   inputs <- compat_re_inputs(formula, data, Y.char, Z.char, ProvID.char, Y, Z, ProvID)
   # D-36: the random-effect fits always report the input format.
   base::message("Input format: ", inputs$format, ".")
@@ -674,7 +684,8 @@ logis_re <- function(formula = NULL, data = NULL,
 #'
 #' Fit a correlated  random effect linear model via \code{\link[lme4]{lmer}} from the \code{lme4} package. This is
 #' the interface of pprof 1.0.3, kept for existing code; it fits the model with the same call as pprof 1.0.3 and
-#' returns the object of pprof 1.0.3. [fit_linear_cre()] is the new interface.
+#' returns the object of pprof 1.0.3. [fit_linear_cre()] is the new interface. It is deprecated
+#' as of pprof 2.0.0 and warns once per session; see `vignette("migration", package = "pprof")`.
 #'
 #' @param data a data frame containing all variables.
 #' @param Y.char a character string specifying the column name of the response variable in the `data`.
@@ -769,6 +780,7 @@ logis_re <- function(formula = NULL, data = NULL,
 #' Journal of Statistical Software, 67(1), 1-48.
 #' \cr
 linear_cre <- function(data, Y.char, wb.char, other.char = NULL, ProvID.char, ...) { # nolint: object_name_linter.
+  compat_deprecate("linear_cre")
   inputs <- compat_cre_inputs(data, Y.char, wb.char, other.char, ProvID.char)
   compat_re_object(compat_lme4_fit(inputs, "linear", ...), inputs, "linear_cre")
 }
@@ -777,7 +789,9 @@ linear_cre <- function(data, Y.char, wb.char, other.char = NULL, ProvID.char, ..
 #'
 #' Fit a correlated random effect logistic model via \code{\link[lme4]{glmer}} from the \code{lme4} package. This
 #' is the interface of pprof 1.0.3, kept for existing code; it fits the model with the same call as pprof 1.0.3
-#' and returns the object of pprof 1.0.3. [fit_logistic_cre()] is the new interface.
+#' and returns the object of pprof 1.0.3. [fit_logistic_cre()] is the new interface. It is
+#' deprecated as of pprof 2.0.0 and warns once per session; see
+#' `vignette("migration", package = "pprof")`.
 #'
 #' @inheritParams linear_cre
 #' @param \dots additional arguments passed to \code{\link[lme4]{glmer}} for further customization.
@@ -837,6 +851,7 @@ linear_cre <- function(data, Y.char, wb.char, other.char = NULL, ProvID.char, ..
 #' Journal of Statistical Software, 67(1), 1-48.
 #' \cr
 logis_cre <- function(data, Y.char, wb.char, other.char = NULL, ProvID.char, ...) { # nolint: object_name_linter.
+  compat_deprecate("logis_cre")
   inputs <- compat_cre_inputs(data, Y.char, wb.char, other.char, ProvID.char)
   compat_logis_cre_object(compat_lme4_fit(inputs, "logistic", ...), inputs)
 }

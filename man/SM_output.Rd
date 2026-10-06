@@ -21,5 +21,6 @@ class of the input object.
 measures. It dispatches to the appropriate method based on the class of the
 input (\code{fit}), ensuring the correct method is applied for different types of models. This is
 the interface of pprof 1.0.3, kept for existing code; \code{\link[=standardize_providers]{standardize_providers()}} is the new
-interface.
+interface. It is deprecated as of pprof 2.0.0 and warns once per session; see
+\code{vignette("migration", package = "pprof")}.
 }

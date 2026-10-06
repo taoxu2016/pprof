@@ -44,7 +44,9 @@ the response variable, the decomposed covariates, the other covariates, and prov
 \description{
 Fit a correlated random effect logistic model via \code{\link[lme4]{glmer}} from the \code{lme4} package. This
 is the interface of pprof 1.0.3, kept for existing code; it fits the model with the same call as pprof 1.0.3
-and returns the object of pprof 1.0.3. \code{\link[=fit_logistic_cre]{fit_logistic_cre()}} is the new interface.
+and returns the object of pprof 1.0.3. \code{\link[=fit_logistic_cre]{fit_logistic_cre()}} is the new interface. It is
+deprecated as of pprof 2.0.0 and warns once per session; see
+\code{vignette("migration", package = "pprof")}.
 }
 \details{
 Fit a correlated random effect logistic model using \code{\link[lme4]{glmer}} with a Mundlak

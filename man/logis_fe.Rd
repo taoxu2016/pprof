@@ -113,7 +113,8 @@ all categories except the reference level. Additionally, it contains three extra
 Fit a fixed effect logistic model via Serial blockwise inversion Newton (SerBIN) or block
 ascent Newton (BAN) algorithm. This is the interface of pprof 1.0.3, kept for existing
 code; it calls \code{\link[=fit_logistic_fe]{fit_logistic_fe()}}, whose estimates are identical, and returns the object
-of pprof 1.0.3.
+of pprof 1.0.3. It is deprecated as of pprof 2.0.0 and warns once per session; see
+\code{vignette("migration", package = "pprof")}.
 }
 \details{
 The function accepts three different input formats:

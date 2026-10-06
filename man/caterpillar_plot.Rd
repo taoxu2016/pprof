@@ -65,7 +65,8 @@ A ggplot object which is a caterpillar plot for the standardized measures.
 \description{
 Generate a caterpillar plot for standardized measures from different models using a provided CI dataframe.
 This is the interface of pprof 1.0.3, kept for existing code; see \code{\link[=plot_caterpillar]{plot_caterpillar()}} and
-\code{\link[=standardize_providers]{standardize_providers()}} for the new interface.
+\code{\link[=standardize_providers]{standardize_providers()}} for the new interface. It is deprecated as of pprof 2.0.0 and warns
+once per session; see \code{vignette("migration", package = "pprof")}.
 }
 \details{
 This function creates a caterpillar plot to visualize the standardized measures (indirect or direct).

@@ -496,7 +496,8 @@ compat_funnel_plot_linear <- function(plot_data,
 #'
 #' Generate a caterpillar plot for standardized measures from different models using a provided CI dataframe.
 #' This is the interface of pprof 1.0.3, kept for existing code; see [plot_caterpillar()] and
-#' [standardize_providers()] for the new interface.
+#' [standardize_providers()] for the new interface. It is deprecated as of pprof 2.0.0 and warns
+#' once per session; see `vignette("migration", package = "pprof")`.
 #'
 #' @param CI a dataframe from `confint` function containing the standardized measure values, along with their
 #'   confidence intervals lower and upper bounds.
@@ -582,6 +583,7 @@ caterpillar_plot <- function(CI, point_size = 2, point_color = "#475569", # noli
                              errorbar_width = 0, errorbar_size = 0.5, errorbar_alpha = 0.5, errorbar_color = "#94a3b8",
                              use_flag = FALSE, orientation = "vertical",
                              flag_color = c("#E69F00", "#56B4E9", "#009E73")) {
+  compat_deprecate("caterpillar_plot")
   if (missing(CI)) abort_invalid_input("Argument 'CI' is required!", arg = "CI")
   data <- compat_caterpillar_table(CI, refline_value)
   if (!(is.character(orientation) && length(orientation) == 1L && orientation %in% c("vertical", "horizontal"))) {
@@ -743,7 +745,8 @@ compat_caterpillar_draw <- function(CI, point_size, point_color, refline_value, 
 #'
 #' Generate a bar plot for flagging percentage.
 #' This is the interface of pprof 1.0.3, kept for existing code; see [plot_flags()] and
-#' [test_providers()] for the new interface.
+#' [test_providers()] for the new interface. It is deprecated as of pprof 2.0.0 and warns once
+#' per session; see `vignette("migration", package = "pprof")`.
 #'
 #' @param flag_df a data frame from `test` function containing the flag of each provider.
 #' @param group_num number of groups into which providers are divided based on their sample sizes. The default is 4.
@@ -791,6 +794,7 @@ compat_caterpillar_draw <- function(CI, point_size, point_color, refline_value, 
 bar_plot <- function(flag_df, group_num = 4,
                      bar_colors = c("#66c2a5", "#fc8d62", "#8da0cb"), bar_width = 0.7,
                      label_color = "black", label_size = 4) {
+  compat_deprecate("bar_plot")
   if (missing(flag_df)) abort_invalid_input("Argument 'flag_df' is required!", arg = "flag_df")
   if (!identical(class(flag_df), "data.frame")) {
     abort_invalid_input("Object flag_df should be a data frame!", arg = "flag_df")

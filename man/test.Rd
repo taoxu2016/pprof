@@ -21,5 +21,6 @@ provider effect coefficients and identification of outlier providers.
 \code{test} is an S3 generic function used to conduct hypothesis tests on provider effect coefficients
 and detect outlying provider. The function dispatches to the appropriate method
 based on the class of the input model (\code{fit}). This is the interface of pprof 1.0.3, kept for
-existing code; \code{\link[=test_providers]{test_providers()}} is the new interface.
+existing code; \code{\link[=test_providers]{test_providers()}} is the new interface. It is deprecated as of pprof 2.0.0 and
+warns once per session; see \code{vignette("migration", package = "pprof")}.
 }

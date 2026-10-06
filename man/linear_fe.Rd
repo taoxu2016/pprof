@@ -72,7 +72,8 @@ For categorical variables, the names reflect the dummy variables created for eac
 \description{
 Fit a fixed effect linear model via profile likelihood. This is the interface of pprof
 1.0.3, kept for existing code; it calls \code{\link[=fit_linear_fe]{fit_linear_fe()}} and returns the object of
-pprof 1.0.3.
+pprof 1.0.3. It is deprecated as of pprof 2.0.0 and warns once per session; see
+\code{vignette("migration", package = "pprof")}.
 }
 \details{
 This function is used to fit a fixed effect linear model of the form:

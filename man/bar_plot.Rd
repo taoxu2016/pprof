@@ -33,7 +33,8 @@ A ggplot object representing the bar chart of flagging results.
 \description{
 Generate a bar plot for flagging percentage.
 This is the interface of pprof 1.0.3, kept for existing code; see \code{\link[=plot_flags]{plot_flags()}} and
-\code{\link[=test_providers]{test_providers()}} for the new interface.
+\code{\link[=test_providers]{test_providers()}} for the new interface. It is deprecated as of pprof 2.0.0 and warns once
+per session; see \code{vignette("migration", package = "pprof")}.
 }
 \details{
 This function generates a bar chart to visualize the percentage of flagging results based on provider sizes.
