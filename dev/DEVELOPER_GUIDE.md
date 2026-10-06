@@ -41,6 +41,7 @@ Run from the repository root.
 | Tests of some files | `Rscript -e 'devtools::test(filter = "profile")'` |
 | Full check | `Rscript -e 'rcmdcheck::rcmdcheck(args = c("--as-cran", "--no-manual"), error_on = "warning")'` |
 | Lint | `Rscript -e 'lintr::lint_package()'` |
+| Format the C++ core (needs Node.js) | `npx clang-format@1.8.0 --style=file -i src/core/* src/logistic/* src/rcpp_logistic.cpp`; CI checks it with `--dry-run --Werror`. `src/RcppExports.cpp` is generated and not formatted |
 | Coverage | `Rscript -e 'covr::package_coverage()'` |
 | Reference suite, differential tests | `Rscript validation/run-reference.R`, `Rscript validation/run-differential.R` |
 | The site | `Rscript -e 'pkgdown::build_site(override = list(destination = "<a folder outside the repository>"))'`; CI builds it on every push to a `rewrite/**` branch. pkgdown renders every Markdown file at the root, so a local build also renders `CLAUDE.md` (CI removes it first) |
