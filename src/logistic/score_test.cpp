@@ -7,9 +7,8 @@
 namespace pprof {
 namespace logistic {
 
-ScoreTestResult standard_score_test(const arma::vec& y, const arma::mat& z,
-                                    const core::ProviderLayout& layout, const arma::vec& gamma,
-                                    const arma::vec& beta, double gamma_null,
+ScoreTestResult standard_score_test(const arma::vec& y, const arma::mat& z, const core::ProviderLayout& layout,
+                                    const arma::vec& gamma, const arma::vec& beta, double gamma_null,
                                     const arma::uvec& providers, int threads) {
   // src/Fixed_effect.cpp:514-540: full-model and null quantities shared by every provider.
   const arma::vec gamma_obs = core::expand(gamma, layout);
@@ -54,8 +53,7 @@ ScoreTestResult standard_score_test(const arma::vec& y, const arma::mat& z,
         failed[k] = 1;
         continue;
       }
-      const double variance =
-          info_alpha - arma::as_scalar(info_beta_alpha.t() * schur_inverse * info_beta_alpha);
+      const double variance = info_alpha - arma::as_scalar(info_beta_alpha.t() * schur_inverse * info_beta_alpha);
       statistic(k) = score_null(i) / std::sqrt(variance);
     } catch (...) {
       failed[k] = 1;

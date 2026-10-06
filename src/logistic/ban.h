@@ -26,8 +26,7 @@ namespace logistic {
 // settings.threads is not used: the reference's BAN has no parallel code.
 // Armadillo errors (for example a failed solve) are thrown to the caller.
 core::FitResult fit_ban(const arma::vec& y, const arma::mat& z, const core::ProviderLayout& layout,
-                        const arma::vec& gamma_start, const arma::vec& beta_start,
-                        const core::FitSettings& settings);
+                        const arma::vec& gamma_start, const arma::vec& beta_start, const core::FitSettings& settings);
 
 }  // namespace logistic
 }  // namespace pprof

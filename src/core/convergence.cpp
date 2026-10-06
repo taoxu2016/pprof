@@ -5,9 +5,8 @@
 namespace pprof {
 namespace core {
 
-IterationCriteria iteration_criteria(const arma::vec& beta_step, double d_loglik,
-                                     double loglik_reference, double loglik_initial,
-                                     StopRule rule) {
+IterationCriteria iteration_criteria(const arma::vec& beta_step, double d_loglik, double loglik_reference,
+                                     double loglik_initial, StopRule rule) {
   IterationCriteria criteria;
   criteria.coefficients = arma::norm(beta_step, "inf");
   criteria.relative_loglik = std::abs(d_loglik / (d_loglik + loglik_reference));

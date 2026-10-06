@@ -24,9 +24,7 @@ class ProviderLayout {
   arma::uword n_obs() const { return n_obs_; }
   arma::uword first(arma::uword provider) const { return first_(provider); }
   arma::uword last(arma::uword provider) const { return last_(provider); }
-  arma::span rows(arma::uword provider) const {
-    return arma::span(first_(provider), last_(provider));
-  }
+  arma::span rows(arma::uword provider) const { return arma::span(first_(provider), last_(provider)); }
 
  private:
   arma::uvec first_;

@@ -29,13 +29,10 @@ using pprof::core::FitSettings;
 using pprof::core::ProviderLayout;
 using pprof::core::StopRule;
 
-arma::vec view(Rcpp::NumericVector x) {
-  return arma::vec(x.begin(), static_cast<arma::uword>(x.size()), false, true);
-}
+arma::vec view(Rcpp::NumericVector x) { return arma::vec(x.begin(), static_cast<arma::uword>(x.size()), false, true); }
 
 arma::mat view(Rcpp::NumericMatrix x) {
-  return arma::mat(x.begin(), static_cast<arma::uword>(x.nrow()), static_cast<arma::uword>(x.ncol()), false,
-                   true);
+  return arma::mat(x.begin(), static_cast<arma::uword>(x.nrow()), static_cast<arma::uword>(x.ncol()), false, true);
 }
 
 void require(bool condition, const char* message) {
@@ -98,8 +95,8 @@ Rcpp::List fit_result_list(const FitResult& result) {
       R_NilValue, Rcpp::CharacterVector::create("coefficients", "relative_loglik", "relative_gain", "rule"));
   return Rcpp::List::create(Rcpp::Named("gamma") = Rcpp::NumericVector(result.gamma.begin(), result.gamma.end()),
                             Rcpp::Named("beta") = Rcpp::NumericVector(result.beta.begin(), result.beta.end()),
-                            Rcpp::Named("iterations") = result.iterations,
-                            Rcpp::Named("converged") = result.converged, Rcpp::Named("history") = history);
+                            Rcpp::Named("iterations") = result.iterations, Rcpp::Named("converged") = result.converged,
+                            Rcpp::Named("history") = history);
 }
 
 Rcpp::List firth_result_list(const pprof::logistic::FirthResult& result) {
@@ -113,10 +110,11 @@ Rcpp::List firth_result_list(const pprof::logistic::FirthResult& result) {
       Rcpp::List::create(R_NilValue, Rcpp::CharacterVector::create("coefficients", "penalized_loglik"));
   return Rcpp::List::create(Rcpp::Named("gamma") = Rcpp::NumericVector(result.gamma.begin(), result.gamma.end()),
                             Rcpp::Named("beta") = Rcpp::NumericVector(result.beta.begin(), result.beta.end()),
-                            Rcpp::Named("iterations") = result.iterations,
-                            Rcpp::Named("converged") = result.converged, Rcpp::Named("criterion") = result.criterion,
+                            Rcpp::Named("iterations") = result.iterations, Rcpp::Named("converged") = result.converged,
+                            Rcpp::Named("criterion") = result.criterion,
                             Rcpp::Named("penalized_loglik_initial") = result.penalized_loglik_initial,
-                            Rcpp::Named("penalized_loglik") = result.penalized_loglik, Rcpp::Named("history") = history);
+                            Rcpp::Named("penalized_loglik") = result.penalized_loglik,
+                            Rcpp::Named("history") = history);
 }
 
 }  // namespace
@@ -138,9 +136,9 @@ Rcpp::List cpp_logistic_fe_serbin(Rcpp::NumericVector response, Rcpp::NumericMat
 // BAN (src/logistic/ban.h), with the same arguments as cpp_logistic_fe_serbin().
 // [[Rcpp::export]]
 Rcpp::List cpp_logistic_fe_ban(Rcpp::NumericVector response, Rcpp::NumericMatrix design,
-                               Rcpp::IntegerVector provider_sizes, Rcpp::NumericVector gamma,
-                               Rcpp::NumericVector beta, int max_iter, double tol, double effect_bound,
-                               bool backtrack, std::string stop_rule, int threads) {
+                               Rcpp::IntegerVector provider_sizes, Rcpp::NumericVector gamma, Rcpp::NumericVector beta,
+                               int max_iter, double tol, double effect_bound, bool backtrack, std::string stop_rule,
+                               int threads) {
   const ProviderLayout layout = layout_of(provider_sizes);
   check_model(layout, response, design, gamma, beta);
   const FitSettings settings = settings_of(max_iter, tol, effect_bound, backtrack, stop_rule, threads);
@@ -198,8 +196,8 @@ Rcpp::List cpp_logistic_variance(Rcpp::NumericMatrix design, Rcpp::IntegerVector
 // [[Rcpp::export]]
 Rcpp::List cpp_logistic_score_standard(Rcpp::NumericVector response, Rcpp::NumericMatrix design,
                                        Rcpp::IntegerVector provider_sizes, Rcpp::NumericVector gamma,
-                                       Rcpp::NumericVector beta, double gamma_null,
-                                       Rcpp::IntegerVector providers, int threads) {
+                                       Rcpp::NumericVector beta, double gamma_null, Rcpp::IntegerVector providers,
+                                       int threads) {
   const ProviderLayout layout = layout_of(provider_sizes);
   check_model(layout, response, design, gamma, beta);
   require(threads >= 1, "threads must be at least 1");

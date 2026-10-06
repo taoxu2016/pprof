@@ -8,9 +8,7 @@
 namespace pprof {
 namespace core {
 
-void floor_zero_weights(arma::vec& weights) {
-  floor_zero_weights(weights, kFitWeightFloor);
-}
+void floor_zero_weights(arma::vec& weights) { floor_zero_weights(weights, kFitWeightFloor); }
 
 void floor_zero_weights(arma::vec& weights, double floor) {
   if (arma::any(weights == 0)) {
@@ -83,8 +81,7 @@ arma::mat covariate_block(const arma::mat& z, const arma::vec& weights, int thre
   return out;
 }
 
-arma::mat schur_complement(const arma::mat& covariate, const arma::mat& cross,
-                           const arma::vec& diagonal_inverse) {
+arma::mat schur_complement(const arma::mat& covariate, const arma::mat& cross, const arma::vec& diagonal_inverse) {
   return covariate - (cross.each_row() % diagonal_inverse.t()) * cross.t();
 }
 

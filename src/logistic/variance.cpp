@@ -6,8 +6,8 @@
 namespace pprof {
 namespace logistic {
 
-Variances logistic_fe_variance(const arma::mat& z, const core::ProviderLayout& layout,
-                               const arma::vec& gamma, const arma::vec& beta) {
+Variances logistic_fe_variance(const arma::mat& z, const core::ProviderLayout& layout, const arma::vec& gamma,
+                               const arma::vec& beta) {
   const arma::vec gamma_obs = core::expand(gamma, layout);
   arma::vec p = 1 / (1 + arma::exp(-gamma_obs - z * beta));
   p = arma::clamp(p, core::kVarianceProbabilityClamp, 1 - core::kVarianceProbabilityClamp);

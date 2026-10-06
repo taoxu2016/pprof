@@ -19,8 +19,8 @@ struct Variances {
 // Schur complement, inverted by inv_sympd(); Var(gamma_i) = 1/D_i + J_i' S^-1 J_i with
 // J_i = B_i / D_i. Throws std::runtime_error when S is singular or not positive definite,
 // as the reference does.
-Variances logistic_fe_variance(const arma::mat& z, const core::ProviderLayout& layout,
-                               const arma::vec& gamma, const arma::vec& beta);
+Variances logistic_fe_variance(const arma::mat& z, const core::ProviderLayout& layout, const arma::vec& gamma,
+                               const arma::vec& beta);
 
 }  // namespace logistic
 }  // namespace pprof

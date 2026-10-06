@@ -42,8 +42,8 @@ NewtonStep newton_step(const arma::vec& y, const arma::mat& z, const core::Provi
   const arma::mat schur = core::schur_complement_serbin(covariate, cross, scaled);
 
   const arma::mat schur_solve_scaled = arma::solve(schur, scaled.t(), arma::solve_opts::likely_sympd);
-  step.d_gamma = diagonal_inverse % step.score_gamma +
-                 schur_solve_scaled.t() * (scaled.t() * step.score_gamma - step.score_beta);
+  step.d_gamma =
+      diagonal_inverse % step.score_gamma + schur_solve_scaled.t() * (scaled.t() * step.score_gamma - step.score_beta);
   const arma::vec schur_solve_score = arma::solve(schur, step.score_beta, arma::solve_opts::likely_sympd);
   step.d_beta = schur_solve_score - schur_solve_scaled * step.score_gamma;
   return step;

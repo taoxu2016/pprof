@@ -5,8 +5,7 @@
 namespace pprof {
 namespace core {
 
-ProviderLayout::ProviderLayout(const std::vector<int>& sizes)
-    : first_(sizes.size()), last_(sizes.size()), n_obs_(0) {
+ProviderLayout::ProviderLayout(const std::vector<int>& sizes) : first_(sizes.size()), last_(sizes.size()), n_obs_(0) {
   for (std::size_t i = 0; i < sizes.size(); ++i) {
     if (sizes[i] < 1) {
       throw std::invalid_argument("every provider must have at least one observation");

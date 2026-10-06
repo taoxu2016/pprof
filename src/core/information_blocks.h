@@ -67,8 +67,7 @@ arma::mat covariate_block(const arma::mat& z, const arma::vec& weights, int thre
 // S = C - B diag(diagonal_inverse) B' in the operation order of the variances and the
 // standard score test: (B.each_row() % diagonal_inverse.t()) * B.t()
 // (src/Fixed_effect.cpp:660, :583-584).
-arma::mat schur_complement(const arma::mat& covariate, const arma::mat& cross,
-                           const arma::vec& diagonal_inverse);
+arma::mat schur_complement(const arma::mat& covariate, const arma::mat& cross, const arma::vec& diagonal_inverse);
 
 // SerBIN's scaled cross block A = (B.each_row() % diagonal_inverse.t()).t(), which its
 // Newton step also uses, and the Schur complement in SerBIN's order, C - A.t() * B.t()

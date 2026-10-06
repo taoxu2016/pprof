@@ -29,9 +29,8 @@ struct ScoreTestResult {
 // statistic is NaN or infinite where the reference's is, and NaN with failed = true where
 // the adjusted information could not be inverted (there the reference's inv_sympd() throws
 // inside its OpenMP region, which OpenMP does not allow).
-ScoreTestResult standard_score_test(const arma::vec& y, const arma::mat& z,
-                                    const core::ProviderLayout& layout, const arma::vec& gamma,
-                                    const arma::vec& beta, double gamma_null,
+ScoreTestResult standard_score_test(const arma::vec& y, const arma::mat& z, const core::ProviderLayout& layout,
+                                    const arma::vec& gamma, const arma::vec& beta, double gamma_null,
                                     const arma::uvec& providers, int threads);
 
 }  // namespace logistic

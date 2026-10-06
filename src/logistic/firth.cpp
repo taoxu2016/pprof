@@ -64,8 +64,8 @@ struct Data {
 // column of J, and its term C_i - J_i B_i' of the Schur complement, written to `term`. The
 // reference copies the provider's rows before computing with them, and so does this
 // function, so that every product has the reference's operands.
-void provider_information(const Data& data, const arma::vec& gamma, const arma::vec& beta, arma::uword i,
-                          State& state, arma::mat& term) {
+void provider_information(const Data& data, const arma::vec& gamma, const arma::vec& beta, arma::uword i, State& state,
+                          arma::mat& term) {
   const arma::uword first = data.layout.first(i);
   const arma::uword last = data.layout.last(i);
   const arma::mat z_rows = data.z.rows(first, last);
@@ -91,8 +91,7 @@ void provider_information(const Data& data, const arma::vec& gamma, const arma::
 // (src/Firth.cpp:140-188, :284-331). The providers' parts are computed in parallel, in
 // batches, and their terms are added in provider order, as the reference adds them with one
 // thread: S = 0 + (((0 + T_1) + T_2) + ... + T_m).
-void compute_information(const Data& data, const arma::vec& gamma, const arma::vec& beta, int threads,
-                         State& state) {
+void compute_information(const Data& data, const arma::vec& gamma, const arma::vec& beta, int threads, State& state) {
   const arma::uword m = data.layout.n_providers();
   const arma::uword n_covariates = data.z.n_cols;
   const arma::uword by_memory = kSchurTermBufferDoubles / std::max<arma::uword>(n_covariates * n_covariates, 1);
@@ -187,8 +186,7 @@ arma::vec compute_step(const Data& data, int threads, State& state) {
 // region and terminated R (D-42), this throws outside any parallel region.
 void invert_schur(State& state) {
   if (!arma::inv_sympd(state.schur_inverse, state.schur)) {
-    throw std::runtime_error(
-        "the Schur complement of the information matrix is singular or not positive definite");
+    throw std::runtime_error("the Schur complement of the information matrix is singular or not positive definite");
   }
 }
 

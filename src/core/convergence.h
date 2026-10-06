@@ -18,9 +18,8 @@ namespace core {
 // and the rule's value: one criterion, or for kAll and kAny the largest and the smallest of
 // the three, computed with Armadillo's max() and min() as in the reference
 // (src/Fixed_effect.cpp:424-464).
-IterationCriteria iteration_criteria(const arma::vec& beta_step, double d_loglik,
-                                     double loglik_reference, double loglik_initial,
-                                     StopRule rule);
+IterationCriteria iteration_criteria(const arma::vec& beta_step, double d_loglik, double loglik_reference,
+                                     double loglik_initial, StopRule rule);
 
 }  // namespace core
 }  // namespace pprof

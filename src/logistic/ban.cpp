@@ -14,9 +14,8 @@ namespace {
 // One iteration with backtracking (src/Fixed_effect.cpp:147-246). Updates gamma and beta and
 // returns the iteration's criteria.
 core::IterationCriteria iterate_with_backtracking(const arma::vec& y, const arma::mat& z,
-                                                  const core::ProviderLayout& layout, arma::vec& gamma,
-                                                  arma::vec& beta, double loglik_initial,
-                                                  const core::FitSettings& settings) {
+                                                  const core::ProviderLayout& layout, arma::vec& gamma, arma::vec& beta,
+                                                  double loglik_initial, const core::FitSettings& settings) {
   // Provider step with beta fixed.
   arma::vec gamma_obs = core::expand(gamma, layout);
   const arma::vec z_beta = z * beta;
@@ -41,8 +40,7 @@ core::IterationCriteria iterate_with_backtracking(const arma::vec& y, const arma
   pq = p % (1 - p);
   const arma::vec score_beta = z.t() * (y - p);
   const arma::mat covariate = core::covariate_block(z, pq, 1);
-  const arma::vec d_beta =
-      arma::solve(covariate, score_beta, arma::solve_opts::fast + arma::solve_opts::likely_sympd);
+  const arma::vec d_beta = arma::solve(covariate, score_beta, arma::solve_opts::fast + arma::solve_opts::likely_sympd);
   const double loglik_mid = core::logistic_loglik(y, z_beta, gamma_obs);
   const auto gain_beta = [&](double length) {
     return core::logistic_loglik(y, z * (beta + length * d_beta), gamma_obs) - loglik_mid;
@@ -54,9 +52,8 @@ core::IterationCriteria iterate_with_backtracking(const arma::vec& y, const arma
 }
 
 // One iteration without backtracking (src/Fixed_effect.cpp:254-326): full Newton steps.
-core::IterationCriteria iterate_full_steps(const arma::vec& y, const arma::mat& z,
-                                           const core::ProviderLayout& layout, arma::vec& gamma,
-                                           arma::vec& beta, double loglik_initial,
+core::IterationCriteria iterate_full_steps(const arma::vec& y, const arma::mat& z, const core::ProviderLayout& layout,
+                                           arma::vec& gamma, arma::vec& beta, double loglik_initial,
                                            const core::FitSettings& settings) {
   arma::vec gamma_obs = core::expand(gamma, layout);
   const arma::vec z_beta = z * beta;
@@ -74,8 +71,7 @@ core::IterationCriteria iterate_full_steps(const arma::vec& y, const arma::mat& 
   yp = y - p;
   const arma::vec score_beta = z.t() * yp;
   const arma::mat covariate = core::covariate_block(z, pq, 1);
-  const arma::vec d_beta =
-      arma::solve(covariate, score_beta, arma::solve_opts::fast + arma::solve_opts::likely_sympd);
+  const arma::vec d_beta = arma::solve(covariate, score_beta, arma::solve_opts::fast + arma::solve_opts::likely_sympd);
   beta += d_beta;
   const double d_loglik = core::logistic_loglik(y, z * beta, gamma_obs) - loglik;
   return core::iteration_criteria(d_beta, d_loglik, loglik, loglik_initial, settings.stop_rule);
@@ -84,8 +80,7 @@ core::IterationCriteria iterate_full_steps(const arma::vec& y, const arma::mat& 
 }  // namespace
 
 core::FitResult fit_ban(const arma::vec& y, const arma::mat& z, const core::ProviderLayout& layout,
-                        const arma::vec& gamma_start, const arma::vec& beta_start,
-                        const core::FitSettings& settings) {
+                        const arma::vec& gamma_start, const arma::vec& beta_start, const core::FitSettings& settings) {
   // The engine updates copies: the starting values can be views of the caller's memory.
   arma::vec gamma = gamma_start;
   arma::vec beta = beta_start;
