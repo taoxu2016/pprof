@@ -46,38 +46,26 @@ jobs:
         if: matrix.config.pinned
         run: echo 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2026-10-01"))' >> ~/.Rprofile
 
-      # Every package of the pinned job comes from the snapshot, so upgrading takes the snapshot's
-      # versions; without it, R's bundled Matrix would be kept.
+      # Only hard dependencies: pprof's own, and those of the packages the reference runner uses
+      # (devtools for load_all(), jsonlite, withr, testthat). With the default "all", pak also
+      # resolves the suggested packages of every package named here, and lme4's (semEff, which
+      # needs gsl, which needs R >= 4.5) cannot be installed on R 4.4 (Phase 8, step 1). Every
+      # package of the pinned job comes from the snapshot, so upgrading takes the snapshot's
+      # versions, R's bundled Matrix included; the next step checks lme4 and Matrix.
       - uses: r-lib/actions/setup-r-dependencies@v2
         id: dependencies
         continue-on-error: true
         with:
-          extra-packages: any::devtools, Matrix, lme4
-          needs: check
+          extra-packages: any::devtools, any::jsonlite, any::withr, any::testthat
+          dependencies: '"hard"'
           upgrade: ${{ matrix.config.pinned && 'TRUE' || 'FALSE' }}
 
       # The action's own log is not readable without signing in: replay its resolution and
       # installation, and copy the end of the output into an annotation.
       - name: Report a failure to install the dependencies
         if: steps.dependencies.outcome == 'failure'
-        shell: bash
         run: |
-          Rscript -e '
-            lib <- file.path(tempdir(), "pak")
-            dir.create(lib)
-            install.packages("pak", lib = lib, repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s",
-                                                               .Platform$pkgType, R.Version()$os, R.Version()$arch))
-            library(pak, lib.loc = lib)
-            Sys.setenv(PKGCACHE_HTTP_VERSION = "2")
-            print(getOption("repos"))
-            options(width = 200)
-            print(pak::repo_status())
-            pak::lockfile_create(c("deps::.", "any::sessioninfo", "any::devtools", "Matrix", "lme4"),
-                                 lockfile = "diagnose.lock", upgrade = ${{ matrix.config.pinned && 'TRUE' || 'FALSE' }},
-                                 dependencies = c("Config/Needs/check", "all"))
-            pak::lockfile_install("diagnose.lock")
-          ' > dependencies.log 2>&1 || true
-          Rscript .github/scripts/ci-annotate.R tail "Installing the dependencies failed; the replay ends" dependencies.log 70
+          Rscript .github/scripts/ci-annotate.R dependencies hard ${{ matrix.config.pinned && 'TRUE' || 'FALSE' }} deps::. any::sessioninfo any::devtools any::jsonlite any::withr any::testthat
           exit 1
 
       - name: Require the fixture manifest's lme4 and Matrix

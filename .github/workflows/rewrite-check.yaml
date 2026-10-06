@@ -54,10 +54,24 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      # The probes install pprof's hard dependencies and only the suggested packages its tests
+      # and vignettes need (the tests skip the others): with "all", pak also resolves the
+      # suggested packages of rcmdcheck and sessioninfo, which need newer R versions than the
+      # one probed (Phase 8, step 1).
       - uses: r-lib/actions/setup-r-dependencies@v2
+        id: dependencies
+        continue-on-error: true
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: ${{ matrix.config.probe && 'any::rcmdcheck, any::testthat, any::withr, any::jsonlite, any::knitr, any::rmarkdown' || 'any::rcmdcheck' }}
+          dependencies: ${{ matrix.config.probe && '"hard"' || '"all"' }}
           needs: check
+
+      # The action's own log is not readable without signing in.
+      - name: Report a failure to install the dependencies
+        if: steps.dependencies.outcome == 'failure'
+        run: |
+          Rscript .github/scripts/ci-annotate.R dependencies ${{ matrix.config.probe && 'Config/Needs/check,hard' || 'Config/Needs/check,all' }} FALSE deps::. any::sessioninfo ${{ matrix.config.probe && 'any::rcmdcheck any::testthat any::withr any::jsonlite any::knitr any::rmarkdown' || 'any::rcmdcheck' }}
+          exit 1
 
       - uses: r-lib/actions/check-r-package@v2
         with:

@@ -8,6 +8,9 @@
 #   Rscript .github/scripts/ci-annotate.R rout <file> ...            failures in testthat output
 #   Rscript .github/scripts/ci-annotate.R report <report> <log>      the reference suite
 #   Rscript .github/scripts/ci-annotate.R tail <title> <file> [n]    the last n lines of a log
+#   Rscript .github/scripts/ci-annotate.R dependencies <types> <upgrade> <ref> ...
+#     replays a failed installation of the dependencies (types such as Config/Needs/check,all;
+#     upgrade TRUE or FALSE)
 #
 # GitHub keeps at most 10 annotations of each level per step, so each mode stays within that.
 
@@ -37,8 +40,19 @@ read_text <- function(file) {
   readLines(file, warn = FALSE, encoding = "UTF-8")
 }
 
+# The platform, with what makes floating-point results differ between platforms: the BLAS and
+# LAPACK that R (and so Armadillo) uses, and the C++ compiler and its flags.
 platform <- function() {
-  paste0(R.version.string, "; ", utils::sessionInfo()$running, "; ", R.version$platform)
+  blas <- tryCatch(extSoftVersion()[["BLAS"]], error = function(e) "")
+  config <- function(var) {
+    out <- tryCatch(system2(file.path(R.home("bin"), "R"), c("CMD", "config", var), stdout = TRUE, stderr = FALSE),
+                    error = function(e) "?", warning = function(w) "?")
+    trimws(gsub("\\s+", " ", paste(out, collapse = " ")))
+  }
+  paste0(R.version.string, "; ", utils::sessionInfo()$running, "; ", R.version$platform,
+         "; BLAS: ", if (nzchar(blas)) blas else "R's internal BLAS",
+         "; LAPACK: ", La_library(), " ", La_version(),
+         "; CXX17: ", config("CXX17"), " ", config("CXX17FLAGS"))
 }
 
 # Failures in the output of a testthat run (testthat.Rout.fail, or a log that holds it): one
@@ -128,6 +142,36 @@ annotate_report <- function(report, log_file) {
   invisible()
 }
 
+# A failed r-lib/actions/setup-r-dependencies step, whose own log is not readable without
+# signing in: resolve and install the same references with pak, in a library of their own,
+# and copy the end of the output into an annotation.
+annotate_dependencies <- function(dependencies, upgrade, refs) {
+  # `dependencies` lists pak's dependency types separated by commas, as the action passes
+  # them: for example "Config/Needs/check,all".
+  dependencies <- sprintf("c(%s)", paste(sprintf('"%s"', strsplit(dependencies, ",", fixed = TRUE)[[1]]),
+                                         collapse = ", "))
+  log_file <- tempfile(fileext = ".log")
+  code <- c(
+    'lib <- file.path(tempdir(), "pak"); dir.create(lib)',
+    'install.packages("pak", lib = lib, repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s",',
+    '                 .Platform$pkgType, R.Version()$os, R.Version()$arch))',
+    'library(pak, lib.loc = lib)',
+    'Sys.setenv(PKGCACHE_HTTP_VERSION = "2")',
+    'print(getOption("repos"))',
+    sprintf('pak::lockfile_create(c(%s), lockfile = file.path(tempdir(), "replay.lock"), upgrade = %s,',
+            paste(sprintf('"%s"', refs), collapse = ", "), upgrade),
+    sprintf('                     dependencies = %s)', dependencies),
+    # A library of its own, so that the replay never changes the libraries R uses.
+    'replay_lib <- file.path(tempdir(), "replay-lib"); dir.create(replay_lib)',
+    'pak::lockfile_install(file.path(tempdir(), "replay.lock"), lib = replay_lib)'
+  )
+  script <- tempfile(fileext = ".R")
+  writeLines(code, script)
+  system2(file.path(R.home("bin"), "Rscript"), script, stdout = log_file, stderr = log_file)
+  annotate("error", "Installing the dependencies failed; the replay ends",
+           c(utils::tail(read_text(log_file), 40L), platform()))
+}
+
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args)) {
   mode <- args[1]
@@ -137,6 +181,8 @@ if (length(args)) {
     for (f in args[-1]) annotate_rout(f)
   } else if (identical(mode, "report")) {
     annotate_report(args[2], args[3])
+  } else if (identical(mode, "dependencies")) {
+    annotate_dependencies(args[2], args[3], args[-(1:3)])
   } else if (identical(mode, "tail")) {
     n <- if (length(args) > 3) as.integer(args[4]) else 60L
     lines <- if (file.exists(args[3])) utils::tail(read_text(args[3]), n) else paste("no file", args[3])
