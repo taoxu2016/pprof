@@ -81,7 +81,11 @@ test_that("the full provider variance adds the coefficient uncertainty to the si
   expect_identical(full$provider_effects, simplified$provider_effects)
   expect_identical(full$spec$provider_variance, "full")
   sizes <- simplified$providers$n_obs
-  expect_identical(unname(simplified$provider_effect_variance), simplified$sigma^2 / sizes)
+  # K-42's closed form. The package divides sigma^2 = SSR / (n - m - p) and keeps
+  # sigma = sqrt(sigma^2); squaring sigma again need not give back the same last bit, as it did
+  # on the fixtures' platform but not on arm64 macOS.
+  expect_equal(unname(simplified$provider_effect_variance), simplified$sigma^2 / sizes,
+               tolerance = reference_tolerance("closed_form")$rtol)
   expect_true(all(full$provider_effect_variance > simplified$provider_effect_variance))
 })
 

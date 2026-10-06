@@ -111,12 +111,15 @@ test_that("covariates that are dependent within providers warn but are fitted as
   expect_identical(warning$aliased, "x3")
   expect_true(all(is.finite(fit$coefficients)))
   # A covariate that is constant within providers is absorbed by the provider effects; the
-  # variance step then fails, as in the reference.
+  # variance step then fails, as in the reference, where LAPACK detects the exactly singular
+  # matrix, as on the fixtures' platform. Where it does not (OpenBLAS), the fit returns
+  # estimates that are not identified (D-53); the rank warning comes either way.
   expect_warning(
-    expect_error(fit_logistic_fe(Y ~ x1 + x2 + xc, fixture_dataset("syn_constant"), "ProvID"),
-                 class = "pprof_error_convergence"),
+    outcome <- tryCatch(fit_logistic_fe(Y ~ x1 + x2 + xc, fixture_dataset("syn_constant"), "ProvID"),
+                        pprof_error_convergence = function(error) error),
     class = "pprof_warning_rank_deficient"
   )
+  if (reference_platform()$ok) expect_s3_class(outcome, "pprof_error_convergence")
 })
 
 test_that("verbose = FALSE prints nothing, and verbose = TRUE reports through pprof_message", {
@@ -196,12 +199,16 @@ test_that("the AUC equals pROC's, including pROC's choice of direction (DEC-009,
   skip_if_not_installed("pROC")
   proc_auc <- function(response, predictor) as.numeric(suppressMessages(pROC::auc(response, predictor)))
   fit <- fit_logistic_fe(example_formula, example_data(), "hospital")
-  expect_equal(fit$auc, proc_auc(fit$response, logistic_fe_probabilities(fit)), tolerance = 1e-15)
+  # The Mann-Whitney formula and pROC's trapezoidal integration agree in exact arithmetic; their
+  # rounding differs in the last bit on some data and platforms, which D-40 accepted at the
+  # closed-form tier (identical here on the fixtures' platform, 1 ulp apart on arm64 macOS).
+  closed_form <- reference_tolerance("closed_form")$rtol
+  expect_equal(fit$auc, proc_auc(fit$response, logistic_fe_probabilities(fit)), tolerance = closed_form)
   # Many ties, and a predictor whose controls have the higher median.
   withr::with_seed(11, {
     response <- stats::rbinom(500, 1, 0.3)
     tied <- round(stats::runif(500) + 0.3 * response, 1)
   })
-  expect_equal(logistic_fe_auc(response, tied), proc_auc(response, tied), tolerance = 1e-15)
-  expect_equal(logistic_fe_auc(response, -tied), proc_auc(response, -tied), tolerance = 1e-15)
+  expect_equal(logistic_fe_auc(response, tied), proc_auc(response, tied), tolerance = closed_form)
+  expect_equal(logistic_fe_auc(response, -tied), proc_auc(response, -tied), tolerance = closed_form)
 })
