@@ -98,6 +98,10 @@ format_call <- function(case) {
 run_set_in_child <- function(run_ids, target_ids, max_full_length) {
   callr::r(function(cases, datasets, runner, ref_lib, run_ids, target_ids, max_full_length) {
     Sys.setlocale("LC_COLLATE", "C")
+    # callr's profile gives the child the parent's site library (R_HOME/site-library, where CI
+    # runners install packages), whatever R_LIBS_SITE says; the child drops it before loading
+    # anything but base R, so that its library path is only the reference library and base R.
+    .libPaths(ref_lib, include.site = FALSE)
     lib_paths <- normalizePath(.libPaths(), winslash = "/")
     allowed <- c(normalizePath(ref_lib, winslash = "/"), normalizePath(R.home("library"), winslash = "/"))
     if (!all(lib_paths %in% allowed)) stop("Child library path is not isolated: ", paste(lib_paths, collapse = "; "))
@@ -129,10 +133,7 @@ run_set_in_child <- function(run_ids, target_ids, max_full_length) {
   args = list(cases = all_cases, datasets = datasets, runner = normalizePath("tests/testthat/helper-reference-cases.R"),
               ref_lib = ref_lib, run_ids = run_ids, target_ids = target_ids, max_full_length = max_full_length),
   libpath = ref_lib,
-  # R_LIBS_SITE = "NULL": R starts with no site library (R_HOME/site-library, where CI runners
-  # install packages), so the library path is only the reference library and base R.
-  env = c(callr::rcmd_safe_env(), LC_COLLATE = "C", OMP_THREAD_LIMIT = "1", OMP_NUM_THREADS = "1",
-          R_LIBS_SITE = "NULL"),
+  env = c(callr::rcmd_safe_env(), LC_COLLATE = "C", OMP_THREAD_LIMIT = "1", OMP_NUM_THREADS = "1"),
   user_profile = FALSE, system_profile = FALSE, show = FALSE)
 }
 
