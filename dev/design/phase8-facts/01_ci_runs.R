@@ -4,9 +4,11 @@
 # signed-in account (the log endpoint answers 403 without one), so they are not read here.
 # The unauthenticated API allows 60 requests an hour; this script makes about 20.
 # Run from the repository root: Rscript <this file> <output file> <run id> [<run id> ...]
+# Set PPROF_CI_MESSAGE_CHARS to print more of each annotation (default 400 characters).
 args <- commandArgs(trailingOnly = TRUE)
 out_file <- args[1]
 run_ids <- args[-1]
+max_message <- as.integer(Sys.getenv("PPROF_CI_MESSAGE_CHARS", "400"))
 lines <- character()
 say <- function(...) lines <<- c(lines, paste0(...))
 
@@ -57,7 +59,9 @@ for (id in run_ids) {
         if (!hit[1] %in% seen_routine) seen_routine <- c(seen_routine, hit[1])
         next
       }
-      say("  - annotation [", a$annotation_level, "] log line ", a$start_line, ": ", substr(msg, 1, 400))
+      title <- if (is.null(a$title) || !nzchar(a$title)) "" else paste0(a$title, " :: ")
+      say("  - annotation [", a$annotation_level, "] log line ", a$start_line, ": ", title,
+          substr(msg, 1, max_message))
     }
   }
   artifacts <- api(paste0("actions/runs/", id, "/artifacts"))$artifacts
