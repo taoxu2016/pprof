@@ -105,11 +105,19 @@ test_that("a fit that reaches the iteration limit warns and reports that it did 
 })
 
 test_that("covariates that are dependent within providers warn but are fitted as the reference fits them (D-38)", {
-  warning <- expect_warning(fit <- fit_logistic_fe(Y ~ x1 + x2 + x3, fixture_dataset("syn_collinear"), "ProvID"),
-                            class = "pprof_warning_rank_deficient")
+  # The variance step inverts an exactly singular matrix: on the fixtures' platform it returns
+  # the reference's values; where rounding makes the inversion fail (macOS with R-devel), the
+  # fit fails with a classed error (D-53). The rank warning comes either way.
+  warning <- expect_warning(
+    fit <- tryCatch(fit_logistic_fe(Y ~ x1 + x2 + x3, fixture_dataset("syn_collinear"), "ProvID"),
+                    pprof_error_convergence = function(error) error),
+    class = "pprof_warning_rank_deficient"
+  )
   expect_identical(warning$rank, 2L)
   expect_identical(warning$aliased, "x3")
-  expect_true(all(is.finite(fit$coefficients)))
+  if (reference_platform()$ok || !inherits(fit, "pprof_error_convergence")) {
+    expect_true(all(is.finite(fit$coefficients)))
+  }
   # A covariate that is constant within providers is absorbed by the provider effects; the
   # variance step then fails, as in the reference, where LAPACK detects the exactly singular
   # matrix, as on the fixtures' platform. Where it does not (OpenBLAS), the fit returns

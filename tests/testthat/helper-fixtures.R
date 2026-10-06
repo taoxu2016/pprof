@@ -133,11 +133,13 @@ reference_platform <- function(set = "core") {
 }
 
 # Cases whose outcome itself depends on the platform (D-53): a covariate that is constant within
-# providers makes the information matrix exactly singular, and whether LAPACK detects that (the
-# fit fails, as pprof 1.0.3's does on the fixtures' platform) or not (OpenBLAS on Linux, where the
-# fit returns estimates that are not identified) differs between platforms. Off the fixtures'
-# platform their outcome is not compared either.
-reference_platform_outcome_cases <- "logis_fe-constant"
+# providers, or a linear combination of others within providers, makes the information matrix
+# exactly singular, and whether its inversion fails (an error) or returns numbers that are not
+# identified (a value) is decided by rounding. With a constant covariate pprof 1.0.3's fit fails
+# on the fixtures' platform and returns a value with OpenBLAS on Linux; with collinear
+# covariates it returns a value on the fixtures' platform and fails on macOS with R-devel. Off
+# the fixtures' platform their outcome is not compared either.
+reference_platform_outcome_cases <- c("logis_fe-constant", "logis_fe-collinear")
 
 reference_platform_skip_message <- function(platform) {
   paste("the fixtures' numbers are compared on the platform that produced them, and CI compares this",
