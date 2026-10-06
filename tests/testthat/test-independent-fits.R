@@ -67,14 +67,23 @@ test_that("fit_linear_fe() agrees with lm() with provider indicators (V14.1)", {
 })
 
 # The fit's provider effects, their SDs, and the provider variance against lme4's own.
-independent_expect_lme4 <- function(fit, direct, provider, label) {
+# `variance` is K-51's rule: the provider variance is the square of the first `sdcor` of
+# VarCorr(), or its `vcov` for logistic CRE. The square of the square root equals VarCorr()'s
+# variance only to rounding (1 ulp apart on arm64 macOS for the linear fits, D-53), so the fit
+# is checked bitwise against K-51's computation on the direct fit, and against the variance
+# with the closed-form tolerance.
+independent_expect_lme4 <- function(fit, direct, provider, label, variance = "sdcor") {
   random <- lme4::ranef(direct, condVar = TRUE)[[provider]]
   expect_identical(fit$coefficients, lme4::fixef(direct), label = paste(label, "coefficients"))
   expect_identical(unname(fit$provider_effects), random[, 1], label = paste(label, "provider effects"))
   expect_identical(names(fit$provider_effects), rownames(random), label = paste(label, "provider IDs"))
   expect_identical(fit$vcov, as.matrix(stats::vcov(direct)), label = paste(label, "vcov"))
-  expect_identical(fit$variance_components$provider, as.numeric(lme4::VarCorr(direct)[[provider]]),
+  varcor <- as.data.frame(lme4::VarCorr(direct))
+  expect_identical(fit$variance_components$provider,
+                   if (identical(variance, "vcov")) varcor[1L, "vcov"] else varcor[1L, "sdcor"]^2,
                    label = paste(label, "provider variance"))
+  independent_expect(fit$variance_components$provider, as.numeric(lme4::VarCorr(direct)[[provider]]),
+                     reference_tolerance("closed_form"), paste(label, "provider variance against VarCorr()"))
   expect_identical(fit$loglik, as.numeric(stats::logLik(direct)), label = paste(label, "loglik"))
   expect_identical(unname(fit$fitted), unname(stats::fitted(direct)), label = paste(label, "fitted values"))
   # The linear RE SD is K-69's closed form, the others lme4's conditional SD (K-70).
@@ -116,7 +125,7 @@ test_that("the random-effect fits are the fits of direct lme4 calls (V15.1)", {
   fit <- fit_logistic_cre(y ~ x1 + x2, binary, "hospital", within_between = "x1")
   direct <- lme4::glmer(y ~ x1_within + x1_bar + x2 + (1 | hospital), decomposed,
                         family = stats::binomial(link = "logit"))
-  independent_expect_lme4(fit, direct, "hospital", "logistic CRE")
+  independent_expect_lme4(fit, direct, "hospital", "logistic CRE", variance = "vcov")
 })
 
 # logistf and fit_logistic_firth() reach the same penalized maximum by different iterations
