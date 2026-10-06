@@ -125,7 +125,6 @@ test.logis_fe <- function(fit, parm, level = 0.95, test = "exact.poisbinom", sco
   }
   model <- compat_model_from_logis_fe(fit)
   providers <- if (missing(parm)) NULL else compat_parm_providers(fit, parm)
-  values <- provider_table(model)$provider_value
   if (identical(test, "wald")) {
     # The reference tests every provider and then selects rows, so the levels of its flag
     # factor come from all providers (D-15).
@@ -145,9 +144,19 @@ test.logis_fe <- function(fit, parm, level = 0.95, test = "exact.poisbinom", sco
     return(out[indices, ])
   }
   score_type <- if (isFALSE(score_modified)) "standard" else "modified"
-  result <- test_providers(model, tests[[test]], null = null_value, level = level, alternative = alternative,
+  compat_logis_fe_test_frame(model, tests[[test]], null_value, level, alternative, providers, score_type, n, threads)
+}
+
+# The exact, bootstrap, and score tests of test.logis_fe() on the model built from the old fit,
+# in pprof 1.0.3's shape: the flags as a factor, the p-values, and the statistics, with the
+# provider IDs as row names and the provider sizes as an attribute. plot.logis_fe() takes its
+# flags from it on the model it has built (DEC-075).
+compat_logis_fe_test_frame <- function(model, test, null_value, level, alternative, providers, score_type, n,
+                                       threads) {
+  result <- test_providers(model, test, null = null_value, level = level, alternative = alternative,
                            providers = providers, score_type = score_type, n_resamples = n, threads = threads)
   table <- result$table
+  values <- provider_table(model)$provider_value
   rows <- match(table$provider_id, provider_table(model)$provider_id)
   out <- data.frame(flag = factor(table$flag), p = table$p_value, stat = table$statistic, row.names = values[rows])
   colnames(out) <- c("flag", "p value", "stat")

@@ -25,7 +25,7 @@ Imports:
     utils,
     poibin,
     generics,
-    ggplot2,
+    ggplot2 (>= 4.0.0),
     lme4,
     scales,
     tibble

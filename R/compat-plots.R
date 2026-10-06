@@ -74,7 +74,10 @@ plot.logis_fe <- function(x, null = "median", test = "score", target = 1, alpha 
   }
   null_value <- compat_null(null)
   measures <- standardize_providers(model, "indirect", "ratio", null = null_value)$table
-  flags <- test.logis_fe(x, level = 1 - alpha[1], test = "score", null = null)
+  # The flags of test.logis_fe(x, level = 1 - alpha[1], test = "score", null = null), on the
+  # model built above rather than a second one (DEC-075).
+  flags <- compat_logis_fe_test_frame(model, "score", null_value, level = 1 - alpha[1], alternative = "two.sided",
+                                      providers = NULL, score_type = "modified", n = 10000, threads = 1)
   funnel <- profile_spec(model)$funnel
   processed_data <- data.frame(indicator = measures$estimate,
                                Obs = compat_typed_sum(measures$observed, x$observation),
@@ -575,8 +578,8 @@ compat_funnel_plot_linear <- function(plot_data,
 #'
 #' @importFrom stats reorder
 #' @importFrom ggplot2 ggplot geom_errorbar aes scale_color_manual guide_legend geom_point geom_hline
-#'   scale_x_discrete expansion theme theme_bw labs element_blank element_text element_rect margin geom_errorbarh
-#'   geom_vline scale_y_discrete
+#'   scale_x_discrete expansion theme theme_bw labs element_blank element_text element_rect margin geom_vline
+#'   scale_y_discrete
 #' @export
 caterpillar_plot <- function(CI, point_size = 2, point_color = "#475569", # nolint: object_name_linter.
                              refline_value = NULL, refline_color = "#64748b", refline_size = 1, refline_type = "dashed",
@@ -647,7 +650,9 @@ compat_table_attribute <- function(ci, name) {
 
 # The reference's caterpillar plot builder (R/caterpillar_plot.R:83-190 in pprof 1.0.3),
 # unchanged except that guide_legend() no longer receives `box.linetype`, which ggplot2 4
-# ignores with a warning (D-36).
+# ignores with a warning, and that the horizontal bars are geom_errorbar(orientation = "y",
+# width = ), which draws the bars of the reference's geom_errorbarh(height = ), deprecated in
+# ggplot2 4 (D-36, DEC-075).
 # The reference's code is kept unchanged (DEC-055), so it is not linted.
 # nolint start
 compat_caterpillar_draw <- function(CI, point_size, point_color, refline_value, refline_color, refline_size,
@@ -698,18 +703,19 @@ compat_caterpillar_draw <- function(CI, point_size, point_color, refline_value, 
 
     if (use_flag) {
       caterpillar_p <- caterpillar_p +
-        geom_errorbarh(aes(xmin = if (attr(CI, "type") == "lower one-sided") .data$SM else .data$Lower,
-                           xmax = if (attr(CI, "type") == "upper one-sided") .data$SM else .data$Upper,
-                           color = .data$flag),
-                       height = errorbar_width, linewidth = errorbar_size, alpha = errorbar_alpha) +
+        geom_errorbar(aes(xmin = if (attr(CI, "type") == "lower one-sided") .data$SM else .data$Lower,
+                          xmax = if (attr(CI, "type") == "upper one-sided") .data$SM else .data$Upper,
+                          color = .data$flag),
+                      orientation = "y", width = errorbar_width, linewidth = errorbar_size, alpha = errorbar_alpha) +
         scale_color_manual(values = flag_color,
                            guide = guide_legend(title = NULL,
                                                 override.aes = list(linewidth = 1.5)))
     } else {
       caterpillar_p <- caterpillar_p +
-        geom_errorbarh(aes(xmin = if (attr(CI, "type") == "lower one-sided") .data$SM else .data$Lower,
-                           xmax = if (attr(CI, "type") == "upper one-sided") .data$SM else .data$Upper),
-                       height = errorbar_width, linewidth = errorbar_size, alpha = errorbar_alpha, color = errorbar_color)
+        geom_errorbar(aes(xmin = if (attr(CI, "type") == "lower one-sided") .data$SM else .data$Lower,
+                          xmax = if (attr(CI, "type") == "upper one-sided") .data$SM else .data$Upper),
+                      orientation = "y", width = errorbar_width, linewidth = errorbar_size, alpha = errorbar_alpha,
+                      color = errorbar_color)
     }
     caterpillar_p <- caterpillar_p +
       geom_point(aes(x = .data$SM), size = point_size, color = point_color) +

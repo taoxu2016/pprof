@@ -9,17 +9,47 @@ compat_plot_fit <- function() {
                             message = FALSE))
 }
 
-test_that("caterpillar_plot() and bar_plot() draw without ggplot2 warnings (D-36)", {
+test_that("caterpillar_plot() and bar_plot() draw without ggplot2 warnings or messages (D-36, DEC-075)", {
   fit <- compat_plot_fit()
   ci <- confint(fit, option = "SM", stdz = "indirect", measure = "ratio", test = "score")$CI.indirect_ratio
-  # Vertical only: the horizontal plot keeps the reference's geom_errorbarh(), which ggplot2 4
-  # deprecates (a warning in tests of pprof, not for users), because geom_errorbar() with
-  # orientation = "y" builds different data (D-36).
-  expect_no_warning(plot <- caterpillar_plot(ci, use_flag = TRUE))
-  expect_no_warning(ggplot2::ggplot_build(plot))
+  # The horizontal bars are geom_errorbar(orientation = "y"), not the reference's
+  # geom_errorbarh(), which ggplot2 4 deprecates and whose `height` it translates to `width`
+  # with a message at every build.
+  for (orientation in c("vertical", "horizontal")) {
+    for (use_flag in c(TRUE, FALSE)) {
+      expect_silent(plot <- caterpillar_plot(ci, use_flag = use_flag, orientation = orientation))
+      expect_silent(ggplot2::ggplot_build(plot))
+    }
+  }
   tests <- test(fit)
-  expect_no_warning(plot <- bar_plot(tests))
-  expect_no_warning(ggplot2::ggplot_build(plot))
+  expect_silent(plot <- bar_plot(tests))
+  expect_silent(ggplot2::ggplot_build(plot))
+})
+
+test_that("the horizontal caterpillar plot draws pprof 1.0.3's bars: the limits, errorbar_width tall (DEC-075)", {
+  fit <- compat_plot_fit()
+  ci <- confint(fit, option = "SM", stdz = "indirect", measure = "ratio", test = "score")$CI.indirect_ratio
+  bars <- ggplot2::layer_data(caterpillar_plot(ci, orientation = "horizontal", errorbar_width = 0.5), 1)
+  # The bars span the limits, providers in the order of their measures, and are errorbar_width
+  # tall; the built `width` column holds errorbar_width, where geom_errorbarh() left 0.9.
+  providers <- levels(stats::reorder(rownames(ci), ci[[1]]))
+  expect_identical(bars$xmin[order(bars$y)], ci[providers, 2])
+  expect_identical(bars$xmax[order(bars$y)], ci[providers, 3])
+  expect_identical(as.numeric(bars$ymax - bars$ymin), rep(0.5, nrow(ci)))
+  expect_identical(bars$width, rep(0.5, nrow(ci)))
+})
+
+# The plot's flags are compared with pprof 1.0.3's by the plot fixtures.
+test_that("plot() of a logis_fe fit builds the model once (DEC-075)", {
+  fit <- compat_plot_fit()
+  builds <- 0L
+  build <- compat_model_from_logis_fe
+  local_mocked_bindings(compat_model_from_logis_fe = function(...) {
+    builds <<- builds + 1L
+    build(...)
+  })
+  expect_s3_class(plot(fit, alpha = c(0.05, 0.1)), "ggplot")
+  expect_identical(builds, 1L)
 })
 
 test_that("the wrappers keep pprof 1.0.3's colours, which depend on the flags present (D-47)", {
