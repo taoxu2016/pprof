@@ -79,9 +79,14 @@ annotate_rout <- function(file, budget = 4L) {
     block <- block[!grepl("^\\[ FAIL|^Error: Test failures|^Execution halted", block)]
     annotate("error", paste("Test", titles[k]), c(block[-1], "", summary))
   }
-  # Every failing test, one line each ("Failure ('file:line'): name"), in up to three
-  # annotations, so that the inventory is complete.
-  listing <- titles
+  # Every failing test, one line each ("Failure ('file:line'): name :: the first line of its
+  # message"), in up to three annotations, so that the inventory is complete.
+  first_lines <- vapply(seq_along(heads), function(k) {
+    message <- trimws(body[heads[k]:ends[k]][-1])
+    message <- message[nzchar(message)]
+    if (length(message)) substr(message[1], 1L, 160L) else ""
+  }, "")
+  listing <- paste(titles, first_lines, sep = " :: ")
   chunks <- split(listing, cumsum(nchar(listing, type = "chars") + 1L) %/% (max_chars - 200L))
   for (k in seq_len(min(length(chunks), 3L))) {
     annotate("error", sprintf("Failing tests, all %d (part %d)", length(listing), k), chunks[[k]])
