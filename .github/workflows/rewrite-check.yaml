@@ -7,8 +7,8 @@
 # the job "fixtures" checks here; elsewhere they compare everything but the numbers, and
 # rewrite-reference.yaml compares the numbers with fixtures pprof 1.0.3 produces on the platform.
 #
-# The jobs marked `probe` look for the lowest R version the package works with (DEC-074): they
-# do not fail the workflow, and they leave the matrix once DESCRIPTION states that version.
+# The job with R 4.4.0 on Linux checks the oldest R version DESCRIPTION declares, as the
+# "fixtures" job does on Windows (DEC-074, DEC-081).
 #
 # The jobs marked `minimal` install pprof's hard dependencies and only the suggested packages its
 # tests and vignettes need (the tests skip the others), plus Matrix, so that lme4 and Matrix can
@@ -37,7 +37,6 @@ jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
     name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})${{ matrix.config.fixtures && ', fixtures' || '' }}
-    continue-on-error: ${{ matrix.config.probe == true }}
     strategy:
       fail-fast: false
       matrix:
@@ -52,10 +51,7 @@ jobs:
           - {os: windows-latest, r: "devel"}
           - {os: windows-latest, r: "oldrel-1"}
           - {os: windows-latest, r: "4.4.0", fixtures: true, minimal: true, suggested: true}
-          - {os: ubuntu-24.04, r: "oldrel-2", probe: true, minimal: true}
-          - {os: ubuntu-24.04, r: "oldrel-3", probe: true, minimal: true}
-          - {os: ubuntu-24.04, r: "oldrel-4", probe: true, minimal: true}
-          - {os: ubuntu-24.04, r: "4.1", probe: true, minimal: true}
+          - {os: ubuntu-24.04, r: "4.4.0", minimal: true}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
