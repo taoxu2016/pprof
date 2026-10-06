@@ -14,6 +14,15 @@
 
 snapshot_date <- "2026-10-01"
 snapshot_repo <- paste0("https://packagemanager.posit.co/cran/", snapshot_date)
+# PPROF_REFERENCE_SNAPSHOT_REPO can name the same snapshot at another address of Posit Package
+# Manager, such as its Linux binaries (".../cran/__linux__/noble/2026-10-01"), which CI uses to
+# build the library without compiling every package (DEC-080). The versions are the same.
+if (nzchar(Sys.getenv("PPROF_REFERENCE_SNAPSHOT_REPO"))) {
+  snapshot_repo <- Sys.getenv("PPROF_REFERENCE_SNAPSHOT_REPO")
+  if (!grepl(paste0("/", snapshot_date, "$"), snapshot_repo)) {
+    stop("PPROF_REFERENCE_SNAPSHOT_REPO must be the ", snapshot_date, " snapshot.", call. = FALSE)
+  }
+}
 pprof_tarball_urls <- c(
   "https://cloud.r-project.org/src/contrib/pprof_1.0.3.tar.gz",
   "https://cloud.r-project.org/src/contrib/Archive/pprof/pprof_1.0.3.tar.gz"
@@ -60,7 +69,15 @@ direct <- setdiff(direct, c("R", base_pkgs))
 # R >= 4.5). Such packages are installed from the CRAN Archive: the newest archived version
 # whose R requirement this R satisfies. The lock file records them as archive installs.
 src_db <- utils::available.packages(repos = snapshot_repo, type = "source")
-binary_type <- if (.Platform$OS.type == "windows") "win.binary" else "source"
+# Binaries where the snapshot has them: Windows, and macOS (whose binary type names its
+# build, for example mac.binary.big-sur-arm64); elsewhere packages are built from source.
+binary_type <- if (.Platform$OS.type == "windows") {
+  "win.binary"
+} else if (startsWith(.Platform$pkgType, "mac.binary")) {
+  .Platform$pkgType
+} else {
+  "source"
+}
 bin_db <- utils::available.packages(repos = snapshot_repo, type = binary_type)
 closure <- tools::package_dependencies(direct, db = src_db, which = c("Depends", "Imports", "LinkingTo"),
                                        recursive = TRUE)
