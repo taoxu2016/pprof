@@ -14,6 +14,7 @@ test_that("an unknown test, such as the reference's unimplemented robust Wald te
 })
 
 test_that("providers with integer IDs are selected by their IDs (D-27)", {
+  skip_off_reference_platform()
   fit <- profile_case_fit("logis_fe-extreme-int")$fit
   tests <- test_providers(fit, providers = 1:3)
   all_providers <- reference_fixture("test-extreme-exact")$result$value
@@ -24,6 +25,7 @@ test_that("providers with integer IDs are selected by their IDs (D-27)", {
 })
 
 test_that("an integer null is used as the equal double (D-14)", {
+  skip_off_reference_platform()
   fit <- profile_case_fit("logis_fe-binary-columns")$fit
   measures <- standardize_providers(fit, c("indirect", "direct"), null = 0L)
   expect_profile_measures(measures, reference_fixture("SM_output-binary-null0")$result$value, "iterative")
@@ -33,6 +35,7 @@ test_that("an integer null is used as the equal double (D-14)", {
 })
 
 test_that("a non-finite standard score statistic keeps its place with a missing p-value and flag (D-04)", {
+  skip_off_reference_platform()
   parent <- profile_case_fit("logis_fe-d04")
   warning <- expect_warning(tests <- test_providers(parent$fit, "score", score_type = "standard", data = parent$data),
                             class = "pprof_warning_undefined_statistics")
@@ -62,6 +65,7 @@ d19_reference_order <- function(fit) {
 }
 
 test_that("effect intervals of character IDs come in provider order (D-19)", {
+  skip_off_reference_platform()
   fit <- profile_case_fit("logis_fe-extreme-chr")$fit
   effects <- provider_effects(fit, interval = "exact")
   expected <- reference_fixture("confint-extreme-chr-gamma-exact")$result$value
@@ -70,6 +74,7 @@ test_that("effect intervals of character IDs come in provider order (D-19)", {
 })
 
 test_that("measure limits of character IDs belong to their providers (D-19)", {
+  skip_off_reference_platform()
   fit <- profile_case_fit("logis_fe-extreme-chr")$fit
   measures <- standardize_providers(fit, interval = "exact")
   expected <- reference_fixture("confint-extreme-chr-sm-exact")$result$value
@@ -89,6 +94,7 @@ test_that("measure limits of character IDs belong to their providers (D-19)", {
 })
 
 test_that("effect intervals work with factor IDs (D-28)", {
+  skip_off_reference_platform()
   fit <- profile_case_fit("logis_fe-extreme-fac")$fit
   effects <- provider_effects(fit, interval = "exact")
   expected <- reference_fixture("confint-extreme-gamma-exact")$result$value
@@ -97,6 +103,7 @@ test_that("effect intervals work with factor IDs (D-28)", {
 })
 
 test_that("direct measure intervals work whatever the provider column is called (D-29)", {
+  skip_off_reference_platform()
   fit <- profile_case_fit("logis_fe-extreme-hospital")$fit
   measures <- standardize_providers(fit, "direct", interval = "exact")
   expected <- reference_fixture("confint-extreme-sm-exact")$result$value

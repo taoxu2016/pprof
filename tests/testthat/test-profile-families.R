@@ -17,6 +17,7 @@ for (id in setdiff(family_case_ids(), family_wrapper_only)) {
       fixture <- reference_fixture(case_id)
       case <- fixture$case
       if (isTRUE(case$heavy)) skip_on_cran()
+      skip_off_reference_platform()
       if (identical(case$tier, "lme4")) {
         versions <- reference_lme4_matches()
         if (!versions$ok) skip(paste("lme4-backed fixture not comparable:", versions$detail))

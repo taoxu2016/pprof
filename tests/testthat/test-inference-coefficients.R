@@ -23,6 +23,7 @@ for (id in c("summary-binary-wald", "summary-binary-wald-parm", "summary-binary-
     test_that(paste("test_coefficients() reproduces the reference summary:", case_id), {
       fixture <- reference_fixture(case_id)
       if (isTRUE(fixture$case$heavy)) skip_on_cran()
+      skip_off_reference_platform()
       model <- binary_fit()
       args <- fixture$case$args
       test <- if (is.null(args$test)) "wald" else args$test
@@ -55,6 +56,7 @@ test_that("a test whose null model has no covariates is unsupported (D-30)", {
 })
 
 test_that("with two covariates the likelihood-ratio test refits each one-covariate model (D-30)", {
+  skip_off_reference_platform()
   model <- model_case_fit("logis_fe-screening-twocov")
   args <- model_case_arguments(model$fixture$case, reference_datasets_for(model$fixture$case, "core"))
   table <- test_coefficients(model$fit, "lr", data = args$data)$table

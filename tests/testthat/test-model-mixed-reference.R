@@ -23,6 +23,7 @@ for (set in c("core", "full")) {
         fixture <- reference_fixture(case_id, case_set)
         case <- fixture$case
         if (identical(case_set, "full") || isTRUE(case$heavy)) skip_on_cran()
+        skip_off_reference_platform(case_set)
         versions <- reference_lme4_matches(case_set)
         if (!versions$ok) skip(paste("lme4-backed fixture not comparable:", versions$detail))
         fit <- model_new_fit(case_id, case_set, keep_data = TRUE)$fit

@@ -14,7 +14,11 @@
 # Flag columns in provider-test tables follow the boundary rule (brief §3.4): a flag may
 # differ only for a provider whose p-value lies within the probability tolerance of the
 # decision threshold; such rows are returned with kind "flag_boundary" and are reported,
-# not treated as failures. In every family the reported p-value of a two-sided test is
+# not treated as failures.
+# With `numeric = FALSE` (on a platform other than the fixtures', DEC-080), finite doubles,
+# and the double summaries of signatures, are not compared; everything else is, as above:
+# classes, names, dimensions, attributes, row names, the positions of NA, NaN, and infinite
+# values, every non-double value, and flags. In every family the reported p-value of a two-sided test is
 # 2 * min(p, 1 - p), where p is the upper tail probability that the flag compares with
 # alpha/2 and 1 - alpha/2, and that of a one-sided test is the tail the flag compares with
 # alpha, so every threshold corresponds to alpha = 1 - level on the reported p-value.
@@ -27,7 +31,7 @@ reference_numeric_within <- function(a, b, tol) {
   all(abs(a - b) <= tol$atol + tol$rtol * abs(b))
 }
 
-reference_compare_double <- function(a, b, tol, path) {
+reference_compare_double <- function(a, b, tol, path, numeric = TRUE) {
   if (!identical(is.na(a), is.na(b)) || !identical(is.nan(a), is.nan(b))) {
     return(reference_mismatch(path, "missing", "NA or NaN positions differ"))
   }
@@ -36,7 +40,7 @@ reference_compare_double <- function(a, b, tol, path) {
     return(reference_mismatch(path, "infinite", "infinite values differ"))
   }
   fin <- is.finite(a)
-  if (!any(fin)) return(NULL)
+  if (!numeric || !any(fin)) return(NULL)
   diff <- abs(a[fin] - b[fin])
   bound <- tol$atol + tol$rtol * abs(b[fin])
   bad <- diff > bound
@@ -47,7 +51,7 @@ reference_compare_double <- function(a, b, tol, path) {
   reference_mismatch(path, "numeric", detail)
 }
 
-reference_compare_signature <- function(a, b, tol, path) {
+reference_compare_signature <- function(a, b, tol, path, numeric = TRUE) {
   special_fields <- c("sum", "abs_sum", "min", "max", "sample", "bits_md5", "dimnames", "names", "attributes")
   exact_fields <- setdiff(names(b), special_fields)
   out <- NULL
@@ -55,8 +59,9 @@ reference_compare_signature <- function(a, b, tol, path) {
     if (!identical(a[[f]], b[[f]])) out <- rbind(out, reference_mismatch(paste0(path, "#", f), "signature", "differs"))
   }
   for (f in intersect(c("dimnames", "names", "attributes"), names(b))) {
-    out <- rbind(out, reference_compare(a[[f]], b[[f]], tol, paste0(path, "#", f)))
+    out <- rbind(out, reference_compare(a[[f]], b[[f]], tol, paste0(path, "#", f), numeric = numeric))
   }
+  if (identical(b$type, "double") && !numeric) return(out)
   if (identical(b$type, "double")) {
     n <- b$length
     # Identical bits mean identical values, whose summaries then agree by definition. The
@@ -85,7 +90,8 @@ reference_compare_signature <- function(a, b, tol, path) {
   out
 }
 
-reference_compare_attributes <- function(a, b, tol, path, skip = c("names", "row.names", "class")) {
+reference_compare_attributes <- function(a, b, tol, path, skip = c("names", "row.names", "class"),
+                                         numeric = TRUE) {
   aa <- attributes(a)
   ba <- attributes(b)
   keys <- setdiff(union(names(aa), names(ba)), skip)
@@ -94,7 +100,7 @@ reference_compare_attributes <- function(a, b, tol, path, skip = c("names", "row
     if (is.null(aa[[k]]) || is.null(ba[[k]])) {
       out <- rbind(out, reference_mismatch(paste0(path, "@", k), "attribute", "present on one side only"))
     } else {
-      out <- rbind(out, reference_compare(aa[[k]], ba[[k]], tol, paste0(path, "@", k)))
+      out <- rbind(out, reference_compare(aa[[k]], ba[[k]], tol, paste0(path, "@", k), numeric = numeric))
     }
   }
   out
@@ -122,14 +128,14 @@ reference_compare_flags <- function(a, b, tol, path, alpha) {
   out
 }
 
-reference_compare <- function(a, b, tol, path = "", alpha = NULL) {
+reference_compare <- function(a, b, tol, path = "", alpha = NULL, numeric = TRUE) {
   if (identical(a, b)) return(NULL)
   if (!identical(class(a), class(b))) {
     detail <- sprintf("%s versus %s", paste(class(a), collapse = "/"), paste(class(b), collapse = "/"))
     return(reference_mismatch(path, "class", detail))
   }
-  if (inherits(b, "pprof_reference_signature")) return(reference_compare_signature(a, b, tol, path))
-  out <- reference_compare_attributes(a, b, tol, path)
+  if (inherits(b, "pprof_reference_signature")) return(reference_compare_signature(a, b, tol, path, numeric))
+  out <- reference_compare_attributes(a, b, tol, path, numeric = numeric)
   if (!identical(names(a), names(b))) {
     return(rbind(out, reference_mismatch(path, "names", "names differ")))
   }
@@ -145,7 +151,7 @@ reference_compare <- function(a, b, tol, path = "", alpha = NULL) {
         }
         out <- rbind(out, reference_compare_flags(a, b, tol, path, alpha))
       } else {
-        out <- rbind(out, reference_compare(a[[col]], b[[col]], tol, paste0(path, "$", col), alpha))
+        out <- rbind(out, reference_compare(a[[col]], b[[col]], tol, paste0(path, "$", col), alpha, numeric))
       }
     }
     return(out)
@@ -157,7 +163,7 @@ reference_compare <- function(a, b, tol, path = "", alpha = NULL) {
     for (k in seq_along(b)) {
       label <- if (!is.null(names(b)) && nzchar(names(b)[k])) names(b)[k] else sprintf("[[%d]]", k)
       child <- paste0(path, if (nzchar(path)) "$" else "", label)
-      out <- rbind(out, reference_compare(a[[k]], b[[k]], tol, child, alpha))
+      out <- rbind(out, reference_compare(a[[k]], b[[k]], tol, child, alpha, numeric))
     }
     return(out)
   }
@@ -168,7 +174,7 @@ reference_compare <- function(a, b, tol, path = "", alpha = NULL) {
   if (is.double(b)) {
     va <- as.vector(a)
     vb <- as.vector(b)
-    return(rbind(out, reference_compare_double(va, vb, tol, path)))
+    return(rbind(out, reference_compare_double(va, vb, tol, path, numeric)))
   }
   if (!identical(as.vector(unclass(a)), as.vector(unclass(b)))) {
     differing <- sum(as.vector(unclass(a)) != as.vector(unclass(b)), na.rm = TRUE)

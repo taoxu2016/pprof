@@ -25,6 +25,7 @@ for (id in setdiff(profile_reference_ids(), profile_reference_class_a)) {
       fixture <- reference_fixture(case_id)
       case <- fixture$case
       if (isTRUE(case$heavy)) skip_on_cran()
+      skip_off_reference_platform()
       expect_identical(fixture$result$outcome, "value")
       result <- profile_case_result(case)$value
       expected <- fixture$result$value

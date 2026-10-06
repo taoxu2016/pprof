@@ -6,8 +6,9 @@
 # iterations (DEC-014), report the same stopping criterion at every iteration as the
 # reference printed it (four significant digits), and reach the same estimates and
 # variances within the iterative tolerance. On the platform that generated the fixtures they
-# are expected to be bitwise identical, which validation/ reports. A Firth fit's variances
-# are the unpenalized ones at the Firth estimates (K-34, D-12).
+# are expected to be bitwise identical, which validation/ reports; on other platforms the
+# tests skip, and CI compares there with fixtures pprof 1.0.3 produces on that platform
+# (DEC-080). A Firth fit's variances are the unpenalized ones at the Firth estimates (K-34, D-12).
 local_strict_mode()
 
 expect_engine_values <- function(actual, expected, label) {
@@ -29,6 +30,7 @@ for (set in c("core", "full")) {
         fixture <- reference_fixture(case_id, case_set)
         case <- fixture$case
         if (identical(case_set, "full") || isTRUE(case$heavy)) skip_on_cran()
+        skip_off_reference_platform(case_set)
         inputs <- engine_case_inputs(case, reference_datasets_for(case, case_set))
         fit <- engine_fit(inputs)
         expected <- fixture$result
@@ -60,6 +62,7 @@ for (set in c("core", "full")) {
         fixture <- reference_fixture(case_id, case_set)
         case <- fixture$case
         if (identical(case_set, "full") || isTRUE(case$heavy)) skip_on_cran()
+        skip_off_reference_platform(case_set)
         inputs <- firth_case_inputs(case, reference_datasets_for(case, case_set))
         fit <- firth_fit(inputs)
         expected <- fixture$result

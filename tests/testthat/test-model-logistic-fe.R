@@ -149,6 +149,7 @@ test_that("transformed terms, interactions, and factor levels with spaces are fi
 })
 
 test_that("the fits the reference cannot make equal its fits of the same models with plain columns (D-18)", {
+  skip_off_reference_platform()
   # The reference fails on transformed terms, interactions, and factor levels with spaces;
   # it fits the same models with the terms computed as columns and the levels renamed
   # (logis_fe-terms-*-columns, logis_fe-factors-nospaces-formula).

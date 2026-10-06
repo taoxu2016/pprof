@@ -17,6 +17,7 @@ for (set in c("core", "full")) {
       test_that(paste("fit_logistic_fe() reproduces the reference fit:", case_id), {
         fixture <- reference_fixture(case_id, case_set)
         if (identical(case_set, "full") || isTRUE(fixture$case$heavy)) skip_on_cran()
+        skip_off_reference_platform(case_set)
         fit <- model_case_fit(case_id, case_set)$fit
         value <- fixture$result$value
         named <- function(column) stats::setNames(as.numeric(column), rownames(column))
