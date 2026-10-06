@@ -1,7 +1,7 @@
 # Simulation report: provider tests and intervals with known truth
 
-Generated 2026-10-04 17:35:12 UTC by `validation/run-simulation.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621); lme4 2.0.6, Matrix 1.7.6.
-Working tree at commit 67cc9c2; 200 replicates per family and scenario, seed 20261005; 1896 s.
+Generated 2026-10-06 21:07:45 UTC by `validation/run-simulation.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621); lme4 2.0.6, Matrix 1.7.6.
+Working tree at commit 5a291c6; 200 replicates per family and scenario, seed 20261005; 1952 s.
 
 Informational (DEC-053): this report gates nothing. A departure from nominal is a question for the methodology
 owners; the procedures are those of pprof 1.0.3, and changing them would be Class B.

@@ -1,8 +1,9 @@
 # Equivalence report: package under test versus the pprof 1.0.3 reference
 
-Generated 2026-10-05 14:32:23 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
-Package under test: pprof 1.0.3 from the working tree at commit a5f3c46.
-Fixtures: core set generated at 9c1fba1, full set generated at 9c1fba1.
+Generated 2026-10-06 21:48:07 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Package under test: pprof 2.0.0 from the working tree at commit 5a291c6.
+Fixtures: core set generated at 9c1fba1, full set generated at 9c1fba1, by pprof 1.0.3 on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Fixture directories: tests/testthat/fixtures/reference and validation/fixtures/reference.
 
 ## Summary
 
@@ -10,8 +11,8 @@ Fixtures: core set generated at 9c1fba1, full set generated at 9c1fba1.
 - Compared and matching: 364; failing: 0; skipped: 0.
 - Largest absolute difference over all compared values: 2e-11; largest relative difference: 3.92.
 - Long double vectors stored as signatures: 718; bitwise identical (same checksum of every value's bits): 703.
-- Reference errors reproduced: 19.
-- Per-case expectations for Class A fixes (tests/testthat/helper-reference-overrides.R): 21, all compared against values derived from fixtures where the reference is right.
+- Reference errors reproduced: 18.
+- Per-case expectations for Class A fixes (tests/testthat/helper-reference-overrides.R): 22, all compared against values derived from fixtures where the reference is right.
 
 ## Providers within tolerance of a flag threshold
 
@@ -190,7 +191,7 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `summary-binary-wald-parm` | summary | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `summary-binary-wald-level90` | summary | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `summary-binary-lr-parm` | summary | iterative | value |  |  | 0 | 0 |  | compared |
-| core | `summary-screening-onecov-lr` | summary | exact | error |  |  |  |  |  | compared |
+| core | `summary-screening-onecov-lr` | summary | exact | error | D-30 |  |  |  |  | compared |
 | core | `summary-screening-twocov-lr` | summary | iterative | value | D-30 |  | 0 | 0 |  | compared |
 | core | `summary-cutoff5-lr` | summary | exact | error |  |  |  |  |  | compared |
 | core | `summary-firth-wald` | summary | iterative | value |  |  | 0 | 0 |  | compared |

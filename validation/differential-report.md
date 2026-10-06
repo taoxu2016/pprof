@@ -1,13 +1,14 @@
 # Differential report: working tree versus the pprof 1.0.3 reference
 
-Generated 2026-10-04 23:25:20 UTC by `validation/run-differential.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
-Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15 linear datasets, 3 binary (RE and CRE fits only) and 3 linear datasets with character IDs, and 2 binary (RE and CRE fits only) and 2 linear datasets without provider effects; seed 20261003.
+Generated 2026-10-06 21:46:14 UTC by `validation/run-differential.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Working tree at commit 5a291c6; 30 binary datasets (10 with RE and CRE fits), 15 linear datasets, 3 binary (RE and CRE fits only) and 3 linear datasets with character IDs, and 2 binary (RE and CRE fits only) and 2 linear datasets without provider effects; seed 20261003.
 
 ## Summary
 
-- Cases: 3510; matching: 3510; identical: 2510; mismatching: 0.
+- Cases: 3510; matching: 3510; identical: 2410; mismatching: 0.
+- Horizontal caterpillar plots whose bars' built width is errorbar_width, where pprof 1.0.3's is 0.9, with the rest of the built data compared (DEC-075): 140.
 - Reference errors reproduced: 70.
-- Time: reference 235 s, working tree 167 s.
+- Time: reference 393 s, working tree 196 s.
 
 ## Datasets
 
@@ -100,7 +101,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff01-plot` | plot | iterative | value | match | identical |
 | `diff01-plot-null` | plot | iterative | value | match | identical |
 | `diff01-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff01-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff01-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff01-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff01-bar` | bar_plot | iterative | value | match | identical |
 | `diff01-bar-3` | bar_plot | iterative | value | match | identical |
@@ -137,7 +138,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff02-plot` | plot | iterative | value | match | identical |
 | `diff02-plot-null` | plot | iterative | value | match | identical |
 | `diff02-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff02-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff02-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff02-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff02-bar` | bar_plot | iterative | value | match | identical |
 | `diff02-bar-3` | bar_plot | iterative | value | match | identical |
@@ -174,7 +175,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff03-plot` | plot | iterative | value | match | identical |
 | `diff03-plot-null` | plot | iterative | value | match | identical |
 | `diff03-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff03-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff03-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff03-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff03-bar` | bar_plot | iterative | value | match | identical |
 | `diff03-bar-3` | bar_plot | iterative | value | match | identical |
@@ -211,7 +212,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff04-plot` | plot | iterative | value | match | identical |
 | `diff04-plot-null` | plot | iterative | value | match | identical |
 | `diff04-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff04-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff04-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff04-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff04-bar` | bar_plot | iterative | value | match | identical |
 | `diff04-bar-3` | bar_plot | iterative | value | match | identical |
@@ -248,7 +249,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff05-plot` | plot | iterative | value | match | identical |
 | `diff05-plot-null` | plot | iterative | value | match | identical |
 | `diff05-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff05-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff05-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff05-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff05-bar` | bar_plot | iterative | value | match | identical |
 | `diff05-bar-3` | bar_plot | iterative | value | match | identical |
@@ -285,7 +286,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff06-plot` | plot | iterative | value | match | identical |
 | `diff06-plot-null` | plot | iterative | value | match | identical |
 | `diff06-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff06-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff06-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff06-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff06-bar` | bar_plot | iterative | value | match | identical |
 | `diff06-bar-3` | bar_plot | iterative | value | match | identical |
@@ -322,7 +323,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff07-plot` | plot | iterative | value | match | identical |
 | `diff07-plot-null` | plot | iterative | value | match | identical |
 | `diff07-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff07-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff07-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff07-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff07-bar` | bar_plot | iterative | value | match | identical |
 | `diff07-bar-3` | bar_plot | iterative | value | match | identical |
@@ -359,7 +360,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff08-plot` | plot | iterative | value | match | identical |
 | `diff08-plot-null` | plot | iterative | value | match | identical |
 | `diff08-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff08-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff08-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff08-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff08-bar` | bar_plot | iterative | value | match | identical |
 | `diff08-bar-3` | bar_plot | iterative | value | match | identical |
@@ -396,7 +397,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff09-plot` | plot | iterative | value | match | identical |
 | `diff09-plot-null` | plot | iterative | value | match | identical |
 | `diff09-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff09-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff09-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff09-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff09-bar` | bar_plot | iterative | value | match | identical |
 | `diff09-bar-3` | bar_plot | iterative | value | match | identical |
@@ -433,7 +434,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff10-plot` | plot | iterative | value | match | identical |
 | `diff10-plot-null` | plot | iterative | value | match | identical |
 | `diff10-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff10-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff10-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff10-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff10-bar` | bar_plot | iterative | value | match | identical |
 | `diff10-bar-3` | bar_plot | iterative | value | match | identical |
@@ -470,7 +471,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff11-plot` | plot | iterative | value | match | identical |
 | `diff11-plot-null` | plot | iterative | value | match | identical |
 | `diff11-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff11-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff11-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff11-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff11-bar` | bar_plot | iterative | value | match | identical |
 | `diff11-bar-3` | bar_plot | iterative | value | match | identical |
@@ -507,7 +508,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff12-plot` | plot | iterative | value | match | identical |
 | `diff12-plot-null` | plot | iterative | value | match | identical |
 | `diff12-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff12-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff12-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff12-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff12-bar` | bar_plot | iterative | value | match | identical |
 | `diff12-bar-3` | bar_plot | iterative | value | match | identical |
@@ -544,7 +545,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff13-plot` | plot | iterative | value | match | identical |
 | `diff13-plot-null` | plot | iterative | value | match | identical |
 | `diff13-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff13-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff13-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff13-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff13-bar` | bar_plot | iterative | value | match | identical |
 | `diff13-bar-3` | bar_plot | iterative | value | match | identical |
@@ -581,7 +582,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff14-plot` | plot | iterative | value | match | identical |
 | `diff14-plot-null` | plot | iterative | value | match | identical |
 | `diff14-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff14-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff14-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff14-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff14-bar` | bar_plot | iterative | value | match | identical |
 | `diff14-bar-3` | bar_plot | iterative | value | match | identical |
@@ -618,7 +619,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff15-plot` | plot | iterative | value | match | identical |
 | `diff15-plot-null` | plot | iterative | value | match | identical |
 | `diff15-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff15-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff15-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff15-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff15-bar` | bar_plot | iterative | value | match | identical |
 | `diff15-bar-3` | bar_plot | iterative | value | match | identical |
@@ -655,7 +656,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff16-plot` | plot | iterative | value | match | identical |
 | `diff16-plot-null` | plot | iterative | value | match | identical |
 | `diff16-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff16-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff16-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff16-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff16-bar` | bar_plot | iterative | value | match | identical |
 | `diff16-bar-3` | bar_plot | iterative | value | match | identical |
@@ -692,7 +693,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff17-plot` | plot | iterative | value | match | identical |
 | `diff17-plot-null` | plot | iterative | value | match | identical |
 | `diff17-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff17-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff17-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff17-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff17-bar` | bar_plot | iterative | value | match | identical |
 | `diff17-bar-3` | bar_plot | iterative | value | match | identical |
@@ -729,7 +730,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff18-plot` | plot | iterative | value | match | identical |
 | `diff18-plot-null` | plot | iterative | value | match | identical |
 | `diff18-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff18-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff18-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff18-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff18-bar` | bar_plot | iterative | value | match | identical |
 | `diff18-bar-3` | bar_plot | iterative | value | match | identical |
@@ -766,7 +767,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff19-plot` | plot | iterative | value | match | identical |
 | `diff19-plot-null` | plot | iterative | value | match | identical |
 | `diff19-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff19-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff19-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff19-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff19-bar` | bar_plot | iterative | value | match | identical |
 | `diff19-bar-3` | bar_plot | iterative | value | match | identical |
@@ -803,7 +804,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff20-plot` | plot | iterative | value | match | identical |
 | `diff20-plot-null` | plot | iterative | value | match | identical |
 | `diff20-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff20-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff20-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff20-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff20-bar` | bar_plot | iterative | value | match | identical |
 | `diff20-bar-3` | bar_plot | iterative | value | match | identical |
@@ -840,7 +841,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff21-plot` | plot | iterative | value | match | identical |
 | `diff21-plot-null` | plot | iterative | value | match | identical |
 | `diff21-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff21-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff21-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff21-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff21-bar` | bar_plot | iterative | value | match | identical |
 | `diff21-bar-3` | bar_plot | iterative | value | match | identical |
@@ -877,7 +878,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff22-plot` | plot | iterative | value | match | identical |
 | `diff22-plot-null` | plot | iterative | value | match | identical |
 | `diff22-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff22-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff22-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff22-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff22-bar` | bar_plot | iterative | value | match | identical |
 | `diff22-bar-3` | bar_plot | iterative | value | match | identical |
@@ -914,7 +915,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff23-plot` | plot | iterative | value | match | identical |
 | `diff23-plot-null` | plot | iterative | value | match | identical |
 | `diff23-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff23-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff23-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff23-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff23-bar` | bar_plot | iterative | value | match | identical |
 | `diff23-bar-3` | bar_plot | iterative | value | match | identical |
@@ -951,7 +952,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff24-plot` | plot | iterative | value | match | identical |
 | `diff24-plot-null` | plot | iterative | value | match | identical |
 | `diff24-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff24-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff24-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff24-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff24-bar` | bar_plot | iterative | value | match | identical |
 | `diff24-bar-3` | bar_plot | iterative | value | match | identical |
@@ -988,7 +989,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff25-plot` | plot | iterative | value | match | identical |
 | `diff25-plot-null` | plot | iterative | value | match | identical |
 | `diff25-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff25-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff25-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff25-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff25-bar` | bar_plot | iterative | value | match | identical |
 | `diff25-bar-3` | bar_plot | iterative | value | match | identical |
@@ -1025,7 +1026,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff26-plot` | plot | iterative | value | match | identical |
 | `diff26-plot-null` | plot | iterative | value | match | identical |
 | `diff26-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff26-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff26-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff26-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff26-bar` | bar_plot | iterative | value | match | identical |
 | `diff26-bar-3` | bar_plot | iterative | value | match | identical |
@@ -1062,7 +1063,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff27-plot` | plot | iterative | value | match | identical |
 | `diff27-plot-null` | plot | iterative | value | match | identical |
 | `diff27-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff27-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff27-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff27-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff27-bar` | bar_plot | iterative | value | match | identical |
 | `diff27-bar-3` | bar_plot | iterative | value | match | identical |
@@ -1099,7 +1100,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff28-plot` | plot | iterative | value | match | identical |
 | `diff28-plot-null` | plot | iterative | value | match | identical |
 | `diff28-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff28-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff28-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff28-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff28-bar` | bar_plot | iterative | value | match | identical |
 | `diff28-bar-3` | bar_plot | iterative | value | match | identical |
@@ -1136,7 +1137,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff29-plot` | plot | iterative | value | match | identical |
 | `diff29-plot-null` | plot | iterative | value | match | identical |
 | `diff29-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff29-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff29-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff29-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff29-bar` | bar_plot | iterative | value | match | identical |
 | `diff29-bar-3` | bar_plot | iterative | value | match | identical |
@@ -1173,7 +1174,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff30-plot` | plot | iterative | value | match | identical |
 | `diff30-plot-null` | plot | iterative | value | match | identical |
 | `diff30-caterpillar` | caterpillar_plot | iterative | value | match | identical |
-| `diff30-caterpillar-flags` | caterpillar_plot | iterative | value | match | identical |
+| `diff30-caterpillar-flags` | caterpillar_plot | iterative | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff30-caterpillar-one-sided` | caterpillar_plot | root | value | match | identical |
 | `diff30-bar` | bar_plot | iterative | value | match | identical |
 | `diff30-bar-3` | bar_plot | iterative | value | match | identical |
@@ -1198,7 +1199,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff01-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff01-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff01-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff01-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff01-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff01-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff01-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `diff01-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1217,7 +1218,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff01-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff01-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff01-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff01-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff01-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff01-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff01-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `diff01-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1238,7 +1239,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff02-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff02-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff02-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff02-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff02-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff02-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff02-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `diff02-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1257,7 +1258,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff02-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff02-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff02-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff02-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff02-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff02-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff02-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `diff02-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1278,7 +1279,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff03-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff03-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff03-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff03-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff03-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff03-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff03-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `diff03-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1297,7 +1298,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff03-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff03-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff03-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff03-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff03-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff03-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff03-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `diff03-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1318,7 +1319,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff04-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff04-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff04-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff04-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff04-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff04-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff04-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `diff04-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1337,7 +1338,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff04-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff04-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff04-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff04-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff04-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff04-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff04-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `diff04-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1358,7 +1359,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff05-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff05-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff05-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff05-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff05-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff05-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff05-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `diff05-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1377,7 +1378,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff05-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff05-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff05-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff05-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff05-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff05-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff05-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `diff05-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1398,7 +1399,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff06-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff06-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff06-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff06-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff06-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff06-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff06-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `diff06-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1417,7 +1418,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff06-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff06-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff06-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff06-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff06-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff06-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff06-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `diff06-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1438,7 +1439,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff07-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff07-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff07-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff07-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff07-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff07-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff07-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `diff07-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1457,7 +1458,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff07-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff07-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff07-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff07-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff07-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff07-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff07-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `diff07-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1478,7 +1479,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff08-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff08-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff08-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff08-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff08-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff08-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff08-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `diff08-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1497,7 +1498,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff08-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff08-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff08-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff08-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff08-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff08-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff08-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `diff08-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1518,7 +1519,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff09-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff09-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff09-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff09-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff09-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff09-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff09-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `diff09-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1537,7 +1538,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff09-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff09-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff09-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff09-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff09-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff09-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff09-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `diff09-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1558,7 +1559,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff10-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff10-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `diff10-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff10-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff10-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff10-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff10-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `diff10-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1577,7 +1578,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `diff10-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `diff10-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `diff10-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `diff10-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `diff10-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `diff10-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `diff10-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `diff10-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1598,7 +1599,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff01-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff01-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-diff01-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-diff01-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff01-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-diff01-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-diff01-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-diff01-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1617,7 +1618,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff01-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff01-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-diff01-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-diff01-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff01-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-diff01-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-diff01-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-diff01-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1638,7 +1639,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff02-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff02-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-diff02-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-diff02-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff02-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-diff02-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-diff02-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-diff02-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1657,7 +1658,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff02-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff02-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-diff02-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-diff02-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff02-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-diff02-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-diff02-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-diff02-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1678,7 +1679,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff03-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff03-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-diff03-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-diff03-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff03-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-diff03-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-diff03-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-diff03-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1697,7 +1698,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-diff03-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-diff03-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-diff03-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-diff03-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-diff03-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-diff03-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-diff03-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-diff03-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1718,7 +1719,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-diff01-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-diff01-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `null-diff01-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `null-diff01-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff01-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `null-diff01-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `null-diff01-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `null-diff01-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1737,7 +1738,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-diff01-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-diff01-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `null-diff01-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `null-diff01-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff01-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `null-diff01-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `null-diff01-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `null-diff01-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1758,7 +1759,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-diff02-logis-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-diff02-logis-re-summary-parm` | summary | lme4 | value | match | identical |
 | `null-diff02-logis-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `null-diff02-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff02-logis-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `null-diff02-logis-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `null-diff02-logis-re-bar` | bar_plot | lme4 | value | match | identical |
 | `null-diff02-logis-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1777,7 +1778,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-diff02-logis-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-diff02-logis-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `null-diff02-logis-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `null-diff02-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-diff02-logis-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `null-diff02-logis-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `null-diff02-logis-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `null-diff02-logis-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1803,7 +1804,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin01-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin01-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin01-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin01-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin01-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin01-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin01-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin01-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -1827,7 +1828,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin01-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin01-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin01-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin01-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin01-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin01-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin01-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin01-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -1848,7 +1849,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin01-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin01-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin01-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin01-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin01-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin01-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin01-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin01-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1867,7 +1868,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin01-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin01-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin01-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin01-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin01-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin01-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin01-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin01-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1893,7 +1894,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin02-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin02-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin02-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin02-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin02-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin02-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin02-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin02-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -1917,7 +1918,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin02-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin02-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin02-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin02-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin02-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin02-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin02-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin02-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -1938,7 +1939,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin02-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin02-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin02-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin02-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin02-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin02-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin02-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin02-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1957,7 +1958,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin02-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin02-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin02-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin02-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin02-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin02-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin02-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin02-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -1983,7 +1984,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin03-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin03-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin03-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin03-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin03-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin03-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin03-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin03-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2007,7 +2008,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin03-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin03-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin03-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin03-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin03-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin03-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin03-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin03-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2028,7 +2029,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin03-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin03-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin03-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin03-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin03-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin03-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin03-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin03-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2047,7 +2048,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin03-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin03-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin03-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin03-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin03-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin03-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin03-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin03-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2073,7 +2074,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin04-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin04-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin04-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin04-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin04-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin04-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin04-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin04-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2097,7 +2098,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin04-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin04-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin04-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin04-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin04-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin04-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin04-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin04-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2118,7 +2119,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin04-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin04-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin04-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin04-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin04-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin04-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin04-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin04-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2137,7 +2138,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin04-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin04-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin04-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin04-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin04-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin04-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin04-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin04-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2163,7 +2164,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin05-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin05-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin05-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin05-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin05-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin05-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin05-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin05-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2187,7 +2188,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin05-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin05-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin05-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin05-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin05-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin05-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin05-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin05-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2208,7 +2209,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin05-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin05-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin05-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin05-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin05-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin05-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin05-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin05-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2227,7 +2228,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin05-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin05-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin05-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin05-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin05-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin05-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin05-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin05-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2253,7 +2254,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin06-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin06-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin06-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin06-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin06-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin06-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin06-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin06-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2277,7 +2278,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin06-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin06-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin06-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin06-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin06-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin06-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin06-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin06-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2298,7 +2299,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin06-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin06-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin06-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin06-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin06-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin06-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin06-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin06-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2317,7 +2318,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin06-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin06-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin06-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin06-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin06-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin06-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin06-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin06-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2343,7 +2344,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin07-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin07-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin07-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin07-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin07-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin07-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin07-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin07-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2367,7 +2368,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin07-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin07-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin07-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin07-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin07-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin07-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin07-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin07-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2388,7 +2389,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin07-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin07-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin07-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin07-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin07-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin07-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin07-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin07-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2407,7 +2408,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin07-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin07-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin07-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin07-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin07-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin07-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin07-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin07-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2433,7 +2434,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin08-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin08-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin08-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin08-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin08-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin08-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin08-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin08-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2457,7 +2458,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin08-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin08-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin08-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin08-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin08-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin08-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin08-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin08-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2478,7 +2479,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin08-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin08-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin08-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin08-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin08-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin08-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin08-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin08-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2497,7 +2498,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin08-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin08-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin08-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin08-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin08-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin08-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin08-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin08-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2523,7 +2524,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin09-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin09-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin09-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin09-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin09-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin09-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin09-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin09-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2547,7 +2548,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin09-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin09-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin09-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin09-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin09-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin09-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin09-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin09-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2568,7 +2569,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin09-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin09-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin09-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin09-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin09-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin09-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin09-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin09-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2587,7 +2588,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin09-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin09-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin09-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin09-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin09-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin09-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin09-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin09-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2613,7 +2614,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin10-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin10-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin10-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin10-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin10-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin10-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin10-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin10-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2637,7 +2638,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin10-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin10-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin10-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin10-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin10-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin10-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin10-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin10-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2658,7 +2659,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin10-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin10-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin10-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin10-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin10-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin10-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin10-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin10-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2677,7 +2678,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin10-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin10-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin10-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin10-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin10-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin10-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin10-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin10-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2703,7 +2704,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin11-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin11-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin11-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin11-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin11-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin11-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin11-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin11-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2727,7 +2728,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin11-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin11-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin11-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin11-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin11-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin11-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin11-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin11-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2748,7 +2749,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin11-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin11-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin11-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin11-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin11-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin11-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin11-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin11-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2767,7 +2768,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin11-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin11-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin11-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin11-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin11-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin11-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin11-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin11-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2793,7 +2794,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin12-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin12-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin12-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin12-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin12-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin12-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin12-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin12-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2817,7 +2818,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin12-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin12-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin12-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin12-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin12-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin12-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin12-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin12-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2838,7 +2839,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin12-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin12-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin12-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin12-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin12-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin12-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin12-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin12-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2857,7 +2858,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin12-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin12-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin12-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin12-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin12-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin12-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin12-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin12-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2883,7 +2884,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin13-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin13-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin13-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin13-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin13-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin13-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin13-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin13-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2907,7 +2908,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin13-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin13-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin13-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin13-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin13-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin13-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin13-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin13-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2928,7 +2929,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin13-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin13-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin13-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin13-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin13-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin13-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin13-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin13-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2947,7 +2948,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin13-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin13-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin13-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin13-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin13-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin13-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin13-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin13-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -2973,7 +2974,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin14-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin14-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin14-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin14-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin14-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin14-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin14-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin14-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -2997,7 +2998,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin14-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin14-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin14-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin14-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin14-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin14-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin14-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin14-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3018,7 +3019,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin14-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin14-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin14-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin14-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin14-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin14-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin14-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin14-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3037,7 +3038,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin14-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin14-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin14-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin14-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin14-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin14-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin14-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin14-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3063,7 +3064,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin15-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin15-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin15-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin15-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin15-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin15-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin15-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `lin15-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3087,7 +3088,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin15-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin15-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `lin15-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `lin15-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `lin15-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `lin15-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `lin15-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `lin15-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3108,7 +3109,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin15-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin15-re-summary-parm` | summary | lme4 | value | match | identical |
 | `lin15-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin15-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin15-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin15-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin15-re-bar` | bar_plot | lme4 | value | match | identical |
 | `lin15-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3127,7 +3128,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `lin15-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `lin15-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `lin15-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `lin15-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `lin15-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `lin15-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `lin15-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `lin15-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3153,7 +3154,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin01-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin01-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin01-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `chr-lin01-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin01-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `chr-lin01-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `chr-lin01-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `chr-lin01-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3177,7 +3178,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin01-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin01-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin01-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `chr-lin01-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin01-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `chr-lin01-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `chr-lin01-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `chr-lin01-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3198,7 +3199,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin01-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin01-re-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-lin01-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-lin01-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin01-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-lin01-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-lin01-re-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-lin01-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3217,7 +3218,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin01-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin01-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-lin01-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-lin01-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin01-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-lin01-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-lin01-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-lin01-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3243,7 +3244,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin02-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin02-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin02-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `chr-lin02-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin02-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `chr-lin02-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `chr-lin02-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `chr-lin02-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3267,7 +3268,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin02-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin02-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin02-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `chr-lin02-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin02-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `chr-lin02-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `chr-lin02-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `chr-lin02-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3288,7 +3289,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin02-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin02-re-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-lin02-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-lin02-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin02-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-lin02-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-lin02-re-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-lin02-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3307,7 +3308,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin02-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin02-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-lin02-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-lin02-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin02-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-lin02-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-lin02-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-lin02-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3333,7 +3334,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin03-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin03-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin03-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `chr-lin03-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin03-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `chr-lin03-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `chr-lin03-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `chr-lin03-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3357,7 +3358,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin03-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin03-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `chr-lin03-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `chr-lin03-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `chr-lin03-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `chr-lin03-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `chr-lin03-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `chr-lin03-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3378,7 +3379,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin03-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin03-re-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-lin03-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-lin03-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin03-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-lin03-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-lin03-re-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-lin03-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3397,7 +3398,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `chr-lin03-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `chr-lin03-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `chr-lin03-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `chr-lin03-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `chr-lin03-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `chr-lin03-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `chr-lin03-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `chr-lin03-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3423,7 +3424,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin01-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[1]]$data$lower, layers$[[1]]$data$upper, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[2]]$data$lower, layers$[[2]]$data$upper, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp, layers$[[3]]$data$lower, l |
 | `null-lin01-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[1]]$data$lower, layers$[[1]]$data$upper, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[2]]$data$lower, layers$[[2]]$data$upper, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp, layers$[[3]]$data$lower, l |
 | `null-lin01-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `null-lin01-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin01-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `null-lin01-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `null-lin01-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `null-lin01-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3447,7 +3448,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin01-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[1]]$data$lower, layers$[[1]]$data$upper, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[2]]$data$lower, layers$[[2]]$data$upper, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp, layers$[[3]]$data$lower, l |
 | `null-lin01-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[1]]$data$lower, layers$[[1]]$data$upper, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[2]]$data$lower, layers$[[2]]$data$upper, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp, layers$[[3]]$data$lower, l |
 | `null-lin01-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `null-lin01-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin01-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `null-lin01-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `null-lin01-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `null-lin01-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3468,7 +3469,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin01-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-lin01-re-summary-parm` | summary | lme4 | value | match | identical |
 | `null-lin01-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `null-lin01-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin01-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `null-lin01-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `null-lin01-re-bar` | bar_plot | lme4 | value | match | identical |
 | `null-lin01-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3487,7 +3488,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin01-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-lin01-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `null-lin01-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `null-lin01-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin01-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `null-lin01-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `null-lin01-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `null-lin01-cre-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3513,7 +3514,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin02-fe-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `null-lin02-fe-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `null-lin02-fe-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `null-lin02-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin02-fe-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `null-lin02-fe-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `null-lin02-fe-bar` | bar_plot | closed_form | value | match | identical |
 | `null-lin02-fe-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3537,7 +3538,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin02-fe-full-plot-mean` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `null-lin02-fe-full-plot-null` | plot | closed_form | value | match | within tolerance: layers$[[1]]$data$indicator, layers$[[1]]$data$Exp, layers$[[2]]$data$indicator, layers$[[2]]$data$Exp, layers$[[3]]$data$indicator, layers$[[3]]$data$Exp |
 | `null-lin02-fe-full-caterpillar` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
-| `null-lin02-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower, data$Upper |
+| `null-lin02-fe-full-caterpillar-flags` | caterpillar_plot | closed_form | value | match | the bars' built width is errorbar_width (DEC-075); otherwise within tolerance: data$SM, data$Lower, data$Upper |
 | `null-lin02-fe-full-caterpillar-one-sided` | caterpillar_plot | closed_form | value | match | within tolerance: data$SM, data$Lower |
 | `null-lin02-fe-full-bar` | bar_plot | closed_form | value | match | identical |
 | `null-lin02-fe-full-bar-3` | bar_plot | closed_form | value | match | identical |
@@ -3558,7 +3559,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin02-re-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-lin02-re-summary-parm` | summary | lme4 | value | match | identical |
 | `null-lin02-re-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `null-lin02-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin02-re-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `null-lin02-re-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `null-lin02-re-bar` | bar_plot | lme4 | value | match | identical |
 | `null-lin02-re-bar-3` | bar_plot | lme4 | value | match | identical |
@@ -3577,7 +3578,7 @@ Working tree at commit fc70833; 30 binary datasets (10 with RE and CRE fits), 15
 | `null-lin02-cre-confint-alpha-greater` | confint | lme4 | error | match |  |
 | `null-lin02-cre-summary-parm` | summary | lme4 | value | match | identical |
 | `null-lin02-cre-caterpillar` | caterpillar_plot | lme4 | value | match | identical |
-| `null-lin02-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | identical |
+| `null-lin02-cre-caterpillar-flags` | caterpillar_plot | lme4 | value | match | the bars' built width is errorbar_width (DEC-075); otherwise identical |
 | `null-lin02-cre-caterpillar-one-sided` | caterpillar_plot | lme4 | value | match | identical |
 | `null-lin02-cre-bar` | bar_plot | lme4 | value | match | identical |
 | `null-lin02-cre-bar-3` | bar_plot | lme4 | value | match | identical |
