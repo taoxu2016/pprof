@@ -157,6 +157,8 @@ As built in Phase 6: the profiling layer gained `R/profile-summaries.R` (the int
 
 As built in Phase 7: the documentation of the bundled data sets moved from the reference's `R/Data.R` to `R/data-bundled.R` (documentation only, no code; D-35 fixed), and `R/pprof-package.R` holds the package's help page, `?pprof`. The reference's files left in `R/` are `RcppExports.R` (generated), `data_check.R`, and `pprof.R`. The user documentation is in `vignettes/` (five vignettes, built and checked by `R CMD check`, DEC-062), `README.md`, and the pkgdown configuration `_pkgdown.yml`; the site is built by CI and no longer committed (DEC-066).
 
+As built in Phase 8: `R/check-data.R` holds `check_data()` and the base-R versions of caret's near-zero-variance rule and olsrr's variance inflation factors that it and `data_check()` use (DEC-073); `R/compat-data-check.R` is `data_check()` over them; `R/compat-deprecate.R` holds the table of the twelve old names with their replacements and `compat_deprecate()` (DEC-072); `R/pprof-package.R` also carries the package's directives (`useDynLib`, and the imports of Rcpp and `plogis`). The reference's `R/data_check.R` and `R/pprof.R` are gone, so the only file of the reference left in `R/` is the generated `RcppExports.R`.
+
 ### B.3 C++ modules
 
 ```
@@ -190,6 +192,8 @@ As built in Phase 3, OpenMP regions are written in place with `num_threads(threa
 As built in Phase 4, `logistic/firth.{h,cpp}` reproduces the reference's `logis_firth_prov()` operation by operation in the order it computes with one thread (K-30 to K-33): each provider's blocks, hat values, and modified score are computed in parallel into the provider's own slots, and every sum over providers (the Schur complement, the covariate score) is then added in provider order, so the results do not depend on the thread count (D-05). The Schur complement is inverted and its log-determinant taken outside the parallel regions, and a failure throws there (D-42). The block routine gained `provider_blocks()`, which Firth calls with its 1e-10 weight floor (K-31). With `src/Firth.cpp` gone, RcppParallel and its `$(shell ...)` lines left the build.
 
 As built in Phase 5 (step 3): no reference C++ is left. The logistic RE and CRE methods take their direct expectations from `cpp_logistic_direct_expected()`, which equals the reference's `computeDirectExp()` on their inputs (F5 of the Phase 5 plan), so `src/Fixed_effect.cpp`, `src/header.{h,cpp}`, and `src/myomp.h` were removed with their objects in both Makevars files. `RcppExports.cpp` still includes `RcppArmadillo.h`, because `Rcpp::compileAttributes()` adds it for every LinkingTo package that has a header of its name, so the Makevars keep DEC-035's settings for every translation unit (DEC-052).
+
+As built in Phase 8: the core and the adapters are formatted with clang-format (`.clang-format`: Google style, 120 columns, nothing sorted or reflowed, DEC-078), in a commit that changed only whitespace, and CI checks the format; `RcppExports.cpp` is generated and left alone.
 
 Contracts of the core:
 
@@ -544,6 +548,8 @@ Result: the install tree shrinks from 131 to 38 packages (V16.5). Licenses: ppro
 
 R version: keep `R (>= 4.1.0)`, the current requirement, which the native pipe needs; compile as C++17 (`CXX_STD = CXX17`, the default from R 4.3). Question M-12.
 
+As built in Phase 8: caret, olsrr, and globals left Imports (DEC-073); caret and olsrr are suggested, for the tests that compare `check_data()`'s computations with theirs, as pROC is for the AUC and logistf for the Firth fit. The packages installed with pprof (recursive Depends, Imports, and LinkingTo on CRAN, besides R's base packages) went from 130 to 38 (PHASE8_PLAN F2). DESCRIPTION requires `ggplot2 (>= 4.0.0)`, under which the plots were compared with pprof 1.0.3's (DEC-074), and `R (>= 4.4.0)`, the oldest version CI finds working with the current dependencies: R 4.1 cannot install them, and on R 4.2 and 4.3 printing an lme4 fit fails in reformulas, which calls base R's `%||%` (DEC-081).
+
 ---
 
 ## I. Migration strategy
@@ -571,6 +577,8 @@ R version: keep `R (>= 4.1.0)`, the current requirement, which the native pipe n
 
 As built in Phase 7: the migration guide (`vignettes/migration.Rmd`, §I.4) gives this table with a migration path for each row; `plot_volume()` (DEC-059) and `profile_providers()` are new, without an old counterpart; `check_data()` comes in Phase 8, so the guide tells users to keep `data_check()`.
 
+As built in Phase 8: `check_data()` (DEC-073) replaces `data_check()`, and the guide's row says how to migrate: `check_data()` reports every problem instead of stopping at the first.
+
 ### I.2 How the wrappers work
 
 - They live only in `R/compat-*.R` and contain translation logic only (brief §8).
@@ -582,6 +590,8 @@ As built in Phase 7: the migration guide (`vignettes/migration.Rmd`, §I.4) give
 As built through Phase 5: every fitting function and every method of pprof 1.0.3 except `bar_plot()`, `caterpillar_plot()`, and `data_check()` is a wrapper over the new API. The methods of `linear_fe`, `linear_re`, `logis_re`, `linear_cre`, and `logis_cre` objects (Phase 5, DEC-049) rebuild the model with `compat_model_from_linear_fe()` or `compat_model_from_mixed()`, which read numbers only from the numeric fields and the lme4 fit, never from `data_include`, whose columns are text when the IDs are (D-11); the standard deviations of the RE effects are recomputed from the stored variance (K-69) or read from the lme4 fit when a method needs them, as the reference does (D-46). Before the switch, a live comparison found the wrappers' values `identical()` to the old methods' on every method fixture and a grid of about 280 settings. The once-per-session deprecation warning is not in place yet (`R/compat-deprecate.R`, a later phase).
 
 As built in Phase 6: `caterpillar_plot()` and `bar_plot()` are wrappers too (DEC-055), so every function of pprof 1.0.3 except `data_check()` (Phase 8) runs on the new code. The four old plot functions live in `R/compat-plots.R`: their data come from the new code (the profiling API, `profile_funnel_limits()`, and the K-112 and K-113 functions of `R/profile-summaries.R`), in the reference's layout, and they draw with the reference's ggplot code, kept unlinted as the record of the old appearance; their data preparation is base R instead of dplyr and magrittr. A guard (`dev/design/phase6-facts/08_plot_guard.R`) compared the plots of 687 calls before and after: the built data, labels, scales, guides, and themes are identical, except that `bar_plot()`'s plot data are a data frame instead of a grouped tibble, and inputs the reference failed on without a message of its own raise classed errors.
+
+As built in Phase 8: every function of pprof 1.0.3 runs on the new code, `data_check()` too, which gives pprof 1.0.3's messages, warnings, and errors through `check_data()`'s computations and completes its checks with one covariate (D-52, DEC-073). The twelve exported names warn once per session with class `pprof_deprecated` (DEC-072); `test()` and `SM_output()` warn in the generic, and the methods of base generics for the old classes do not warn. `plot.logis_fe()` builds the model once, taking its flags from the conversion `test.logis_fe()` shares, and the horizontal `caterpillar_plot()` draws its bars with `geom_errorbar(orientation = "y")`, which builds the same bars with a different `width` column (DEC-075).
 
 ### I.3 Timeline
 

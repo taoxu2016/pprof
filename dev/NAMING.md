@@ -225,7 +225,8 @@ Conditions carry classes so that tests and callers can match them without parsin
 
 | Area | Pattern | Examples |
 |---|---|---|
-| R source | `R/<layer>-<topic>.R` | `R/data-formula.R`, `R/model-logistic-fe.R`, `R/inference-provider-tests.R`, `R/profile-standardize.R`, `R/plot-funnel.R`, `R/compat-logis-fe.R`; the bundled data sets' documentation `R/data-bundled.R` and the package's help page `R/pprof-package.R` (Phase 7) |
+| R source | `R/<layer>-<topic>.R` | `R/data-formula.R`, `R/model-logistic-fe.R`, `R/inference-provider-tests.R`, `R/profile-standardize.R`, `R/plot-funnel.R`, `R/compat-logis-fe.R`; the bundled data sets' documentation `R/data-bundled.R` and the package's help page `R/pprof-package.R` (Phase 7), which also carries the package's directives (Phase 8); the diagnostics `R/check-data.R`, and `R/compat-data-check.R` and `R/compat-deprecate.R` (Phase 8) |
+| Tests of the package as a whole | `tests/testthat/test-<topic>.R` | `test-documentation.R` (the help against the code, Phase 8), `test-check-data.R`, `test-compat-deprecate.R` |
 | Vignettes | `vignettes/<topic>.Rmd`, lowercase and hyphenated | `vignettes/statistical-methods.Rmd`, `vignettes/adding-a-model.Rmd` |
 | Tests | `tests/testthat/test-<layer>-<topic>.R`, mirroring `R/` | `test-model-logistic-fe.R` |
 | Reference tests | `tests/testthat/test-reference-<function>.R` | `test-reference-logis-fe.R` |

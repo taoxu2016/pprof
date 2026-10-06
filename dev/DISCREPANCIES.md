@@ -36,7 +36,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-14 | `null` validation | A | verified; fixed (Phases 3 and 5) | Integer `null` accepted by `test()`, rejected by `SM_output()`, `confint()`, `plot()` |
 | D-15 | `test` methods | Presentation | verified; integer flags in the new API, the factor in the wrappers (Phases 3 and 5) | Flags are factors whose levels depend on the data |
 | D-16 | `test.linear_fe` | none (made explicit) | verified | Reference distribution chosen by a hidden attribute |
-| D-17 | `data_check` | C | verified; fixed in the help (Phase 7) | Stops on any missing value; fits delete incomplete rows |
+| D-17 | `data_check` | C | verified; fixed in the help (Phase 7); `check_data()` reports (Phase 8) | Stops on any missing value; fits delete incomplete rows |
 | D-18 | FE formula interface | A | verified; fixed in the data layer (Phase 2) | Transformed and interaction terms fail; factor levels with spaces break the design matrix |
 | D-19 | `confint.logis_fe(option = "SM")` | A | verified | Non-numeric IDs misalign intervals with providers (61 of 100 in the example) |
 | D-20 | `logis_fe(threads > 1)` | none (tolerance) | verified | Element-wise OpenMP information block differs from BLAS at 1e-15 relative |
@@ -356,8 +356,8 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: document; or make the new `check_data()` report missingness instead of stopping.
 - Recommendation: document the behavior in the compatibility wrapper `data_check()` (unchanged); the new `check_data()` returns a report object that includes missingness, with the same thresholds for variation, correlation, and VIF (DEC-010).
 - Decision owner: project lead.
-- Status: verified (V16.1). The documentation fix was approved for Phase 7 with its plan (2026-10-05) and made in step 1: the help of `data_check()` says that it warns for each variable with missing values and then stops with the percentage of incomplete observations, while the fitting functions drop those observations (confirmed on `ExampleDataBinary` with three missing values, 2026-10-05). The function and `check_data()` stay in Phase 8.
-- Regression test: not applicable for the help (documentation); `check_data()` gets its tests in Phase 8.
+- Status: verified (V16.1). The documentation fix was approved for Phase 7 with its plan (2026-10-05) and made in step 1: the help of `data_check()` says that it warns for each variable with missing values and then stops with the percentage of incomplete observations, while the fitting functions drop those observations (confirmed on `ExampleDataBinary` with three missing values, 2026-10-05). Phase 8 (step 3, DEC-073): `data_check()` keeps the stop, through `check_data()`'s computations, and `check_data()` reports the missing values of each variable, the complete observations, and the other checks without stopping, with the same thresholds.
+- Regression test: `tests/testthat/test-check-data.R`: `data_check()`'s messages, warnings, and errors against the four `data_check-*` fixtures, the stop on missing values among them; `check_data()`'s report of missing values and its other checks.
 
 ### D-18: FE formula interface handles only plain column names
 
