@@ -6,7 +6,6 @@ linters: linters_with_defaults(
 exclusions: list(
     "tests/testthat/helper-reference-cases.R", "tests/testthat/helper-audit-ports.R",
     "R/RcppExports.R",
-    "R/data_check.R", "R/pprof.R",
     "tests/testthat/test-SM_output.R", "tests/testthat/test-confint.R", "tests/testthat/test-linear_cre.R",
     "tests/testthat/test-linear_fe.R", "tests/testthat/test-linear_re.R", "tests/testthat/test-logis_cre.R",
     "tests/testthat/test-logis_fe.R", "tests/testthat/test-logis_re.R", "tests/testthat/test-plots.R",

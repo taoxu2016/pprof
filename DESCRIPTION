@@ -23,22 +23,21 @@ Imports:
     Rcpp,
     stats,
     utils,
-    caret,
-    olsrr,
     poibin,
     generics,
     ggplot2,
     lme4,
     scales,
-    tibble,
-    globals
+    tibble
 LinkingTo: Rcpp, RcppArmadillo
 Depends:
     R (>= 4.1.0)
 Suggests:
+    caret,
     jsonlite,
     knitr,
     logistf,
+    olsrr,
     pROC,
     rmarkdown,
     testthat (>= 3.0.0),

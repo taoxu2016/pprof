@@ -55,6 +55,7 @@ S3method(print,linear_cre)
 S3method(print,linear_re)
 S3method(print,logis_re)
 S3method(print,pprof_data)
+S3method(print,pprof_data_check)
 S3method(print,pprof_model)
 S3method(print,pprof_result)
 S3method(print,pprof_summary)
@@ -103,6 +104,7 @@ export(SM_output)
 export(augment)
 export(bar_plot)
 export(caterpillar_plot)
+export(check_data)
 export(data_check)
 export(data_prepare)
 export(expected_outcome)
@@ -151,7 +153,6 @@ importFrom(Rcpp,
   evalCpp,
   sourceCpp
 )
-importFrom(caret,nearZeroVar)
 importFrom(generics,
   augment,
   glance,
@@ -192,14 +193,12 @@ importFrom(ggplot2,
   theme_classic,
   theme_minimal
 )
-importFrom(globals,globalsByName)
 importFrom(lme4,
   fixef,
   glmer,
   lmer,
   ranef
 )
-importFrom(olsrr,ols_vif_tol)
 importFrom(scales,
   percent,
   percent_format
@@ -212,7 +211,6 @@ importFrom(stats,
   confint,
   fitted,
   formula,
-  lm,
   logLik,
   median,
   model.matrix,

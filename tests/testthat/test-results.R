@@ -37,7 +37,8 @@ test_that("each result class is built with its key, columns, and settings", {
   summary <- new_pprof_summary(data.frame(term = "x", estimate = 0.3, std_error = 0.1, statistic = 3, p_value = 0.003),
                                level = 0.95)
   expect_identical(validate_pprof_summary(summary), summary)
-  check <- new_pprof_data_check(data.frame(variable = c("x", "z"), n_missing = c(0L, 2L)))
+  check <- new_pprof_data_check(data.frame(variable = c("x", "z"), n_missing = c(0L, 2L), percent_missing = c(0, 20)),
+                                n_obs = 10L, n_complete = 8L)
   expect_identical(validate_pprof_data_check(check), check)
 })
 

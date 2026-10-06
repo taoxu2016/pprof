@@ -1,5 +1,7 @@
-# The package's help page, ?pprof (ARCHITECTURE §B.2's shared file). The package directives
-# (useDynLib and the imports kept for R CMD check) are still in the reference's R/pprof.R.
+# The package's help page, ?pprof, and the package's directives (ARCHITECTURE §B.2's shared
+# file): the compiled code's registration, and Rcpp imported so that its namespace is loaded for
+# the compiled code (the reference kept these in R/pprof.R, with a dummy function that only
+# made globals look used, DEC-015, DEC-073).
 
 #' pprof: Modeling, Standardization and Testing for Provider Profiling
 #'
@@ -15,7 +17,9 @@
 #' [fit_logistic_re()] fits random effects, and [fit_logistic_cre()] correlated random
 #' effects. For continuous outcomes, [fit_linear_fe()], [fit_linear_re()], and
 #' [fit_linear_cre()] fit the corresponding linear models. Every fit takes a formula, a data
-#' frame, and the name of the provider column.
+#' frame, and the name of the provider column. Before fitting, [check_data()] reports missing
+#' values, covariates with little or no variation, highly correlated covariates, and variance
+#' inflation factors.
 #'
 #' @section Profiling providers:
 #' [test_providers()] tests and flags providers, [standardize_providers()] computes
@@ -40,7 +44,8 @@
 #' [logis_fe()], [logis_firth()], [linear_fe()], [linear_re()], [logis_re()],
 #' [linear_cre()], and [logis_cre()], the `test()`, `SM_output()`, `confint()`, `summary()`,
 #' and `plot()` methods of their fits, [caterpillar_plot()], [bar_plot()], and
-#' [data_check()] are kept for existing code and return the objects of pprof 1.0.3.
+#' [data_check()] are kept for existing code and return the objects of pprof 1.0.3. They are
+#' deprecated as of pprof 2.0.0: each warns once per session.
 #'
 #' @references
 #' Bates D, Mächler M, Bolker B, Walker S (2015). Fitting linear mixed-effects models using
@@ -64,4 +69,8 @@
 #' Wu W, Yang Y, Kang J, He K (2022). Improving large-scale estimation and inference for
 #' profiling health care providers. *Statistics in Medicine*, 41(15), 2840-2853.
 #' \doi{10.1002/sim.9387}
+#'
+#' @useDynLib pprof, .registration = TRUE
+#' @importFrom Rcpp sourceCpp
+#' @importFrom stats plogis
 "_PACKAGE"

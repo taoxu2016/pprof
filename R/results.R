@@ -23,7 +23,8 @@ result_schemas <- list(
   pprof_coefficient_tests = list(key = "term", columns = c("estimate", "statistic", "p_value"),
                                  settings = c("test", "level")),
   pprof_summary = list(key = "term", columns = c("estimate", "std_error", "statistic", "p_value"), settings = "level"),
-  pprof_data_check = list(key = "variable", columns = "n_missing", settings = character())
+  pprof_data_check = list(key = "variable", columns = c("n_missing", "percent_missing"),
+                          settings = c("n_obs", "n_complete"))
 )
 
 result_character_columns <- c("provider_id", "term", "variable", "standardization", "measure")

@@ -45,6 +45,9 @@ reference:
 - title: The package
   contents:
   - pprof-package
+- title: Checking data
+  contents:
+  - check_data
 - title: Fitting models
   contents:
   - fit_logistic_fe

@@ -19,7 +19,9 @@ SerBIN or BAN algorithm, \code{\link[=fit_logistic_firth]{fit_logistic_firth()}}
 \code{\link[=fit_logistic_re]{fit_logistic_re()}} fits random effects, and \code{\link[=fit_logistic_cre]{fit_logistic_cre()}} correlated random
 effects. For continuous outcomes, \code{\link[=fit_linear_fe]{fit_linear_fe()}}, \code{\link[=fit_linear_re]{fit_linear_re()}}, and
 \code{\link[=fit_linear_cre]{fit_linear_cre()}} fit the corresponding linear models. Every fit takes a formula, a data
-frame, and the name of the provider column.
+frame, and the name of the provider column. Before fitting, \code{\link[=check_data]{check_data()}} reports missing
+values, covariates with little or no variation, highly correlated covariates, and variance
+inflation factors.
 }
 
 \section{Profiling providers}{
@@ -52,7 +54,8 @@ ones, and \code{vignette("adding-a-model", package = "pprof")} shows how to add 
 \code{\link[=logis_fe]{logis_fe()}}, \code{\link[=logis_firth]{logis_firth()}}, \code{\link[=linear_fe]{linear_fe()}}, \code{\link[=linear_re]{linear_re()}}, \code{\link[=logis_re]{logis_re()}},
 \code{\link[=linear_cre]{linear_cre()}}, and \code{\link[=logis_cre]{logis_cre()}}, the \code{test()}, \code{SM_output()}, \code{confint()}, \code{summary()},
 and \code{plot()} methods of their fits, \code{\link[=caterpillar_plot]{caterpillar_plot()}}, \code{\link[=bar_plot]{bar_plot()}}, and
-\code{\link[=data_check]{data_check()}} are kept for existing code and return the objects of pprof 1.0.3.
+\code{\link[=data_check]{data_check()}} are kept for existing code and return the objects of pprof 1.0.3. They are
+deprecated as of pprof 2.0.0: each warns once per session.
 }
 
 \references{

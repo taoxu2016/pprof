@@ -51,7 +51,7 @@ test_that("every exported name of pprof 1.0.3 has a replacement and is exported"
                     "test", "SM_output", "caterpillar_plot", "bar_plot", "data_check"))
   expect_true(all(names(compat_replacements) %in% getNamespaceExports("pprof")))
   replacements <- sub("\\(\\)$", "", compat_replacements)
-  expect_true(all(replacements[names(replacements) != "data_check"] %in% getNamespaceExports("pprof")))
+  expect_true(all(replacements %in% getNamespaceExports("pprof")))
 })
 
 test_that("the fixed-effect fitting functions warn once per session (DEC-072)", {

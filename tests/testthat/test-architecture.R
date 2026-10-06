@@ -8,9 +8,10 @@ architecture_shared_files <- c(
   "pprof-package.R", "constants.R", "conditions.R", "messages.R", "validate.R", "results.R"
 )
 
-# R/ at the reference commit 5260838. Remove a file from this list when it is deleted.
+# R/ at the reference commit 5260838. Remove a file from this list when it is deleted. Since
+# Phase 8 (data_check.R and pprof.R removed, DEC-073) only the generated file is left.
 architecture_legacy_files <- c(
-  "RcppExports.R", "data_check.R", "pprof.R"
+  "RcppExports.R"
 )
 
 # Layers in dependency order: shared 0, data 1, model 2 (with the diagnostics), inference 3,

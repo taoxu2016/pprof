@@ -41,6 +41,37 @@ print.pprof_summary <- function(x, ...) {
   invisible(x)
 }
 
+# A data check lists the problems it found, one line for each kind (check_data()).
+#' @export
+print.pprof_data_check <- function(x, ...) {
+  cat(sprintf("<pprof data check: %s observations, %s complete>\n", present_count(x$n_obs),
+              present_count(x$n_complete)))
+  missing <- x$table[x$table$n_missing > 0L, , drop = FALSE]
+  design <- x$design
+  correlations <- x$correlations
+  high_vif <- design[!is.na(design$vif) & design$vif >= x$vif_threshold, , drop = FALSE]
+  near_zero <- design$near_zero_variance & !design$zero_variance
+  lines <- c(
+    if (nrow(missing)) sprintf("Missing values: %s", paste(sprintf("%s (%s)", missing$variable,
+                                                                   present_count(missing$n_missing)), collapse = ", ")),
+    if (any(design$zero_variance)) {
+      sprintf("No variation: %s", paste(design$term[design$zero_variance], collapse = ", "))
+    },
+    if (any(near_zero)) sprintf("Near-zero variance: %s", paste(design$term[near_zero], collapse = ", ")),
+    if (nrow(correlations)) {
+      sprintf("Correlation above %s in absolute value: %s", format(x$correlation_threshold),
+              paste(sprintf("%s and %s (%s)", correlations$term_1, correlations$term_2,
+                            format(signif(correlations$correlation, 4))), collapse = ", "))
+    },
+    if (nrow(high_vif)) {
+      sprintf("Variance inflation factor of %s or more: %s", format(x$vif_threshold),
+              paste(sprintf("%s (%s)", high_vif$term, format(signif(high_vif$vif, 4))), collapse = ", "))
+    }
+  )
+  cat(if (length(lines)) lines else "No problems found.", sep = "\n")
+  invisible(x)
+}
+
 #' @export
 print.pprof_result <- function(x, n = 10L, ...) {
   cat(present_result_header(x), "\n", sep = "")
