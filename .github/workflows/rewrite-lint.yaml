@@ -1,5 +1,6 @@
-# Style checks of the rewrite (DEC-031, DEC-071; brief §9): lintr with the repository's .lintr,
-# failing on any lint. lintr reports each lint as an annotation when it runs in GitHub Actions.
+# Style checks of the rewrite (DEC-031, DEC-071, DEC-078; brief §9): lintr with the
+# repository's .lintr, failing on any lint (lintr reports each lint as an annotation in GitHub
+# Actions), and the format of the C++ core with .clang-format.
 name: rewrite-lint
 
 on:
@@ -38,3 +39,20 @@ jobs:
             quit(status = 1L)
           }
           cat("::notice title=lintr::no lints\n")
+
+  clang-format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      # clang-format 15.0.0 from the npm package clang-format 1.8.0, with which the core was
+      # formatted (DEC-078); src/RcppExports.cpp is generated and not checked.
+      - name: clang-format
+        run: |
+          files=$( (find src/core src/logistic -name '*.cpp' -o -name '*.h'; echo src/rcpp_logistic.cpp) | sort)
+          if npx --yes clang-format@1.8.0 --style=file --dry-run --Werror $files 2> clang-format.log; then
+            echo "::notice title=clang-format::$(echo $files | wc -w) files formatted"
+          else
+            echo "::error title=clang-format::$(grep -c 'error:' clang-format.log) places not formatted: $(grep 'error:' clang-format.log | head -5 | tr '\n' ' ' | sed 's/%/%25/g')"
+            exit 1
+          fi

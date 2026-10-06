@@ -31,6 +31,7 @@
 ^validation$
 ^\.gitattributes$
 ^\.lintr$
+^\.clang-format$
 # CRAN submission notes (DEC-077)
 ^cran-comments\.md$
 # Fixture datasets that copy the bundled data; the tests build them from data/ (DEC-076)

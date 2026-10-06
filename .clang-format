@@ -1,0 +1,13 @@
+# The format of the C++ core (DEC-078): Google style with a 120-column limit. Formatting
+# changes only whitespace: includes and using-declarations are not sorted, comments are not
+# reflowed, string literals are not split, and no namespace comments are added.
+# CI checks it (rewrite-lint.yaml) with clang-format 15.0.0, from the npm package
+# clang-format 1.8.0. src/RcppExports.cpp is generated and not formatted.
+BasedOnStyle: Google
+ColumnLimit: 120
+SortIncludes: Never
+IncludeBlocks: Preserve
+SortUsingDeclarations: false
+ReflowComments: false
+BreakStringLiterals: false
+FixNamespaceComments: false
