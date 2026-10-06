@@ -50,7 +50,7 @@ minor release, and their removal will be announced in the package's NEWS.
 | `plot()` (funnel plot) | `plot_funnel(funnel_limits(fit))` | `alpha` becomes `level = 1 - alpha` |
 | `caterpillar_plot()` | `plot_caterpillar()` | takes the result of `standardize_providers()` or `provider_effects()` with intervals |
 | `bar_plot()` | `plot_flags()` | takes the result of `test_providers()`; `group_num` becomes `group_count` |
-| `data_check()` | none yet | keep using `data_check()` |
+| `data_check()` | `check_data()` | write `Y`, `Z`, and `ProvID` as a formula, a data frame, and the provider column; `check_data()` reports every problem instead of stopping at the first |
 
 Every old function remains, as do the `test()`, `SM_output()`, `confint()`, `summary()`,
 and `plot()` methods for the objects the old fitting functions return. New in pprof 2.0.0:
@@ -274,7 +274,8 @@ wrong result, or misaligned results:
   with a covariate matrix, and calls that match no input format, raise errors instead of
   failing in lme4 or with "object 'fit_re' not found".
 - **Messages.** The screening warning counts only the providers excluded, a fit that
-  reaches the iteration limit says "not converged" and warns, pROC's messages no longer
+  reaches the iteration limit says "not converged" and warns, attaching pprof no longer
+  prints a message about a method of the car package, pROC's messages no longer
   appear, and neither do the ggplot2 warnings of `bar_plot()` and `caterpillar_plot()`
   (the horizontal caterpillar plot still gives ggplot2's message about
   `geom_errorbarh()`).
@@ -292,6 +293,9 @@ wrong result, or misaligned results:
 - **Plots.** `plot(test = "exact")`, which always failed, raises a classed error. Inputs
   that `caterpillar_plot()` and `bar_plot()` failed on raise classed errors, and the plot
   data of `bar_plot()` are a data frame rather than a grouped tibble.
+- **Data checks.** `data_check()` completes its checks with a single covariate, where it
+  stopped with an error at the correlation check, and its errors have the class
+  `pprof_error_data`.
 
 Nothing else changes: estimates, tests, p-values, intervals, flags, standardized measures,
 and defaults are those of pprof 1.0.3.
