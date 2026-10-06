@@ -182,21 +182,26 @@ test_that("the engine fits one provider, providers of one observation, and provi
   expect_true(all(is.finite(c(fit$gamma, fit$beta))))
 })
 
+# Which C++ exception ends such a fit depends on the platform's LAPACK: where the
+# factorization detects the singular matrix, inv_sympd() throws std::runtime_error; where it
+# does not, a NaN reaches the clamp's median(), which throws std::logic_error (Linux CI,
+# Phase 8). Either way the adapter turns it into an R error of class "C++Error", which is
+# what these tests require, and fit_logistic_firth() into pprof_error_convergence.
 test_that("a singular information matrix ends the fit with an error, where the reference terminated R (D-42)", {
   # A covariate column of zeros makes the Schur complement exactly singular.
   inputs <- example_inputs()
   inputs$design[, 2] <- 0
-  expect_error(firth_fit(inputs, max_iter = 1000L), class = "std::runtime_error")
+  expect_error(firth_fit(inputs, max_iter = 1000L), class = "C++Error")
   two_covariates <- example_inputs()
   two_covariates$design <- cbind(two_covariates$design[, 1], 0)
   two_covariates$beta <- c(0, 0)
-  expect_error(firth_fit(two_covariates, max_iter = 1000L), class = "std::runtime_error")
+  expect_error(firth_fit(two_covariates, max_iter = 1000L), class = "C++Error")
 })
 
 test_that("a non-finite design value ends the fit with an error", {
   inputs <- example_inputs()
   inputs$design[5, 2] <- NaN
-  expect_error(firth_fit(inputs, max_iter = 1000L), class = "std::runtime_error")
+  expect_error(firth_fit(inputs, max_iter = 1000L), class = "C++Error")
 })
 
 test_that("the adapter leaves its arguments unchanged", {
