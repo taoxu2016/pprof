@@ -26,7 +26,7 @@ Rscript dev/reference/generate_fixtures.R                   # writes both sets
 
 The generator refuses to run when its inputs have uncommitted changes, because fixtures must come from the committed generator. `--allow-dirty` exists only for runs into a scratch directory (`--out-core`, `--out-full`).
 
-Each set runs in one child R session whose library path is only the reference library plus base R, with `LC_COLLATE=C` (as testthat 3e uses for tests; D-34), `OMP_THREAD_LIMIT=1` (one thread even where the reference hard-codes more; D-21), and `threads = 1` in every call that accepts it.
+Each set runs in one child R session whose library path is only the reference library plus base R (`R_LIBS_SITE=NULL` keeps out a site library such as the one CI runners install packages into), with `LC_COLLATE=C` (as testthat 3e uses for tests; D-34), `OMP_THREAD_LIMIT=1` (one thread even where the reference hard-codes more; D-21), and `threads = 1` in every call that accepts it.
 
 ## Regenerating
 

@@ -12,10 +12,11 @@
 # uncommitted changes. Regenerating committed fixtures needs the project lead's approval and
 # a diff report from compare_fixtures.R (CLAUDE.md).
 #
-# Each set runs in one child R session that loads only the isolated reference library
-# (setup_reference_library.R), with LC_COLLATE = C (as testthat 3e uses for tests),
-# OMP_THREAD_LIMIT = 1 (one thread even where the reference hard-codes more, D-21), and
-# threads = 1 passed explicitly in every call that accepts it (cases.R).
+# Each set runs in one child R session whose library path is only the isolated reference
+# library (setup_reference_library.R) and base R, with no site library, with LC_COLLATE = C
+# (as testthat 3e uses for tests), OMP_THREAD_LIMIT = 1 (one thread even where the reference
+# hard-codes more, D-21), and threads = 1 passed explicitly in every call that accepts it
+# (cases.R).
 
 fixture_format_version <- 1L
 generator_inputs <- c("dev/reference/generate_fixtures.R", "dev/reference/cases.R", "dev/reference/datasets.R",
@@ -128,7 +129,10 @@ run_set_in_child <- function(run_ids, target_ids, max_full_length) {
   args = list(cases = all_cases, datasets = datasets, runner = normalizePath("tests/testthat/helper-reference-cases.R"),
               ref_lib = ref_lib, run_ids = run_ids, target_ids = target_ids, max_full_length = max_full_length),
   libpath = ref_lib,
-  env = c(callr::rcmd_safe_env(), LC_COLLATE = "C", OMP_THREAD_LIMIT = "1", OMP_NUM_THREADS = "1"),
+  # R_LIBS_SITE = "NULL": R starts with no site library (R_HOME/site-library, where CI runners
+  # install packages), so the library path is only the reference library and base R.
+  env = c(callr::rcmd_safe_env(), LC_COLLATE = "C", OMP_THREAD_LIMIT = "1", OMP_NUM_THREADS = "1",
+          R_LIBS_SITE = "NULL"),
   user_profile = FALSE, system_profile = FALSE, show = FALSE)
 }
 
