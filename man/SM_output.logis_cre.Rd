@@ -69,6 +69,7 @@ outcome <- ExampleDataBinary$Y
 covar <- ExampleDataBinary$Z
 ProvID <- ExampleDataBinary$ProvID
 data <- data.frame(outcome, ProvID, covar)
+data <- data[data$ProvID <= 20, ]
 outcome.char <- colnames(data)[1]
 ProvID.char <- colnames(data)[2]
 wb.char <- c("z1", "z2")

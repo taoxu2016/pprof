@@ -65,9 +65,10 @@ effect.
 }
 \examples{
 data(ExampleDataBinary)
-outcome = ExampleDataBinary$Y
-covar = ExampleDataBinary$Z
-ProvID = ExampleDataBinary$ProvID
+keep = ExampleDataBinary$ProvID <= 20
+outcome = ExampleDataBinary$Y[keep]
+covar = ExampleDataBinary$Z[keep, ]
+ProvID = ExampleDataBinary$ProvID[keep]
 fit_re <- logis_re(Y = outcome, Z = covar, ProvID = ProvID)
 SR <- SM_output(fit_re, stdz = "direct", measure = "rate")
 SR$direct.rate

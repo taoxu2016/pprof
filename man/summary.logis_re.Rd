@@ -45,9 +45,10 @@ coefficients with a negative statistic.
 \examples{
 \donttest{
 data(ExampleDataBinary)
-outcome <- ExampleDataBinary$Y
-covar <- ExampleDataBinary$Z
-ProvID <- ExampleDataBinary$ProvID
+keep <- ExampleDataBinary$ProvID <= 20
+outcome <- ExampleDataBinary$Y[keep]
+covar <- ExampleDataBinary$Z[keep, ]
+ProvID <- ExampleDataBinary$ProvID[keep]
 fit_re <- logis_re(Y = outcome, Z = covar, ProvID = ProvID)
 summary(fit_re)
 }
@@ -57,6 +58,7 @@ outcome <- ExampleDataBinary$Y
 covar <- ExampleDataBinary$Z
 ProvID <- ExampleDataBinary$ProvID
 data <- data.frame(outcome, ProvID, covar)
+data <- data[data$ProvID <= 20, ]
 outcome.char <- colnames(data)[1]
 ProvID.char <- colnames(data)[2]
 wb.char <- c("z1", "z2")

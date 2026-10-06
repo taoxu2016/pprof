@@ -59,9 +59,10 @@ of pprof 1.0.3.
 }
 \examples{
 data(ExampleDataBinary)
-outcome <- ExampleDataBinary$Y
-ProvID <- ExampleDataBinary$ProvID
-covar <- ExampleDataBinary$Z
+keep <- ExampleDataBinary$ProvID <= 20
+outcome <- ExampleDataBinary$Y[keep]
+ProvID <- ExampleDataBinary$ProvID[keep]
+covar <- ExampleDataBinary$Z[keep, ]
 fit_re <- logis_re(Y = outcome, Z = covar, ProvID = ProvID)
 confint(fit_re)
 

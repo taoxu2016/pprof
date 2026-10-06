@@ -65,9 +65,10 @@ test.linear_re <- function(fit, parm, level = 0.95, null = 0, alternative = "two
 #'
 #' @examples
 #' data(ExampleDataBinary)
-#' outcome <- ExampleDataBinary$Y
-#' covar <- ExampleDataBinary$Z
-#' ProvID <- ExampleDataBinary$ProvID
+#' keep <- ExampleDataBinary$ProvID <= 20
+#' outcome <- ExampleDataBinary$Y[keep]
+#' covar <- ExampleDataBinary$Z[keep, ]
+#' ProvID <- ExampleDataBinary$ProvID[keep]
 #' fit_re <- logis_re(Y = outcome, Z = covar, ProvID = ProvID)
 #' test(fit_re)
 #'
@@ -121,6 +122,7 @@ test.linear_cre <- function(fit, parm, level = 0.95, null = 0, alternative = "tw
 #' covar <- ExampleDataBinary$Z
 #' ProvID <- ExampleDataBinary$ProvID
 #' data <- data.frame(outcome, ProvID, covar)
+#' data <- data[data$ProvID <= 20, ]
 #' outcome.char <- colnames(data)[1]
 #' ProvID.char <- colnames(data)[2]
 #' wb.char <- c("z1", "z2")
@@ -258,9 +260,10 @@ SM_output.linear_cre <- function(fit, parm, stdz = "indirect", ...) { # nolint: 
 #'
 #' @examples
 #' data(ExampleDataBinary)
-#' outcome = ExampleDataBinary$Y
-#' covar = ExampleDataBinary$Z
-#' ProvID = ExampleDataBinary$ProvID
+#' keep = ExampleDataBinary$ProvID <= 20
+#' outcome = ExampleDataBinary$Y[keep]
+#' covar = ExampleDataBinary$Z[keep, ]
+#' ProvID = ExampleDataBinary$ProvID[keep]
 #' fit_re <- logis_re(Y = outcome, Z = covar, ProvID = ProvID)
 #' SR <- SM_output(fit_re, stdz = "direct", measure = "rate")
 #' SR$direct.rate
@@ -287,6 +290,7 @@ SM_output.logis_re <- function(fit, parm, stdz = "indirect", measure = c("rate",
 #' covar <- ExampleDataBinary$Z
 #' ProvID <- ExampleDataBinary$ProvID
 #' data <- data.frame(outcome, ProvID, covar)
+#' data <- data[data$ProvID <= 20, ]
 #' outcome.char <- colnames(data)[1]
 #' ProvID.char <- colnames(data)[2]
 #' wb.char <- c("z1", "z2")
@@ -399,9 +403,10 @@ confint.linear_cre <- function(object, parm, level = 0.95, option = "SM",
 #'
 #' @examples
 #' data(ExampleDataBinary)
-#' outcome <- ExampleDataBinary$Y
-#' ProvID <- ExampleDataBinary$ProvID
-#' covar <- ExampleDataBinary$Z
+#' keep <- ExampleDataBinary$ProvID <= 20
+#' outcome <- ExampleDataBinary$Y[keep]
+#' ProvID <- ExampleDataBinary$ProvID[keep]
+#' covar <- ExampleDataBinary$Z[keep, ]
 #' fit_re <- logis_re(Y = outcome, Z = covar, ProvID = ProvID)
 #' confint(fit_re)
 #'
@@ -428,6 +433,7 @@ confint.logis_re <- function(object, parm, level = 0.95, option = "SM", measure 
 #' covar <- ExampleDataBinary$Z
 #' ProvID <- ExampleDataBinary$ProvID
 #' data <- data.frame(outcome, ProvID, covar)
+#' data <- data[data$ProvID <= 20, ]
 #' outcome.char <- colnames(data)[1]
 #' ProvID.char <- colnames(data)[2]
 #' wb.char <- c("z1", "z2")
@@ -511,9 +517,10 @@ summary.linear_cre <- function(object, parm, level = 0.95, null = 0, ...) {
 #' @examples
 #' \donttest{
 #' data(ExampleDataBinary)
-#' outcome <- ExampleDataBinary$Y
-#' covar <- ExampleDataBinary$Z
-#' ProvID <- ExampleDataBinary$ProvID
+#' keep <- ExampleDataBinary$ProvID <= 20
+#' outcome <- ExampleDataBinary$Y[keep]
+#' covar <- ExampleDataBinary$Z[keep, ]
+#' ProvID <- ExampleDataBinary$ProvID[keep]
 #' fit_re <- logis_re(Y = outcome, Z = covar, ProvID = ProvID)
 #' summary(fit_re)
 #' }
@@ -531,6 +538,7 @@ summary.logis_re <- function(object, parm, level = 0.95, null = 0, ...) {
 #' covar <- ExampleDataBinary$Z
 #' ProvID <- ExampleDataBinary$ProvID
 #' data <- data.frame(outcome, ProvID, covar)
+#' data <- data[data$ProvID <= 20, ]
 #' outcome.char <- colnames(data)[1]
 #' ProvID.char <- colnames(data)[2]
 #' wb.char <- c("z1", "z2")
