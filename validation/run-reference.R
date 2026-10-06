@@ -18,6 +18,11 @@ fixture_dir <- function(variable, default) {
   dir <- Sys.getenv(variable)
   normalizePath(if (nzchar(dir)) dir else default, winslash = "/")
 }
+# A path inside the repository, relative to its root, for the report.
+repository_relative <- function(path) {
+  root <- paste0(normalizePath(".", winslash = "/"), "/")
+  if (startsWith(path, root)) substring(path, nchar(root) + 1L) else path
+}
 Sys.setenv(PPROF_REFERENCE_CORE = fixture_dir("PPROF_REFERENCE_CORE", file.path("tests", "testthat", "fixtures", "reference")),
            PPROF_REFERENCE_FULL = fixture_dir("PPROF_REFERENCE_FULL", file.path("validation", "fixtures", "reference")))
 suppressMessages(devtools::load_all(quiet = TRUE))
@@ -133,7 +138,8 @@ lines <- c("# Equivalence report: package under test versus the pprof 1.0.3 refe
            sprintf("Fixtures: core set generated at %s, full set generated at %s, by pprof 1.0.3 on %s, %s.",
                    substr(reference_manifest("core")$generator$git_commit, 1, 7), substr(reference_manifest("full")$generator$git_commit, 1, 7),
                    reference_manifest("core")$environment$r_version, reference_manifest("core")$environment$os),
-           sprintf("Fixture directories: %s and %s.", Sys.getenv("PPROF_REFERENCE_CORE"), Sys.getenv("PPROF_REFERENCE_FULL")),
+           sprintf("Fixture directories: %s and %s.", repository_relative(Sys.getenv("PPROF_REFERENCE_CORE")),
+                   repository_relative(Sys.getenv("PPROF_REFERENCE_FULL"))),
            "", "## Summary", "",
            sprintf("- Cases: %d (core %d, full %d).", nrow(tab), sum(tab$set == "core"), sum(tab$set == "full")),
            sprintf("- Compared and matching: %d; failing: %d; skipped: %d.", sum(tab$status == "compared"),

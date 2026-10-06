@@ -33,7 +33,9 @@
 #   and caterpillar_plot() and bar_plot() on the confint() tables and test() results of every
 #   fit with RE, CRE, or linear FE methods and of the logistic FE fits (two-sided and one-sided,
 #   flagged and unflagged, both orientations, two group counts). For every plot, the built data
-#   of each layer (ggplot_build()) are compared as well, which the fixtures do not record.
+#   of each layer (ggplot_build()) are compared as well, which the fixtures do not record; the
+#   bars of the horizontal caterpillar plots have a built width of errorbar_width where pprof
+#   1.0.3's have 0.9 (Phase 8, DEC-075), which is checked instead.
 #
 # Usage, from the repository root:
 #   Rscript validation/run-differential.R [--datasets N] [--mixed-datasets N] [--linear-datasets N]
@@ -335,6 +337,17 @@ for (id in names(cases)) {
   actual <- reference_result_record(results[[id]], 5000L)
   actual$built <- built_data(results[[id]]$raw_value)
   expected <- reference[[id]]
+  # DEC-075: the horizontal caterpillar plot draws its bars with geom_errorbar(orientation = "y"),
+  # whose built `width` column holds errorbar_width where pprof 1.0.3's geom_errorbarh() left
+  # ggplot2's 0.9; the ends of the bars are the same. The column must hold errorbar_width, and
+  # the rest of the built data is compared with the reference's.
+  width_accepted <- FALSE
+  if (identical(case$fun, "caterpillar_plot") && identical(case$args$orientation, "horizontal") &&
+      is.list(actual$built) && is.list(expected$built) && length(actual$built) && length(expected$built)) {
+    errorbar_width <- if (is.null(case$args$errorbar_width)) 0 else case$args$errorbar_width
+    width_accepted <- isTRUE(all(actual$built[[1]]$width == errorbar_width))
+    if (width_accepted) expected$built[[1]]$width <- actual$built[[1]]$width
+  }
   status <- "match"
   detail <- ""
   if (!identical(actual$outcome, expected$outcome)) {
@@ -366,6 +379,9 @@ for (id in names(cases)) {
         exact <- reference_compare(actual$value, expected$value, reference_tolerance("exact"))
         detail <- paste("within tolerance:", paste(unique(exact$path), collapse = ", "))
       }
+    }
+    if (width_accepted) {
+      detail <- paste0("the bars' built width is errorbar_width (DEC-075); otherwise ", detail)
     }
   }
   rows[[id]] <- data.frame(id = id, fun = case$fun, tier = case$tier, outcome = expected$outcome, status = status,
@@ -414,6 +430,9 @@ lines <- c(
   "", "## Summary", "",
   sprintf("- Cases: %d; matching: %d; identical: %d; mismatching: %d.", nrow(table), sum(table$status == "match"),
           sum(table$detail == "identical"), sum(table$status == "MISMATCH")),
+  sprintf(paste("- Horizontal caterpillar plots whose bars' built width is errorbar_width, where pprof 1.0.3's",
+                "is 0.9, with the rest of the built data compared (DEC-075): %d."),
+          sum(startsWith(table$detail, "the bars' built width is errorbar_width (DEC-075)"))),
   sprintf("- Reference errors reproduced: %d.", sum(table$outcome == "error" & table$status == "match")),
   sprintf("- Time: reference %.0f s, working tree %.0f s.", reference_seconds, working_seconds),
   "", "## Datasets", "", sprintf("- `%s`: %s", names(shapes), shapes),
