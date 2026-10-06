@@ -57,7 +57,7 @@ jobs:
         with:
           extra-packages: any::devtools, any::jsonlite, any::withr, any::testthat
           dependencies: '"hard"'
-          upgrade: TRUE
+          upgrade: "TRUE"
 
       - name: Report a failure to install the dependencies
         if: steps.dependencies.outcome == 'failure'
@@ -129,7 +129,7 @@ jobs:
         with:
           extra-packages: any::devtools, any::jsonlite, any::withr, any::testthat, any::callr, any::Matrix
           dependencies: '"hard"'
-          upgrade: TRUE
+          upgrade: "TRUE"
 
       - name: Report a failure to install the dependencies
         if: steps.dependencies.outcome == 'failure'
