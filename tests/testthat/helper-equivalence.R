@@ -9,7 +9,8 @@
 #     checksums of non-double data are identical and their double summaries are within
 #     the tolerance implied by the elementwise rule; at the exact tier (atol and rtol 0),
 #     the checksums of the bits of every double must also be identical, since summaries
-#     can absorb a change in one element.
+#     can absorb a change in one element. Vectors whose bit checksums are identical match
+#     without comparing their summaries.
 # Flag columns in provider-test tables follow the boundary rule (brief §3.4): a flag may
 # differ only for a provider whose p-value lies within the probability tolerance of the
 # decision threshold; such rows are returned with kind "flag_boundary" and are reported,
@@ -58,6 +59,11 @@ reference_compare_signature <- function(a, b, tol, path) {
   }
   if (identical(b$type, "double")) {
     n <- b$length
+    # Identical bits mean identical values, whose summaries then agree by definition. The
+    # summaries are not compared, because sum() accumulates in long double, which has extra
+    # precision on x86_64 (where the fixtures were made) but not on arm64 macOS, so the same
+    # values can sum differently in the last digits there.
+    if (!is.null(b$bits_md5) && identical(a$bits_md5, b$bits_md5)) return(out)
     if (tol$atol == 0 && tol$rtol == 0 && !identical(a$bits_md5, b$bits_md5)) {
       out <- rbind(out, reference_mismatch(paste0(path, "#bits_md5"), "signature", "values are not bitwise identical"))
     }
