@@ -12,6 +12,15 @@ knitr::opts_chunk$set(
   collapse = TRUE, comment = "#>",
   fig.width = 6, fig.height = 4, dpi = 96, fig.retina = 1, out.width = "100%"
 )
+# After the first one is shown, chunks with hide_deprecation = TRUE leave out the deprecation
+# warnings of the old functions, and only those: every other warning is still shown.
+local({
+  show_warning <- knitr::knit_hooks$get("warning")
+  knitr::knit_hooks$set(warning = function(x, options) {
+    if (isTRUE(options$hide_deprecation) && grepl("is deprecated as of pprof 2.0.0", x, fixed = TRUE)) return("")
+    show_warning(x, options)
+  })
+})
 ```
 
 pprof 2.0.0 brings a new interface: one fitting function per model, all taking a formula,
@@ -21,9 +30,9 @@ results, except where pprof 1.0.3 failed, returned wrong results, or attached re
 the wrong providers (listed below). This vignette maps the old functions to the new ones,
 shows each step of an analysis both ways, and lists what changed.
 
-In this development version the old functions do not warn. From pprof 2.0.0 on they warn,
-once per session, that they are deprecated; they remain at least through the next minor
-release, and their removal will be announced in the package's NEWS.
+The old functions are deprecated: from pprof 2.0.0 on, each warns the first time it is called
+in a session, naming the function that replaces it. They remain at least through the next
+minor release, and their removal will be announced in the package's NEWS.
 
 ## The functions
 
@@ -99,6 +108,16 @@ fit <- fit_logistic_fe(y ~ z1 + z2 + z3 + z4 + z5, data = example, provider = "h
 same(old$coefficient$beta, coef(fit))
 same(old$coefficient$gamma, provider_estimates(fit))
 same(old$variance$beta, vcov(fit))
+```
+
+The first call of `logis_fe()` warned that it is deprecated. Each old function warns once per
+session, the first time it is called, with the class `pprof_deprecated`;
+`suppressWarnings(expr, classes = "pprof_deprecated")`, or a calling handler for that class,
+silences the warning without silencing others. The rest of this vignette leaves these
+warnings out, and shows any other.
+
+```{r hide-deprecation, include = FALSE}
+knitr::opts_chunk$set(hide_deprecation = TRUE)
 ```
 
 The other input formats of pprof 1.0.3, column names and vectors, become a data frame:
