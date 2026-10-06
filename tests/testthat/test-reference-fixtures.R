@@ -10,7 +10,24 @@ test_that("core fixture files match the manifest checksums", {
     expect_identical(unname(tools::md5sum(file.path(dir, case$file))), case$md5, info = case$id)
   }
   for (d in m$datasets) {
-    expect_identical(unname(tools::md5sum(file.path(dir, d$file))), d$md5, info = d$name)
+    path <- file.path(dir, d$file)
+    # The package build leaves out the copies of the bundled data (DEC-076).
+    if (d$name %in% reference_bundled_datasets && !file.exists(path)) next
+    expect_identical(unname(tools::md5sum(path)), d$md5, info = d$name)
+  }
+})
+
+test_that("the copies of the bundled data are the datasets built from the bundled data (DEC-076)", {
+  skip_if_not_installed("jsonlite")
+  m <- reference_manifest("core")
+  skip_if(is.null(m), "core fixtures not present")
+  paths <- file.path(reference_fixture_dir("core"), "datasets", paste0(reference_bundled_datasets, ".rds"))
+  skip_if(!all(file.exists(paths)), "the copies of the bundled data are not present (a package build)")
+  expect_setequal(intersect(vapply(m$datasets, `[[`, character(1), "name"), reference_bundled_datasets),
+                  reference_bundled_datasets)
+  for (i in seq_along(paths)) {
+    expect_identical(reference_bundled_dataset(reference_bundled_datasets[i]), readRDS(paths[i]),
+                     label = reference_bundled_datasets[i])
   }
 })
 

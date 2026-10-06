@@ -46,7 +46,7 @@ engine_log <- function(fit) {
 # Engine inputs for a dataset stored with the fixtures, prepared as logis_fe() prepares it
 # (screening at min_provider_size, starting values K-10).
 engine_dataset_inputs <- function(dataset, covariates, min_provider_size = 10) {
-  data <- readRDS(reference_locate(file.path("datasets", paste0(dataset, ".rds")), "core"))
+  data <- reference_dataset(dataset)
   prepared <- data_prepare(stats::reformulate(covariates, response = "Y"), data, "ProvID",
                            min_provider_size = min_provider_size, event_counts = TRUE)
   engine_prepared_inputs(prepared)

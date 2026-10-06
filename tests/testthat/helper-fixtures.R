@@ -68,11 +68,39 @@ reference_datasets_for <- function(case, set) {
   })))
   for (nm in names_needed) {
     key <- paste0("dataset_", nm)
-    if (is.null(reference_cache[[key]])) {
-      reference_cache[[key]] <- readRDS(reference_locate(file.path("datasets", paste0(nm, ".rds")), set))
-    }
+    if (is.null(reference_cache[[key]])) reference_cache[[key]] <- reference_dataset(nm, set)
   }
   stats::setNames(lapply(names_needed, function(nm) reference_cache[[paste0("dataset_", nm)]]), names_needed)
+}
+
+# The fixture datasets that copy the bundled data, as dev/reference/datasets.R builds them from
+# pprof 1.0.3's data/. The package build leaves their files out (DEC-076, .Rbuildignore), and
+# the datasets are then built from the package's bundled data; test-reference-fixtures.R checks
+# that the two are identical where the files are present.
+reference_bundled_datasets <- c("binary_example_list", "binary_example", "linear_example_list", "linear_example")
+
+reference_bundled_dataset <- function(name) {
+  bundled <- new.env()
+  utils::data(list = c("ExampleDataBinary", "ExampleDataLinear"), package = "pprof", envir = bundled)
+  switch(name,
+    binary_example_list = bundled$ExampleDataBinary,
+    binary_example = data.frame(Y = bundled$ExampleDataBinary$Y, ProvID = bundled$ExampleDataBinary$ProvID,
+                                bundled$ExampleDataBinary$Z),
+    linear_example_list = bundled$ExampleDataLinear,
+    linear_example = data.frame(Y = bundled$ExampleDataLinear$Y, ProvID = bundled$ExampleDataLinear$ProvID,
+                                bundled$ExampleDataLinear$Z),
+    stop("Not a copy of the bundled data: ", name, call. = FALSE)
+  )
+}
+
+# A fixture dataset: its file, or, for a copy of the bundled data whose file is absent, the
+# dataset built from the bundled data.
+reference_dataset <- function(name, set = "core") {
+  file <- file.path("datasets", paste0(name, ".rds"))
+  found <- vapply(unique(c(set, "core", "full")), function(s) file.exists(file.path(reference_fixture_dir(s), file)),
+                  logical(1))
+  if (!any(found) && name %in% reference_bundled_datasets) return(reference_bundled_dataset(name))
+  readRDS(reference_locate(file, set))
 }
 
 reference_parent_ids <- function(case) {

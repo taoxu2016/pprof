@@ -3,7 +3,6 @@
 ^src/.*\.tmp$
 ^\.github$
 ^\.github/
-^pprof/docs/deps/bootstrap-5\.3\.1/fonts/.+
 ^LICENSE\.md$
 
 # Exclude pkgdown configuration
@@ -13,7 +12,6 @@
 ^docs/
 
 # Exclude Windows DLLs
-^pprof/src/.*\.dll$
 ^src/.*\.dll$
 
 # Exclude other build artifacts
@@ -33,3 +31,10 @@
 ^validation$
 ^\.gitattributes$
 ^\.lintr$
+# CRAN submission notes (DEC-077)
+^cran-comments\.md$
+# Fixture datasets that copy the bundled data; the tests build them from data/ (DEC-076)
+^tests/testthat/fixtures/reference/datasets/binary_example\.rds$
+^tests/testthat/fixtures/reference/datasets/binary_example_list\.rds$
+^tests/testthat/fixtures/reference/datasets/linear_example\.rds$
+^tests/testthat/fixtures/reference/datasets/linear_example_list\.rds$
