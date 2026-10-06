@@ -61,10 +61,13 @@ bench_run_task <- function(scenario, task, pprof_lib) {
     call <- function() do.call(generic(task$fun), c(fit_args(task$fun), task$args))
   }
   quiet_call <- function() suppressWarnings(suppressMessages(utils::capture.output(value <- call())))
-  invisible(gc())
+  # gc()'s maximum of R's heap during the first run (Phase 8, DEC-079), beside the process's peak.
+  invisible(gc(reset = TRUE))
   before <- as.numeric(bench::bench_process_memory()[["max"]])
   first <- system.time(quiet_call())[["elapsed"]]
   after <- as.numeric(bench::bench_process_memory()[["max"]])
+  heap <- gc()
+  gc_max <- sum(heap[, which(colnames(heap) == "max used") + 1L])
   # Timed runs: at least 5 (and at least 1 s in total) for calls under 10 s, otherwise 3.
   # bench::mark profiles allocations in one extra, untimed run; that run is skipped for slow
   # calls, where profiling every allocation can take minutes. Profiling fails on some calls
@@ -85,7 +88,7 @@ bench_run_task <- function(scenario, task, pprof_lib) {
   times <- as.numeric(b$time[[1]])
   c(info, status = "ok", message = "", median_s = stats::median(times), min_s = min(times), max_s = max(times),
     first_s = first, runs = length(times), r_alloc_mb = if (profiled) as.numeric(b$mem_alloc) / 2^20 else NA_real_,
-    peak_before_mb = before / 2^20, peak_after_mb = after / 2^20)
+    peak_before_mb = before / 2^20, peak_after_mb = after / 2^20, gc_max_mb = gc_max)
 }
 
 # bench_run_task() in a fresh process with `pprof_lib` first on the library path; a failure
@@ -111,5 +114,6 @@ bench_row <- function(t, sc, res) {
              r_alloc_mb = if (is.null(res$r_alloc_mb)) NA else res$r_alloc_mb,
              peak_before_mb = if (is.null(res$peak_before_mb)) NA else res$peak_before_mb,
              peak_after_mb = if (is.null(res$peak_after_mb)) NA else res$peak_after_mb,
+             gc_max_mb = if (is.null(res$gc_max_mb)) NA else res$gc_max_mb,
              message = if (is.null(res$message)) "" else substr(res$message, 1, 200), stringsAsFactors = FALSE)
 }

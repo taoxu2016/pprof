@@ -73,18 +73,20 @@ verdicts <- vapply(groups, verdict, character(1))
 fmt <- function(x) formatC(x, digits = 3, format = "fg")
 table_rows <- unlist(lapply(names(groups), function(g) {
   p <- groups[[g]]
-  sprintf("| %s | %s | %d | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |", p$scenario, p$task, p$round,
+  sprintf("| %s | %s | %d | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |", p$scenario, p$task, p$round,
           fmt(p$median_s_ref), fmt(p$median_s_new), fmt(p$median_ratio), fmt(p$min_s_ref), fmt(p$min_s_new),
           fmt(p$min_ratio), fmt(p$peak_after_mb_ref), fmt(p$peak_after_mb_new), fmt(p$memory_ratio),
-          ifelse(p$round == max(p$round), verdicts[[g]], ""))
+          fmt(p$gc_max_mb_ref), fmt(p$gc_max_mb_new), ifelse(p$round == max(p$round), verdicts[[g]], ""))
 }))
 report <- c(
   sprintf("# Paired benchmark: reference and working tree, %d round(s)", opts$rounds), "",
   sprintf("- Tasks: %d; regressions: %d.", length(groups), sum(verdicts != "ok")),
   "- Rule (DEC-038): a regression in time needs both the median and the fastest run more than 10% slower than the reference's, and the median at least 0.05 s slower, in every round; in memory, a peak more than 10% and 50 MB higher in every round.",
   "",
-  "| Scenario | Task | Round | Reference median s | New median s | Ratio | Reference fastest s | New fastest s | Ratio | Reference peak MB | New peak MB | Ratio | Verdict |",
-  "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+  "- Peak MB is the process's peak resident memory after the first run; gc max MB is gc()'s maximum of R's heap during it (Phase 8).",
+  "",
+  "| Scenario | Task | Round | Reference median s | New median s | Ratio | Reference fastest s | New fastest s | Ratio | Reference peak MB | New peak MB | Ratio | Reference gc max MB | New gc max MB | Verdict |",
+  "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
   table_rows
 )
 writeLines(report, paste0(stem, ".md"))
