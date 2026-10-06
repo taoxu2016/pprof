@@ -437,6 +437,7 @@ The Phase 3 decisions below were made while implementing the approved plan; they
 - Decision: accept (1) until caret leaves Imports with `check_data()` (DEC-009), rather than importing Matrix again only to order the loading; accept (2) as a documented exception and investigate the logistic FE engine's and variance routine's temporary memory in Phase 5 or Phase 8.
 - Alternatives considered: importing Matrix again as the first import (removes (1) now, against DEC-009's dependency set); investigating (2) now (outside the Phase 4 plan; Phase 3 code).
 - Consequences: the comparisons of later gates flag (1) until caret goes; (2) stays flagged until investigated.
+- Closed (Phase 8, step 8, by DEC-079's procedure; `dev/bench/results/phase8-final-20261006.md`): (1) with caret and olsrr out of Imports, memory before every benchmark task's first run is lower than pprof 1.0.3's (median 62 MB less). (2) Paired over three rounds, the 50-covariate fit's process peak is 7% to 28% above pprof 1.0.3's, not above 10% in every round, so it closes with the measurements; `gc()`'s maximum of R's heap is 13% (281 MB) above in every round, and comes from the within-provider rank check added for D-38 (`dev/design/phase8-facts/10_p50_memory.txt`), not from the engine or the variance routine.
 
 ---
 

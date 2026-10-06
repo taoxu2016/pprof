@@ -1,0 +1,16 @@
+{
+  "created": "2026-10-06 19:20:20 UTC",
+  "r_version": "R version 4.4.0 (2024-04-24 ucrt)",
+  "platform": "x86_64-w64-mingw32",
+  "os": "Windows 11 x64 (build 22621)",
+  "cpu": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+  "cores": 8,
+  "ram_gb": 7.4,
+  "blas": "",
+  "lapack": "",
+  "lapack_version": "3.12.0",
+  "reference_library_lock_md5": "34bc8015ea362d6239f00b072d046234",
+  "threads": 1,
+  "timing": "first run, then the median of timed runs with bench::mark(min_time = 1): at least 5 runs for calls under 10 s, otherwise 3",
+  "memory": "peak resident set size of a fresh process (bench::bench_process_memory), before and after the first run"
+}
