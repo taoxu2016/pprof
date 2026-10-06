@@ -72,6 +72,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 | D-50 | `test_providers()` help | C | verified; fixed in the help (Phase 7) | Says the estimates of providers with no events or only events sit at the effect bound; at the default settings they are where the iterations stopped |
 | D-51 | the new interface's results | Presentation | verified; fixed (Phase 7, approved at the check-in) | Every fit and profiling function returned its result invisibly, so calling one at the console printed nothing, where pprof 1.0.3's functions print |
 | D-52 | `data_check` with one covariate | A | verified; fix approved with the Phase 8 plan | Stops inside `cor()` with "supply both 'x' and 'y' or a matrix-like 'x'" after the variation check |
+| D-53 | comparisons with the fixtures off their platform | none (platform) | verified on CI; decided (DEC-080) | Results differ from the fixtures beyond the tolerances on Linux, macOS, and Windows with R 4.5+, where floating point differs; compared on the fixtures' platform, and elsewhere against pprof 1.0.3 run there |
 
 ---
 
@@ -905,3 +906,17 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: project lead.
 - Status: verified (2026-10-05, Phase 8 planning, on the working tree at `a089bc5`, whose `R/data_check.R` differs from `5260838` only in its roxygen comments); option (2) approved by the project lead with the Phase 8 plan (2026-10-05), for step 3.
 - Regression test: planned in `tests/testthat/test-check-data.R` (Phase 8, step 3).
+
+### D-53: Results differ from the fixtures on platforms other than the one that produced them
+
+- Component: every comparison of numbers with the reference fixtures (`tests/testthat/test-reference-*.R`, `test-cpp-reference-engines.R`, `test-model-*-reference.R`, `test-profile-reference.R`, `test-profile-families.R`, `test-profile-regression.R`, `test-inference-coefficients.R`, `validation/run-reference.R`).
+- Class (proposed): none (platform), like D-20 and D-40: no behavior of the package differs from the reference's on the same platform, as far as CI has shown (see Status).
+- Description: The fixtures were produced on Windows x86_64 with R 4.4.0 (R's internal BLAS, LAPACK 3.12.0, GCC 13.3). Elsewhere, floating-point results differ in the last bits (another BLAS or LAPACK, another math library, a compiler that contracts multiply-adds on arm64, another R version), and the differences grow where an algorithm amplifies them: an iteration stops one step earlier or later when a criterion is near `tol`; the exact test's statistic comes from Poisson-binomial tail probabilities; lme4's optimizer settles at another point; the exactly collinear fit has no identified solution (D-38). The first CI runs that could be read (Phase 8, step 1, commits `f555d12` and `05a46d1`) found: on Linux (R 4.5.3, 4.6.1, devel), the tight-tolerance logistic FE fits taking 18 instead of 22 iterations with estimates about 5e-10 apart, the exact tests' statistics up to 3e-6 relative apart (2.2e-4 absolute for an extreme provider), the D-04 per-case expectation, and lme4-backed results under R-devel; on macOS arm64 (R 4.5.3, 4.6.1), the exact tests' statistics (from 1.6e-10 relative to 9.6% for one provider of the 80,000-row case `test-medium-exact`) and the collinear fit; on Windows with R 4.5.3, 4.6.1, and devel (LAPACK 3.12.1), only the collinear fit, and with R 4.6.1 and the manifest's lme4 and Matrix also most logistic RE and CRE cases. Every other case matched within its tolerance on those platforms.
+- Minimal reproducible example: the CI annotations of runs 37373274379 and 37458594560 (`dev/design/phase8-facts/08_ci_diagnosis.md`).
+- Affected outputs: numbers compared with the fixtures off their platform; no flag reported as differing.
+- Statistical impact: none attributable to the package as far as shown; the same procedure on another platform gives results within floating-point and convergence error of each other, except the unidentified collinear fit.
+- Options: (1) compare the fixtures' numbers on their own platform, and on every other platform compare the package with fixtures pprof 1.0.3 produces there (DEC-080); (2) cross-platform tolerances (would need sign-off, and could not cover the collinear fit).
+- Recommendation: (1), taken under the project lead's delegation (DEC-080).
+- Decision owner: project lead.
+- Status: verified on CI (2026-10-06); decided (DEC-080). Whether pprof 1.0.3 itself gives the same off-platform results as the package is what the per-platform reference jobs show; their results are added here when they run.
+- Regression test: the per-platform jobs of `.github/workflows/rewrite-reference.yaml`; the fixtures' platform jobs of `rewrite-reference.yaml` and `rewrite-check.yaml`.
