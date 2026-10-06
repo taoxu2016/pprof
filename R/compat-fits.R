@@ -51,7 +51,7 @@
 #' \item{\code{"all"}} stop the algorithm when all the stopping rules (`"beta"`, `"relch"`, `"ratch"`) are met.
 #' \item{\code{"or"}} stop the algorithm if any one of the rules (`"beta"`, `"relch"`, `"ratch"`) is met.
 #' }
-#' The default value is `or`. If `max.iter` is reached, the algorithm stops whatever the rule.
+#' The default value is `"or"`. If `max.iter` is reached, the algorithm stops whatever the rule.
 #' @param threads a positive integer specifying the number of threads to be used. The default value is 1.
 #' @param message a Boolean indicating whether to print the progress of the fitting process. The default is TRUE.
 #'

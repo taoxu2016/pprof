@@ -79,7 +79,7 @@ is less than the \code{tol}.
 \item{\code{"all"}} stop the algorithm when all the stopping rules (\code{"beta"}, \code{"relch"}, \code{"ratch"}) are met.
 \item{\code{"or"}} stop the algorithm if any one of the rules (\code{"beta"}, \code{"relch"}, \code{"ratch"}) is met.
 }
-The default value is \code{or}. If \code{max.iter} is reached, the algorithm stops whatever the rule.}
+The default value is \code{"or"}. If \code{max.iter} is reached, the algorithm stops whatever the rule.}
 
 \item{threads}{a positive integer specifying the number of threads to be used. The default value is 1.}
 
