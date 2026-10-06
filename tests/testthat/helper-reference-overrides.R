@@ -156,6 +156,11 @@ reference_overrides <- list(
     override_result(fixture, override_value("confint-extreme-sm-exact")[c("CI.direct_ratio", "CI.direct_rate")])
   }, tier = "root"),
   "summary-screening-twocov-lr" = reference_override("D-30", override_lr_two_covariates, tier = "iterative"),
+  # D-30: with one covariate the package raises a classed error, approved when pprof 1.0.3
+  # failed here in reformulate(), as it does up to R 4.4. From R 4.5.0 reformulate() accepts no
+  # terms, and pprof 1.0.3 returns the likelihood-ratio test against the model with provider
+  # effects only; that difference awaits the project lead's decision (Phase 8).
+  "summary-screening-onecov-lr" = reference_override("D-30", error_class = "pprof_error_unsupported_inference"),
   # Phase 5. D-14: the linear FE methods accept an integer null as the equal double.
   "test-linear-null-integer" = reference_override("D-14", function(fixture) {
     override_result(fixture, override_value("test-linear-null0"))
