@@ -1,8 +1,7 @@
 Package: pprof
 Type: Package
 Title: Modeling, Standardization and Testing for Provider Profiling
-Version: 1.0.3
-Date: 2026-02-08
+Version: 2.0.0
 Authors@R: c(
    person("Xiaohan", "Liu", email = "xhliuu@umich.edu", role = c("aut", "cre")),
    person("Lingfeng", "Luo", email = "lfluo@umich.edu", role = "aut"),
