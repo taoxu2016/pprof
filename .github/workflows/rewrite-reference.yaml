@@ -79,6 +79,16 @@ jobs:
           there <- c(env$platform, env$lapack_version, env$blas)
           cat("platform, LAPACK, BLAS here:", here, "; fixtures:", there, "\n")
           if (!identical(here, there)) stop("This runner is not the fixtures' platform")
+          # Every package of the reference library whose version here differs from the one the
+          # fixtures were generated with (lme4's optimizers among them), as an annotation.
+          reference <- unlist(manifest$packages)
+          installed <- names(reference)[vapply(names(reference), function(p) nzchar(system.file(package = p)), NA)]
+          here <- vapply(installed, function(p) as.character(utils::packageVersion(p)), "")
+          differ <- installed[package_version(here) != package_version(reference[installed])]
+          cat(sprintf("::notice title=Packages against the reference library::%d of its %d packages installed; differing: %s\n",
+                      length(installed), length(reference),
+                      if (length(differ)) paste(sprintf("%s %s (fixtures %s)", differ, here[differ], reference[differ]),
+                                                collapse = ", ") else "none"))
 
       - name: Run the reference suite
         shell: bash
