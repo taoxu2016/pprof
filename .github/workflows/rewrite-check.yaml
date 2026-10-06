@@ -13,7 +13,12 @@
 # The jobs marked `minimal` install pprof's hard dependencies and only the suggested packages its
 # tests and vignettes need (the tests skip the others), plus Matrix, so that lme4 and Matrix can
 # match the fixture manifest: with "all", pak also resolves the suggested packages of rcmdcheck
-# and sessioninfo, which need newer R versions than these jobs run (Phase 8, step 1).
+# and sessioninfo, which need newer R versions than these jobs run (Phase 8, step 1). The job
+# "fixtures" adds the suggested packages of the independent-reference tests (`suggested`).
+#
+# R-devel has no binary packages for macOS, so its job builds every dependency from source;
+# data.table, which caret needs, builds only with gettext's libintl, which the job installs
+# from CRAN's macOS build where R's toolchain looks for it (/opt/R/arm64).
 #
 # Every job copies the check's results into annotations (.github/scripts/ci-annotate.R), which
 # the public GitHub API returns without signing in.
@@ -46,7 +51,7 @@ jobs:
           - {os: windows-latest, r: "release"}
           - {os: windows-latest, r: "devel"}
           - {os: windows-latest, r: "oldrel-1"}
-          - {os: windows-latest, r: "4.4.0", fixtures: true, minimal: true}
+          - {os: windows-latest, r: "4.4.0", fixtures: true, minimal: true, suggested: true}
           - {os: ubuntu-24.04, r: "oldrel-2", probe: true, minimal: true}
           - {os: ubuntu-24.04, r: "oldrel-3", probe: true, minimal: true}
           - {os: ubuntu-24.04, r: "oldrel-4", probe: true, minimal: true}
@@ -54,6 +59,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      EXTRA_PACKAGES: ${{ matrix.config.minimal && format('any::rcmdcheck, any::testthat, any::withr, any::jsonlite, any::knitr, any::rmarkdown, any::Matrix{0}', matrix.config.suggested && ', any::pROC, any::logistf, any::caret, any::olsrr' || '') || 'any::rcmdcheck' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -65,11 +71,15 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Install gettext for source builds (macOS, R-devel)
+        if: runner.os == 'macOS' && matrix.config.r == 'devel'
+        run: curl -fsSL https://mac.r-project.org/bin/darwin23/arm64/gettext-0.22.5-darwin.23-arm64.tar.xz | sudo tar -xJf - -C /
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         id: dependencies
         continue-on-error: true
         with:
-          extra-packages: ${{ matrix.config.minimal && 'any::rcmdcheck, any::testthat, any::withr, any::jsonlite, any::knitr, any::rmarkdown, any::Matrix' || 'any::rcmdcheck' }}
+          extra-packages: ${{ env.EXTRA_PACKAGES }}
           dependencies: ${{ matrix.config.minimal && '"hard"' || '"all"' }}
           needs: check
 
@@ -77,7 +87,7 @@ jobs:
       - name: Report a failure to install the dependencies
         if: steps.dependencies.outcome == 'failure'
         run: |
-          Rscript .github/scripts/ci-annotate.R dependencies ${{ matrix.config.minimal && 'Config/Needs/check,hard' || 'Config/Needs/check,all' }} FALSE deps::. any::sessioninfo ${{ matrix.config.minimal && 'any::rcmdcheck any::testthat any::withr any::jsonlite any::knitr any::rmarkdown any::Matrix' || 'any::rcmdcheck' }}
+          Rscript .github/scripts/ci-annotate.R dependencies ${{ matrix.config.minimal && 'Config/Needs/check,hard' || 'Config/Needs/check,all' }} FALSE deps::. any::sessioninfo "${{ env.EXTRA_PACKAGES }}"
           exit 1
 
       - uses: r-lib/actions/check-r-package@v2

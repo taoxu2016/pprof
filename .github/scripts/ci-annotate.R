@@ -11,7 +11,7 @@
 #   Rscript .github/scripts/ci-annotate.R fixture-diff <title> <report>   a compare_fixtures.R report
 #   Rscript .github/scripts/ci-annotate.R dependencies <types> <upgrade> <ref> ...
 #     replays a failed installation of the dependencies (types such as Config/Needs/check,all;
-#     upgrade TRUE or FALSE)
+#     upgrade TRUE or FALSE; refs as separate arguments or separated by commas)
 #
 # GitHub keeps at most 10 annotations of each level per step, so each mode stays within that.
 
@@ -172,9 +172,12 @@ annotate_fixture_diff <- function(title, report) {
 # and copy the end of the output into an annotation.
 annotate_dependencies <- function(dependencies, upgrade, refs) {
   # `dependencies` lists pak's dependency types separated by commas, as the action passes
-  # them: for example "Config/Needs/check,all".
+  # them: for example "Config/Needs/check,all". `refs` may also be separated by commas, as in
+  # the action's `extra-packages`.
   dependencies <- sprintf("c(%s)", paste(sprintf('"%s"', strsplit(dependencies, ",", fixed = TRUE)[[1]]),
                                          collapse = ", "))
+  refs <- trimws(unlist(strsplit(refs, ",", fixed = TRUE)))
+  refs <- refs[nzchar(refs)]
   log_file <- tempfile(fileext = ".log")
   code <- c(
     'lib <- file.path(tempdir(), "pak"); dir.create(lib)',
