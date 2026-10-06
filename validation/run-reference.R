@@ -12,8 +12,14 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 report_file <- if (length(args)) args[[1]] else file.path("validation", "equivalence-report.md")
-Sys.setenv(PPROF_REFERENCE_CORE = normalizePath(file.path("tests", "testthat", "fixtures", "reference"), winslash = "/"),
-           PPROF_REFERENCE_FULL = normalizePath(file.path("validation", "fixtures", "reference"), winslash = "/"))
+# PPROF_REFERENCE_CORE and PPROF_REFERENCE_FULL, when set, name other fixture sets: in CI, those
+# pprof 1.0.3 produces on the runner's platform (DEC-080).
+fixture_dir <- function(variable, default) {
+  dir <- Sys.getenv(variable)
+  normalizePath(if (nzchar(dir)) dir else default, winslash = "/")
+}
+Sys.setenv(PPROF_REFERENCE_CORE = fixture_dir("PPROF_REFERENCE_CORE", file.path("tests", "testthat", "fixtures", "reference")),
+           PPROF_REFERENCE_FULL = fixture_dir("PPROF_REFERENCE_FULL", file.path("validation", "fixtures", "reference")))
 suppressMessages(devtools::load_all(quiet = TRUE))
 for (f in c("helper-reference-cases.R", "helper-tolerances.R", "helper-equivalence.R", "helper-fixtures.R",
            "helper-reference-overrides.R")) {
@@ -124,8 +130,10 @@ lines <- c("# Equivalence report: package under test versus the pprof 1.0.3 refe
                    R.version.string, utils::sessionInfo()$running),
            sprintf("Package under test: pprof %s from the working tree at commit %s.", as.character(utils::packageVersion("pprof")),
                    system2("git", c("rev-parse", "--short", "HEAD"), stdout = TRUE)),
-           sprintf("Fixtures: core set generated at %s, full set generated at %s.",
-                   substr(reference_manifest("core")$generator$git_commit, 1, 7), substr(reference_manifest("full")$generator$git_commit, 1, 7)),
+           sprintf("Fixtures: core set generated at %s, full set generated at %s, by pprof 1.0.3 on %s, %s.",
+                   substr(reference_manifest("core")$generator$git_commit, 1, 7), substr(reference_manifest("full")$generator$git_commit, 1, 7),
+                   reference_manifest("core")$environment$r_version, reference_manifest("core")$environment$os),
+           sprintf("Fixture directories: %s and %s.", Sys.getenv("PPROF_REFERENCE_CORE"), Sys.getenv("PPROF_REFERENCE_FULL")),
            "", "## Summary", "",
            sprintf("- Cases: %d (core %d, full %d).", nrow(tab), sum(tab$set == "core"), sum(tab$set == "full")),
            sprintf("- Compared and matching: %d; failing: %d; skipped: %d.", sum(tab$status == "compared"),
