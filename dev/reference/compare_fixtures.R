@@ -97,11 +97,18 @@ for (id in common) {
   if (!identical(a$case, b$case)) d <- rbind(data.frame(path = "case", kind = "case", detail = "case definition changed"), d)
   if (!is.null(d) && nrow(d)) changed[[id]] <- d
 }
-old_ds <- vapply(old_manifest$datasets, function(x) x$md5, character(1))
-names(old_ds) <- vapply(old_manifest$datasets, function(x) x$name, character(1))
-new_ds <- vapply(new_manifest$datasets, function(x) x$md5, character(1))
-names(new_ds) <- vapply(new_manifest$datasets, function(x) x$name, character(1))
-ds_changed <- names(new_ds)[names(new_ds) %in% names(old_ds) & new_ds[names(new_ds)] != old_ds[names(new_ds)]]
+# Datasets are compared by content: an RDS file records the version of R that wrote it, so the
+# files' checksums differ between R versions even when the data are identical.
+dataset_files <- function(manifest) {
+  stats::setNames(vapply(manifest$datasets, function(x) x$file, character(1)),
+                  vapply(manifest$datasets, function(x) x$name, character(1)))
+}
+old_ds <- dataset_files(old_manifest)
+new_ds <- dataset_files(new_manifest)
+ds_common <- intersect(names(new_ds), names(old_ds))
+ds_changed <- ds_common[!vapply(ds_common, function(name) {
+  identical(readRDS(file.path(old_dir, old_ds[[name]])), readRDS(file.path(new_dir, new_ds[[name]])))
+}, logical(1))]
 ds_added <- setdiff(names(new_ds), names(old_ds))
 ds_removed <- setdiff(names(old_ds), names(new_ds))
 list_or_none <- function(x) if (length(x)) paste(x, collapse = ", ") else "none"
