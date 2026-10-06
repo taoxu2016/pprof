@@ -276,9 +276,8 @@ wrong result, or misaligned results:
 - **Messages.** The screening warning counts only the providers excluded, a fit that
   reaches the iteration limit says "not converged" and warns, attaching pprof no longer
   prints a message about a method of the car package, pROC's messages no longer
-  appear, and neither do the ggplot2 warnings of `bar_plot()` and `caterpillar_plot()`
-  (the horizontal caterpillar plot still gives ggplot2's message about
-  `geom_errorbarh()`).
+  appear, and neither do the ggplot2 warnings and messages of `bar_plot()` and
+  `caterpillar_plot()`.
 - **Tests and intervals.** With character provider IDs, `confint()` keeps each provider's
   interval with that provider (pprof 1.0.3 attached the intervals of the providers after
   the first one without events to other providers), and it works with factor provider IDs
