@@ -2,8 +2,18 @@
 # release, devel, and oldrel-1, failing on errors and warnings. Heavy reference cases skip here,
 # as on CRAN; rewrite-reference.yaml runs all of them.
 #
+# The tests compare numbers with the committed reference fixtures only on the platform that
+# produced them (DEC-080), Windows x86_64 with R 4.4 (its internal BLAS and LAPACK 3.12.0), which
+# the job "fixtures" checks here; elsewhere they compare everything but the numbers, and
+# rewrite-reference.yaml compares the numbers with fixtures pprof 1.0.3 produces on the platform.
+#
 # The jobs marked `probe` look for the lowest R version the package works with (DEC-074): they
 # do not fail the workflow, and they leave the matrix once DESCRIPTION states that version.
+#
+# The jobs marked `minimal` install pprof's hard dependencies and only the suggested packages its
+# tests and vignettes need (the tests skip the others), plus Matrix, so that lme4 and Matrix can
+# match the fixture manifest: with "all", pak also resolves the suggested packages of rcmdcheck
+# and sessioninfo, which need newer R versions than these jobs run (Phase 8, step 1).
 #
 # Every job copies the check's results into annotations (.github/scripts/ci-annotate.R), which
 # the public GitHub API returns without signing in.
@@ -21,7 +31,7 @@ permissions: read-all
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
-    name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})
+    name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})${{ matrix.config.fixtures && ', fixtures' || '' }}
     continue-on-error: ${{ matrix.config.probe == true }}
     strategy:
       fail-fast: false
@@ -36,10 +46,11 @@ jobs:
           - {os: windows-latest, r: "release"}
           - {os: windows-latest, r: "devel"}
           - {os: windows-latest, r: "oldrel-1"}
-          - {os: ubuntu-24.04, r: "oldrel-2", probe: true}
-          - {os: ubuntu-24.04, r: "oldrel-3", probe: true}
-          - {os: ubuntu-24.04, r: "oldrel-4", probe: true}
-          - {os: ubuntu-24.04, r: "4.1", probe: true}
+          - {os: windows-latest, r: "4.4.0", fixtures: true, minimal: true}
+          - {os: ubuntu-24.04, r: "oldrel-2", probe: true, minimal: true}
+          - {os: ubuntu-24.04, r: "oldrel-3", probe: true, minimal: true}
+          - {os: ubuntu-24.04, r: "oldrel-4", probe: true, minimal: true}
+          - {os: ubuntu-24.04, r: "4.1", probe: true, minimal: true}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
@@ -54,23 +65,19 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      # The probes install pprof's hard dependencies and only the suggested packages its tests
-      # and vignettes need (the tests skip the others): with "all", pak also resolves the
-      # suggested packages of rcmdcheck and sessioninfo, which need newer R versions than the
-      # one probed (Phase 8, step 1).
       - uses: r-lib/actions/setup-r-dependencies@v2
         id: dependencies
         continue-on-error: true
         with:
-          extra-packages: ${{ matrix.config.probe && 'any::rcmdcheck, any::testthat, any::withr, any::jsonlite, any::knitr, any::rmarkdown' || 'any::rcmdcheck' }}
-          dependencies: ${{ matrix.config.probe && '"hard"' || '"all"' }}
+          extra-packages: ${{ matrix.config.minimal && 'any::rcmdcheck, any::testthat, any::withr, any::jsonlite, any::knitr, any::rmarkdown, any::Matrix' || 'any::rcmdcheck' }}
+          dependencies: ${{ matrix.config.minimal && '"hard"' || '"all"' }}
           needs: check
 
       # The action's own log is not readable without signing in.
       - name: Report a failure to install the dependencies
         if: steps.dependencies.outcome == 'failure'
         run: |
-          Rscript .github/scripts/ci-annotate.R dependencies ${{ matrix.config.probe && 'Config/Needs/check,hard' || 'Config/Needs/check,all' }} FALSE deps::. any::sessioninfo ${{ matrix.config.probe && 'any::rcmdcheck any::testthat any::withr any::jsonlite any::knitr any::rmarkdown' || 'any::rcmdcheck' }}
+          Rscript .github/scripts/ci-annotate.R dependencies ${{ matrix.config.minimal && 'Config/Needs/check,hard' || 'Config/Needs/check,all' }} FALSE deps::. any::sessioninfo ${{ matrix.config.minimal && 'any::rcmdcheck any::testthat any::withr any::jsonlite any::knitr any::rmarkdown any::Matrix' || 'any::rcmdcheck' }}
           exit 1
 
       - uses: r-lib/actions/check-r-package@v2

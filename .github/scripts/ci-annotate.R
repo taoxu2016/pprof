@@ -8,6 +8,7 @@
 #   Rscript .github/scripts/ci-annotate.R rout <file> ...            failures in testthat output
 #   Rscript .github/scripts/ci-annotate.R report <report> <log>      the reference suite
 #   Rscript .github/scripts/ci-annotate.R tail <title> <file> [n]    the last n lines of a log
+#   Rscript .github/scripts/ci-annotate.R fixture-diff <title> <report>   a compare_fixtures.R report
 #   Rscript .github/scripts/ci-annotate.R dependencies <types> <upgrade> <ref> ...
 #     replays a failed installation of the dependencies (types such as Config/Needs/check,all;
 #     upgrade TRUE or FALSE)
@@ -56,8 +57,8 @@ platform <- function() {
 }
 
 # Failures in the output of a testthat run (testthat.Rout.fail, or a log that holds it): one
-# annotation for each failing test, up to `budget`, and one listing the rest.
-annotate_rout <- function(file, budget = 6L) {
+# annotation for each failing test, up to `budget`, and a listing of all of them.
+annotate_rout <- function(file, budget = 4L) {
   lines <- read_text(file)
   summary <- utils::tail(grep("^\\[ FAIL", lines, value = TRUE), 1L)
   start <- grep("(═|=)+ Failed tests", lines)
@@ -72,15 +73,18 @@ annotate_rout <- function(file, budget = 6L) {
     return(invisible())
   }
   ends <- c(heads[-1] - 1L, length(body))
+  titles <- sub("^(──|--) ", "", sub(" *(─|-)+$", "", body[heads]))
   for (k in seq_len(min(length(heads), budget))) {
     block <- body[heads[k]:ends[k]]
     block <- block[!grepl("^\\[ FAIL|^Error: Test failures|^Execution halted", block)]
-    title <- sub("^(──|--) ", "", sub(" *(─|-)+$", "", block[1]))
-    annotate("error", paste("Test", title), c(block[-1], "", summary))
+    annotate("error", paste("Test", titles[k]), c(block[-1], "", summary))
   }
-  if (length(heads) > budget) {
-    rest <- body[heads[-seq_len(budget)]]
-    annotate("error", sprintf("%d more failing tests", length(rest)), rest)
+  # Every failing test, one line each ("Failure ('file:line'): name"), in up to three
+  # annotations, so that the inventory is complete.
+  listing <- titles
+  chunks <- split(listing, cumsum(nchar(listing, type = "chars") + 1L) %/% (max_chars - 200L))
+  for (k in seq_len(min(length(chunks), 3L))) {
+    annotate("error", sprintf("Failing tests, all %d (part %d)", length(listing), k), chunks[[k]])
   }
   invisible()
 }
@@ -142,6 +146,22 @@ annotate_report <- function(report, log_file) {
   invisible()
 }
 
+# A diff report of dev/reference/compare_fixtures.R between the committed fixtures and those
+# pprof 1.0.3 produced on the runner (DEC-080): how far the reference itself moves on this
+# platform. Informational: its summary, the environment's changes, and the changed cases.
+annotate_fixture_diff <- function(title, report) {
+  if (!file.exists(report)) {
+    annotate("warning", title, c("no report", platform()))
+    return(invisible())
+  }
+  lines <- read_text(report)
+  env <- lines[startsWith(lines, "- ") & grepl(" -> ", lines, fixed = TRUE)]
+  summary <- grep("^- (Cases|Datasets)", lines, value = TRUE)
+  changed <- sub("^### ", "", grep("^### ", lines, value = TRUE))
+  annotate("notice", title, c(summary, env, sprintf("Changed cases (%d): %s", length(changed),
+                                                    paste(changed, collapse = ", ")), platform()))
+}
+
 # A failed r-lib/actions/setup-r-dependencies step, whose own log is not readable without
 # signing in: resolve and install the same references with pak, in a library of their own,
 # and copy the end of the output into an annotation.
@@ -181,6 +201,8 @@ if (length(args)) {
     for (f in args[-1]) annotate_rout(f)
   } else if (identical(mode, "report")) {
     annotate_report(args[2], args[3])
+  } else if (identical(mode, "fixture-diff")) {
+    annotate_fixture_diff(args[2], args[3])
   } else if (identical(mode, "dependencies")) {
     annotate_dependencies(args[2], args[3], args[-(1:3)])
   } else if (identical(mode, "tail")) {

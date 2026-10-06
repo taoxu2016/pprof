@@ -1,14 +1,21 @@
-# The full reference suite (DEC-020, DEC-026, DEC-071; brief §3.1, §3.4, §6; criterion 1).
+# The reference suite on every platform (DEC-020, DEC-026, DEC-071, DEC-080; brief §3.1, §3.4,
+# §6; criterion 1). Results of iterations, root finding, and lme4 depend on the platform's
+# floating point (BLAS and LAPACK, math library, compiler, R version), so the comparison runs
+# where it means something:
 #
-# The pinned job runs every case of the core and full fixture sets with validation/run-reference.R
-# on Linux, with R 4.4.0 and packages from the CRAN snapshot that built the reference library
-# (2026-10-01, DEC-017), so that lme4 and Matrix match the fixture manifest; it fails if they do
-# not match, instead of skipping the lme4-backed cases. The macOS and Windows jobs run the same
-# suite with R release and the current CRAN packages, so that the tolerances are checked on every
-# system (brief §3.4); there the lme4-backed cases run only if lme4 and Matrix equal the
-# manifest's versions, and the report lists them as skipped otherwise. Any failing case fails
-# the job. The reports are uploaded as artifacts, and their summaries and failing cases are
-# copied into annotations (.github/scripts/ci-annotate.R).
+# - fixture-platform: the committed fixtures on the platform that produced them, Windows x86_64
+#   with R 4.4.0 (its internal BLAS and LAPACK 3.12.0) and every package from the CRAN snapshot
+#   of the reference library (2026-10-01, DEC-017), so that lme4 and Matrix match the fixture
+#   manifest. Every case of the core and full sets runs; the job fails if a case fails or if
+#   lme4 or Matrix differ from the manifest.
+# - platforms: on Linux, macOS, and Windows with a current R, the job builds pprof 1.0.3 there
+#   (dev/reference/setup_reference_library.R), regenerates both fixture sets into a scratch
+#   folder with the committed generator (never committed), reports how far they lie from the
+#   committed fixtures (dev/reference/compare_fixtures.R; informational), and runs the suite
+#   against them with the unchanged tolerances: the package must reproduce pprof 1.0.3 on that
+#   platform.
+#
+# The reports are uploaded as artifacts and summarized in annotations (.github/scripts/ci-annotate.R).
 name: rewrite-reference
 
 on:
@@ -21,16 +28,9 @@ on:
 permissions: read-all
 
 jobs:
-  reference:
-    runs-on: ${{ matrix.config.os }}
-    name: reference ${{ matrix.config.os }} (R ${{ matrix.config.r }})
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - {os: ubuntu-24.04, r: "4.4.0", pinned: true}
-          - {os: macos-latest, r: "release", pinned: false}
-          - {os: windows-latest, r: "release", pinned: false}
+  fixture-platform:
+    runs-on: windows-latest
+    name: committed fixtures, windows-latest (R 4.4.0)
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       OMP_THREAD_LIMIT: 1
@@ -39,44 +39,46 @@ jobs:
 
       - uses: r-lib/actions/setup-r@v2
         with:
-          r-version: ${{ matrix.config.r }}
-          use-public-rspm: ${{ !matrix.config.pinned }}
+          r-version: "4.4.0"
+          use-public-rspm: false
 
+      # In R's site profile, which every later R session reads whatever its shell.
       - name: Use the CRAN snapshot of the reference library
-        if: matrix.config.pinned
-        run: echo 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2026-10-01"))' >> ~/.Rprofile
+        shell: Rscript {0}
+        run: |
+          cat('options(repos = c(CRAN = "https://packagemanager.posit.co/cran/2026-10-01"))\n',
+              file = file.path(R.home("etc"), "Rprofile.site"), append = TRUE)
 
-      # Only hard dependencies: pprof's own, and those of the packages the reference runner uses
-      # (devtools for load_all(), jsonlite, withr, testthat). With the default "all", pak also
-      # resolves the suggested packages of every package named here, and lme4's (semEff, which
-      # needs gsl, which needs R >= 4.5) cannot be installed on R 4.4 (Phase 8, step 1). Every
-      # package of the pinned job comes from the snapshot, so upgrading takes the snapshot's
-      # versions, R's bundled Matrix included; the next step checks lme4 and Matrix.
+      # Hard dependencies only (with "all", pak also resolves suggested packages that need newer
+      # R versions). Upgrading takes the snapshot's versions, R's bundled Matrix included.
       - uses: r-lib/actions/setup-r-dependencies@v2
         id: dependencies
         continue-on-error: true
         with:
           extra-packages: any::devtools, any::jsonlite, any::withr, any::testthat
           dependencies: '"hard"'
-          upgrade: ${{ matrix.config.pinned && 'TRUE' || 'FALSE' }}
+          upgrade: TRUE
 
-      # The action's own log is not readable without signing in: replay its resolution and
-      # installation, and copy the end of the output into an annotation.
       - name: Report a failure to install the dependencies
         if: steps.dependencies.outcome == 'failure'
         run: |
-          Rscript .github/scripts/ci-annotate.R dependencies hard ${{ matrix.config.pinned && 'TRUE' || 'FALSE' }} deps::. any::sessioninfo any::devtools any::jsonlite any::withr any::testthat
+          Rscript .github/scripts/ci-annotate.R dependencies hard TRUE deps::. any::sessioninfo any::devtools any::jsonlite any::withr any::testthat
           exit 1
 
-      - name: Require the fixture manifest's lme4 and Matrix
-        if: matrix.config.pinned
+      - name: Require the fixtures' platform and the manifest's lme4 and Matrix
         shell: Rscript {0}
         run: |
-          wanted <- jsonlite::read_json("tests/testthat/fixtures/reference/manifest.json")$numerically_relevant_packages
+          manifest <- jsonlite::read_json("tests/testthat/fixtures/reference/manifest.json")
+          wanted <- manifest$numerically_relevant_packages
           for (p in c("lme4", "Matrix")) {
             cat(sprintf("%s: installed %s, fixture manifest %s\n", p, utils::packageVersion(p), wanted[[p]]))
             if (utils::packageVersion(p) != package_version(wanted[[p]])) stop(p, " differs from the fixture manifest")
           }
+          env <- manifest$environment
+          here <- c(R.version$platform, La_version(), unname(extSoftVersion()[["BLAS"]]))
+          there <- c(env$platform, env$lapack_version, env$blas)
+          cat("platform, LAPACK, BLAS here:", here, "; fixtures:", there, "\n")
+          if (!identical(here, there)) stop("This runner is not the fixtures' platform")
 
       - name: Run the reference suite
         shell: bash
@@ -92,6 +94,97 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: equivalence-report-${{ runner.os }}
+          name: equivalence-report-fixture-platform
           path: validation/equivalence-report-ci.md
+          if-no-files-found: ignore
+
+  platforms:
+    runs-on: ${{ matrix.config.os }}
+    name: pprof 1.0.3 on ${{ matrix.config.os }} (R ${{ matrix.config.r }})
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: ubuntu-24.04, r: "release", snapshot: "https://packagemanager.posit.co/cran/__linux__/noble/2026-10-01"}
+          # The snapshot has macOS binaries for R 4.5, not yet for R 4.6.
+          - {os: macos-latest, r: "oldrel-1", snapshot: ""}
+          - {os: windows-latest, r: "release", snapshot: ""}
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      OMP_THREAD_LIMIT: 1
+      PPROF_REFERENCE_SNAPSHOT_REPO: ${{ matrix.config.snapshot }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: true
+
+      # The package under test with current CRAN packages, upgraded so that lme4 and Matrix are
+      # CRAN's (the snapshot's versions today; the suite skips lme4-backed cases otherwise).
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        id: dependencies
+        continue-on-error: true
+        with:
+          extra-packages: any::devtools, any::jsonlite, any::withr, any::testthat, any::callr, any::Matrix
+          dependencies: '"hard"'
+          upgrade: TRUE
+
+      - name: Report a failure to install the dependencies
+        if: steps.dependencies.outcome == 'failure'
+        run: |
+          Rscript .github/scripts/ci-annotate.R dependencies hard TRUE deps::. any::sessioninfo any::devtools any::jsonlite any::withr any::testthat any::callr any::Matrix
+          exit 1
+
+      - name: Build pprof 1.0.3 on this platform
+        shell: bash
+        run: |
+          set -o pipefail
+          Rscript dev/reference/setup_reference_library.R 2>&1 | tee reference-library.log
+
+      - name: Regenerate the fixtures with pprof 1.0.3 (scratch, never committed)
+        shell: bash
+        run: |
+          set -o pipefail
+          Rscript dev/reference/generate_fixtures.R --out-core "$RUNNER_TEMP/core" --out-full "$RUNNER_TEMP/full" \
+            --allow-dirty 2>&1 | tee generation.log
+
+      - name: Compare them with the committed fixtures (informational)
+        shell: bash
+        run: |
+          Rscript dev/reference/compare_fixtures.R tests/testthat/fixtures/reference "$RUNNER_TEMP/core" \
+            --report fixture-diff-core.md || true
+          Rscript dev/reference/compare_fixtures.R validation/fixtures/reference "$RUNNER_TEMP/full" \
+            --report fixture-diff-full.md || true
+          Rscript .github/scripts/ci-annotate.R fixture-diff "pprof 1.0.3 here against the committed core set" fixture-diff-core.md
+          Rscript .github/scripts/ci-annotate.R fixture-diff "pprof 1.0.3 here against the committed full set" fixture-diff-full.md
+
+      - name: Run the reference suite against this platform's fixtures
+        shell: bash
+        run: |
+          set -o pipefail
+          PPROF_REFERENCE_CORE="$RUNNER_TEMP/core" PPROF_REFERENCE_FULL="$RUNNER_TEMP/full" \
+            Rscript validation/run-reference.R equivalence-report-platform.md 2>&1 | tee reference-run.log
+
+      - name: Report in annotations
+        if: always() && steps.dependencies.outcome == 'success'
+        shell: bash
+        run: |
+          Rscript .github/scripts/ci-annotate.R report equivalence-report-platform.md reference-run.log
+          for f in reference-library.log generation.log; do
+            if [ -f "$f" ] && ! grep -q "wrote [0-9]* cases\|Reference library ready" "$f"; then
+              Rscript .github/scripts/ci-annotate.R tail "$f" "$f" 40
+            fi
+          done
+
+      - name: Upload the reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: reference-${{ runner.os }}
+          path: |
+            equivalence-report-platform.md
+            fixture-diff-core.md
+            fixture-diff-full.md
           if-no-files-found: ignore
