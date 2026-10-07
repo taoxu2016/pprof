@@ -1,6 +1,6 @@
 # Cox Proportional Hazards Models in `pprof` — Phase Brief (draft)
 
-> **Status: draft for review, 2026-10-07. Not approved.** Until the project lead approves this brief, no CoxPH work starts (CLAUDE.md). Items marked *proposed* need the sign-off that §10 names.
+> **Status: approved by the project lead on 2026-10-07 (DEC-086).** Approving the brief approves its plan, scope, and gates. Items marked *proposed* and the questions of §10 still need the sign-off that §10 names.
 
 ## 0. How to use this brief
 

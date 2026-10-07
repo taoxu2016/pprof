@@ -836,3 +836,12 @@ The decisions below settle the open items of the final review (`dev/design/FINAL
 - Decision: the package keeps its error; per-case expectations state it for the two fit cases, and `test-cpp-reference-engines.R` checks that the engines reproduce pprof 1.0.3's fits exactly; the question goes to the project lead with D-54's recommendation.
 - Alternatives considered: fitting models with no covariates now (extends the new interface and every method after the Phase 8 gate, and would return D-55's one-iteration fits).
 - Consequences: on R 4.5 and later, `logis_fe()` and `logis_firth()` with no covariates fail where pprof 1.0.3 returns a fit; NEWS says so.
+
+### DEC-086: The CoxPH phase: delegate estimation, own the profiling, pprof_py as the reference
+
+- Date: 2026-10-07
+- Status: accepted by the project lead (2026-10-07), with the approval of `dev/coxph_brief.md` and its §12 process changes
+- Context: The next phase adds the Cox models of pprof_py v0.7.0. pprof_py's Cox engine reimplements `survival::coxph()` and was validated by agreeing with it; its penalized Cox was validated against `glmnet`. The evidence is in the brief's Appendix A and `dev/design/coxph-facts/`.
+- Decision: Cox models are fitted by `survival` and elastic-net Cox paths by `glmnet` (≥ 5.0), through adapters on the `lme4` pattern; `pprof` implements survival data in the data layer and provider profiling for time-to-event outcomes; pprof_py v0.7.0 (commit `9320766`) is the reference for definitions and numbers, with differences registered against it; explicit provider effects, penalized provider models, and discrete-time models wait for later briefs. The phases are C0 to C6 on branches `coxph/phase-<n>`.
+- Alternatives considered: porting pprof_py's engine to R or C++ (re-creates the R-parity risk that produced pprof_py's defects, for no capability `survival` lacks, and is no faster); building on `survival` alone without pprof_py fixtures (would test the adapter, not the method).
+- Consequences: the questions of the brief's §10 and every Class B difference from pprof_py still need the sign-offs §10 names; Phase C0 registers them. Shared layers change for survival data, with the existing families kept bitwise identical.
