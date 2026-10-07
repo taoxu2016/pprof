@@ -17,6 +17,13 @@
 # (as testthat 3e uses for tests), OMP_THREAD_LIMIT = 1 (one thread even where the reference
 # hard-codes more, D-21), and threads = 1 passed explicitly in every call that accepts it
 # (cases.R).
+#
+# Cases marked `emulate = "reformulate-4.5.0"` record what pprof 1.0.3 does from R 4.5.0, where
+# reformulate() of no terms gives an intercept-only formula instead of an error (D-30, D-54).
+# On an R older than 4.5.0, such a case runs with pprof 1.0.3's imported reformulate() replaced
+# by R 4.5.0's change alone, applied to the installed function (R 4.5.0,
+# src/library/stats/R/models.R: `if(intercept && !length(termlabels)) termlabels <- "1"`), and
+# the manifest says so; on R 4.5.0 and later the case runs unchanged.
 
 fixture_format_version <- 1L
 generator_inputs <- c("dev/reference/generate_fixtures.R", "dev/reference/cases.R", "dev/reference/datasets.R",
@@ -111,10 +118,29 @@ run_set_in_child <- function(run_ids, target_ids, max_full_length) {
       stop("The child did not load pprof 1.0.3 from the reference library.")
     }
     source(runner, local = TRUE)
+    # R 4.5.0's reformulate() for cases marked emulate = "reformulate-4.5.0" (see the header).
+    imports <- parent.env(asNamespace("pprof"))
+    reformulate_installed <- get("reformulate", envir = imports)
+    reformulate_450 <- function(termlabels, response = NULL, intercept = TRUE, env = parent.frame()) {
+      if (intercept && !length(termlabels)) termlabels <- "1"
+      reformulate_installed(termlabels, response = response, intercept = intercept, env = env)
+    }
+    set_reformulate <- function(f) {
+      unlockBinding("reformulate", imports)
+      assign("reformulate", f, envir = imports)
+      lockBinding("reformulate", imports)
+    }
     results <- list()
     records <- list()
+    emulated <- character()
     for (id in run_ids) {
+      emulate <- identical(cases[[id]]$emulate, "reformulate-4.5.0") && getRversion() < "4.5.0"
+      if (emulate) {
+        set_reformulate(reformulate_450)
+        emulated <- c(emulated, id)
+      }
       results[[id]] <- run_reference_case(cases[[id]], datasets, results)
+      if (emulate) set_reformulate(reformulate_installed)
       if (id %in% target_ids) records[[id]] <- reference_result_record(results[[id]], max_full_length)
     }
     env <- list(
@@ -128,7 +154,7 @@ run_set_in_child <- function(run_ids, target_ids, max_full_length) {
         stats::setNames(as.list(unname(ip[, "Version"])), ip[, "Package"])
       }
     )
-    list(records = records, environment = env)
+    list(records = records, environment = env, emulated = emulated)
   },
   args = list(cases = all_cases, datasets = datasets, runner = normalizePath("tests/testthat/helper-reference-cases.R"),
               ref_lib = ref_lib, run_ids = run_ids, target_ids = target_ids, max_full_length = max_full_length),
@@ -170,12 +196,15 @@ for (set in sets) {
     rec <- child$records[[id]]
     path <- file.path(out_dir, paste0(id, ".rds"))
     saveRDS(list(format_version = fixture_format_version, case = case, result = rec), path, compress = "xz", version = 3)
-    list(id = id, file = paste0(id, ".rds"), md5 = unname(tools::md5sum(path)), fun = case$fun, call = format_call(case),
-         parents = case_parents(case), datasets = case_datasets(case), seed = case$seed, tier = case$tier,
-         heavy = case$heavy, notes = case$notes, outcome = rec$outcome,
-         error = if (!is.null(rec$error)) rec$error$message else NULL,
-         iterations = if (is.na(rec$iterations)) NULL else rec$iterations,
-         probe_identical = if (is.na(rec$probe_identical)) NULL else rec$probe_identical)
+    entry <- list(id = id, file = paste0(id, ".rds"), md5 = unname(tools::md5sum(path)), fun = case$fun,
+                  call = format_call(case), parents = case_parents(case), datasets = case_datasets(case),
+                  seed = case$seed, tier = case$tier, heavy = case$heavy, notes = case$notes, outcome = rec$outcome,
+                  error = if (!is.null(rec$error)) rec$error$message else NULL,
+                  iterations = if (is.na(rec$iterations)) NULL else rec$iterations,
+                  probe_identical = if (is.na(rec$probe_identical)) NULL else rec$probe_identical)
+    # Whether this R ran the case with R 4.5.0's reformulate() in place of its own (see the header).
+    if (!is.null(case$emulate)) entry <- c(entry, list(emulate = case$emulate, emulated = id %in% child$emulated))
+    entry
   })
   manifest <- list(
     fixture_set = set, format_version = fixture_format_version,

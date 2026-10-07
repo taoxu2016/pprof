@@ -13,16 +13,18 @@
 #   tier    default tolerance tier for comparisons (helper-tolerances.R)
 #   heavy   TRUE for slow cases, which tests skip on CRAN
 #   notes   register entries (D-xx, K-xx) or audit evidence the case exercises
+#   emulate "reformulate-4.5.0" for a case that records what pprof 1.0.3 does from R 4.5.0, which
+#           the generator emulates on older R (generate_fixtures.R; D-30, D-54); absent otherwise
 #
 # Every call that has a threads argument passes threads = 1 (brief §3.1); calls that set
 # threads internally (D-21) are capped by OMP_THREAD_LIMIT = 1 in the generator.
 
 reference_cases <- function() {
   cases <- list()
-  add <- function(id, fun, args, tier, set = "core", seed = NULL, heavy = FALSE, notes = "") {
+  add <- function(id, fun, args, tier, set = "core", seed = NULL, heavy = FALSE, notes = "", emulate = NULL) {
     if (!is.null(cases[[id]])) stop("Duplicate case id: ", id, call. = FALSE)
-    cases[[id]] <<- list(id = id, set = set, fun = fun, args = args, seed = seed, tier = tier,
-                         heavy = heavy, notes = notes)
+    cases[[id]] <<- c(list(id = id, set = set, fun = fun, args = args, seed = seed, tier = tier,
+                           heavy = heavy, notes = notes), if (!is.null(emulate)) list(emulate = emulate))
   }
   z5 <- paste0("z", 1:5)
   columns <- function(dataset, z, y = "Y", provider = "ProvID") {
@@ -74,6 +76,9 @@ reference_cases <- function() {
   }
   add("logis_fe-screening-onecov", "logis_fe", c(columns("syn_screening", "x1"), threads = 1), "iterative", notes = "D-30 parent")
   add("logis_fe-screening-twocov", "logis_fe", c(columns("syn_screening", c("x1", "x2")), threads = 1), "iterative", notes = "D-30 parent")
+  # D-54: from R 4.5.0, pprof 1.0.3 fits a model with no covariates (emulated on older R).
+  add("logis_fe-screening-nocov", "logis_fe", c(columns("syn_screening", character(0)), threads = 1), "iterative",
+      notes = "D-54", emulate = "reformulate-4.5.0")
   # The null model of x1 in summary(logis_fe-screening-twocov, test = "lr"): the expected
   # result of the D-30 fix comes from this fit and logis_fe-screening-onecov (Phase 3).
   add("logis_fe-screening-x2", "logis_fe", c(columns("syn_screening", "x2"), threads = 1), "iterative",
@@ -129,6 +134,8 @@ reference_cases <- function() {
       "iterative", notes = "V12.5")
   add("logis_firth-extreme", "logis_firth", c(columns("syn_extreme", c("x1", "x2", "x3")), threads = 1), "iterative")
   add("logis_firth-screening", "logis_firth", c(columns("syn_screening", c("x1", "x2", "x3")), threads = 1), "iterative", notes = "D-01")
+  add("logis_firth-screening-nocov", "logis_firth", c(columns("syn_screening", character(0)), threads = 1), "iterative",
+      notes = "D-54", emulate = "reformulate-4.5.0")
 
   # --- linear_fe --------------------------------------------------------------------------
   L1 <- "linear_fe-linear-columns"
@@ -137,6 +144,9 @@ reference_cases <- function() {
       "closed_form", notes = "K-40 to K-43")
   add(L2, "linear_fe", list(data = ref_dataset("linear_example"), Y.char = "Y", Z.char = z5, ProvID.char = "ProvID",
                             option.gamma.var = "full"), "closed_form", notes = "K-42")
+  add("linear_fe-linear-nocov", "linear_fe",
+      list(data = ref_dataset("linear_example"), Y.char = "Y", Z.char = character(0), ProvID.char = "ProvID"),
+      "closed_form", notes = "D-54", emulate = "reformulate-4.5.0")
   add("linear_fe-linear-formula", "linear_fe",
       list(formula = ref_formula("Y ~ z1 + z2 + z3 + z4 + z5 + id(ProvID)"), data = ref_dataset("linear_example")), "closed_form")
   add("linear_fe-linear-vectors", "linear_fe",
@@ -333,7 +343,10 @@ reference_cases <- function() {
   add("summary-binary-wald-parm", "summary", list(object = ref_fit(F1), parm = c("z1", "z4", "Z5")), "iterative")
   add("summary-binary-wald-level90", "summary", list(object = ref_fit(F1), level = 0.9), "iterative")
   add("summary-binary-lr-parm", "summary", list(object = ref_fit(F1), test = "lr", parm = 2), "iterative")
-  add("summary-screening-onecov-lr", "summary", list(object = ref_fit("logis_fe-screening-onecov"), test = "lr"), "exact", notes = "D-30")
+  add("summary-screening-onecov-lr", "summary", list(object = ref_fit("logis_fe-screening-onecov"), test = "lr"), "iterative",
+      notes = "D-30, DEC-084", emulate = "reformulate-4.5.0")
+  add("summary-screening-onecov-score", "summary", list(object = ref_fit("logis_fe-screening-onecov"), test = "score"),
+      "exact", notes = "D-30, DEC-084", emulate = "reformulate-4.5.0")
   add("summary-screening-twocov-lr", "summary", list(object = ref_fit("logis_fe-screening-twocov"), test = "lr"), "exact", notes = "D-30")
   add("summary-cutoff5-lr", "summary", list(object = ref_fit("logis_fe-cutoff5"), test = "lr"), "exact", notes = "D-10")
   add("summary-firth-wald", "summary", list(object = ref_fit(FF)), "iterative")
