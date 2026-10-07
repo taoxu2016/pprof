@@ -1,0 +1,13 @@
+R version 4.4.0 (2024-04-24 ucrt), survival 3.8.12, data.table 1.18.6.1
+A (200000 rows, 2997 providers, 6 covariates) coxph() breslow median 1.99 s (runs 2.29, 1.99, 1.83), 3 iterations, R heap peak 351 MB
+A (200000 rows, 2997 providers, 6 covariates) coxph() efron   median 2.01 s (runs 1.95, 2.01, 2.53), 3 iterations, R heap peak 354 MB
+A (200000 rows, 2997 providers, 6 covariates) agreg.fit() breslow, the engine without the formula interface: median 0.70 s
+A (200000 rows, 2997 providers, 6 covariates) coxph() breslow with clustered robust variance: 3.37 s
+A (200000 rows, 2997 providers, 6 covariates) indirect expected counts in plain R: 0.06 s; sum of E = 100757.000000, observed events = 100757
+A (200000 rows, 2997 providers, 6 covariates) the same baseline through a second coxph() fit and basehaz(): 1.21 s
+B (1000000 rows, 7500 providers, 10 covariates) coxph() breslow median 18.19 s (runs 19.47, 18.19, 17.05), 3 iterations, R heap peak 1270 MB
+B (1000000 rows, 7500 providers, 10 covariates) coxph() efron   median 14.80 s (runs 16.95, 14.80, 14.77), 3 iterations, R heap peak 1391 MB
+B (1000000 rows, 7500 providers, 10 covariates) agreg.fit() breslow, the engine without the formula interface: median 6.33 s
+B (1000000 rows, 7500 providers, 10 covariates) coxph() breslow with clustered robust variance: 17.75 s
+B (1000000 rows, 7500 providers, 10 covariates) indirect expected counts in plain R: 0.34 s; sum of E = 500787.000000, observed events = 500787
+B (1000000 rows, 7500 providers, 10 covariates) the same baseline through a second coxph() fit and basehaz(): 7.30 s

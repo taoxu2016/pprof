@@ -1,0 +1,3 @@
+bench_a.csv: 200000 rows, 2997 providers with data, 6 covariates, 100757 events, 2846 distinct stop times (seed 11)
+bench_b.csv: 1000000 rows, 7500 providers with data, 10 covariates, 500787 events, 2952 distinct stop times (seed 23)
+bench_pen.csv: 100000 rows, 500 providers with data, 50 covariates, 50973 events, 2781 distinct stop times (seed 7)

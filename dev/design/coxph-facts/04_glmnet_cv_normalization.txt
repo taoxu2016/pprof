@@ -1,0 +1,13 @@
+Installed glmnet 5.1; formals(glmnet)$cox.ties: c("breslow", "efron")
+The installed cv.coxnet()'s fold weights:
+    weights = as.vector(tapply(weights, foldid, sum))
+    weights = tapply(weights, foldid, sum)
+
+penalized_wide: 400 rows, 202 events (event fraction 0.5050), 53 lambda values
+cvm installed / cvm 4.1-8 over the lambda path: min 0.5050, max 0.5050
+cvsd installed / cvsd 4.1-8 over the lambda path: min 0.9375, max 1.1790
+
+| | lambda.min | lambda.1se |
+|---|---|---|
+| glmnet 4.1-8 (committed) | 0.0217072 | 0.0604017 |
+| glmnet 5.1 (regenerated) | 0.0217072 | 0.0876325 |

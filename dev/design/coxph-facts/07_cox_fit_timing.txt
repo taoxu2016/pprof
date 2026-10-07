@@ -1,0 +1,8 @@
+Python 3.9.7, numpy 1.24.4, pandas 2.3.3, numba 0.57.1
+A (200000 rows, 2997 providers, 6 covariates) CoxPH breslow median 3.47 s (runs 3.70, 3.47, 3.45), 3 iterations; against coxph(): coefficients 1.9e-04, SEs 5.2e-06 (relative)
+A (200000 rows, 2997 providers, 6 covariates) CoxPH efron   median 2.60 s (runs 3.28, 2.60, 2.55), 3 iterations; against coxph(): coefficients 1.6e-04, SEs 4.7e-06 (relative)
+A (200000 rows, 2997 providers, 6 covariates) calculate_standardized_measures(): 0.34 s; 2997 providers; expected counts against the R computation (with survival's coefficients) 2.4e-05 (relative); observed counts equal: True
+A (200000 rows, 2997 providers, 6 covariates) test() (mid-p, theoretical null, with intervals): 50.4 s for 2997 providers
+B (1000000 rows, 7500 providers, 10 covariates) CoxPH breslow median 9.38 s (runs 9.21, 9.38, 10.00), 3 iterations; against coxph(): coefficients 7.4e-05, SEs 3.1e-06 (relative)
+B (1000000 rows, 7500 providers, 10 covariates) CoxPH efron   median 10.06 s (runs 10.06, 10.91, 9.75), 3 iterations; against coxph(): coefficients 5.9e-05, SEs 2.3e-06 (relative)
+B (1000000 rows, 7500 providers, 10 covariates) calculate_standardized_measures(): 3.40 s; 7500 providers; expected counts against the R computation (with survival's coefficients) 1.6e-05 (relative); observed counts equal: True

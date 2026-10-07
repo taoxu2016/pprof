@@ -1,0 +1,7 @@
+R version 4.4.0 (2024-04-24 ucrt), survival 3.8.12
+Aliased covariate (x3 = x1 + x2): coefficients x1 0.0766, x2 0.07404, x3 NA
+Five zero case weights: error: Invalid weights, must be >0
+No events: coefficients x1 NA, x2 NA
+Non-integer case weights: the reported variance is robust (var equals naive.var: FALSE)
+A right-censored time of 0: accepted (6 observations)
+A missing covariate value: fitted on 59 of 60 rows (na.action: omit)

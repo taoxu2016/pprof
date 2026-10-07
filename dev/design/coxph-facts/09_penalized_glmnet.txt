@@ -1,0 +1,2 @@
+PenalizedCoxPH lasso path at glmnet's 26 lambda values: median 26.82 s (runs 28.21, 25.44)
+Coefficient path against glmnet's tight fit: largest absolute difference 2.2e-07 (at the last lambda 2.2e-07); the same active set at every lambda: True

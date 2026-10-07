@@ -1,0 +1,6 @@
+pprof_py v0.7.0 (9320766)
+Python 3.9.7 | numpy 1.24.4 | scipy 1.13.1 | pandas 2.3.3 | numba 0.57.1
+FAILED pprof_py/tests/survival/test_diagnostics.py::test_run_validation_end_to_end_single_stage
+SKIPPED [1] pprof_py\tests\survival\test_robust_variance.py:36: could not import 'lifelines': No module named 'lifelines'
+1 failed, 283 passed, 1 skipped in 18.75s
+Files changed in the pprof_py checkout by the run: 0

@@ -1,0 +1,4 @@
+glmnet results: those 02 regenerated (data paths redirected in the copied test file: 2 of 2)
+E       AssertionError: cv: lambda_1se_: max abs diff=2.723e-02 (tol=1.0e-06)
+FAILED test_penalized_installed_glmnet.py::test_cross_validation - AssertionE...
+1 failed, 12 passed in 3.65s

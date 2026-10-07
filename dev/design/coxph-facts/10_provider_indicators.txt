@@ -1,0 +1,4 @@
+R version 4.4.0 (2024-04-24 ucrt), survival 3.8.12
+K =  250 providers, n =   5000, p = 10: with K - 1 provider indicators 1.4 s (5 iterations, R heap peak 146 MB); stratified by provider 0.03 s
+K =  500 providers, n =  10000, p = 10: with K - 1 provider indicators 13.1 s (5 iterations, R heap peak 252 MB); stratified by provider 0.08 s
+K = 1000 providers, n =  20000, p = 10: with K - 1 provider indicators 144.3 s (6 iterations, R heap peak 598 MB); stratified by provider 0.17 s

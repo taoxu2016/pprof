@@ -1,0 +1,17 @@
+R version 4.4.0 (2024-04-24 ucrt), survival 3.8.12
+robust_strata_truncation: 251 rows, 115 events, 10 of them tied with another event in their stratum
+competing_risks_truncated: 400 rows, expanded by finegray() to 3469
+
+Robust variance, robust_strata_truncation (strata, delayed entry, clusters):
+  breslow coef      pprof_py [ 0.606259 -0.185424]  R [ 0.606259 -0.185424]  max relative difference 2.54e-15
+  breslow se_robust pprof_py [0.112591 0.094065]  R [0.113059 0.093921]  max relative difference 4.14e-03
+  breslow se_naive  pprof_py [0.113849 0.100008]  R [0.113849 0.100008]  max relative difference 6.38e-15
+  efron   coef      pprof_py [ 0.608603 -0.185074]  R [ 0.608603 -0.185074]  max relative difference 2.40e-15
+  efron   se_robust pprof_py [0.112987 0.094104]  R [0.112987 0.094104]  max relative difference 3.56e-15
+  efron   se_naive  pprof_py [0.114025 0.100019]  R [0.114025 0.100019]  max relative difference 2.07e-15
+
+Fine-Gray transform with delayed entry, competing_risks_truncated, cause 1:
+  rows: R 3469, pprof_py 3469, matched on (id, fgstart, fgstop) 3469, only in R 0, only in pprof_py 0
+  weights: largest difference 6.22e-15; rows differing by more than 1e-10: 0; status mismatches: 0
+  FineGrayPH breslow: coefficients pprof_py [ 0.3661291 -0.4916835] R [ 0.3661291 -0.4916835] (max relative difference 5.91e-15); robust SE pprof_py [0.090178 0.101201] R [0.089949 0.100836] (max relative difference 3.62e-03)
+  FineGrayPH efron  : coefficients pprof_py [ 0.3667154 -0.4933941] R [ 0.3667154 -0.4933941] (max relative difference 1.83e-14); robust SE pprof_py [0.090187 0.101422] R [0.090187 0.101422] (max relative difference 9.17e-15)

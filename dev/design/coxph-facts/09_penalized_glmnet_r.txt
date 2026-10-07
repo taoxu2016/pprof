@@ -1,0 +1,6 @@
+R version 4.4.0 (2024-04-24 ucrt), glmnet 5.1, survival 3.8.12; 100000 rows, 500 providers, 50 covariates
+lasso path, thresh = 1e-07: median 3.35 s (runs 3.35, 3.24, 3.42); 26 of 50 lambdas fitted
+lasso path, thresh = 1e-12: median 8.90 s (runs 8.90, 9.18, 8.58); 26 of 50 lambdas fitted
+Warnings from glmnet (muffled):
+  Passing 'thresh' to glmnet() is deprecated. Use control = list(thresh = ...) instead.
+  Passing 'maxit' to glmnet() is deprecated. Use control = list(maxit = ...) instead.

@@ -1,0 +1,21 @@
+R version 4.4.0 (2024-04-24 ucrt), survival 3.8.12
+bench_a.csv: 1520 distinct start and stop values, 1454 after aeqSurv(); aeqSurv() changes the start or stop of 13411 of 200000 rows
+
+Maximum relative difference in the coefficients, pprof_py against coxph():
+
+| Ties | Fit | Iterations (pprof_py / R) | R, timefix = TRUE | R, timefix = FALSE |
+|---|---|---|---|---|
+| breslow | default | 3 / 3 | 1.9e-04 | 2.6e-15 |
+| breslow | tight | 4 / 4 | 1.9e-04 | 2.2e-15 |
+| breslow | iterate1 | 1 / 1 | 1.8e-04 | 1.2e-14 |
+| breslow | iterate2 | 2 / 2 | 1.9e-04 | 5.1e-15 |
+| breslow | iterate3 | 3 / 3 | 1.9e-04 | 2.6e-15 |
+| breslow | iterate4 | 4 / 4 | 1.9e-04 | 1.2e-12 |
+| breslow | R default against R tight (timefix = TRUE) | | 1.2e-12 | |
+| efron | default | 3 / 3 | 1.6e-04 | 2.1e-15 |
+| efron | tight | 4 / 4 | 1.6e-04 | 1.1e-12 |
+| efron | iterate1 | 1 / 1 | 1.6e-04 | 1.0e-14 |
+| efron | iterate2 | 2 / 2 | 1.6e-04 | 4.5e-15 |
+| efron | iterate3 | 3 / 3 | 1.6e-04 | 2.1e-15 |
+| efron | iterate4 | 4 / 4 | 1.6e-04 | 1.6e-13 |
+| efron | R default against R tight (timefix = TRUE) | | 1.3e-12 | |

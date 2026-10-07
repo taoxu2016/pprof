@@ -1,0 +1,30 @@
+pprof_py 0.7.0
+
+## B2: provider-effect score with delayed entry
+delayed entry False: |score of the kernel - exact score| = 4.32e-12; converged True after 10 provider iterations; provider contrasts against CoxPH with indicators 2.06e-10; mean provider effect 0.07093
+delayed entry True: |score of the kernel - exact score| = 4.69e+01; converged False after 500 provider iterations; provider contrasts against CoxPH with indicators 1.17e-01; mean provider effect 585
+
+## B3: ProviderPenalizedCoxPH with Efron ties; the level of the provider effects
+600 rows, 5 providers, 38 distinct times, 363 events
+ties breslow: beta against the exact breslow fit with provider indicators 8.73e-12; provider contrasts 1.90e-08; breslow score for the provider indicators at the last lambda 2.49e-10; converged at every lambda: True
+ties efron: beta against the exact efron fit with provider indicators 1.86e-03; provider contrasts 2.72e-02; efron score for the provider indicators at the last lambda 1.61e+00; converged at every lambda: True
+median provider effect along the default path: -0.0779 -0.0518 -0.0341 -0.0282 -0.0262 -0.0255 -0.0253 -0.0253 -0.0253 -0.0252
+log-likelihood change when every provider effect is shifted by 3: -3.0e-12
+at lambda_max (all penalized coefficients zero: True), provider contrasts against CoxPH with provider indicators only: 3.79e-08
+
+## B4: calculate_standardized_measures(): R golden file and column order
+R golden file (survival 3.5.8 on R version 4.3.3 (2024-02-29)): coefficients 5.4e-15, indirect E 2.1e-15, direct E 1.1e-14 (relative)
+columns reordered (x3, x1, x2): predict_linear() unchanged: True; largest relative change in E_j from calculate_standardized_measures(): 0.438
+
+## B5: a covariate with a large mean
+x1 shifted by 1500: coefficients change 9.5e-15; max linear predictor 796; martingale residuals change 2.53; cumulative hazard at the last time of 3 subjects [4.0349 4.0349 4.0349] (unshifted [3.9645 5.9692 5.6872]); robust variance raises FloatingPointError
+x1 shifted by 2020: coefficients change 1.2e-14; max linear predictor 1071; martingale residuals change 2.53; cumulative hazard at the last time of 3 subjects [4.0349 4.0349 4.0349] (unshifted [3.9645 5.9692 5.6872]); robust variance raises FloatingPointError
+
+## B9: discrete-time models
+DiscreteSurvival(penalty_factor=...): TypeError: rescale_penalty_factors() missing 1 required positional argument: 'p'
+DiscreteSurvival with random case weights against none: largest coefficient difference 0.0e+00
+ProviderPenalizedDiscreteSurvival: alpha 1 against 0.2 0.0e+00, against 0 0.0e+00; nonzero coefficients at alpha 0 (ridge would keep all 5): [2, 5, 5]; with random case weights against none 0.0e+00
+
+## B10: the bootstrap SE's partial likelihood with tied times
+tied times: the bootstrap SE's log-likelihood -2052.613331, the Breslow engine's -2069.813238, difference 17.2
+no ties: the bootstrap SE's log-likelihood -2052.160855, the Breslow engine's -2052.160855, difference 0
