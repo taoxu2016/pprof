@@ -616,7 +616,7 @@ As built in Phase 7 (DEC-064): `vignettes/migration.Rmd`, "Migrating from pprof 
 | `confint()` with character and factor IDs and any provider column name | D-19, D-28, D-29 |
 | Integer IDs in `parm`; integer `null`; a `null` of several values | D-27, D-14, D-45 |
 | `test = "robust_wald"`; standard score statistic not computable | D-06, D-04 |
-| `summary(test = "lr")` with two covariates; RE summaries without the lme4 fit | D-30, D-46 |
+| `summary(test = "lr")` with one or two covariates, `"score"` with two; RE summaries without the lme4 fit | D-30, D-46 |
 | One thread in the logistic RE and CRE `confint()` | D-21 |
 | `plot(test = "exact")`; classed errors of `caterpillar_plot()` and `bar_plot()`; `bar_plot()`'s data frame | D-07, DEC-055, D-49 |
 | The new interface: results, integer flags, `confint()`, quiet fits, one thread, compact models, classed conditions, visible results | DEC-012, D-15, DEC-011, DEC-008, DEC-001, DEC-005, NAMING §6, D-51 |
