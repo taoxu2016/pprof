@@ -952,3 +952,252 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Decision owner: methodology owners.
 - Status: verified (2026-10-07); reproduced until the owners decide.
 - Regression test: `summary-screening-onecov-lr` and `logis_fe-screening-nocov` (one iteration); `tests/testthat/test-inference-coefficients.R`.
+
+## The CoxPH phase: differences from pprof_py v0.7.0
+
+The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0.3, which has none. The classes above apply with pprof_py as the reference (`dev/coxph_brief.md` §3.4). The defects found in pprof_py while writing the brief (its Appendix B, B1 to B13) are all registered here. The decisions marked "delegation" were made under the project lead's delegation of 2026-10-07 (DEC-087) and await confirmation by a methodology owner (M-16). Minimal examples are the scripts in `dev/design/coxph-facts/`, run against pprof_py v0.7.0 and R with `survival` 3.8-12 and `glmnet` 5.1; code locations in pprof_py are `pprof_py/<path>:line` at `9320766`.
+
+| ID | Component | Class | Status | One line |
+|---|---|---|---|---|
+| D-56 | Robust variance | B | verified; decided (delegation): `survival`'s | With Breslow ties on (start, stop] data, pprof_py applies Efron's formulas to tied deaths in the robust score kernel (B1) |
+| D-57 | Newton–Raphson | B | verified; decided (delegation): `survival`'s | pprof_py halves a step before testing convergence, so its estimates differ from R's by up to 1e-8 and depend on row order (B6) |
+| D-58 | Zero case weights | B | verified; decided (delegation): left out of the fit | pprof_py counts zero-weight events among Efron's tied deaths (B7); `survival` refuses zero weights |
+| D-59 | Aliased covariates, no events | B | verified; decided (delegation): classed error | pprof_py returns pseudo-inverse estimates, or β = 0 with no events (B8) |
+| D-60 | Reported baseline hazard | B | verified; decided (delegation): at x = 0 and offset 0 | pprof_py's `baseline_hazard_` includes exp(mean offset), as `basehaz(centered = FALSE)` does |
+| D-61 | Penalized cross-validation folds | B | verified; decided (delegation): R's random numbers | Event-stratified folds drawn with R's generator cannot match NumPy's draws |
+| D-62 | Missing values | A | verified; decided: listwise deletion | pprof_py raises an error on any missing value |
+| D-63 | Standardized measures | A | verified; does not arise | pprof_py matches covariates to coefficients by column position (B4) |
+| D-64 | Large linear predictors | B | verified; decided (delegation): `survival`'s | pprof_py clips exp() at ±700 on the uncentered linear predictor, breaking residuals, predictions, and the robust variance (B5) |
+| D-65 | Provider-penalized Cox | A and B | verified; deferred to a later brief | pprof_py's provider-effect score ignores delayed entry (B2), and its Efron fits use the Breslow score for the provider effects (B3) |
+| D-66 | Discrete-time models | A and B | verified; deferred to a later brief | `penalty_factor` raises, case weights and (provider version) `alpha` are ignored (B9) |
+| D-67 | Bootstrap standard error of the CV deviance | B | verified; not carried over | Its partial likelihood is wrong with tied times (B10) |
+| D-68 | `tmerge` | — | verified; not carried over | A `tdc` without a value defaults to NaN where R gives 0 (B11); `survival::tmerge()` serves R users |
+| D-69 | pprof_py's documentation and R-comparison harness | C and A | verified; not carried over; reported upstream | Stale statements and missing generators (B12); Windows paths written unescaped into R code (B13) |
+| D-70 | Providers with no expected events | Presentation | decided | pprof_py reports their infinite or undefined ratio silently; the package adds a classed warning |
+| D-71 | Exact test of an extreme provider | A | verified; decided: flag it | When the exact p-value underflows to 0, pprof_py's infinite z makes the provider untested |
+| D-72 | Penalized coefficients at λ_max | B | verified; decided (delegation): exact zeros | With unpenalized columns, pprof_py's first path point carries penalized coefficients of order 1e-11, which count as nonzero |
+| D-73 | Failures of pprof_py that cannot arise | A | verified; does not arise | Measures without events, mid-p limits under a large empirical-null mean, a single CV fold, a missing event code |
+| D-74 | Status coded 1/2 | A | verified; decided: accepted | pprof_py rejects the 1/2 status coding that `Surv()` accepts |
+
+### D-56: Robust variance with Breslow ties on (start, stop] data
+
+- Component: pprof_py's counting-process score kernel (`pprof_py/inference/survival/robust.py:232`), used by `CoxPH(robust = True)`, `CoxPH.fit(cluster = ...)`, and `FineGrayPH`.
+- Class: B
+- Description: The kernel tests `if deaths < 2:` where the right-censored kernel tests `if deaths < 2 or not efron:` (`:94`), so with Breslow ties and two or more tied deaths it applies Efron's hazard and means. The coefficients and model-based variances are unaffected.
+- Minimal reproducible example: `dev/design/coxph-facts/05_robust_finegray.py` on pprof_py's `robust_strata_truncation` data (10 tied events): robust SE 0.112591 and 0.094065 against R's 0.113059 and 0.093921 (0.41%); with Efron ties they agree to 4e-15. pprof_spark measured 8% and 11% on its fixtures (its X-015). Fine–Gray with delayed entry: 0.36%.
+- Affected outputs: robust standard errors, z, p-values, and intervals of the coefficients, with Breslow ties on (start, stop] data, including every Fine–Gray fit with Breslow ties.
+- Statistical impact: the sandwich is not the variance of the fitted estimating equations.
+- Options: (1) reproduce pprof_py (would mean reimplementing its kernel); (2) `survival`'s, which is correct (pprof_py's own dfbeta residuals give R's value, X-015).
+- Recommendation: (2).
+- Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-24).
+- Status: verified (2026-10-07); decided; implemented in C2.
+- Regression test: the C1 fixtures (`lt-stratified`, `lt-weights-offset`) compare the robust variance with R's.
+
+### D-57: The order of step halving and the convergence test
+
+- Component: pprof_py's Newton–Raphson (`pprof_py/algorithms/survival/optimization.py:67-79`).
+- Class: B (the row-order dependence is Class A)
+- Description: pprof_py halves a step whose log-likelihood is lower before it tests convergence; `survival` tests the full step first. When a converged step lowers the log-likelihood at rounding level, the two stop half a step or more apart.
+- Minimal reproducible example: `dev/design/coxph-facts/12_newton_path.txt`: the iterates agree to about 1e-14 until the last, and the final estimates differ by 5.7e-9 (`basic_efron`) and 1.6e-9 (`combined`). pprof_spark measured 1.05e-8 on its `tiny-ties` case, and 9 distinct results over 30 row orders (its X-010).
+- Affected outputs: coefficients at default settings, by up to about 1e-8 relative.
+- Statistical impact: none beyond rounding; pprof_py's results depend on row order.
+- Options: (1) reproduce pprof_py; (2) `survival`'s order, which the adapter gets by delegating.
+- Recommendation: (2).
+- Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-27).
+- Status: verified (2026-10-07); decided; implemented in C2.
+- Regression test: the C1 fixtures compare default fits on iteration counts exactly and on estimates within a tolerance set by the last Newton step (brief §3.5), and tight fits within `cox_reference`.
+
+### D-58: Zero case weights
+
+- Component: pprof_py's Efron ties (`pprof_py/algorithms/survival/ties.py`), and its input contract, which accepts zero weights (`pprof_py/data/survival_validation.py`).
+- Class: B
+- Description: pprof_py counts a zero-weight event among the tied deaths d of Efron's formula, so a zero weight is not the same as leaving the row out. `survival` refuses zero weights ("Invalid weights, must be >0").
+- Minimal reproducible example: pprof_spark's X-013 (0.67% change in a coefficient on `tiny-ties` with one weight set to 0); `dev/design/coxph-facts/11_survival_edge_cases.txt` for `survival`'s error.
+- Affected outputs: Efron fits whose data have zero-weight events tied with other events; Breslow fits are unaffected.
+- Statistical impact: a zero weight changes Efron's correction for the other tied deaths.
+- Options: (1) reproduce pprof_py; (2) leave zero-weight rows out of the Cox fit and keep them in the provider table and the measures, which do not use weights (M-29); (3) refuse zero weights, as `survival` does.
+- Recommendation: (2).
+- Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-25).
+- Status: verified (2026-10-07); decided; implemented in C2.
+- Regression test: C1 case with zero weights: Breslow fits equal pprof_py's; Efron fits equal pprof_py's with the zero-weight rows removed; the measures equal pprof_py's.
+
+### D-59: Aliased covariates and no events
+
+- Component: pprof_py's `CoxPH.fit` (`pprof_py/utils/numerical.py:105-132`: `lstsq` and `pinv` when the information matrix is singular).
+- Class: B
+- Description: With aliased covariates (exactly collinear, or constant), pprof_py returns pseudo-inverse estimates without a warning; with no events it returns β = 0 and reports convergence. `survival` returns NA coefficients in both cases.
+- Minimal reproducible example: pprof_spark's X-011 and X-012; `dev/design/coxph-facts/11_survival_edge_cases.txt` for `survival`.
+- Affected outputs: every output of such fits.
+- Statistical impact: aliased coefficients are not identified; with no events there is nothing to estimate.
+- Options: (1) reproduce pprof_py; (2) `survival`'s NA coefficients; (3) fail with `pprof_error_data`, naming the aliased covariates.
+- Recommendation: (3), as pprof_spark decided (its D-20).
+- Decision owner: methodology owners. Decided (3): delegation, 2026-10-07 (M-26).
+- Status: verified (2026-10-07); decided; implemented in C2.
+- Regression test: tests of the classed errors on collinear, constant, and event-free data.
+
+### D-60: The reported baseline hazard
+
+- Component: pprof_py's `CoxPH.baseline_hazard_` (`pprof_py/models/survival/coxph.py:323-338`).
+- Class: B (the reported table only)
+- Description: pprof_py, like `basehaz(fit, centered = FALSE)`, reports the baseline cumulative hazard at x = 0 and offset 0 times exp(the weighted mean offset); its predictions use the hazard without that factor (pprof_spark's X-014).
+- Minimal reproducible example: pprof_py's `R_COMPATIBILITY.md` §6 (a constant offset shift leaves `basehaz()` unchanged).
+- Affected outputs: `baseline_hazard()` when the model has an offset; predictions, residuals, and measures are unaffected.
+- Statistical impact: none; the factor makes the table depend on the offsets' mean.
+- Options: (1) reproduce pprof_py; (2) report the baseline at x = 0 and offset 0 and document the difference.
+- Recommendation: (2), as pprof_spark decided (its D-23).
+- Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-28).
+- Status: verified (2026-10-07); decided; implemented in C2.
+- Regression test: `baseline_hazard()` against pprof_py's `baseline_hazard_` divided by exp(mean offset) on the `offset` and `combined` cases.
+
+### D-61: Cross-validation folds drawn with R's random numbers
+
+- Component: pprof_py's `PenalizedCoxPHCV` fold assignment (event-stratified, NumPy's `RandomState`).
+- Class: B (the random draws differ; brief §3.5's rule for a changed draw order)
+- Description: The package draws the same event-stratified folds with R's generator, so for the same seed the folds, and so the cross-validation results, differ from pprof_py's.
+- Minimal reproducible example: none needed; the generators differ.
+- Affected outputs: `select_lambda()` without `folds`.
+- Statistical impact: none in distribution: the fold scheme is the same.
+- Options: (1) reimplement NumPy's generator; (2) R's generator, with fold IDs passed in fixtures and a distributional check of the scheme.
+- Recommendation: (2).
+- Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-30).
+- Status: verified (2026-10-07); decided; implemented in C4.
+- Regression test: cross-validation with fixed fold IDs against pprof_py; fold sizes and event balance of the drawn folds.
+
+### D-62: Missing values
+
+- Component: pprof_py's input contract (`pprof_py/data/survival_validation.py`).
+- Class: A
+- Description: pprof_py raises an error on any missing value; the package deletes incomplete rows listwise, as it does for every family (K-03) and as `coxph()` does.
+- Minimal reproducible example: `dev/design/coxph-facts/11_survival_edge_cases.txt` (`coxph()` fits 59 of 60 rows).
+- Affected outputs: fits on data with missing values, which pprof_py does not fit.
+- Statistical impact: none on data without missing values.
+- Decision owner: project lead (Class A). Decided: listwise deletion.
+- Status: verified (2026-10-07); decided; implemented in C2.
+- Regression test: a case with missing values equals the same case without the incomplete rows.
+
+### D-63: Standardized measures matched covariates by position
+
+- Component: pprof_py's `calculate_standardized_measures` (`pprof_py/measures/survival/coxph.py:165`).
+- Class: A
+- Description: The method computes `X @ coef_` without matching columns by name, so reordering a data frame's columns changes the expected counts silently.
+- Minimal reproducible example: `dev/design/coxph-facts/13_pprof_py_probes.txt`, B4: reordering three columns changed E_j by up to 44%.
+- Affected outputs: none in the package, whose measures come from the fitted model and its formula.
+- Decision owner: project lead (Class A). The defect cannot arise.
+- Status: verified (2026-10-07); does not arise.
+- Regression test: a metamorphic test (reordered data columns give the same measures).
+
+### D-64: Large linear predictors
+
+- Component: pprof_py's `utils/numerical.py:52`, used for the baseline, residuals, predictions, and robust variance.
+- Class: B
+- Description: pprof_py fits on centered covariates but evaluates exp() of the uncentered linear predictor, clipped at ±700, for its other outputs. With a covariate of large mean (a calendar year, for example) the coefficients are right but the other outputs are wrong or raise errors. `survival` recenters.
+- Minimal reproducible example: `dev/design/coxph-facts/13_pprof_py_probes.txt`, B5: with a covariate shifted by 1,500, the martingale residuals move by 2.53, every subject gets the same cumulative hazard, and the robust variance raises `FloatingPointError`.
+- Affected outputs: residuals, baselines, predictions, and robust variances of such fits.
+- Statistical impact: wrong numbers on such data; none otherwise.
+- Options: (1) reproduce pprof_py; (2) `survival`'s.
+- Recommendation: (2).
+- Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (DEC-087).
+- Status: verified (2026-10-07); decided; implemented in C2.
+- Regression test: a C1 case with a covariate of large mean.
+
+### D-65: Provider-penalized Cox
+
+- Component: pprof_py's `ProviderPenalizedCoxPH` (`pprof_py/algorithms/survival/provider_effects.py:206-225`, `pprof_py/models/survival/provider_coxph.py:615-627`).
+- Class: A and B
+- Description: The provider-effect score ignores delayed entry (B2), so on left-truncated data the fit does not converge and the provider effects drift; with Efron ties the provider effects use the Breslow score (B3), so the fit is wrong while reporting convergence. The level of the provider effects is not identified.
+- Minimal reproducible example: `dev/design/coxph-facts/13_pprof_py_probes.txt`, B2 and B3.
+- Affected outputs: none in this phase (the model waits for a later brief, DEC-089).
+- Decision owner: the later brief.
+- Status: verified (2026-10-07); deferred.
+
+### D-66: Discrete-time models
+
+- Component: pprof_py's `DiscreteSurvival` and `ProviderPenalizedDiscreteSurvival`.
+- Class: A and B
+- Description: `penalty_factor` raises `TypeError` (`pprof_py/models/survival/discrete_survival.py:281`); both classes ignore case weights; the provider version ignores `alpha` (B9).
+- Minimal reproducible example: `dev/design/coxph-facts/13_pprof_py_probes.txt`, B9.
+- Affected outputs: none in this phase (later brief).
+- Decision owner: the later brief.
+- Status: verified (2026-10-07); deferred.
+
+### D-67: The bootstrap standard error of the cross-validated deviance
+
+- Component: pprof_py's `PenalizedCoxPHCV(se_method = "bootstrap")` (`pprof_py/utils/deviance.py:150-159`).
+- Class: B
+- Description: Its fast partial likelihood leaves earlier tied rows out of the risk sets, so it is wrong when times are tied, and bootstrap samples always tie (B10).
+- Minimal reproducible example: `dev/design/coxph-facts/13_pprof_py_probes.txt`, B10: 17 log-likelihood units off on a tied example, exact without ties.
+- Affected outputs: none: `select_lambda()` offers the default standard error only.
+- Decision owner: project lead. Decided: not carried over.
+- Status: verified (2026-10-07); not carried over.
+
+### D-68: `tmerge`
+
+- Component: pprof_py's `data/timedep.py:309`.
+- Class: none (not carried over)
+- Description: A `tdc` without a value defaults to NaN where R's `tmerge()` gives 0 (B11). The package does not reshape data; `survival::tmerge()` and `survSplit()` serve R users.
+- Decision owner: project lead. Decided: not carried over (brief §2.4).
+- Status: verified (2026-10-07); not carried over.
+
+### D-69: pprof_py's documentation and R-comparison harness
+
+- Component: pprof_py's documents and `diagnostics/survival/validate_against_r.py`.
+- Class: C (documentation) and A (the harness)
+- Description: Stale statements (the README's 26 failures, a Fine–Gray mismatch fixed in `22972ab`, "no convergence warning") and missing generators (`r_smr.json`, the empirical-null golden files, the selector data, the `grplasso` golden files) (B12); the harness writes Windows paths into its R script unescaped, so the script fails on Windows (B13, `validate_against_r.py:135`).
+- Minimal reproducible example: `dev/design/coxph-facts/01_pprof_py_suite.txt` (B13).
+- Affected outputs: none in the package.
+- Decision owner: pprof_py's maintainers. Not carried over; reported upstream.
+- Status: verified (2026-10-07).
+
+### D-70: Providers with no expected events
+
+- Component: the Cox measures and tests.
+- Class: Presentation
+- Description: pprof_py reports the ratio of a provider with E_j = 0 as infinite or undefined without comment; the package reports the same values and one `pprof_warning_zero_expected` warning that counts such providers, as pprof_spark does.
+- Status: decided; implemented in C3.
+
+### D-71: The exact test of an extreme provider
+
+- Component: pprof_py's `CoxPH.test(test_method = "exact")` (`pprof_py/inference/survival/provider_tests.py:117-121`, `pprof_py/inference/zstat.py:167-172`).
+- Class: A
+- Description: When the exact p-value underflows to 0 (for example O = 1000 with E = 10), z = sign(O − E) Φ̄⁻¹(0) is infinite, and pprof_py's decision layer treats a non-finite z as untested: its p-value and flag are missing. The provider is the most extreme in the data.
+- Minimal reproducible example: the C0 specification review (`CoxPH.test` with O = 1000 and E = 10 gives a missing flag).
+- Affected outputs: the exact test's z, p-value, and flag for such providers.
+- Decision owner: project lead (Class A). Decided: the package keeps the infinite z, reports p-value 0, and flags the provider in the direction of O − E.
+- Status: verified (2026-10-07); decided; implemented in C3.
+- Regression test: an exact test of O = 1000 against E = 10 flags the provider with +1.
+
+### D-72: Penalized coefficients at λ_max
+
+- Component: pprof_py's `PenalizedCoxPH` null point (`pprof_py/models/survival/penalized_coxph.py:328-356`).
+- Class: B
+- Description: With some columns unpenalized, pprof_py fits them at the null point with `CoxPH(eps = 1e-9)`, so the first point of the path can carry penalized coefficients of order 1e-11 (−1.5e-11 seen), which its count of nonzero coefficients includes. `glmnet` returns exact zeros there.
+- Minimal reproducible example: the C0 specification review (`PenalizedCoxPH` with one unpenalized column, first path point).
+- Affected outputs: the first point of a path with unpenalized columns, and its count of nonzero coefficients.
+- Statistical impact: none.
+- Options: (1) reproduce pprof_py's values; (2) `glmnet`'s exact zeros, compared with pprof_py's path under the `penalized_path` tier, and counts of nonzero coefficients compared after setting values below 1e-10 to 0.
+- Recommendation: (2).
+- Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (DEC-087).
+- Status: verified (2026-10-07); decided; implemented in C4.
+
+### D-73: Failures of pprof_py that cannot arise in the package
+
+- Component: pprof_py's measures, provider tests, penalized cross-validation, and cause-specific fits.
+- Class: A
+- Description:
+  - `calculate_standardized_measures` without any event raises `IndexError` (`pprof_py/measures/survival/coxph.py:83`); the package fails earlier, at the fit (D-59).
+  - The mid-p limits raise `ValueError` when O = 0 and an empirical null's mean exceeds about Φ⁻¹(1 − α/2) times its standard deviation (`pprof_py/inference/survival/provider_tests.py:29-54`); the package has the theoretical null only in this phase.
+  - Cross-validation with a single fold fails with a misleading message about predictors; the package requires at least two folds and says so.
+  - A missing value in `CauseSpecificCoxPH`'s event creates a spurious cause; the package deletes incomplete rows (D-62) and takes the event from `Surv()`.
+- Minimal reproducible example: the C0 specification review.
+- Decision owner: project lead (Class A). The failures cannot arise.
+- Status: verified (2026-10-07); does not arise.
+
+### D-74: Status coded 1/2
+
+- Component: pprof_py's input contract (`pprof_py/data/survival_validation.py`).
+- Class: A
+- Description: pprof_py rejects an event coded 1/2 ("R's Surv() also accepts 1/2 coding"); the package reads the status through `Surv()`, which accepts 0/1, logical, and 1/2 coding and turns them into 0/1.
+- Affected outputs: fits on data coded 1/2, which pprof_py does not fit.
+- Decision owner: project lead (Class A). Decided: accepted, as `Surv()` does.
+- Status: verified (2026-10-07); decided; implemented in C2.
+- Regression test: a case coded 1/2 equals the same case coded 0/1.

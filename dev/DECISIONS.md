@@ -845,3 +845,68 @@ The decisions below settle the open items of the final review (`dev/design/FINAL
 - Decision: Cox models are fitted by `survival` and elastic-net Cox paths by `glmnet` (≥ 5.0), through adapters on the `lme4` pattern; `pprof` implements survival data in the data layer and provider profiling for time-to-event outcomes; pprof_py v0.7.0 (commit `9320766`) is the reference for definitions and numbers, with differences registered against it; explicit provider effects, penalized provider models, and discrete-time models wait for later briefs. The phases are C0 to C6 on branches `coxph/phase-<n>`.
 - Alternatives considered: porting pprof_py's engine to R or C++ (re-creates the R-parity risk that produced pprof_py's defects, for no capability `survival` lacks, and is no faster); building on `survival` alone without pprof_py fixtures (would test the adapter, not the method).
 - Consequences: the questions of the brief's §10 and every Class B difference from pprof_py still need the sign-offs §10 names; Phase C0 registers them. Shared layers change for survival data, with the existing families kept bitwise identical.
+
+The decisions below were made in CoxPH Phase C0 under the project lead's delegation of 2026-10-07 ("use your best judgement or recommendation for the decisions"): each takes the recommendation of the C0 design (`dev/design/COXPH_DESIGN.md`), and the C0 gate lists them for confirmation.
+
+### DEC-087: The CoxPH brief's questions are decided under the project lead's delegation
+
+- Date: 2026-10-07
+- Status: accepted under the project lead's delegation (2026-10-07)
+- Context: The brief's §10 asks sixteen questions (Q1 to Q14 for the methodology owners, Q15 and Q16 for the project lead), each with a proposed default, and the C0 design raises three more. M-16, who the methodology owners are, is still open, and C0 cannot finish its design without answers.
+- Decision: The project lead delegated the answers. They are recorded as M-23 to M-41 in `dev/OPEN_QUESTIONS.md`, each decided as proposed; the Class B differences from pprof_py that follow (D-56 to D-61, D-64, D-72) are decided accordingly and marked for confirmation by a methodology owner.
+- Alternatives considered: reproducing pprof_py's defects until the owners are named (would build known errors into the new code, B1 and B6 among them).
+- Consequences: C2 to C5 implement the decisions; a methodology owner may reverse any of them, and the register entries say what each reversal would change.
+
+### DEC-088: `glmnet` is a suggested package
+
+- Date: 2026-10-07
+- Status: accepted under the project lead's delegation (2026-10-07), answering M-37 (the brief's Q15)
+- Context: The elastic-net Cox model delegates its paths to `glmnet` (≥ 5.0), which is GPL-2 and adds foreach, shape, and RcppEigen; no other part of the package needs it.
+- Decision: `glmnet` goes in Suggests with a minimum version of 5.0. `fit_cox_penalized()` checks for it and raises `pprof_error_invalid_input` naming the package when it is missing; its tests skip without it.
+- Alternatives considered: Imports (every user installs `glmnet` for one function).
+- Consequences: the brief's dependency rule (minimize Imports) holds; users of penalized Cox models install `glmnet` themselves.
+
+### DEC-089: The order of the later briefs
+
+- Date: 2026-10-07
+- Status: accepted under the project lead's delegation (2026-10-07), answering M-38 (the brief's Q16)
+- Context: The brief's §2.2 leaves several capabilities of pprof_py to later briefs.
+- Decision: First, explicit provider effects at national scale (a SerBIN-like engine for the unstratified Cox model); then the penalized and discrete-time provider models; then empirical-null calibration for every family; then frailty and time-varying effects.
+- Alternatives considered: the penalized provider models first (their reference, `grplasso`, needs relicensing, and pprof_py's versions have open defects, B2, B3, B9).
+- Consequences: each later brief starts from this order unless the project lead changes it.
+
+### DEC-090: The Cox interface
+
+- Date: 2026-10-07
+- Status: accepted under the project lead's delegation (2026-10-07); the C0 gate confirms
+- Context: The brief's §5.7 proposed four fit functions; the design (COXPH_DESIGN §B) works out what each needs.
+- Decision: Three fit functions, `fit_cox_stratified()`, `fit_cox_penalized()` with `select_lambda()`, and `fit_fine_gray()`, plus `baseline_hazard()`. Cause-specific models are `fit_cox_stratified()` with the event of interest written in `Surv()` (for example `Surv(time, status == 1)`), so there is no `fit_cox_cause_specific()`. No pooled (unstratified) Cox model in this phase. The arguments follow `dev/NAMING.md` §4, extended by this phase.
+- Alternatives considered: a cause-specific fit function (it would only recode the event); a `stratify` argument for the pooled model (pprof_py offers it, but He and Schaubel's measures use the stratified fit, and the pooled model can come with the explicit-effect brief).
+- Consequences: `dev/NAMING.md` gains the functions and arguments of COXPH_DESIGN §B.4.
+
+### DEC-091: The survival adapter calls survival's fitters, and `coxph()` only where it must
+
+- Date: 2026-10-07
+- Status: accepted under the project lead's delegation (2026-10-07); the C2 benchmarks confirm
+- Context: `coxph()` took 18 s on 1,000,000 rows where its fitter `agreg.fit()` took 6.3 s (`dev/design/coxph-facts/07_cox_fit_timing_r.txt`); the fitters, called with a prepared design, give `coxph()`'s results (`14_engine_interfaces.txt`). The robust variance, baselines, predictions, and score and dfbeta residuals need a `coxph` object.
+- Decision: The fits call `survival::coxph.fit()` (right-censored data) or `survival::agreg.fit()` (counting-process data) with the prepared design, the provider strata, the offset, the positive weights, and `coxph.control(eps = tol, iter.max = max_iter)`. With robust variance requested, the fit calls `survival::coxph()` on the prepared data with `timefix = FALSE` and an explicit cluster (the row, when none is given). Baselines, predictions, and score and dfbeta residuals come from a `coxph()` refit with the same settings, kept with `keep_data = TRUE` or built from `data`, as the other methods that need the covariates do (DEC-005).
+- Alternatives considered: `coxph()` for every fit (three times slower on large data); computing baselines and residuals in pprof (reimplements what `survival` provides, contrary to the brief's §1).
+- Consequences: engine-identity tests compare the fits with `coxph(timefix = FALSE)`; the fitters' interface, which `survival` documents for direct calls, is pinned by those tests.
+
+### DEC-092: Survival data and the profiling hooks
+
+- Date: 2026-10-07
+- Status: accepted under the project lead's delegation (2026-10-07); the C2 and C3 gates confirm
+- Context: The contract review found that survival data need changes outside a new module (the brief's §5.6).
+- Decision: `data_prepare()` gains `response_type` (`"default"` or `"survival"`), `weights`, `cluster`, and `allow_offset`, whose defaults reproduce the current behavior; survival data keep the event indicator as `response` and add `start`, `stop`, `weights`, `offset`, and `cluster`. A model may have no provider effects (`provider_effects = NULL`). The family specification gains three optional fields, `count_distribution`, `measure_limits`, and `direct_by_provider`, and the capabilities `provider_midp` and `interval_midp`; the test and interval choices gain `"midp"`. COXPH_DESIGN §C and §D define them.
+- Alternatives considered: a separate data function for survival data (would duplicate the listwise deletion, the design matrix, and the provider indexing); routing the Cox tests through `provider_test()` (they need only observed and expected counts, like the logistic exact test).
+- Consequences: every hook's default is the current behavior, and the full reference suite, run before and after each change, shows the existing families bitwise identical.
+
+### DEC-093: The Cox fixtures
+
+- Date: 2026-10-07
+- Status: accepted under the project lead's delegation (2026-10-07); the C1 gate confirms
+- Context: The brief's §3.1 starts the Cox fixtures from pprof_spark's committed Cox cases and requires a committed generator that runs pinned pprof_py and pinned R packages.
+- Decision: The fixtures live in `tests/testthat/fixtures/cox/` as RDS, with a manifest of the pprof_py commit, the Python and R environments, and the SHA-256 of every input. The generator is `dev/reference/cox/`: a Python script adapted from pprof_spark's `reference/fixtures/generate.py` (MIT, same group) with a pinned `requirements.txt`, and an R script for the `survival` and `glmnet` outputs, run in an isolated library. pprof_spark's six cases are imported with their inputs unchanged and their commit recorded; C1 adds the cases of COXPH_DESIGN §G.1.
+- Alternatives considered: computing pprof_py's outputs in the tests through reticulate (tests would need Python).
+- Consequences: `.claude/settings.json` already protects the folder; regenerating fixtures needs the project lead's approval and a diff report.
