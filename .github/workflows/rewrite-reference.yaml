@@ -20,9 +20,9 @@ name: rewrite-reference
 
 on:
   push:
-    branches: ["main", "rewrite/**"]
+    branches: ["main", "rewrite/**", "coxph/**"]
   pull_request:
-    branches: ["main", "rewrite/**"]
+    branches: ["main", "rewrite/**", "coxph/**"]
   workflow_dispatch:
 
 permissions: read-all
