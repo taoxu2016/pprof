@@ -4,6 +4,7 @@ Developer documents and tools for pprof. Not part of the package (`.Rbuildignore
 
 | Path | Contents |
 |---|---|
+| `coxph_brief.md` | The CoxPH phase brief: requirements and gates for adding Cox models (draft, not approved) |
 | `DEVELOPER_GUIDE.md` | How the package is built, tested, and extended; start here to add a model |
 | `NAMING.md` | The naming convention and argument vocabulary |
 | `CONVENTIONS.md` | The numerical conventions of pprof 1.0.3 that the package reproduces (`K-xx`) |
