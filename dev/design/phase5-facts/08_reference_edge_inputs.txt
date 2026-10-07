@@ -1,8 +1,0 @@
-summary(linear_cre without model) -> error: no applicable method for 'vcov' applied to an object of class "NULL"
-SM_output(linear_cre without model) -> value
-test(linear_cre without model) -> error: no applicable method for 'ranef' applied to an object of class "NULL"
-summary(linear_re without model) -> error: no applicable method for 'vcov' applied to an object of class "NULL"
-test(linear_re without model) -> value
-confint(linear_re without model) -> value
-test(linear_re, null = c(0, 0.1)) -> value
-summary(linear_re, null = c(0, 0.1, 0, 0, 0, 0)) -> value

@@ -1,7 +1,0 @@
-logis_fe, test(test = exact.poisbinom, threads = 1) against confint(test = exact, threads = 1)$CI.indirect_ratio: 0 of 100 providers differ
-logis_fe, test(test = score) against confint(test = score, threads = 1)$CI.indirect_ratio: 0 of 100 providers differ
-logis_fe, test(test = wald) against confint(test = wald, threads = 1)$CI.indirect_ratio: 0 of 100 providers differ
-linear_fe, test() against confint()$CI.indirect: 0 of 100 providers differ
-linear_fe_full, test() against confint()$CI.indirect: 0 of 100 providers differ
-linear_re, test() against confint()$CI.indirect: 0 of 100 providers differ
-logis_re, test() against confint()$CI.indirect_ratio: 0 of 100 providers differ

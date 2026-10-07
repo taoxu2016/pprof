@@ -177,14 +177,6 @@ jobs:
           PPROF_REFERENCE_CORE="$RUNNER_TEMP/core" PPROF_REFERENCE_FULL="$RUNNER_TEMP/full" \
             Rscript validation/run-reference.R equivalence-report-platform.md 2>&1 | tee reference-run.log
 
-      # D-53: whether this platform's BLAS rounds a provider's rows of the linear predictor
-      # differently when the design is multiplied as a whole (the package) and provider by
-      # provider (pprof 1.0.3's exact test). Informational.
-      - name: The linear predictor by provider
-        if: always() && steps.dependencies.outcome == 'success'
-        shell: bash
-        run: Rscript dev/design/phase8-facts/09_linear_predictor_grouping.R || true
-
       - name: Report in annotations
         if: always() && steps.dependencies.outcome == 'success'
         shell: bash

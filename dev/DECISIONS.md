@@ -2,6 +2,8 @@
 
 Short records of decisions that shape the rewrite, newest last. Changes to statistical behavior don't belong here: they go in DISCREPANCIES.md and need methodology sign-off.
 
+> Citations of the v2 rewrite's working documents (the brief, PROJECT_CONTEXT, the phase plans and handoffs, the Phase 0 audit's evidence IDs, the phase fact scripts, the final review) refer to files removed when the rewrite closed on 2026-10-07; `dev/README.md` says where they are. PROJECT_CONTEXT §5.7 is now `dev/CONVENTIONS.md`, and §9 `dev/OPEN_QUESTIONS.md`.
+
 ## Template
 
 ### DEC-NNN: Title

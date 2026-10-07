@@ -1,5 +1,5 @@
 # The Phase 0 audit's R ports of the reference engines, copied verbatim from
-# dev/design/audit/ports.R (dev/ is not part of the package, so tests cannot source it).
+# dev/design/audit/ports.R, which is in the history since the rewrite closed (dev/README.md).
 # They encode the conventions register (K-10 to K-17, K-30 to K-33) independently of the
 # C++ core and reproduce the reference's iteration counts with estimates equal to near
 # machine precision (V10.1, V12.1), so the tests use them as per-iteration oracles.
@@ -7,7 +7,7 @@
 
 # Line-by-line R ports of the reference C++ fitters (src/Fixed_effect.cpp at 5260838).
 # Used only to confirm iteration semantics and numerical constants: if a port that
-# encodes the conventions in PROJECT_CONTEXT §5.7 reproduces the C++ results and
+# encodes the conventions in dev/CONVENTIONS.md reproduces the C++ results and
 # iteration counts, those conventions are what the C++ code does.
 #
 # The ports differ from the C++ only in floating-point summation order (R's sum() and

@@ -127,7 +127,7 @@ Colours, shapes, and line types are not arguments: each flag has one colour and 
 Notes:
 
 - Argument values are lowercase snake_case strings. Where a reference value is a historical abbreviation (`"or"`, `"relch"`, `"exact.poisbinom"`) the new value is descriptive, and the compatibility wrappers translate.
-- `stop_rule = "any"` is the reference's `"or"`: stop as soon as the smallest of the three criteria falls below `tol`. `"all"` stops when the largest does. The criteria are defined in PROJECT_CONTEXT §5.7.
+- `stop_rule = "any"` is the reference's `"or"`: stop as soon as the smallest of the three criteria falls below `tol`. `"all"` stops when the largest does. The criteria are defined in `dev/CONVENTIONS.md` (K-16).
 - Defaults are the reference defaults, except `threads` (DEC-001), `verbose` (DEC-008), and `keep_data` (new). A default that would change a number is Class B and is not changed here.
 - `level` replaces the funnel plot's `alpha` so that every function speaks in confidence levels. Internally, alpha is computed as `1 - level`, as the reference's tests and intervals do (K-61; `1 - 0.95` is not `0.05` in floating point). The reference funnel plot uses its `alpha` argument directly for the control limits (K-110), so the compatibility wrapper passes `alpha` through unchanged; new funnel limits computed from `level` differ from the reference only at rounding level (Tier 1).
 

@@ -1,9 +1,9 @@
 // Named numerical conventions of the C++ core (ARCHITECTURE §K, DEC-025).
 //
 // Each constant is a value that the reference implementation (pprof 1.0.3, commit 5260838)
-// uses, named here once, with its entry in the conventions register (dev/PROJECT_CONTEXT.md
-// §5.7) and the reference location it reproduces. Changing a value changes results and is
-// a Class B change (brief §3.3). The R-side conventions are in R/constants.R.
+// uses, named here once, with its entry in the conventions register (dev/CONVENTIONS.md)
+// and the reference location it reproduces. Changing a value changes results and is
+// a Class B change (dev/DISCREPANCIES.md). The R-side conventions are in R/constants.R.
 #ifndef PPROF_CORE_CONSTANTS_H
 #define PPROF_CORE_CONSTANTS_H
 

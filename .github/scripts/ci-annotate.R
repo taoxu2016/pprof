@@ -1,7 +1,7 @@
 # Copies the results of a CI step into GitHub annotations (DEC-071). The public GitHub API
 # returns a job's annotations without signing in, while its logs and artifacts need an account,
 # so the annotations are how the results of the fork's CI can be read
-# (dev/design/phase8-facts/01_ci_runs.R reads them). Base R only.
+# (dev/tools/ci_runs.R reads them). Base R only.
 #
 # Usage, from the repository root:
 #   Rscript .github/scripts/ci-annotate.R check <check directory>   R CMD check results

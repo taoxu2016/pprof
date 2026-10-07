@@ -1,5 +1,0 @@
-lme4 2.0.6, Matrix 1.7.6
-linear_re (seed 4): singular TRUE; provider variance 0; 50 providers; test(): flag factor with levels {}, 50 missing; 50 NaN p-values; 50 NaN statistics; standard errors in [0, 0]
-linear_cre (seed 4): singular TRUE; provider variance 0; 50 providers; test(): flag factor with levels {}, 50 missing; 50 NaN p-values; 50 NaN statistics; standard errors in [0, 0]
-logis_re (seed 1): singular TRUE; provider variance 4e-14; 50 providers; test(): flag factor with levels {0}, 0 missing; 0 NaN p-values; 0 NaN statistics; standard errors in [2e-07, 2e-07]
-logis_cre (seed 1): singular TRUE; provider variance 0; 50 providers; test(): flag factor with levels {}, 50 missing; 50 NaN p-values; 50 NaN statistics; standard errors in [0, 0]

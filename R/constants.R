@@ -2,8 +2,8 @@
 #
 # Each constant is a value that the reference implementation (pprof 1.0.3, commit
 # 5260838) uses, named here once, with its entry in the conventions register
-# (dev/PROJECT_CONTEXT.md §5.7) and the reference location it reproduces. Changing a value
-# changes results and is a Class B change (brief §3.3). Defaults of user-facing arguments
+# (dev/CONVENTIONS.md) and the reference location it reproduces. Changing a value
+# changes results and is a Class B change (dev/DISCREPANCIES.md). Defaults of user-facing arguments
 # live in the function signatures instead (NAMING.md §4). The C++ conventions get their
 # own header with the C++ core (DEC-025).
 

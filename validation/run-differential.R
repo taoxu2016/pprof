@@ -23,7 +23,7 @@
 # - Datasets without provider effects (Phase 5) are drawn as above with every provider effect
 #   0 (and no providers forced to have no events or only events), so that lme4 often
 #   estimates the provider variance as 0; the RE and CRE tests then have missing flags
-#   (dev/design/phase5-facts/09_singular_re_fits.R). They get the same fits as the datasets
+#   (Phase 5's fact script 09_singular_re_fits.R, dev/README.md). They get the same fits as the datasets
 #   with character IDs; the report says whether the lme4 fit of each is singular.
 # - The methods of the linear FE, RE, and CRE fits run over the grid of ARCHITECTURE §G.2
 #   (Phase 5): the three alternatives, level = 0.9, numeric nulls, parm, and the provider

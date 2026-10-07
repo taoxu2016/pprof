@@ -2,7 +2,9 @@
 
 Companion to [ARCHITECTURE.md](ARCHITECTURE.md), section J. Reference: pprof 1.0.3 = commit `5260838` (confirmed identical to the CRAN tarball, `dev/design/audit/output/01_cran_identity.log`).
 
-Each specification states what the reference does, so that the rewrite can reproduce it and the Phase 1 fixtures can be designed around it. Formulas and constants are not repeated here: rows cite the verified conventions register (PROJECT_CONTEXT §5.7, IDs `K-xx`), the discrepancy register (`D-xx`), and the audit evidence (`Vxx.y`, logs in `dev/design/audit/output/`). Statements marked "not verified" come from reading the code only; the Phase 1 edge-case suite must pin them down before Phase 3 relies on them.
+> Citations of the v2 rewrite's working documents (the brief, PROJECT_CONTEXT, the phase plans and handoffs, the Phase 0 audit's evidence IDs, the phase fact scripts, the final review) refer to files removed when the rewrite closed on 2026-10-07; `dev/README.md` says where they are. PROJECT_CONTEXT §5.7 is now `dev/CONVENTIONS.md`, and §9 `dev/OPEN_QUESTIONS.md`.
+
+Each specification states what the reference does, so that the rewrite can reproduce it and the Phase 1 fixtures can be designed around it. Formulas and constants are not repeated here: rows cite the verified conventions register (`dev/CONVENTIONS.md`, IDs `K-xx`), the discrepancy register (`D-xx`), and the audit evidence (`Vxx.y`, logs in `dev/design/audit/output/`). Statements marked "not verified" come from reading the code only; the Phase 1 edge-case suite must pin them down before Phase 3 relies on them.
 
 Contents:
 

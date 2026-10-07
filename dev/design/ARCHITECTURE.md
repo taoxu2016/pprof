@@ -2,6 +2,8 @@
 
 Status: approved with the Phase 0 gate on 2026-10-02. Branch: `rewrite/v2`. Open questions (§M) remain open until the methodology owners answer them.
 
+> Citations of the v2 rewrite's working documents (the brief, PROJECT_CONTEXT, the phase plans and handoffs, the Phase 0 audit's evidence IDs, the phase fact scripts, the final review) refer to files removed when the rewrite closed on 2026-10-07; `dev/README.md` says where they are. PROJECT_CONTEXT §5.7 is now `dev/CONVENTIONS.md`, and §9 `dev/OPEN_QUESTIONS.md`.
+
 This is the Phase 0 design document required by brief §10. Its companions:
 
 | Section | Where |
@@ -9,7 +11,7 @@ This is the Phase 0 design document required by brief §10. Its companions:
 | A–I, K summary, M | this file |
 | C. Naming convention | [`dev/NAMING.md`](../NAMING.md) |
 | J. Behavior specifications | [`BEHAVIOR_SPECS.md`](BEHAVIOR_SPECS.md) |
-| K. Verified numerical conventions register | [`PROJECT_CONTEXT.md` §5.7](../PROJECT_CONTEXT.md) (IDs `K-xx`) |
+| K. Verified numerical conventions register | [`CONVENTIONS.md`](../CONVENTIONS.md) (IDs `K-xx`) |
 | L. Discrepancy register | [`dev/DISCREPANCIES.md`](../DISCREPANCIES.md) (IDs `D-xx`) |
 | Decisions | [`dev/DECISIONS.md`](../DECISIONS.md) (IDs `DEC-xxx`) |
 | Evidence | [`audit/`](audit/) scripts and [`audit/output/`](audit/output/) logs (IDs `Vxx.y`, `Bx`) |
@@ -633,7 +635,7 @@ See [BEHAVIOR_SPECS.md](BEHAVIOR_SPECS.md): shared input processing; every fitti
 
 ## K. Verified numerical conventions register
 
-The register is [PROJECT_CONTEXT.md §5.7](../PROJECT_CONTEXT.md), kept there as the single source of truth because CLAUDE.md and the brief point to it. Phase 0 expanded it from 21 unverified rows to 69 verified entries (K-01 to K-130), each with evidence.
+The register is [CONVENTIONS.md](../CONVENTIONS.md) (PROJECT_CONTEXT §5.7 during the rewrite), the single source of truth. Phase 0 expanded it from 21 unverified rows to 69 verified entries (K-01 to K-130), each with evidence.
 
 How the rewrite carries the conventions:
 
@@ -684,7 +686,7 @@ Each question has a proposed default; the default always reproduces the referenc
 | M-10 | May the new API fix the logistic RE/CRE p-values above 1? | reproduce until signed off; fixing is strongly recommended | D-31 |
 | M-11 | May provider order become locale-independent, which changes bootstrap draws for a given seed in non-C locales? | preserve the session-locale order | D-34 |
 | M-12 | Minimum R version, release timeline, and deprecation window for the old names? | R ≥ 4.1.0; 2.0.0 with wrappers; removal no earlier than one further minor release and 12 months | §I.3, Q5 |
-| M-13 | Should screening by provider size remain specific to the logistic FE models? | preserve | PROJECT_CONTEXT §9 Q6 |
+| M-13 | Should screening by provider size remain specific to the logistic FE models? | preserve | earlier question 6 (`dev/OPEN_QUESTIONS.md`) |
 | M-14 | Is the "predicted over expected" numerator of RE indirect measures the intended estimand? | preserve | K-82, K-84 |
 | M-15 | Exact and score intervals for no-event and all-event providers use α, not α/2, for their single finite limit even when two-sided. Intended? | preserve | K-90 |
 | M-16 | Who are the designated methodology owners for written sign-off on Class B items? | to be named by the project lead | brief §3.3 |

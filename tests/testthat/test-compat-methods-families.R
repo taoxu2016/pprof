@@ -121,7 +121,7 @@ test_that("tests of fits whose provider variance is 0 have missing flags, as in 
   skip_on_cran()
   pinned <- reference_lme4_matches()
   skip_if_not(pinned$ok, pinned$detail)
-  # Data without provider effects (seed 4 of dev/design/phase5-facts/09_singular_re_fits.R):
+  # Data without provider effects (seed 4 of Phase 5's fact script 09_singular_re_fits.R, dev/README.md):
   # lme4 estimates the provider variance as 0, so the effects and their standard errors are 0,
   # and the reference's test() returns NaN statistics and p-values and missing flags (a factor
   # without levels) for every provider. Found by validation/run-simulation.R, where the

@@ -8,7 +8,7 @@ check_binary <- function() {
   data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID, ExampleDataBinary$Z)
 }
 
-# The covariate sets of dev/design/phase8-facts/04_data_check.R (PHASE8_PLAN F6), as data_check()
+# The covariate sets of Phase 8's fact script 04_data_check.R (dev/README.md), as data_check()
 # builds its data: the example covariates, a rare category, ties for the most frequent value, an
 # integer covariate, near and exact collinearity, one and two covariates.
 check_covariate_sets <- function() {

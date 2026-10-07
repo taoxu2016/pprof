@@ -1,4 +1,4 @@
-# Phase 8 planning: the CI runs of the fork (taoxu2016/pprof), read through the public GitHub
+# The CI runs of the fork (taoxu2016/pprof), read through the public GitHub
 # API without signing in: every workflow run; for the runs given, their jobs, the steps that did
 # not succeed, the annotations, and the artifacts. Job logs and artifact downloads need a
 # signed-in account (the log endpoint answers 403 without one), so they are not read here.

@@ -22,7 +22,7 @@ test_that("one-sided flags compare the tested tail with alpha (K-63)", {
 test_that("flags are integers when every probability is missing", {
   # ifelse() alone returns a logical vector here, which the result objects reject; the Wald
   # tests of a random-effect model whose provider variance is 0 have only missing
-  # probabilities (dev/design/phase5-facts/09_singular_re_fits.R).
+  # probabilities (Phase 5's fact script 09_singular_re_fits.R, dev/README.md).
   for (alternative in c("two.sided", "greater", "less")) {
     expect_identical(infer_decide(c(NaN, NA), alternative, 0.95)$flag, c(NA_integer_, NA_integer_))
   }

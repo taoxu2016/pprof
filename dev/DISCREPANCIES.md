@@ -2,6 +2,8 @@
 
 Every behavioral difference between the reference (pprof 1.0.3, commit 5260838) and the rewrite, whether intended or discovered.
 
+> Citations of the v2 rewrite's working documents (the brief, PROJECT_CONTEXT, the phase plans and handoffs, the Phase 0 audit's evidence IDs, the phase fact scripts, the final review) refer to files removed when the rewrite closed on 2026-10-07; `dev/README.md` says where they are. PROJECT_CONTEXT §5.7 is now `dev/CONVENTIONS.md`, and §9 `dev/OPEN_QUESTIONS.md`.
+
 Classes (brief §3.3):
 
 - A: the reference crashes, errors, returns NULL, misaligns results with provider IDs, or behaves nondeterministically. May be fixed, with a regression test.
