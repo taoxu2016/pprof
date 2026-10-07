@@ -410,6 +410,8 @@ A Cox model with provider effects, λ_ij(t) = λ0(t) exp(γ_i + z_ij'β), shows 
 - Contract: `observed_outcome()` is the event indicator; `expected_outcome(model, effect)` is the expected number of events given follow-up, Λ̂0(t_ij) exp(effect + z_ij'β) with the Breslow estimate of the cumulative baseline hazard. Indirect standardization (Σ observed / Σ expected under the null) and direct standardization (Σ over all patients of Λ̂0(t_j) exp(γ_i + z_j'β), divided by the total number of events) then come from the same profiling code, because that code only sums observed and expected values by provider.
 - Tests: the exact Poisson-binomial test does not apply; the module declares its own capability (for example a Poisson exact test of O_i against E_i) and implements `provider_test()` for it. The funnel precision comes from the family specification's variance function (E_i for Poisson counts).
 
+As designed in CoxPH Phase C0 (DEC-090, DEC-092; `dev/design/COXPH_DESIGN.md`): the first Cox model is the provider-stratified model (He and Schaubel's two-stage measures), which has no provider effects; this sketch's model, with explicit effects γ_i, waits for a later brief (DEC-089). The data layer does not yet pass a `Surv` response through or screen on events, as the sketch assumed: the design's §C adds survival data to `data_prepare()`. The Poisson tests become built-in tests selected by the family specification's `count_distribution`, not `provider_test()` methods, because they need only observed and expected counts (the design's §D).
+
 ---
 
 ## F. R/C++ boundary

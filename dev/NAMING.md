@@ -241,3 +241,54 @@ Conditions carry classes so that tests and callers can match them without parsin
 3. Does it collide with a base, stats, utils, or common package function, or shadow one as an argument? Rename.
 4. Is it a verb for an action and a noun for an object?
 5. Does the same concept have the same name in R, C++, result columns, and documentation?
+
+## 10. The CoxPH phase
+
+Names added by the CoxPH phase (Phase C0, DEC-090 and DEC-092; `dev/design/COXPH_DESIGN.md` §B and §D). They extend the sections above, which they follow. `cox` and `fine_gray` are spelled out; `ph` is not added to the whitelist.
+
+Functions:
+
+| Role | Name |
+|---|---|
+| Fit the provider-stratified Cox model | `fit_cox_stratified()` |
+| Fit an elastic-net Cox path | `fit_cox_penalized()` |
+| Select λ of a penalized path by cross-validation (ARCHITECTURE §E.5) | `select_lambda()` |
+| Fit the Fine–Gray model | `fit_fine_gray()` |
+| The fitted Cox model's baseline cumulative hazard | `baseline_hazard()` |
+
+Arguments, in §4's order (data, model settings, inference settings, computational settings):
+
+| Concept | Name | Type and values | Default |
+|---|---|---|---|
+| Model formula of a Cox model | `formula` | `Surv(time, status) ~ terms` or `Surv(start, stop, status) ~ terms`, with `offset()` terms allowed | required |
+| Case weights | `weights` | string naming a column of `data`, or `NULL` | `NULL` |
+| Clusters of the robust variance | `cluster` | string naming a column of `data`, or `NULL` | `NULL` |
+| Event of interest (Fine–Gray) | `cause` | a value of the status | required |
+| Subject identifier of multi-row subjects (Fine–Gray) | `id` | string naming a column of `data`, or `NULL` | `NULL` |
+| Ties of event times | `ties` | `"breslow"`, `"efron"` | `"breslow"` |
+| Robust (sandwich) variance | `robust` | `TRUE`/`FALSE` | `FALSE` (a `cluster` implies `TRUE`) |
+| Elastic-net mixing (glmnet's α: 1 lasso, 0 ridge) | `alpha` | number in \[0, 1\] | `1` |
+| Penalty strengths | `lambda` | decreasing positive numbers, or `NULL` | `NULL`, the grid of COXPH_DESIGN §A.5 |
+| Number of λ values | `n_lambda` | positive integer | `100` |
+| Smallest λ as a fraction of λ_max | `lambda_min_ratio` | number in (0, 1), or `NULL` | `NULL`: 1e-2 if n < p, else 1e-4 |
+| Penalty factors | `penalty_factor` | non-negative numbers named by coefficient, or `NULL` | `NULL` (all 1) |
+| Standardization for the penalty | `standardize` | `TRUE`/`FALSE` | `TRUE` |
+| Cross-validation folds | `folds` | integer fold of each observation, or `NULL` | `NULL` |
+| Number of folds | `n_folds` | integer ≥ 3 | `10` |
+| λ selection rule | `rule` | `"1se"`, `"min"` | `"1se"` |
+
+`max_iter` and `tol` keep their names with family defaults: 20 and 1e-9 for the Cox fits (`survival`'s `iter.max` and `eps`), 100000 and 1e-12 for penalized paths (`glmnet`'s `maxit` and `thresh`). New values: `test = "midp"`, and `"exact"` names each family's exact test (Poisson-binomial for logistic fixed effects, Poisson for Cox models); `interval = "midp"`; `stop_rule = "relative_loglik"` in the convergence record of Cox fits.
+
+Classes:
+
+| Class vector | Built by |
+|---|---|
+| `c("pprof_cox_stratified", "pprof_model")` | `fit_cox_stratified()` |
+| `c("pprof_cox_penalized", "pprof_model")` | `fit_cox_penalized()`; `select_lambda()` returns it with a selection |
+| `c("pprof_fine_gray", "pprof_model")` | `fit_fine_gray()` |
+
+Fields (§5): `start` and `stop`, the entry (0 for right-censored data) and exit time of each observation; `weights` and `offset`, per observation or `NULL`; `naive_vcov`, the model-based covariance when `vcov` is robust; `expected_events`, each observation's expected number of events at the national baseline; `martingale_residuals`; `loglik`, the partial log-likelihoods at β = 0 and at the estimates; `n_events`; `engine_fit` with `keep_data = TRUE`; for penalized paths `lambda`, `coefficient_path`, `selected`, and `cross_validation`. The provider table of Cox models adds `person_time`. A model without provider-effect estimates has `provider_effects = NULL`.
+
+The family specification (§5) adds three optional fields: `count_distribution` (`"poisson_binomial"`, the default, or `"poisson"`), `measure_limits` (a function giving the limits of the measures), and `direct_by_provider` (a function giving the directly standardized expected outcome of each provider). Capability names add `provider_midp` and `interval_midp`.
+
+Conditions (§6) add `pprof_warning_zero_expected`: providers with no expected events, whose ratios are infinite or undefined (D-70); and `pprof_warning_degenerate_covariates`: covariates with no variation, left out of a penalized path (K-143).
