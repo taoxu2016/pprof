@@ -18,9 +18,9 @@
       "Bash(git tag *)",
       "Bash(rm -rf *)",
       "Bash(Rscript dev/reference/*)",
-      "Edit(/dev/pprof_rewrite_brief.md)",
+      "Edit(/dev/coxph_brief.md)",
       "Edit(/CLAUDE.md)"
     ],
-    "deny": ["Edit(/tests/testthat/fixtures/reference/**)"]
+    "deny": ["Edit(/tests/testthat/fixtures/reference/**)", "Edit(/tests/testthat/fixtures/cox/**)"]
   }
 }

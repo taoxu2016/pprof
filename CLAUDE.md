@@ -14,7 +14,11 @@ Version 2.0.0 is the completed rewrite of pprof 1.0.3 (CRAN, commit `5260838`): 
 
 ## Current phase
 
-Between phases. The next phase adds Cox proportional hazards (CoxPH) models, following the approach taken in `pprof_py`. Its brief, plan, and status document are not written yet; until the project lead approves them, don't start CoxPH work. When they exist, name them here: the brief (requirements and gates) and the status document (dated log of the phase).
+The CoxPH phase adds Cox proportional hazards models, following `pprof_py` v0.7.0, with estimation delegated to `survival` and `glmnet` (DEC-086). Phases C0 to C6, one branch each (`coxph/phase-<n>`); Phase C0 (design and decisions) is next.
+
+- The brief, `dev/coxph_brief.md` (approved 2026-10-07): requirements, the equivalence contract, phases and gates, and the questions for the methodology owners.
+- The status document, `dev/COXPH_STATUS.md`: the dated log of the phase, naming the next step.
+- The evidence behind the brief: `dev/design/coxph-facts/`.
 
 ## Source documents
 
@@ -41,12 +45,13 @@ Code comments and the registers cite the rewrite's brief (`brief §…`), PROJEC
 ## Non-negotiables
 
 - The statistical behavior of the existing models is the specification: pprof 1.0.3's, as the reference fixtures freeze it, with the exceptions decided in `dev/DISCREPANCIES.md`. This covers estimates and iteration paths, variances, tests, p-values, intervals, standardization formulas, flags, screening and inclusion, provider ordering, defaults (thread counts excepted), and the conventions in `dev/CONVENTIONS.md`.
+- For the Cox models of the CoxPH phase, the specification is `pprof_py` v0.7.0's behavior (commit `9320766`), with the exceptions decided in `dev/DISCREPANCIES.md`; the brief's §3 is the equivalence contract, and its Appendix B lists `pprof_py` defects not to reproduce.
 - Every behavioral difference in an existing model goes in `dev/DISCREPANCIES.md` with a class:
   - A: the reference crashes, errors, returns `NULL`, misaligns results with provider IDs, or is nondeterministic. May be fixed, with a regression test.
   - B: any change to a number, flag, inclusion decision, or default. Don't make it. Reproduce the reference, record the proposal, and flag it for written sign-off by a methodology owner.
   - C: documentation or messages contradict behavior. Fix the documentation or message to match the behavior.
 - Never resolve a discrepancy by loosening a tolerance, editing a fixture, or dropping a test case.
-- Fixtures under `tests/testthat/fixtures/reference/` come only from the committed generator in `dev/reference/`. Never edit them by hand. Regenerate them only with my explicit approval, and produce a diff report.
+- Fixtures under `tests/testthat/fixtures/reference/` (pprof 1.0.3) and `tests/testthat/fixtures/cox/` (`pprof_py` v0.7.0 and pinned R packages) come only from the committed generators in `dev/reference/`. Never edit them by hand. Regenerate them only with my explicit approval, and produce a diff report.
 - New models and statistical methods enter only as an approved phase brief specifies them, through the model contract (`dev/DEVELOPER_GUIDE.md`), with the validation the brief names. Random-effect and CRE models keep delegating estimation to lme4.
 - Stop at every phase gate: run `/phase-gate`, report, and wait for my explicit approval. Never start the next phase on your own.
 - When principles conflict: preserve behavior > auditability > correctness and safety > clarity > performance > aesthetics.
