@@ -1,0 +1,16 @@
+R version 4.4.0 (2024-04-24 ucrt), survival 3.8.12, glmnet 5.1
+
+1. The fitters against coxph() on basic.csv (right-censored), timefix = FALSE:
+   breslow: agreg.fit() coefficients 2.2e-16, variance 4.3e-18, log-likelihood 0.0e+00, iterations 3 (coxph() 3); coxph.fit() coefficients 0.0e+00
+   efron: agreg.fit() coefficients 2.9e-15, variance 3.7e-17, log-likelihood 2.3e-13, iterations 4 (coxph() 4); coxph.fit() coefficients 0.0e+00
+   agreg.fit() returns: coefficients, var, loglik, score, iter, linear.predictors, residuals, means, first, info, method, class
+   coxph.control() defaults: eps = 1e-09, toler.chol = 1.81898940354586e-12, iter.max = 20, toler.inf = 3.16227766016838e-05, outer.max = 10, timefix = TRUE, survcheckallow = gap
+
+2. Robust variance on left_truncation.csv:
+   robust = TRUE without a cluster: one of cluster or id is needed
+   cluster = row number: largest difference between the robust variance and crossprod(dfbeta): 0.0e+00
+
+3. glmnet on combined.csv (strata, (start, stop], weights, offset, Breslow):
+   glmnet.control() parameters: fdev, eps, big, mnlam, devmax, pmin, exmx, itrace, prec, mxit, epsnr, mxitnr, thresh, maxit, dfmax, pmax, trace.it
+   per-call control = list(thresh = 1e-12, fdev = 0, devmax = 1, maxit = 1e6): 100 of 100 lambdas fitted
+   coxnet.deviance() at the 50th lambda: 1512.739931; its arguments: pred, y, x, offset, weights, std.weights, beta, cox.ties
