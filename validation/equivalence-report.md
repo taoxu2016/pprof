@@ -1,18 +1,19 @@
 # Equivalence report: package under test versus the pprof 1.0.3 reference
 
-Generated 2026-10-06 21:48:07 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
-Package under test: pprof 2.0.0 from the working tree at commit 5a291c6.
-Fixtures: core set generated at 9c1fba1, full set generated at 9c1fba1, by pprof 1.0.3 on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Generated 2026-10-07 15:18:56 UTC by `validation/run-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
+Package under test: pprof 2.0.0 from the working tree at commit d3d4b42.
+Fixtures: core set generated at fd71518, full set generated at 9c1fba1, by pprof 1.0.3 on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621).
 Fixture directories: tests/testthat/fixtures/reference and validation/fixtures/reference.
 
 ## Summary
 
-- Cases: 364 (core 332, full 32).
-- Compared and matching: 364; failing: 0; skipped: 0.
+- Cases: 368 (core 336, full 32).
+- Compared and matching: 368; failing: 0; skipped: 0.
 - Largest absolute difference over all compared values: 2e-11; largest relative difference: 3.92.
 - Long double vectors stored as signatures: 718; bitwise identical (same checksum of every value's bits): 703.
-- Reference errors reproduced: 18.
-- Per-case expectations for Class A fixes (tests/testthat/helper-reference-overrides.R): 22, all compared against values derived from fixtures where the reference is right.
+- Reference errors reproduced: 19.
+- Per-case expectations (tests/testthat/helper-reference-overrides.R): 24; for Class A fixes 22, compared against values derived from fixtures where the reference is right, and for D-54 2, the package's error that the project lead has yet to decide on.
+- Exact tests whose statistic is compared on its tail probability (DEC-083): 14; of them, matching only there, outside the case's tolerance on the statistic itself: none.
 
 ## Providers within tolerance of a flag threshold
 
@@ -52,6 +53,7 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `logis_fe-screening-cutoff11` | logis_fe | iterative | value |  | 4 | 0 | 0 |  | compared |
 | core | `logis_fe-screening-onecov` | logis_fe | iterative | value |  | 5 | 0 | 0 |  | compared |
 | core | `logis_fe-screening-twocov` | logis_fe | iterative | value |  | 5 | 0 | 0 |  | compared |
+| core | `logis_fe-screening-nocov` | logis_fe | iterative | error | D-54 | 1 |  |  |  | compared |
 | core | `logis_fe-screening-x2` | logis_fe | iterative | value |  | 5 | 0 | 0 |  | compared |
 | core | `logis_fe-extreme` | logis_fe | iterative | value |  | 7 | 0 | 0 |  | compared |
 | core | `logis_fe-extreme-chr` | logis_fe | iterative | value |  | 7 | 0 | 0 |  | compared |
@@ -82,8 +84,10 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `logis_firth-small-tight` | logis_firth | iterative | value |  | 10 | 0 | 0 |  | compared |
 | core | `logis_firth-extreme` | logis_firth | iterative | value |  | 7 | 0 | 0 |  | compared |
 | core | `logis_firth-screening` | logis_firth | iterative | value |  | 5 | 0 | 0 |  | compared |
+| core | `logis_firth-screening-nocov` | logis_firth | iterative | error | D-54 | 1 |  |  |  | compared |
 | core | `linear_fe-linear-columns` | linear_fe | closed_form | value |  |  | 4.55e-13 | 3.92 | 8 of 11 | compared |
 | core | `linear_fe-linear-columns-full` | linear_fe | closed_form | value |  |  | 4.55e-13 | 3.92 | 8 of 11 | compared |
+| core | `linear_fe-linear-nocov` | linear_fe | closed_form | error |  |  |  |  |  | compared |
 | core | `linear_fe-linear-formula` | linear_fe | closed_form | value |  |  | 4.55e-13 | 3.92 | 8 of 11 | compared |
 | core | `linear_fe-linear-vectors` | linear_fe | closed_form | value |  |  | 4.55e-13 | 3.92 | 8 of 11 | compared |
 | core | `linear_fe-ecls` | linear_fe | closed_form | value |  |  | 1.27e-11 | 0.918 | 5 of 8 | compared |
@@ -191,7 +195,8 @@ Bitwise signatures: of the long double vectors stored as signatures, how many ar
 | core | `summary-binary-wald-parm` | summary | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `summary-binary-wald-level90` | summary | iterative | value |  |  | 0 | 0 |  | compared |
 | core | `summary-binary-lr-parm` | summary | iterative | value |  |  | 0 | 0 |  | compared |
-| core | `summary-screening-onecov-lr` | summary | exact | error | D-30 |  |  |  |  | compared |
+| core | `summary-screening-onecov-lr` | summary | iterative | value |  |  | 0 | 0 |  | compared |
+| core | `summary-screening-onecov-score` | summary | exact | error | D-30 |  |  |  |  | compared |
 | core | `summary-screening-twocov-lr` | summary | iterative | value | D-30 |  | 0 | 0 |  | compared |
 | core | `summary-cutoff5-lr` | summary | exact | error |  |  |  |  |  | compared |
 | core | `summary-firth-wald` | summary | iterative | value |  |  | 0 | 0 |  | compared |

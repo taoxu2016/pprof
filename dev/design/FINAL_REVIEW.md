@@ -18,6 +18,8 @@ Branch `rewrite/phase-8` at the commit that adds this document, 2026-10-06; CI a
 | 10. A documented, defensible set of dependencies | Met |
 | 11. A model can be added by following the developer guide | Met (Phase 7) |
 
+After the gate, the project lead settled the open decisions below on 2026-10-07; the section "After the gate" at the end gives the outcomes, which supersede the statements above where they differ.
+
 ## The criteria
 
 ### 1. Reference fixtures on every CI platform
@@ -111,3 +113,19 @@ Unchanged from the Phase 8 plan, with the defaults reproducing pprof 1.0.3 until
 - The Phase 7 wording list (`dev/design/PHASE7_WORDING.md`).
 - The other open questions: M-1, M-6, M-7 (D-26), M-9 (D-07), M-13, M-14, M-15, M-17 (D-38), M-19, and M-20's open part.
 - Release decisions: publishing the site at its address or dropping it (DEC-066), the CRAN submission and its timing (`cran-comments.md`), and the authors or a CITATION file.
+
+## After the gate (2026-10-07)
+
+The project lead approved the gate and asked that the open items follow the recommendations ("Let's settle the open items, use your recommendation"). Outcomes, by the numbering of "What the project lead decides":
+
+1. The gate: approved; the gate's commits are on the fork. The pull request into `rewrite/phase-7` is opened by the project lead from the compare page (the GitHub CLI is not installed here); none was open on the fork on 2026-10-07.
+2. D-53: option (a), DEC-083. The exact test's statistic is compared on its tail probability, the scale on which it is computed and its p-value compared, within the case's tolerance; no other comparison and no fixture changed. Measured on the fixtures' platform (`dev/design/phase8-facts/11_exact_statistic_rule.R`): last-bit noise in the linear predictor moves up to 16 of the 1,000 statistics of `test-medium-exact` beyond the iterative tolerance (by up to 4.2e-3 at z = 7.8), and none beyond the rule, which still rejects a shift of the null by 1e-9 for 68% to 93% of providers. Locally no case needs it; CI on Linux is the test.
+3. DEC-082 (D-30): superseded by DEC-084. With one covariate, the likelihood-ratio test is computed against the model with provider effects only, as pprof 1.0.3 computes it from R 4.5.0, on every R version, and matches pprof 1.0.3 bitwise. The score test keeps the classed error: pprof 1.0.3 fails on it also from R 4.5.0, so there is nothing to follow. The generator emulates R 4.5.0's one-line change to `reformulate()` on older R for the cases marked for it, and the core set was regenerated as approved: 331 cases identical, one changed from an error to pprof 1.0.3's value, four added (`dev/reference/diff-reports/20261007-r450-reformulate-core.md`). Implementing it found two new entries: D-54 (pprof 1.0.3 fits logistic models with no covariates from R 4.5.0; the package keeps its error, DEC-085, a decision for the project lead) and D-55 (with no coefficients, the default stopping rule ends the fit after one iteration, so the one-covariate statistic is computed against provider effects one step from their starting values: 18.31 against 15.21 with a converged null model in the example; Class B, for the methodology owners).
+4. The sanitizer run: not yet; it runs when the Phase 8 pull request is opened on the fork, or on a dispatch, which needs a signed-in account.
+5. The decisions taken under delegation: DEC-080, DEC-081, and DEC-029's amendment confirmed; DEC-082 superseded by DEC-084.
+6. CI's fixture-platform job: the recommendation taken (DEC-080). The first processor reading, at `2becfb4`: the failing run was on an AMD EPYC ("AMD64 Family 25 Model 1"), the fixtures' machine has an Intel Core; one reading does not establish the cause (`dev/design/phase8-facts/08_ci_diagnosis.md`).
+7. The rank check: kept as it is (DEC-079 closed).
+
+New for the project lead: D-54 (models with no covariates; recommendation: keep the error for this release). New for the methodology owners: D-55, with D-10, D-24, D-31, D-32, D-34, and D-43 awaiting sign-off.
+
+Checks after these changes: `devtools::test()`: 67 files, 1,122 tests, 7,762 expectations, 0 failed, 0 skipped, 0 warnings; `R CMD check --as-cran --no-manual`: 0 errors, 0 warnings, and the gate's two notes (the site's 404, the time check). `validation/equivalence-report.md` at `d3d4b42`: 368 of 368 cases (336 core, 32 full), 19 reference errors reproduced, 24 per-case expectations (22 for Class A fixes, 2 for D-54), 14 exact tests under DEC-083, none needing it on this platform. `validation/run-differential.R` was not rerun; DEC-083 can only accept more there, and every case matched before.
