@@ -420,7 +420,14 @@ default settings of `fit_logistic_fe()`, whatever settings the model used; the
 likelihood-ratio statistic is the difference of the two $-2\ell$, computed with the effects
 kept within 10 of their median, and the score statistic is the squared score of the
 covariate over its efficient information; both are compared with the chi-square
-distribution with one degree of freedom.
+distribution with one degree of freedom. With one covariate, the model without it has
+provider effects only, and the likelihood-ratio test is computed against it, as pprof 1.0.3
+computes it from R 4.5.0; the score test is not available there, as pprof 1.0.3 fails on it.
+Like pprof 1.0.3's, that fit stops after one iteration under the default stopping rule,
+whose criterion for the change in the coefficients is 0 when there are none, so the
+statistic is computed against provider effects one step from their starting values rather
+than their maximum-likelihood estimates; the methodology owners decide whether to change
+that.
 
 ## Funnel limits
 

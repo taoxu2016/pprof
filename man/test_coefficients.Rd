@@ -70,7 +70,12 @@ the default settings of \code{\link[=fit_logistic_fe]{fit_logistic_fe()}} (SerBI
 fails with a \code{pprof_error_data} condition when that minimum provider size would exclude
 providers that the model includes. These two tests test against 0 only, and need the
 covariates: the model must have been fit with \code{keep_data = TRUE}, or \code{data} must be the
-data it was fit to. A model with one covariate has no null model for them.
+data it was fit to. With one covariate, the null model has provider effects only: the
+likelihood-ratio test is computed against it, as pprof 1.0.3 computes it from R 4.5.0, and
+the score test fails with a \code{pprof_error_unsupported_inference} condition, as pprof 1.0.3
+fails there. As in pprof 1.0.3, the fit of that null model stops after one iteration
+under the default stopping rule, whose criterion for the change in the coefficients is 0
+when there are none.
 }
 \examples{
 data(ExampleDataBinary)

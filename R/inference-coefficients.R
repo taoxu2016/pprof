@@ -39,7 +39,12 @@
 #' fails with a `pprof_error_data` condition when that minimum provider size would exclude
 #' providers that the model includes. These two tests test against 0 only, and need the
 #' covariates: the model must have been fit with `keep_data = TRUE`, or `data` must be the
-#' data it was fit to. A model with one covariate has no null model for them.
+#' data it was fit to. With one covariate, the null model has provider effects only: the
+#' likelihood-ratio test is computed against it, as pprof 1.0.3 computes it from R 4.5.0, and
+#' the score test fails with a `pprof_error_unsupported_inference` condition, as pprof 1.0.3
+#' fails there. As in pprof 1.0.3, the fit of that null model stops after one iteration
+#' under the default stopping rule, whose criterion for the change in the coefficients is 0
+#' when there are none.
 #'
 #' @param model A model object.
 #' @param test `"wald"`, `"lr"`, or `"score"`.
@@ -216,6 +221,11 @@ infer_clamped_neg2_loglik <- function(model) {
 infer_coefficient_score <- function(model, terms, null, data) {
   infer_require_null_zero(null)
   design <- model_prepared_data(model, data)$design
+  if (ncol(design) == 1L) {
+    # D-30: with provider effects only in the null model, pprof 1.0.3's information blocks
+    # become lists and it fails on every R version, so no reference value exists (DEC-084).
+    abort_unsupported_inference(model, "a covariate score test whose null model has no covariates")
+  }
   response <- observed_outcome(model)
   index <- provider_index(model)
   providers <- which(provider_table(model)$included)

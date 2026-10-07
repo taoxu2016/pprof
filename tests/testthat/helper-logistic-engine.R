@@ -40,7 +40,7 @@ engine_reference_log <- function(output) {
 # The same text for an engine's criterion history: C++ streams with scientific notation and
 # precision 3 print as formatC(format = "e", digits = 3) does.
 engine_log <- function(fit) {
-  formatC(fit$history[, "rule"], format = "e", digits = 3)
+  formatC(unname(fit$history[, "rule"]), format = "e", digits = 3)
 }
 
 # Engine inputs for a dataset stored with the fixtures, prepared as logis_fe() prepares it
@@ -122,5 +122,5 @@ firth_fit <- function(inputs, threads = inputs$threads, max_iter = inputs$max_it
 
 # The criterion of every iteration as the reference printed it (see engine_log()).
 firth_log <- function(fit) {
-  formatC(fit$history[, "coefficients"], format = "e", digits = 3)
+  formatC(unname(fit$history[, "coefficients"]), format = "e", digits = 3)
 }

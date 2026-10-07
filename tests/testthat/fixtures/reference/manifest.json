@@ -1,13 +1,13 @@
 {
   "fixture_set": "core",
   "format_version": 1,
-  "generated_at": "2026-10-04 19:39:33 UTC",
-  "generation_seconds": 66.1,
+  "generated_at": "2026-10-07 14:39:43 UTC",
+  "generation_seconds": 105.6,
   "generator": {
-    "git_commit": "9c1fba159d79a7c49630b63fd9ba71c79ea5149a",
+    "git_commit": "fd715189199abd81a4557f3b166e60d5a60cd5fe",
     "dirty": false,
     "inputs": ["dev/reference/generate_fixtures.R", "dev/reference/cases.R", "dev/reference/datasets.R", "dev/reference/library-lock.json", "tests/testthat/helper-reference-cases.R"],
-    "command": "Rscript dev/reference/generate_fixtures.R "
+    "command": "Rscript dev/reference/generate_fixtures.R --set core"
   },
   "reference": {
     "package": "pprof",
@@ -944,6 +944,25 @@
       "probe_identical": null
     },
     {
+      "id": "logis_fe-screening-nocov",
+      "file": "logis_fe-screening-nocov.rds",
+      "md5": "51d6a2613d32f9178ccb4f6bb7dc0b3d",
+      "fun": "logis_fe",
+      "call": "logis_fe(data = ref_dataset(\"syn_screening\"), Y.char = \"Y\", Z.char = character(0), ProvID.char = \"ProvID\", threads = 1)",
+      "parents": null,
+      "datasets": "syn_screening",
+      "seed": null,
+      "tier": "iterative",
+      "heavy": false,
+      "notes": "D-54",
+      "outcome": "value",
+      "error": null,
+      "iterations": 1,
+      "probe_identical": null,
+      "emulate": "reformulate-4.5.0",
+      "emulated": true
+    },
+    {
       "id": "logis_fe-screening-x2",
       "file": "logis_fe-screening-x2.rds",
       "md5": "e881b0d190d40d2510a0e46e1355c797",
@@ -1454,6 +1473,25 @@
       "probe_identical": null
     },
     {
+      "id": "logis_firth-screening-nocov",
+      "file": "logis_firth-screening-nocov.rds",
+      "md5": "8c8074da4ce250ffbd965db9e0a05678",
+      "fun": "logis_firth",
+      "call": "logis_firth(data = ref_dataset(\"syn_screening\"), Y.char = \"Y\", Z.char = character(0), ProvID.char = \"ProvID\", threads = 1)",
+      "parents": null,
+      "datasets": "syn_screening",
+      "seed": null,
+      "tier": "iterative",
+      "heavy": false,
+      "notes": "D-54",
+      "outcome": "value",
+      "error": null,
+      "iterations": 1,
+      "probe_identical": null,
+      "emulate": "reformulate-4.5.0",
+      "emulated": true
+    },
+    {
       "id": "linear_fe-linear-columns",
       "file": "linear_fe-linear-columns.rds",
       "md5": "e212303ec3f9dd9000dfca59a27185e9",
@@ -1486,6 +1524,25 @@
       "error": null,
       "iterations": null,
       "probe_identical": null
+    },
+    {
+      "id": "linear_fe-linear-nocov",
+      "file": "linear_fe-linear-nocov.rds",
+      "md5": "91063773434ebae368990a1e56e15218",
+      "fun": "linear_fe",
+      "call": "linear_fe(data = ref_dataset(\"linear_example\"), Y.char = \"Y\", Z.char = character(0), ProvID.char = \"ProvID\")",
+      "parents": null,
+      "datasets": "linear_example",
+      "seed": null,
+      "tier": "closed_form",
+      "heavy": false,
+      "notes": "D-54",
+      "outcome": "error",
+      "error": "'a' is 0-diml",
+      "iterations": null,
+      "probe_identical": null,
+      "emulate": "reformulate-4.5.0",
+      "emulated": true
     },
     {
       "id": "linear_fe-linear-formula",
@@ -3309,19 +3366,40 @@
     {
       "id": "summary-screening-onecov-lr",
       "file": "summary-screening-onecov-lr.rds",
-      "md5": "395172d745b7cb3f9f56f053e09939a2",
+      "md5": "b3f1b619df98da01de8bdf5f02569d20",
       "fun": "summary",
       "call": "summary(object = ref_fit(\"logis_fe-screening-onecov\"), test = \"lr\")",
       "parents": "logis_fe-screening-onecov",
       "datasets": null,
       "seed": null,
+      "tier": "iterative",
+      "heavy": false,
+      "notes": "D-30, DEC-084",
+      "outcome": "value",
+      "error": null,
+      "iterations": null,
+      "probe_identical": null,
+      "emulate": "reformulate-4.5.0",
+      "emulated": true
+    },
+    {
+      "id": "summary-screening-onecov-score",
+      "file": "summary-screening-onecov-score.rds",
+      "md5": "e94c5272e4aa7ce31c5c7dbe4c9c531a",
+      "fun": "summary",
+      "call": "summary(object = ref_fit(\"logis_fe-screening-onecov\"), test = \"score\")",
+      "parents": "logis_fe-screening-onecov",
+      "datasets": null,
+      "seed": null,
       "tier": "exact",
       "heavy": false,
-      "notes": "D-30",
+      "notes": "D-30, DEC-084",
       "outcome": "error",
-      "error": "'termlabels' must be a character vector of length at least one",
+      "error": "non-numeric argument to binary operator",
       "iterations": null,
-      "probe_identical": null
+      "probe_identical": null,
+      "emulate": "reformulate-4.5.0",
+      "emulated": true
     },
     {
       "id": "summary-screening-twocov-lr",

@@ -286,7 +286,9 @@ wrong result, or misaligned results:
   instead of being applied by position. `test(test = "robust_wald")`, which returned
   `NULL`, raises an error. A standard score statistic that cannot be computed gives a missing
   p-value and flag with a warning, where `test()` failed. `summary(test = "lr")` and
-  `"score"` work with two covariates (with one, they raise an error), and the summaries of
+  `"score"` work with two covariates; with one, `"lr"` tests against the model with provider effects
+  only on every R version, as pprof 1.0.3 does from R 4.5.0, and `"score"` raises an error, as
+  pprof 1.0.3 fails there; the summaries of
   random-effect fits work on objects without their lme4 fit. The `confint()` methods of
   `logis_re()` and `logis_cre()` fits use one thread, where they used four.
 - **Plots.** `plot(test = "exact")`, which always failed, raises a classed error. Inputs

@@ -4,9 +4,9 @@ local_strict_mode()
 
 test_that("every per-case expectation names a register entry and an existing case", {
   ids <- names(reference_overrides)
-  # 21 for the Class A fixes, and D-30's one-covariate error, kept on R 4.5 and later, where
-  # pprof 1.0.3 computes the test (DEC-082).
-  expect_length(ids, 22L)
+  # 22 for the Class A fixes (D-30's one-covariate score test among them, DEC-084), and the
+  # two fits with no covariates of D-54, which pprof 1.0.3 returns from R 4.5.0.
+  expect_length(ids, 24L)
   expect_true(all(ids %in% reference_case_ids()))
   entries <- vapply(reference_overrides, `[[`, character(1), "entry")
   expect_true(all(grepl("^D-[0-9]{2}$", entries)))

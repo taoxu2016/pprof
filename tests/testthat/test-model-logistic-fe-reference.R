@@ -6,7 +6,9 @@
 local_strict_mode()
 
 for (set in c("core", "full")) {
-  ids <- engine_reference_ids(set)
+  # D-54: fit_logistic_fe() needs a covariate, where pprof 1.0.3 fits a model with none from R
+  # 4.5.0; test-cpp-reference-engines.R checks that the engine reproduces that fit.
+  ids <- setdiff(engine_reference_ids(set), "logis_fe-screening-nocov")
   if (set == "core" && length(ids) == 0L) {
     test_that("reference fit fixtures are available", skip("Reference fixtures or jsonlite not available"))
   }

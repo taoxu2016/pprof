@@ -4,7 +4,8 @@
 # results), the case no longer matches what its fixture recorded. Each entry here cites its
 # register entry and gives the expected result instead, derived from fixtures where the
 # reference is right: the fixture files are never edited. The equivalence report marks
-# these cases.
+# these cases. The entries for D-54 state a deviation the project lead has yet to decide: the
+# package's error where pprof 1.0.3 returns a value from R 4.5.0.
 
 reference_override <- function(entry, expected = NULL, error_class = NULL, check = NULL, tier = NULL) {
   list(entry = entry, expected = expected, error_class = error_class, check = check, tier = tier)
@@ -29,6 +30,14 @@ override_result <- function(fixture, value, iterations = NA_integer_, probe_iden
   result["error"] <- list(NULL)
   result$iterations <- iterations
   result$probe_identical <- probe_identical
+  result
+}
+
+# A fixture's result record as an error of any class.
+override_error <- function(fixture) {
+  result <- fixture$result
+  result$outcome <- "error"
+  result["value"] <- list(NULL)
   result
 }
 
@@ -156,11 +165,15 @@ reference_overrides <- list(
     override_result(fixture, override_value("confint-extreme-sm-exact")[c("CI.direct_ratio", "CI.direct_rate")])
   }, tier = "root"),
   "summary-screening-twocov-lr" = reference_override("D-30", override_lr_two_covariates, tier = "iterative"),
-  # D-30: with one covariate the package raises a classed error, approved when pprof 1.0.3
-  # failed here in reformulate(), as it does up to R 4.4. From R 4.5.0 reformulate() accepts no
-  # terms, and pprof 1.0.3 returns the likelihood-ratio test against the model with provider
-  # effects only; that difference awaits the project lead's decision (Phase 8).
-  "summary-screening-onecov-lr" = reference_override("D-30", error_class = "pprof_error_unsupported_inference"),
+  # D-30, DEC-084: with one covariate, pprof 1.0.3's score test fails on every R version (its
+  # information blocks become lists), and the package raises a classed error. (Its
+  # likelihood-ratio test, which pprof 1.0.3 computes from R 4.5.0, matches the fixture.)
+  "summary-screening-onecov-score" = reference_override("D-30", error_class = "pprof_error_unsupported_inference"),
+  # D-54: from R 4.5.0, pprof 1.0.3 fits a logistic model with no covariates (the fixtures
+  # emulate it on R 4.4); the package raises an error, base R's in reformulate() before R 4.5.0
+  # and its own after, until the project lead decides.
+  "logis_fe-screening-nocov" = reference_override("D-54", override_error),
+  "logis_firth-screening-nocov" = reference_override("D-54", override_error),
   # Phase 5. D-14: the linear FE methods accept an integer null as the equal double.
   "test-linear-null-integer" = reference_override("D-14", function(fixture) {
     override_result(fixture, override_value("test-linear-null0"))

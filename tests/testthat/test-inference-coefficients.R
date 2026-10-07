@@ -49,10 +49,22 @@ for (id in c("summary-binary-wald", "summary-binary-wald-parm", "summary-binary-
   })
 }
 
-test_that("a test whose null model has no covariates is unsupported (D-30)", {
+test_that("with one covariate the likelihood-ratio test is against provider effects only, not the score test (D-30)", {
   model <- model_case_fit("logis_fe-screening-onecov")
   args <- model_case_arguments(model$fixture$case, reference_datasets_for(model$fixture$case, "core"))
-  expect_error(test_coefficients(model$fit, "lr", data = args$data), class = "pprof_error_unsupported_inference")
+  expect_error(test_coefficients(model$fit, "score", data = args$data), class = "pprof_error_unsupported_inference")
+  table <- test_coefficients(model$fit, "lr", data = args$data)$table
+  expect_identical(table$term, "x1")
+  skip_off_reference_platform()
+  # pprof 1.0.3 from R 4.5.0 (DEC-084; the fixtures emulate R 4.5.0 on R 4.4): its statistic,
+  # and its null model, which is its fit of the data with no covariates.
+  expected <- reference_fixture("summary-screening-onecov-lr")$result$value
+  expect_reference_value(table$statistic, as.numeric(expected$stat), "iterative", "statistic")
+  expect_reference_value(table$p_value, as.numeric(expected[["p value"]]), "probability", "p-value")
+  null_model <- refit_without(model$fit, "x1", args$data)
+  reference_null <- reference_fixture("logis_fe-screening-nocov")$result$value$coefficient$gamma
+  expect_reference_value(unname(provider_estimates(null_model)), as.numeric(reference_null), "iterative",
+                         "provider effects of the null model")
 })
 
 test_that("with two covariates the likelihood-ratio test refits each one-covariate model (D-30)", {

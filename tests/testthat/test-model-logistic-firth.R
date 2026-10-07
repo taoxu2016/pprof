@@ -51,7 +51,9 @@ test_that("the model holds the logistic fields, the penalized log-likelihood, an
 })
 
 test_that("fit_logistic_firth() reproduces the reference's logis_firth() fits (K-30 to K-34)", {
-  ids <- model_new_case_ids("logis_firth")
+  # D-54: fit_logistic_firth() needs a covariate, where pprof 1.0.3 fits a model with none from
+  # R 4.5.0; test-cpp-reference-engines.R checks that the Firth engine reproduces that fit.
+  ids <- setdiff(model_new_case_ids("logis_firth"), "logis_firth-screening-nocov")
   skip_if(length(ids) == 0L, "Reference fixtures or jsonlite not available")
   for (id in ids) {
     new <- model_new_fit(id)

@@ -54,7 +54,8 @@ reference_data_translation <- function(case, datasets) {
   list(
     fun = fun, interface = interface, response = response, provider = provider, data = data,
     call = list(
-      formula = stats::reformulate(covariates, response = response),
+      # With no covariates (D-54), the intercept-only formula that reformulate() gives from R 4.5.0.
+      formula = stats::reformulate(if (length(covariates)) covariates else "1", response = response),
       data = data,
       provider = provider,
       within_between = if (correlated) args[["wb.char"]] else NULL,

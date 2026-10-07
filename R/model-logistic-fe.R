@@ -484,11 +484,9 @@ logistic_fe_null_spec <- list(
 #' @export
 refit_without.pprof_logistic_fe <- function(model, covariates, data = NULL, ...) {
   prepared <- model_prepared_data(model, data)
+  # With no covariates left, the null model has provider effects only, as pprof 1.0.3 fits it
+  # from R 4.5.0 (D-30, DEC-084).
   keep <- setdiff(colnames(prepared$design), covariates)
-  if (length(keep) == 0L) {
-    # D-30: the reference has no null model without covariates.
-    abort_unsupported_inference(model, "a covariate test whose null model has no covariates")
-  }
   sizes <- prepared$providers$n_obs[prepared$providers$included]
   if (any(sizes < logistic_fe_null_spec$min_provider_size)) {
     # D-10: the reference's null fit screens again at its default minimum provider size and
