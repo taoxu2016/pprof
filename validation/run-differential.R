@@ -360,7 +360,9 @@ for (id in names(cases)) {
       detail <- sprintf("%s iterations, reference %s", actual$iterations, expected$iterations)
     }
     level <- if (!is.null(case$args$level)) case$args$level else 0.95
-    diffs <- reference_compare(actual$value, expected$value, reference_tolerance(case$tier), alpha = 1 - level)
+    fit_fun <- if (inherits(case$args$fit, "pprof_ref_fit")) cases[[case$args$fit$case_id]]$fun
+    diffs <- reference_compare(actual$value, expected$value, reference_tolerance(case$tier), alpha = 1 - level,
+                               exact_statistic = reference_exact_statistic_case(case, fit_fun))
     if (!is.null(expected$built) || !is.null(actual$built)) {
       diffs <- rbind(diffs, reference_compare(actual$built, expected$built, reference_tolerance(case$tier), "built"))
     }

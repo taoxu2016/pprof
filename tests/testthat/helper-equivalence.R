@@ -18,6 +18,8 @@
 # 2 * min(p, 1 - p), where p is the upper tail probability that the flag compares with
 # alpha/2 and 1 - alpha/2, and that of a one-sided test is the tail the flag compares with
 # alpha, so every threshold corresponds to alpha = 1 - level on the reported p-value.
+# With `exact_statistic = TRUE` (the exact Poisson-binomial tests, DEC-083), the `stat` column
+# of a data frame is compared by reference_compare_exact_statistic().
 # With `numeric = FALSE` (on a platform other than the fixtures', DEC-080), finite doubles,
 # the double summaries of signatures, and numbers the reference kept as text are not compared;
 # everything else is, as above: classes, names, dimensions, attributes, row names, the
@@ -48,6 +50,36 @@ reference_compare_double <- function(a, b, tol, path, numeric = TRUE) {
   worst <- which.max(diff - bound)
   detail <- sprintf("%d of %d values outside tolerance (atol %g, rtol %g); worst: actual %.17g, reference %.17g",
                     sum(bad), length(diff), tol$atol, tol$rtol, a[fin][worst], b[fin][worst])
+  reference_mismatch(path, "numeric", detail)
+}
+
+# Whether a case is an exact Poisson-binomial test (test()'s default for logistic FE and Firth
+# fits), whose statistic is compared on its tail probability (pprof_exact_statistic, DEC-083);
+# `fit_fun` is the function of the case that made the fit.
+reference_exact_statistic_case <- function(case, fit_fun) {
+  identical(case$fun, "test") && isTRUE(fit_fun %in% c("logis_fe", "logis_firth")) &&
+    (is.null(case$args$test) || identical(case$args$test, "exact.poisbinom"))
+}
+
+# The statistic of an exact test (pprof_exact_statistic, DEC-083): each value within the
+# tolerance, or of the reference's sign with its tail probability pnorm(-|z|) within the
+# tolerance of the reference's.
+reference_compare_exact_statistic <- function(a, b, tol, path, numeric = TRUE) {
+  out <- reference_compare_double(a, b, tol, path, numeric = FALSE)
+  if (!is.null(out) || !numeric) return(out)
+  fin <- is.finite(b)
+  za <- a[fin]
+  zb <- b[fin]
+  direct <- abs(za - zb) <= tol$atol + tol$rtol * abs(zb)
+  qa <- stats::pnorm(-abs(za))
+  qb <- stats::pnorm(-abs(zb))
+  tail <- sign(za) == sign(zb) & abs(qa - qb) <= tol$atol + tol$rtol * qb
+  bad <- !(direct | tail)
+  if (!any(bad)) return(NULL)
+  worst <- which(bad)[which.max(abs(qa - qb)[bad])]
+  detail <- sprintf(paste("%d of %d exact statistics outside tolerance (atol %g, rtol %g), also on the tail",
+                          "probability; worst: actual %.17g, reference %.17g"),
+                    sum(bad), length(zb), tol$atol, tol$rtol, za[worst], zb[worst])
   reference_mismatch(path, "numeric", detail)
 }
 
@@ -140,7 +172,7 @@ reference_compare_flags <- function(a, b, tol, path, alpha) {
   out
 }
 
-reference_compare <- function(a, b, tol, path = "", alpha = NULL, numeric = TRUE) {
+reference_compare <- function(a, b, tol, path = "", alpha = NULL, numeric = TRUE, exact_statistic = FALSE) {
   if (identical(a, b)) return(NULL)
   if (!identical(class(a), class(b))) {
     detail <- sprintf("%s versus %s", paste(class(a), collapse = "/"), paste(class(b), collapse = "/"))
@@ -162,8 +194,12 @@ reference_compare <- function(a, b, tol, path = "", alpha = NULL, numeric = TRUE
           out <- rbind(out, reference_mismatch(paste0(path, "$flag"), "levels", "flag levels differ"))
         }
         out <- rbind(out, reference_compare_flags(a, b, tol, path, alpha))
+      } else if (exact_statistic && col == "stat" && is.double(a[[col]]) && is.double(b[[col]]) &&
+                   length(a[[col]]) == length(b[[col]]) && identical(attributes(a[[col]]), attributes(b[[col]]))) {
+        out <- rbind(out, reference_compare_exact_statistic(a[[col]], b[[col]], tol, paste0(path, "$", col), numeric))
       } else {
-        out <- rbind(out, reference_compare(a[[col]], b[[col]], tol, paste0(path, "$", col), alpha, numeric))
+        out <- rbind(out, reference_compare(a[[col]], b[[col]], tol, paste0(path, "$", col), alpha, numeric,
+                                            exact_statistic))
       }
     }
     return(out)
@@ -175,7 +211,7 @@ reference_compare <- function(a, b, tol, path = "", alpha = NULL, numeric = TRUE
     for (k in seq_along(b)) {
       label <- if (!is.null(names(b)) && nzchar(names(b)[k])) names(b)[k] else sprintf("[[%d]]", k)
       child <- paste0(path, if (nzchar(path)) "$" else "", label)
-      out <- rbind(out, reference_compare(a[[k]], b[[k]], tol, child, alpha, numeric))
+      out <- rbind(out, reference_compare(a[[k]], b[[k]], tol, child, alpha, numeric, exact_statistic))
     }
     return(out)
   }

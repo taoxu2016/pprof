@@ -38,6 +38,19 @@ pprof_tolerances <- list(
   )
 )
 
+# The statistic of the exact Poisson-binomial test (DEC-083, D-53) is qnorm() of a tail
+# probability computed as 1 - ppoibin(), whose absolute error of a few units in the last place
+# of 1 the quantile multiplies by 1 / dnorm(z) (2e14 at z = 8). So it is compared on the scale it
+# is computed on: a statistic matches when it is within the case's tolerance, or when it has the
+# reference's sign and its tail probability pnorm(-|z|) is within the case's tolerance of the
+# reference's, as the p-value is. The rule applies to no other statistic.
+pprof_exact_statistic <- list(
+  scale = "tail probability",
+  why = paste("Last-bit noise in the linear predictor, as OpenBLAS's grouping of rows makes (D-53), moved up to 16",
+              "of 1,000 exact statistics by up to 4.2e-3 (at z = 7.8) beyond the iterative tolerance and none beyond",
+              "it on the tail probability, where a shift of the null by 1e-9 still fails 68% to 93% of providers.")
+)
+
 reference_tolerance <- function(tier) {
   tol <- pprof_tolerances[[tier]]
   if (is.null(tol)) stop("Unknown tolerance tier: ", tier, call. = FALSE)

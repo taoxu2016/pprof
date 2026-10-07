@@ -84,6 +84,8 @@ for (set in c("core", "full")) {
     diffs <- NULL
     mx <- c(abs = NA_real_, rel = NA_real_, signatures = NA_real_, bitwise = NA_real_)
     outcome <- NA_character_
+    exact_statistic <- reference_exact_statistic_id(id, set)
+    tail_only <- FALSE
     if (status == "compared") {
       res <- reference_run(id, set)
       actual <- reference_result_record(res, m$max_full_length)
@@ -95,10 +97,16 @@ for (set in c("core", "full")) {
         status <- sprintf("FAIL: outcome %s, reference %s", actual$outcome, expected$outcome)
       } else if (identical(expected$outcome, "value")) {
         level <- if (!is.null(case$args$level)) case$args$level else 0.95
-        diffs <- reference_compare(actual$value, expected$value, reference_tolerance(tier), alpha = 1 - level)
+        diffs <- reference_compare(actual$value, expected$value, reference_tolerance(tier), alpha = 1 - level,
+                                   exact_statistic = exact_statistic)
         mx <- max_difference(actual$value, expected$value)
         failures <- if (!is.null(diffs)) diffs[diffs$kind != "flag_boundary", , drop = FALSE] else NULL
         if (!is.null(failures) && nrow(failures)) status <- sprintf("FAIL: %s", paste(failures$path, collapse = ", "))
+        # Exact statistics that match only on their tail probability (DEC-083) are listed in the summary.
+        if (exact_statistic && identical(status, "compared")) {
+          direct <- reference_compare(actual$value, expected$value, reference_tolerance(tier), alpha = 1 - level)
+          tail_only <- !is.null(direct) && any(direct$kind != "flag_boundary")
+        }
         if (!is.na(expected$iterations) && !identical(actual$iterations, expected$iterations)) {
           status <- sprintf("FAIL: %s iterations, reference %s", actual$iterations, expected$iterations)
         }
@@ -111,7 +119,9 @@ for (set in c("core", "full")) {
                                            expectation = if (is.null(override)) "" else override$entry,
                                            iterations = if (is.na(expected$iterations)) "" else as.character(expected$iterations),
                                            max_abs = mx[["abs"]], max_rel = mx[["rel"]], signatures = mx[["signatures"]],
-                                           bitwise = mx[["bitwise"]], status = status, stringsAsFactors = FALSE)
+                                           bitwise = mx[["bitwise"]], status = status,
+                                           exact_statistic = exact_statistic, tail_only = tail_only,
+                                           stringsAsFactors = FALSE)
     # Boundary providers, from the reference values themselves.
     val <- expected$value
     if (identical(case$fun, "test") && is.data.frame(val) && all(c("flag", "p value") %in% names(val))) {
@@ -151,6 +161,10 @@ lines <- c("# Equivalence report: package under test versus the pprof 1.0.3 refe
            sprintf("- Reference errors reproduced: %d.", sum(tab$outcome == "error" & tab$status == "compared" & tab$expectation == "")),
            sprintf("- Per-case expectations for Class A fixes (tests/testthat/helper-reference-overrides.R): %d, all compared against values derived from fixtures where the reference is right.",
                    sum(tab$expectation != "")),
+           sprintf(paste("- Exact tests whose statistic is compared on its tail probability (DEC-083): %d; of them,",
+                         "matching only there, outside the case's tolerance on the statistic itself: %s."),
+                   sum(tab$exact_statistic),
+                   if (any(tab$tail_only)) paste(sprintf("`%s`", tab$id[tab$tail_only]), collapse = ", ") else "none"),
            "", "## Providers within tolerance of a flag threshold", "",
            "A provider is listed when its reference p-value lies within the probability tolerance of alpha = 1 - level (brief §3.4). Its flag may differ between implementations without counting as a failure.", "")
 if (is.null(bnd)) {

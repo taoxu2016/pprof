@@ -184,6 +184,14 @@ skip_off_reference_platform <- function(set = "core") {
   invisible(TRUE)
 }
 
+# Whether a fixture case is an exact test (reference_exact_statistic_case()).
+reference_exact_statistic_id <- function(id, set = "core") {
+  case <- reference_fixture(id, set)$case
+  fit <- case$args$fit
+  fit_fun <- if (inherits(fit, "pprof_ref_fit")) reference_fixture(fit$case_id, set)$case$fun
+  reference_exact_statistic_case(case, fit_fun)
+}
+
 # Collected boundary cases (brief §3.4); written to the equivalence report by validation/.
 reference_boundary_log <- new.env(parent = emptyenv())
 
@@ -236,7 +244,7 @@ expect_reference_case <- function(id, set = "core") {
   }
   level <- if (!is.null(case$args$level)) case$args$level else 0.95
   diffs <- reference_compare(actual$value, expected$value, reference_tolerance(tier), alpha = 1 - level,
-                             numeric = platform$ok)
+                             numeric = platform$ok, exact_statistic = reference_exact_statistic_id(id, set))
   boundary <- if (!is.null(diffs)) diffs[diffs$kind == "flag_boundary", , drop = FALSE] else NULL
   failures <- if (!is.null(diffs)) diffs[diffs$kind != "flag_boundary", , drop = FALSE] else NULL
   if (!is.null(boundary) && nrow(boundary)) assign(id, boundary, envir = reference_boundary_log)
