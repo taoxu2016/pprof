@@ -18,7 +18,7 @@ Rows with a register entry in the note column are explained differences, not cal
 | `cox_residual` | 1e-08 | 0 | Martingale, score, and dfbeta residuals of the tight fits, which inherit their coefficients' differences; up to 2.8e-9 observed, and residuals can be near 0, so absolute. |
 | `penalized_path` | 5e-06 | 0 | Elastic-net paths of two solvers at the same lambda values: pprof_py stops at its defaults (outer_tol 1e-9), within 1.06e-6 of glmnet at thresh 1e-12 on the fixtures. |
 
-Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
+Result: 598 of 598 rows pass; 46 rows are explained by a register entry.
 
 | Case | Ties | Quantity | Tier | pprof_py vs R | Weakest control | OK | Note |
 |---|---|---|---|---|---|---|---|
@@ -34,30 +34,30 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | competing-simple | breslow | Fine-Gray 1: coefficients, tight | cox_coefficient | 0.00511 | 2.19e+05 | yes |  |
 | competing-simple | breslow | Fine-Gray 1: robust covariance, tight | cox_variance | 3.58e+05 | - | explained | D-56 |
 | competing-simple | breslow | Fine-Gray 1: model-based covariance, tight | cox_variance | 7.92e-05 | - | yes |  |
-| competing-simple | breslow | Fine-Gray 1: cumulative incidence, stratum 0 | cox_baseline | - | - | yes |  |
-| competing-simple | breslow | Fine-Gray 1: cumulative incidence, stratum 1 | cox_baseline | - | - | yes |  |
+| competing-simple | breslow | Fine-Gray 1: cumulative incidence at pprof_py's times, stratum 0 | cox_baseline | 0.00582 | - | yes |  |
+| competing-simple | breslow | Fine-Gray 1: cumulative incidence at pprof_py's times, stratum 1 | cox_baseline | 0.00416 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 1_unstratified: expanded rows and status | exact |    0 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 1_unstratified: expanded times and weights | closed_form | 4.22e-06 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 1_unstratified: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 1_unstratified: coefficients, tight | cox_coefficient | 0.00391 | 3.96e+05 | yes |  |
 | competing-simple | breslow | Fine-Gray 1_unstratified: robust covariance, tight | cox_variance | 3.89e+05 | - | explained | D-56 |
 | competing-simple | breslow | Fine-Gray 1_unstratified: model-based covariance, tight | cox_variance | 0.00115 | - | yes |  |
-| competing-simple | breslow | Fine-Gray 1_unstratified: cumulative incidence, stratum all | cox_baseline | - | - | yes |  |
+| competing-simple | breslow | Fine-Gray 1_unstratified: cumulative incidence at pprof_py's times, stratum all | cox_baseline | 0.00494 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 2: expanded rows and status | exact |    0 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 2: expanded times and weights | closed_form | 5.98e-06 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 2: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 2: coefficients, tight | cox_coefficient | 1.04e-07 | 4.85e+04 | yes |  |
 | competing-simple | breslow | Fine-Gray 2: robust covariance, tight | cox_variance | 5.22e+04 | - | explained | D-56 |
 | competing-simple | breslow | Fine-Gray 2: model-based covariance, tight | cox_variance | 8.09e-09 | - | yes |  |
-| competing-simple | breslow | Fine-Gray 2: cumulative incidence, stratum 0 | cox_baseline | - | - | yes |  |
-| competing-simple | breslow | Fine-Gray 2: cumulative incidence, stratum 1 | cox_baseline | - | - | yes |  |
+| competing-simple | breslow | Fine-Gray 2: cumulative incidence at pprof_py's times, stratum 0 | cox_baseline | 1.05e-06 | - | yes |  |
+| competing-simple | breslow | Fine-Gray 2: cumulative incidence at pprof_py's times, stratum 1 | cox_baseline | 1.66e-06 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 2_unstratified: expanded rows and status | exact |    0 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 2_unstratified: expanded times and weights | closed_form | 4.22e-06 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 2_unstratified: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-simple | breslow | Fine-Gray 2_unstratified: coefficients, tight | cox_coefficient | 4.79e-07 | 1.53e+05 | yes |  |
 | competing-simple | breslow | Fine-Gray 2_unstratified: robust covariance, tight | cox_variance | 5.12e+04 | - | explained | D-56 |
 | competing-simple | breslow | Fine-Gray 2_unstratified: model-based covariance, tight | cox_variance | 9.31e-08 | - | yes |  |
-| competing-simple | breslow | Fine-Gray 2_unstratified: cumulative incidence, stratum all | cox_baseline | - | - | yes |  |
+| competing-simple | breslow | Fine-Gray 2_unstratified: cumulative incidence at pprof_py's times, stratum all | cox_baseline | 1.84e-06 | - | yes |  |
 | competing-simple | efron | cause 1: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-simple | efron | cause 1: coefficients, tight | cox_coefficient | 0.0391 | 2.53e+05 | yes |  |
 | competing-simple | efron | cause 1: covariance, tight | cox_variance | 0.00098 | - | yes |  |
@@ -70,30 +70,30 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | competing-simple | efron | Fine-Gray 1: coefficients, tight | cox_coefficient | 4.82e-08 | 2.19e+05 | yes |  |
 | competing-simple | efron | Fine-Gray 1: robust covariance, tight | cox_variance | 1.16e-07 | - | yes |  |
 | competing-simple | efron | Fine-Gray 1: model-based covariance, tight | cox_variance | 4.8e-08 | - | yes |  |
-| competing-simple | efron | Fine-Gray 1: cumulative incidence, stratum 0 | cox_baseline | - | - | yes |  |
-| competing-simple | efron | Fine-Gray 1: cumulative incidence, stratum 1 | cox_baseline | - | - | yes |  |
+| competing-simple | efron | Fine-Gray 1: cumulative incidence at pprof_py's times, stratum 0 | cox_baseline | 2.97e-07 | - | yes |  |
+| competing-simple | efron | Fine-Gray 1: cumulative incidence at pprof_py's times, stratum 1 | cox_baseline | 5.76e-07 | - | yes |  |
 | competing-simple | efron | Fine-Gray 1_unstratified: expanded rows and status | exact |    0 | - | yes |  |
 | competing-simple | efron | Fine-Gray 1_unstratified: expanded times and weights | closed_form | 4.22e-06 | - | yes |  |
 | competing-simple | efron | Fine-Gray 1_unstratified: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-simple | efron | Fine-Gray 1_unstratified: coefficients, tight | cox_coefficient | 6.33e-08 | 3.94e+05 | yes |  |
 | competing-simple | efron | Fine-Gray 1_unstratified: robust covariance, tight | cox_variance | 1.87e-06 | - | yes |  |
 | competing-simple | efron | Fine-Gray 1_unstratified: model-based covariance, tight | cox_variance | 1.26e-05 | - | yes |  |
-| competing-simple | efron | Fine-Gray 1_unstratified: cumulative incidence, stratum all | cox_baseline | - | - | yes |  |
+| competing-simple | efron | Fine-Gray 1_unstratified: cumulative incidence at pprof_py's times, stratum all | cox_baseline | 2.43e-06 | - | yes |  |
 | competing-simple | efron | Fine-Gray 2: expanded rows and status | exact |    0 | - | yes |  |
 | competing-simple | efron | Fine-Gray 2: expanded times and weights | closed_form | 5.98e-06 | - | yes |  |
 | competing-simple | efron | Fine-Gray 2: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-simple | efron | Fine-Gray 2: coefficients, tight | cox_coefficient | 1.43 | 4.85e+04 | explained | D-57 |
 | competing-simple | efron | Fine-Gray 2: robust covariance, tight | cox_variance | 0.229 | - | yes |  |
 | competing-simple | efron | Fine-Gray 2: model-based covariance, tight | cox_variance | 0.0688 | - | yes |  |
-| competing-simple | efron | Fine-Gray 2: cumulative incidence, stratum 0 | cox_baseline | - | - | yes |  |
-| competing-simple | efron | Fine-Gray 2: cumulative incidence, stratum 1 | cox_baseline | - | - | yes |  |
+| competing-simple | efron | Fine-Gray 2: cumulative incidence at pprof_py's times, stratum 0 | cox_baseline | 0.875 | - | yes |  |
+| competing-simple | efron | Fine-Gray 2: cumulative incidence at pprof_py's times, stratum 1 | cox_baseline | 1.02 | - | explained | D-57 |
 | competing-simple | efron | Fine-Gray 2_unstratified: expanded rows and status | exact |    0 | - | yes |  |
 | competing-simple | efron | Fine-Gray 2_unstratified: expanded times and weights | closed_form | 4.22e-06 | - | yes |  |
 | competing-simple | efron | Fine-Gray 2_unstratified: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-simple | efron | Fine-Gray 2_unstratified: coefficients, tight | cox_coefficient | 1.42 | 1.53e+05 | explained | D-57 |
 | competing-simple | efron | Fine-Gray 2_unstratified: robust covariance, tight | cox_variance | 0.222 | - | yes |  |
 | competing-simple | efron | Fine-Gray 2_unstratified: model-based covariance, tight | cox_variance | 0.0608 | - | yes |  |
-| competing-simple | efron | Fine-Gray 2_unstratified: cumulative incidence, stratum all | cox_baseline | - | - | yes |  |
+| competing-simple | efron | Fine-Gray 2_unstratified: cumulative incidence at pprof_py's times, stratum all | cox_baseline | 0.866 | - | yes |  |
 | empty-providers | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | empty-providers | breslow | coefficients, tight | cox_coefficient | 0.00646 | 2.61e+05 | yes |  |
 | empty-providers | breslow | log-likelihood, tight | cox_function | 0.000399 | 9.64e+07 | yes |  |
@@ -108,8 +108,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | empty-providers | breslow | information at beta_fixed | cox_function | 0.0321 | 4.76e+10 | yes |  |
 | empty-providers | breslow | expected counts at pprof_py's beta | closed_form | 3.3e-06 | 1.55e+08 | yes |  |
 | empty-providers | breslow | expected counts at each side's beta | cox_baseline | 0.0027 | 1.65e+06 | yes |  |
-| empty-providers | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.27e+07 | yes |  |
-| empty-providers | breslow | martingale residuals | cox_residual | - | 1.88e+07 | yes |  |
+| empty-providers | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 0.00269 | 1.27e+07 | yes |  |
+| empty-providers | breslow | martingale residuals | cox_residual | 0.00878 | 1.88e+07 | yes |  |
 | empty-providers | breslow | score residuals | cox_residual | 0.0102 | 2.55e+07 | yes |  |
 | empty-providers | breslow | dfbeta residuals | cox_residual | 5.58e-05 | 1.52e+05 | yes |  |
 | empty-providers | breslow | robust per row | cox_variance | 0.00191 | 9.12e+05 | yes |  |
@@ -128,8 +128,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | empty-providers | efron | information at beta_fixed | cox_function | 0.0393 | 5e+10 | yes |  |
 | empty-providers | efron | expected counts at pprof_py's beta | closed_form | 8.13e-06 | 1.53e+08 | yes |  |
 | empty-providers | efron | expected counts at each side's beta | cox_baseline | 9.68e-08 | 1.62e+06 | yes |  |
-| empty-providers | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.12e+07 | yes |  |
-| empty-providers | efron | martingale residuals | cox_residual | - | 1.88e+07 | yes |  |
+| empty-providers | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 4.84e-07 | 1.12e+07 | yes |  |
+| empty-providers | efron | martingale residuals | cox_residual | 2.44e-07 | 1.88e+07 | yes |  |
 | empty-providers | efron | score residuals | cox_residual | 1.07e-06 | 2.55e+07 | yes |  |
 | empty-providers | efron | dfbeta residuals | cox_residual | 7.03e-09 | 1.52e+05 | yes |  |
 | empty-providers | efron | robust per row | cox_variance | 5.02e-08 | 8.36e+05 | yes |  |
@@ -148,8 +148,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | lt-stratified | breslow | information at beta_fixed | cox_function | 0.0097 | 5.37e+11 | yes |  |
 | lt-stratified | breslow | expected counts at pprof_py's beta | closed_form | 1.19e-05 | 7.02e+07 | yes |  |
 | lt-stratified | breslow | expected counts at each side's beta | cox_baseline | 1.55e-07 | 7.02e+05 | yes |  |
-| lt-stratified | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.15e+07 | yes |  |
-| lt-stratified | breslow | martingale residuals | cox_residual | - | 3.16e+07 | yes |  |
+| lt-stratified | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 1.04e-06 | 1.15e+07 | yes |  |
+| lt-stratified | breslow | martingale residuals | cox_residual | 5.33e-07 | 3.16e+07 | yes |  |
 | lt-stratified | breslow | score residuals | cox_residual | 1.42e-06 | 4.46e+07 | yes |  |
 | lt-stratified | breslow | dfbeta residuals | cox_residual | 3.47e-09 | 1.15e+05 | yes |  |
 | lt-stratified | breslow | robust per row | cox_variance | 3.18e+06 | 4.55e+06 | explained | D-56 |
@@ -168,8 +168,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | lt-stratified | efron | information at beta_fixed | cox_function | 0.0312 | 1.16e+12 | yes |  |
 | lt-stratified | efron | expected counts at pprof_py's beta | closed_form | 8.84e-06 | 7.07e+07 | yes |  |
 | lt-stratified | efron | expected counts at each side's beta | cox_baseline | 8.84e-08 | 7.07e+05 | yes |  |
-| lt-stratified | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.03e+07 | yes |  |
-| lt-stratified | efron | martingale residuals | cox_residual | - | 3.16e+07 | yes |  |
+| lt-stratified | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 3.66e-06 | 1.03e+07 | yes |  |
+| lt-stratified | efron | martingale residuals | cox_residual | 4.44e-07 | 3.16e+07 | yes |  |
 | lt-stratified | efron | score residuals | cox_residual | 2.84e-06 | 4.46e+07 | yes |  |
 | lt-stratified | efron | dfbeta residuals | cox_residual | 9.71e-09 | 1.15e+05 | yes |  |
 | lt-stratified | efron | robust per row | cox_variance | 3.96e-07 | 8.34e+06 | yes |  |
@@ -189,8 +189,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | near-ties | breslow | information at beta_fixed | cox_function | 0.016 | 6.08e+10 | yes |  |
 | near-ties | breslow | expected counts at pprof_py's beta | closed_form | 4.58e-06 | 4.52e+06 | yes |  |
 | near-ties | breslow | expected counts at each side's beta | cox_baseline | 4.45e-08 | 4.52e+04 | yes |  |
-| near-ties | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.83e+06 | yes |  |
-| near-ties | breslow | martingale residuals | cox_residual | - | 6.65e+06 | yes |  |
+| near-ties | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 7.03e-07 | 1.83e+06 | yes |  |
+| near-ties | breslow | martingale residuals | cox_residual | 2.66e-07 | 6.65e+06 | yes |  |
 | near-ties | breslow | score residuals | cox_residual | 1.07e-06 | 1.08e+07 | yes |  |
 | near-ties | breslow | dfbeta residuals | cox_residual | 3.56e-09 | 5.26e+04 | yes |  |
 | near-ties | breslow | robust per row | cox_variance | 6.05e-09 | 4.48e+05 | yes |  |
@@ -210,8 +210,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | near-ties | efron | information at beta_fixed | cox_function | 0.017 | 5.73e+10 | yes |  |
 | near-ties | efron | expected counts at pprof_py's beta | closed_form | 2.61e-06 | 4.52e+06 | yes |  |
 | near-ties | efron | expected counts at each side's beta | cox_baseline | 3.14e-08 | 4.52e+04 | yes |  |
-| near-ties | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.8e+06 | yes |  |
-| near-ties | efron | martingale residuals | cox_residual | - | 6.65e+06 | yes |  |
+| near-ties | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 7.43e-07 | 1.8e+06 | yes |  |
+| near-ties | efron | martingale residuals | cox_residual | 4.88e-07 | 6.65e+06 | yes |  |
 | near-ties | efron | score residuals | cox_residual | 1.33e-06 | 1.08e+07 | yes |  |
 | near-ties | efron | dfbeta residuals | cox_residual | 5.64e-09 | 5.26e+04 | yes |  |
 | near-ties | efron | robust per row | cox_variance | 2.54e-07 | 4.29e+05 | yes |  |
@@ -232,8 +232,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | rc-stratified | breslow | information at beta_fixed | cox_function | 0.00719 | 2.25e+11 | yes |  |
 | rc-stratified | breslow | expected counts at pprof_py's beta | closed_form | 1.26e-05 | 9.43e+07 | yes |  |
 | rc-stratified | breslow | expected counts at each side's beta | cox_baseline | 0.0027 | 9.44e+05 | yes |  |
-| rc-stratified | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.5e+07 | yes |  |
-| rc-stratified | breslow | martingale residuals | cox_residual | - | 2.06e+07 | yes |  |
+| rc-stratified | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 0.0044 | 1.5e+07 | yes |  |
+| rc-stratified | breslow | martingale residuals | cox_residual | 0.0202 | 2.06e+07 | yes |  |
 | rc-stratified | breslow | score residuals | cox_residual | 0.0246 | 4.67e+07 | yes |  |
 | rc-stratified | breslow | dfbeta residuals | cox_residual | 6.95e-05 | 1.18e+05 | yes |  |
 | rc-stratified | breslow | robust per row | cox_variance | 0.0127 | 6.35e+06 | yes |  |
@@ -252,8 +252,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | rc-stratified | efron | information at beta_fixed | cox_function | 0.00889 | 2.86e+11 | yes |  |
 | rc-stratified | efron | expected counts at pprof_py's beta | closed_form | 9.44e-06 | 9.34e+07 | yes |  |
 | rc-stratified | efron | expected counts at each side's beta | cox_baseline | 8.59e-08 | 9.35e+05 | yes |  |
-| rc-stratified | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.3e+07 | yes |  |
-| rc-stratified | efron | martingale residuals | cox_residual | - | 2.06e+07 | yes |  |
+| rc-stratified | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 4.1e-07 | 1.3e+07 | yes |  |
+| rc-stratified | efron | martingale residuals | cox_residual | 2.66e-07 | 2.06e+07 | yes |  |
 | rc-stratified | efron | score residuals | cox_residual | 1.42e-06 | 4.67e+07 | yes |  |
 | rc-stratified | efron | dfbeta residuals | cox_residual | 3.25e-09 | 1.18e+05 | yes |  |
 | rc-stratified | efron | robust per row | cox_variance | 3.32e-07 | 1.49e+07 | yes |  |
@@ -272,8 +272,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | tiny-ties | breslow | information at beta_fixed | cox_function |    0 | 2e+10 | yes |  |
 | tiny-ties | breslow | expected counts at pprof_py's beta | closed_form | 3.44e-06 | 3.05e+07 | yes |  |
 | tiny-ties | breslow | expected counts at each side's beta | cox_baseline | 0.178 | 3.14e+05 | yes |  |
-| tiny-ties | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | 0.0213 | 1.09e+07 | yes |  |
-| tiny-ties | breslow | martingale residuals | cox_residual | - | 1.1e+07 | yes |  |
+| tiny-ties | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 0.0213 | 1.09e+07 | yes |  |
+| tiny-ties | breslow | martingale residuals | cox_residual | 0.175 | 1.1e+07 | yes |  |
 | tiny-ties | breslow | score residuals | cox_residual | 0.155 | 5.94e+06 | yes |  |
 | tiny-ties | breslow | dfbeta residuals | cox_residual | 0.0672 | 2.6e+06 | yes |  |
 | tiny-ties | breslow | robust per row | cox_variance | 0.0229 | 2.25e+06 | yes |  |
@@ -292,8 +292,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | tiny-ties | efron | information at beta_fixed | cox_function | 0.000288 | 2.04e+10 | yes |  |
 | tiny-ties | efron | expected counts at pprof_py's beta | closed_form | 2.9e-06 | 3.06e+07 | yes |  |
 | tiny-ties | efron | expected counts at each side's beta | cox_baseline | 0.108 | 3.15e+05 | yes |  |
-| tiny-ties | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | 0.0131 | 9.85e+06 | yes |  |
-| tiny-ties | efron | martingale residuals | cox_residual | - | 1.1e+07 | yes |  |
+| tiny-ties | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 0.0131 | 9.85e+06 | yes |  |
+| tiny-ties | efron | martingale residuals | cox_residual | 0.101 | 1.1e+07 | yes |  |
 | tiny-ties | efron | score residuals | cox_residual | 0.0899 | 5.94e+06 | yes |  |
 | tiny-ties | efron | dfbeta residuals | cox_residual | 0.0401 | 2.6e+06 | yes |  |
 | tiny-ties | efron | robust per row | cox_variance | 0.0109 | 1.84e+06 | yes |  |
@@ -310,30 +310,30 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | competing-truncated | breslow | Fine-Gray 1: coefficients, tight | cox_coefficient | 1.45e-08 | 6e+05 | yes |  |
 | competing-truncated | breslow | Fine-Gray 1: robust covariance, tight | cox_variance | 1.87e+05 | - | explained | D-56 |
 | competing-truncated | breslow | Fine-Gray 1: model-based covariance, tight | cox_variance | 3.53e-08 | - | yes |  |
-| competing-truncated | breslow | Fine-Gray 1: cumulative incidence, stratum 0 | cox_baseline | - | - | yes |  |
-| competing-truncated | breslow | Fine-Gray 1: cumulative incidence, stratum 1 | cox_baseline | - | - | yes |  |
+| competing-truncated | breslow | Fine-Gray 1: cumulative incidence at pprof_py's times, stratum 0 | cox_baseline | 1.66e-07 | - | yes |  |
+| competing-truncated | breslow | Fine-Gray 1: cumulative incidence at pprof_py's times, stratum 1 | cox_baseline | 3.88e-07 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 1_unstratified: expanded rows and status | exact |    0 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 1_unstratified: expanded times and weights | closed_form | 6.38e-06 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 1_unstratified: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 1_unstratified: coefficients, tight | cox_coefficient | 5.46e-07 | 3.41e+05 | yes |  |
 | competing-truncated | breslow | Fine-Gray 1_unstratified: robust covariance, tight | cox_variance | 7.24e+04 | - | explained | D-56 |
 | competing-truncated | breslow | Fine-Gray 1_unstratified: model-based covariance, tight | cox_variance | 1.44e-06 | - | yes |  |
-| competing-truncated | breslow | Fine-Gray 1_unstratified: cumulative incidence, stratum all | cox_baseline | - | - | yes |  |
+| competing-truncated | breslow | Fine-Gray 1_unstratified: cumulative incidence at pprof_py's times, stratum all | cox_baseline | 5.65e-07 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 2: expanded rows and status | exact |    0 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 2: expanded times and weights | closed_form | 7.08e-06 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 2: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 2: coefficients, tight | cox_coefficient | 1.31e-07 | 1.56e+05 | yes |  |
 | competing-truncated | breslow | Fine-Gray 2: robust covariance, tight | cox_variance | 5.17e+04 | - | explained | D-56 |
 | competing-truncated | breslow | Fine-Gray 2: model-based covariance, tight | cox_variance | 4.36e-08 | - | yes |  |
-| competing-truncated | breslow | Fine-Gray 2: cumulative incidence, stratum 0 | cox_baseline | - | - | yes |  |
-| competing-truncated | breslow | Fine-Gray 2: cumulative incidence, stratum 1 | cox_baseline | - | - | yes |  |
+| competing-truncated | breslow | Fine-Gray 2: cumulative incidence at pprof_py's times, stratum 0 | cox_baseline | 2.4e-07 | - | yes |  |
+| competing-truncated | breslow | Fine-Gray 2: cumulative incidence at pprof_py's times, stratum 1 | cox_baseline | 5.97e-07 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 2_unstratified: expanded rows and status | exact |    0 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 2_unstratified: expanded times and weights | closed_form | 6.38e-06 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 2_unstratified: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-truncated | breslow | Fine-Gray 2_unstratified: coefficients, tight | cox_coefficient | 4.8e-07 | 1.75e+05 | yes |  |
 | competing-truncated | breslow | Fine-Gray 2_unstratified: robust covariance, tight | cox_variance | 5.06e+04 | - | explained | D-56 |
 | competing-truncated | breslow | Fine-Gray 2_unstratified: model-based covariance, tight | cox_variance | 2.17e-07 | - | yes |  |
-| competing-truncated | breslow | Fine-Gray 2_unstratified: cumulative incidence, stratum all | cox_baseline | - | - | yes |  |
+| competing-truncated | breslow | Fine-Gray 2_unstratified: cumulative incidence at pprof_py's times, stratum all | cox_baseline | 9.56e-07 | - | yes |  |
 | competing-truncated | efron | cause 1: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-truncated | efron | cause 1: coefficients, tight | cox_coefficient | 1.53e-07 | 6.49e+05 | yes |  |
 | competing-truncated | efron | cause 1: covariance, tight | cox_variance | 1.34e-07 | - | yes |  |
@@ -346,70 +346,70 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | competing-truncated | efron | Fine-Gray 1: coefficients, tight | cox_coefficient | 7.26e-08 | 5.96e+05 | yes |  |
 | competing-truncated | efron | Fine-Gray 1: robust covariance, tight | cox_variance | 2.77e-07 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 1: model-based covariance, tight | cox_variance | 2.86e-07 | - | yes |  |
-| competing-truncated | efron | Fine-Gray 1: cumulative incidence, stratum 0 | cox_baseline | - | - | yes |  |
-| competing-truncated | efron | Fine-Gray 1: cumulative incidence, stratum 1 | cox_baseline | - | - | yes |  |
+| competing-truncated | efron | Fine-Gray 1: cumulative incidence at pprof_py's times, stratum 0 | cox_baseline | 1.39e-07 | - | yes |  |
+| competing-truncated | efron | Fine-Gray 1: cumulative incidence at pprof_py's times, stratum 1 | cox_baseline | 1.45e-07 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 1_unstratified: expanded rows and status | exact |    0 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 1_unstratified: expanded times and weights | closed_form | 6.38e-06 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 1_unstratified: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 1_unstratified: coefficients, tight | cox_coefficient | 8.38e-07 | 3.4e+05 | yes |  |
 | competing-truncated | efron | Fine-Gray 1_unstratified: robust covariance, tight | cox_variance | 6.49e-07 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 1_unstratified: model-based covariance, tight | cox_variance | 5.79e-07 | - | yes |  |
-| competing-truncated | efron | Fine-Gray 1_unstratified: cumulative incidence, stratum all | cox_baseline | - | - | yes |  |
+| competing-truncated | efron | Fine-Gray 1_unstratified: cumulative incidence at pprof_py's times, stratum all | cox_baseline | 1.46e-06 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2: expanded rows and status | exact |    0 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2: expanded times and weights | closed_form | 7.08e-06 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2: coefficients, tight | cox_coefficient | 5.96e-08 | 1.55e+05 | yes |  |
 | competing-truncated | efron | Fine-Gray 2: robust covariance, tight | cox_variance | 2.96e-08 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2: model-based covariance, tight | cox_variance | 1.64e-08 | - | yes |  |
-| competing-truncated | efron | Fine-Gray 2: cumulative incidence, stratum 0 | cox_baseline | - | - | yes |  |
-| competing-truncated | efron | Fine-Gray 2: cumulative incidence, stratum 1 | cox_baseline | - | - | yes |  |
+| competing-truncated | efron | Fine-Gray 2: cumulative incidence at pprof_py's times, stratum 0 | cox_baseline | 2.83e-07 | - | yes |  |
+| competing-truncated | efron | Fine-Gray 2: cumulative incidence at pprof_py's times, stratum 1 | cox_baseline | 5.54e-07 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2_unstratified: expanded rows and status | exact |    0 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2_unstratified: expanded times and weights | closed_form | 6.38e-06 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2_unstratified: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2_unstratified: coefficients, tight | cox_coefficient | 4e-07 | 1.75e+05 | yes |  |
 | competing-truncated | efron | Fine-Gray 2_unstratified: robust covariance, tight | cox_variance | 7.74e-07 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2_unstratified: model-based covariance, tight | cox_variance | 5.1e-07 | - | yes |  |
-| competing-truncated | efron | Fine-Gray 2_unstratified: cumulative incidence, stratum all | cox_baseline | - | - | yes |  |
+| competing-truncated | efron | Fine-Gray 2_unstratified: cumulative incidence at pprof_py's times, stratum all | cox_baseline | 1.18e-06 | - | yes |  |
 | large-mean | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | large-mean | breslow | coefficients, tight | cox_coefficient | 1.39e-07 | 1.25e+05 | yes |  |
 | large-mean | breslow | log-likelihood, tight | cox_function | 0.0005 | 2.51e+07 | yes |  |
 | large-mean | breslow | standard errors, tight | cox_variance | 2.35e-09 | 1.7e+03 | yes |  |
 | large-mean | breslow | covariance, tight | cox_variance | 9.25e-09 | 2.08e+04 | yes |  |
 | large-mean | breslow | coefficients, default (last step 2.2e-06) | last step | 1e-10 | - | yes |  |
-| large-mean | breslow | loglik at beta_zero | cox_function | 0.00049 | 1.07e+10 | explained | D-64 |
-| large-mean | breslow | score at beta_zero | cox_function | 0.195 | 3.8e+10 | explained | D-64 |
+| large-mean | breslow | loglik at beta_zero | cox_function | 0.00049 | 1.07e+10 | yes |  |
+| large-mean | breslow | score at beta_zero | cox_function | 0.195 | 3.8e+10 | yes |  |
 | large-mean | breslow | information at beta_zero | cox_function | 7.96 | 2.08e+10 | explained | D-64 |
 | large-mean | breslow | loglik at beta_fixed | cox_function | 1.63e+13 | 7.1e+08 | explained | D-64 |
 | large-mean | breslow | score at beta_fixed | cox_function | Inf | 2.13e+10 | explained | D-64 |
 | large-mean | breslow | information at beta_fixed | cox_function | Inf | 5.37e+08 | explained | D-64 |
 | large-mean | breslow | expected counts at pprof_py's beta | closed_form | 0.000147 | 5.04e+07 | yes |  |
 | large-mean | breslow | expected counts at each side's beta | cox_baseline | 1.91e-06 | 5.04e+05 | yes |  |
-| large-mean | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 2.82e-243 | explained | D-64 |
-| large-mean | breslow | martingale residuals | cox_residual | - | 1.65e+07 | explained | D-64 |
-| large-mean | breslow | score residuals | cox_residual | 0.000552 | 3.1e+07 | explained | D-64 |
-| large-mean | breslow | dfbeta residuals | cox_residual | 1.92e-06 | 1.21e+05 | explained | D-64 |
-| large-mean | breslow | robust per row | cox_variance | 4.94e-06 | 1.49e+06 | explained | D-64 |
-| large-mean | breslow | robust clustered | cox_variance | 2.56e-07 | 1.65e+06 | explained | D-64 |
+| large-mean | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 9.9e-256 | 2.82e-243 | explained | D-64 |
+| large-mean | breslow | martingale residuals | cox_residual | 3.41e-05 | 1.65e+07 | yes |  |
+| large-mean | breslow | score residuals | cox_residual | 0.000552 | 3.1e+07 | yes |  |
+| large-mean | breslow | dfbeta residuals | cox_residual | 1.92e-06 | 1.21e+05 | yes |  |
+| large-mean | breslow | robust per row | cox_variance | 4.94e-06 | 1.49e+06 | yes |  |
+| large-mean | breslow | robust clustered | cox_variance | 2.56e-07 | 1.65e+06 | yes |  |
 | large-mean | efron | iterations, default and tight | exact |    0 | - | yes |  |
 | large-mean | efron | coefficients, tight | cox_coefficient | 1.02e-07 | 9.84e+04 | yes |  |
 | large-mean | efron | log-likelihood, tight | cox_function | 0.000506 | 4.4e+07 | yes |  |
 | large-mean | efron | standard errors, tight | cox_variance | 4.7e-09 | 1.52e+03 | yes |  |
 | large-mean | efron | covariance, tight | cox_variance | 1.26e-08 | 1.83e+04 | yes |  |
 | large-mean | efron | coefficients, default (last step 3.3e-06) | last step | 5.09e-11 | - | yes |  |
-| large-mean | efron | loglik at beta_zero | cox_function | 0.00033 | 1.08e+10 | explained | D-64 |
-| large-mean | efron | score at beta_zero | cox_function | 0.735 | 3.66e+10 | explained | D-64 |
-| large-mean | efron | information at beta_zero | cox_function | 0.382 | 2.03e+10 | explained | D-64 |
+| large-mean | efron | loglik at beta_zero | cox_function | 0.00033 | 1.08e+10 | yes |  |
+| large-mean | efron | score at beta_zero | cox_function | 0.735 | 3.66e+10 | yes |  |
+| large-mean | efron | information at beta_zero | cox_function | 0.382 | 2.03e+10 | yes |  |
 | large-mean | efron | loglik at beta_fixed | cox_function | 1.65e+13 | 7.1e+08 | explained | D-64 |
 | large-mean | efron | score at beta_fixed | cox_function | Inf | 2.08e+10 | explained | D-64 |
 | large-mean | efron | information at beta_fixed | cox_function | Inf | 5.37e+08 | explained | D-64 |
 | large-mean | efron | expected counts at pprof_py's beta | closed_form | 0.00016 | 5.01e+07 | yes |  |
 | large-mean | efron | expected counts at each side's beta | cox_baseline | 2.39e-06 | 5.02e+05 | yes |  |
-| large-mean | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 2.82e-243 | explained | D-64 |
-| large-mean | efron | martingale residuals | cox_residual | - | 1.65e+07 | explained | D-64 |
-| large-mean | efron | score residuals | cox_residual | 0.0025 | 3.1e+07 | explained | D-64 |
-| large-mean | efron | dfbeta residuals | cox_residual | 8.69e-06 | 1.21e+05 | explained | D-64 |
-| large-mean | efron | robust per row | cox_variance | 1.53e-05 | 1.3e+06 | explained | D-64 |
-| large-mean | efron | robust clustered | cox_variance | 8.11e-05 | 1.41e+06 | explained | D-64 |
+| large-mean | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 2.83e-265 | 2.82e-243 | explained | D-64 |
+| large-mean | efron | martingale residuals | cox_residual | 2.89e-05 | 1.65e+07 | yes |  |
+| large-mean | efron | score residuals | cox_residual | 0.0025 | 3.1e+07 | yes |  |
+| large-mean | efron | dfbeta residuals | cox_residual | 8.69e-06 | 1.21e+05 | yes |  |
+| large-mean | efron | robust per row | cox_variance | 1.53e-05 | 1.3e+06 | yes |  |
+| large-mean | efron | robust clustered | cox_variance | 8.11e-05 | 1.41e+06 | yes |  |
 | lt-weights-offset | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | lt-weights-offset | breslow | coefficients, tight | cox_coefficient | 1.62e-07 | 3.81e+05 | yes |  |
 | lt-weights-offset | breslow | log-likelihood, tight | cox_function | 0.000277 | 4.62e+07 | yes |  |
@@ -424,8 +424,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | lt-weights-offset | breslow | information at beta_fixed | cox_function | 0.00331 | 1.39e+11 | yes |  |
 | lt-weights-offset | breslow | expected counts at pprof_py's beta | closed_form | 6.93e-06 | 6.84e+07 | yes |  |
 | lt-weights-offset | breslow | expected counts at each side's beta | cox_baseline | 6.93e-08 | 6.84e+05 | yes |  |
-| lt-weights-offset | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.73e+07 | yes |  |
-| lt-weights-offset | breslow | martingale residuals | cox_residual | - | 2.93e+07 | yes |  |
+| lt-weights-offset | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 8.92e-07 | 1.73e+07 | yes |  |
+| lt-weights-offset | breslow | martingale residuals | cox_residual | 4.44e-07 | 2.93e+07 | yes |  |
 | lt-weights-offset | breslow | score residuals | cox_residual | 1.07e-06 | 4.03e+07 | yes |  |
 | lt-weights-offset | breslow | dfbeta residuals | cox_residual | 2.69e-09 | 1.56e+05 | yes |  |
 | lt-weights-offset | breslow | robust per row | cox_variance | 5.15e+06 | 2.33e+06 | explained | D-56 |
@@ -444,8 +444,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | lt-weights-offset | efron | information at beta_fixed | cox_function | 0.0157 | 1.22e+11 | yes |  |
 | lt-weights-offset | efron | expected counts at pprof_py's beta | closed_form | 9.38e-06 | 6.89e+07 | yes |  |
 | lt-weights-offset | efron | expected counts at each side's beta | cox_baseline | 1.21e-07 | 6.89e+05 | yes |  |
-| lt-weights-offset | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.48e+07 | yes |  |
-| lt-weights-offset | efron | martingale residuals | cox_residual | - | 2.93e+07 | yes |  |
+| lt-weights-offset | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 5.87e-07 | 1.48e+07 | yes |  |
+| lt-weights-offset | efron | martingale residuals | cox_residual | 3.55e-07 | 2.93e+07 | yes |  |
 | lt-weights-offset | efron | score residuals | cox_residual | 1.42e-06 | 4.03e+07 | yes |  |
 | lt-weights-offset | efron | dfbeta residuals | cox_residual | 4.16e-09 | 1.56e+05 | yes |  |
 | lt-weights-offset | efron | robust per row | cox_variance | 4.51e-07 | 1.89e+06 | yes |  |
@@ -490,7 +490,7 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | provider-scale | breslow | information at beta_fixed | cox_function | 0.0276 | 3.29e+11 | yes |  |
 | provider-scale | breslow | expected counts at pprof_py's beta | closed_form | 2.86e-05 | 1e+08 | yes |  |
 | provider-scale | breslow | expected counts at each side's beta | cox_baseline | 2.58e-07 | 1e+06 | yes |  |
-| provider-scale | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 3.31e+07 | yes |  |
+| provider-scale | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 4.03e-06 | 3.31e+07 | yes |  |
 | provider-scale | efron | iterations, default and tight | exact |    0 | - | yes |  |
 | provider-scale | efron | coefficients, tight | cox_coefficient | 6.1e-08 | 1.06e+04 | yes |  |
 | provider-scale | efron | log-likelihood, tight | cox_function | 0.00783 | 2.97e+06 | yes |  |
@@ -505,7 +505,7 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | provider-scale | efron | information at beta_fixed | cox_function | 0.0131 | 2.48e+11 | yes |  |
 | provider-scale | efron | expected counts at pprof_py's beta | closed_form | 3.53e-05 | 9.9e+07 | yes |  |
 | provider-scale | efron | expected counts at each side's beta | cox_baseline | 3.19e-07 | 9.91e+05 | yes |  |
-| provider-scale | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 2.49e+07 | yes |  |
+| provider-scale | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 2.37e-06 | 2.49e+07 | yes |  |
 | rc-stratified-weights-offset | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | rc-stratified-weights-offset | breslow | coefficients, tight | cox_coefficient | 0.12 | 3.66e+06 | yes |  |
 | rc-stratified-weights-offset | breslow | log-likelihood, tight | cox_function | 0.00115 | 3.01e+08 | yes |  |
@@ -520,8 +520,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | rc-stratified-weights-offset | breslow | information at beta_fixed | cox_function | 0.00347 | 7.57e+11 | yes |  |
 | rc-stratified-weights-offset | breslow | expected counts at pprof_py's beta | closed_form | 1.47e-05 | 1.23e+08 | yes |  |
 | rc-stratified-weights-offset | breslow | expected counts at each side's beta | cox_baseline | 0.0126 | 1.23e+06 | yes |  |
-| rc-stratified-weights-offset | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.39e+07 | yes |  |
-| rc-stratified-weights-offset | breslow | martingale residuals | cox_residual | - | 2.39e+07 | yes |  |
+| rc-stratified-weights-offset | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 0.0303 | 1.39e+07 | yes |  |
+| rc-stratified-weights-offset | breslow | martingale residuals | cox_residual | 0.0964 | 2.39e+07 | yes |  |
 | rc-stratified-weights-offset | breslow | score residuals | cox_residual | 0.142 | 3.96e+07 | yes |  |
 | rc-stratified-weights-offset | breslow | dfbeta residuals | cox_residual | 0.000298 | 1.03e+05 | yes |  |
 | rc-stratified-weights-offset | breslow | robust per row | cox_variance | 0.00989 | 4.24e+06 | yes |  |
@@ -540,8 +540,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | rc-stratified-weights-offset | efron | information at beta_fixed | cox_function | 0.00144 | 4.31e+11 | yes |  |
 | rc-stratified-weights-offset | efron | expected counts at pprof_py's beta | closed_form | 7.99e-06 | 1.22e+08 | yes |  |
 | rc-stratified-weights-offset | efron | expected counts at each side's beta | cox_baseline | 0.0245 | 1.22e+06 | yes |  |
-| rc-stratified-weights-offset | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.22e+07 | yes |  |
-| rc-stratified-weights-offset | efron | martingale residuals | cox_residual | - | 2.39e+07 | yes |  |
+| rc-stratified-weights-offset | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 0.0606 | 1.22e+07 | yes |  |
+| rc-stratified-weights-offset | efron | martingale residuals | cox_residual | 0.19 | 2.39e+07 | yes |  |
 | rc-stratified-weights-offset | efron | score residuals | cox_residual | 0.279 | 3.96e+07 | yes |  |
 | rc-stratified-weights-offset | efron | dfbeta residuals | cox_residual | 0.000572 | 1.03e+05 | yes |  |
 | rc-stratified-weights-offset | efron | robust per row | cox_variance | 0.0366 | 7.35e+06 | yes |  |
@@ -560,8 +560,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | rc-unstratified | breslow | information at beta_fixed | cox_function | 0.0123 | 5.86e+10 | yes |  |
 | rc-unstratified | breslow | expected counts at pprof_py's beta | closed_form | 2.1e-06 | 5.94e+07 | yes |  |
 | rc-unstratified | breslow | expected counts at each side's beta | cox_baseline | 0.00314 | 5.95e+05 | yes |  |
-| rc-unstratified | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 5.68e+06 | yes |  |
-| rc-unstratified | breslow | martingale residuals | cox_residual | - | 2.48e+07 | yes |  |
+| rc-unstratified | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 0.00784 | 5.68e+06 | yes |  |
+| rc-unstratified | breslow | martingale residuals | cox_residual | 0.0615 | 2.48e+07 | yes |  |
 | rc-unstratified | breslow | score residuals | cox_residual | 0.0853 | 3.31e+07 | yes |  |
 | rc-unstratified | breslow | dfbeta residuals | cox_residual | 0.000277 | 1.01e+05 | yes |  |
 | rc-unstratified | breslow | robust per row | cox_variance | 0.00827 | 3.25e+06 | yes |  |
@@ -580,8 +580,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | rc-unstratified | efron | information at beta_fixed | cox_function | 0.0118 | 5.54e+10 | yes |  |
 | rc-unstratified | efron | expected counts at pprof_py's beta | closed_form | 6.52e-06 | 5.98e+07 | yes |  |
 | rc-unstratified | efron | expected counts at each side's beta | cox_baseline | 0.00278 | 5.98e+05 | yes |  |
-| rc-unstratified | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 5.37e+06 | yes |  |
-| rc-unstratified | efron | martingale residuals | cox_residual | - | 2.48e+07 | yes |  |
+| rc-unstratified | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 0.00526 | 5.37e+06 | yes |  |
+| rc-unstratified | efron | martingale residuals | cox_residual | 0.0499 | 2.48e+07 | yes |  |
 | rc-unstratified | efron | score residuals | cox_residual | 0.0735 | 3.31e+07 | yes |  |
 | rc-unstratified | efron | dfbeta residuals | cox_residual | 0.000204 | 1.01e+05 | yes |  |
 | rc-unstratified | efron | robust per row | cox_variance | 0.00404 | 2.45e+06 | yes |  |
@@ -600,8 +600,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | recurrent | breslow | information at beta_fixed | cox_function | 0.0135 | 2.95e+10 | yes |  |
 | recurrent | breslow | expected counts at pprof_py's beta | closed_form | 3.52e-05 | 6.16e+06 | yes |  |
 | recurrent | breslow | expected counts at each side's beta | cox_baseline | 3.52e-07 | 6.17e+04 | yes |  |
-| recurrent | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.78e+06 | yes |  |
-| recurrent | breslow | martingale residuals | cox_residual | - | 7.69e+06 | yes |  |
+| recurrent | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 1.39e-07 | 1.78e+06 | yes |  |
+| recurrent | breslow | martingale residuals | cox_residual | 4e-07 | 7.69e+06 | yes |  |
 | recurrent | breslow | score residuals | cox_residual | 6.66e-07 | 1.3e+07 | yes |  |
 | recurrent | breslow | dfbeta residuals | cox_residual | 2.37e-09 | 4.48e+04 | yes |  |
 | recurrent | breslow | robust per row | cox_variance | 9.18e+04 | 8.8e+04 | explained | D-56 |
@@ -620,8 +620,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | recurrent | efron | information at beta_fixed | cox_function | 0.0152 | 2.87e+10 | yes |  |
 | recurrent | efron | expected counts at pprof_py's beta | closed_form | 3.08e-05 | 6.16e+06 | yes |  |
 | recurrent | efron | expected counts at each side's beta | cox_baseline | 2.8e-07 | 6.16e+04 | yes |  |
-| recurrent | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 1.75e+06 | yes |  |
-| recurrent | efron | martingale residuals | cox_residual | - | 7.69e+06 | yes |  |
+| recurrent | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 2.67e-07 | 1.75e+06 | yes |  |
+| recurrent | efron | martingale residuals | cox_residual | 4e-07 | 7.69e+06 | yes |  |
 | recurrent | efron | score residuals | cox_residual | 7.11e-07 | 1.3e+07 | yes |  |
 | recurrent | efron | dfbeta residuals | cox_residual | 2.95e-09 | 4.48e+04 | yes |  |
 | recurrent | efron | robust per row | cox_variance | 6.24e-08 | 8.72e+04 | yes |  |
@@ -640,13 +640,13 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | zero-weights | breslow | information at beta_fixed | cox_function | 0.00519 | 8.4e+10 | yes |  |
 | zero-weights | breslow | expected counts at pprof_py's beta | closed_form | 7.61e-06 | 1.37e+08 | yes |  |
 | zero-weights | breslow | expected counts at each side's beta | cox_baseline | 9.52e-08 | 1.37e+06 | yes |  |
-| zero-weights | breslow | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 2.57e+07 | yes |  |
-| zero-weights | breslow | martingale residuals | cox_residual | - | 3.79e+07 | yes |  |
+| zero-weights | breslow | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 9.39e-07 | 2.57e+07 | yes |  |
+| zero-weights | breslow | martingale residuals | cox_residual | 4.88e-07 | 3.79e+07 | yes |  |
 | zero-weights | breslow | score residuals | cox_residual | 2.13e-06 | 6.56e+07 | yes |  |
 | zero-weights | breslow | dfbeta residuals | cox_residual | 7.81e-09 | 1.28e+05 | yes |  |
 | zero-weights | breslow | robust per row | cox_variance | 8.76e-07 | 1.05e+07 | yes |  |
 | zero-weights | breslow | robust clustered | cox_variance | 5.89e-07 | 9.36e+06 | yes |  |
-| zero-weights | efron | iterations, default and tight | exact |    0 | - | explained | D-58 |
+| zero-weights | efron | iterations, default and tight | exact |    0 | - | yes |  |
 | zero-weights | efron | coefficients, tight | cox_coefficient | 2.75e+05 | 1.75e+05 | explained | D-58 |
 | zero-weights | efron | log-likelihood, tight | cox_function | 5.51e+08 | 5.91e+07 | explained | D-58 |
 | zero-weights | efron | standard errors, tight | cox_variance | 1.72e+03 | 1.38e+03 | explained | D-58 |
@@ -660,8 +660,8 @@ Result: 583 of 583 rows pass; 61 rows are explained by a register entry.
 | zero-weights | efron | information at beta_fixed | cox_function | 5.43e+09 | 7.75e+10 | explained | D-58 |
 | zero-weights | efron | expected counts at pprof_py's beta | closed_form | 1.48e-05 | 1.39e+08 | yes |  |
 | zero-weights | efron | expected counts at each side's beta | cox_baseline | 4.48e+04 | 1.39e+06 | explained | D-58 |
-| zero-weights | efron | baseline cumulative hazard (basehaz, centered = FALSE) | cox_baseline | - | 2.05e+07 | explained | D-58 |
-| zero-weights | efron | martingale residuals | cox_residual | - | 3.79e+07 | explained | D-58 |
+| zero-weights | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 3.77e+06 | 2.05e+07 | explained | D-58 |
+| zero-weights | efron | martingale residuals | cox_residual | 3.94e+06 | 3.79e+07 | explained | D-58 |
 | zero-weights | efron | score residuals | cox_residual | 1.34e+07 | 6.56e+07 | explained | D-58 |
 | zero-weights | efron | dfbeta residuals | cox_residual | 4.16e+04 | 1.28e+05 | explained | D-58 |
 | zero-weights | efron | robust per row | cox_variance | 1.19e+05 | 7.05e+06 | explained | D-58 |

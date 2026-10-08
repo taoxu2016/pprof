@@ -37,14 +37,32 @@ ratio <- function(a, b, tier) {
 
 state <- new.env()
 state$rows <- list()
+# A missing ratio means the two outputs could not be compared (their lengths differ): a failure
+# unless a register entry explains it, never a pass.
 add <- function(case, ties, quantity, tier, agreement, controls = NULL, note = "") {
   weakest <- if (length(controls)) min(unlist(controls)) else NA_real_
-  ok <- (is.na(agreement) || agreement <= 1) && (is.na(weakest) || weakest >= margin)
+  ok <- !is.na(agreement) && agreement <= 1 && (is.na(weakest) || weakest >= margin)
+  if (ok) note <- ""  # a row that passes needs no explanation
   state$rows[[length(state$rows) + 1]] <- data.frame(case = case, ties = ties, quantity = quantity, tier = tier,
                                                      agreement = agreement, weakest_control = weakest, ok = ok,
                                                      note = note)
 }
 other <- function(ties) if (ties == "breslow") "efron" else "breslow"
+
+# Step functions on different grids, compared where pprof_py reports them: pprof_py gives the
+# baseline at event times and the cumulative incidence at its own times, survival at every distinct
+# time (censoring times and strata without events included). Each pprof_py point is matched to
+# survival's at the same stratum and the same time, bit for bit; a point survival lacks leaves the
+# reference value missing, so the row fails as not comparable.
+at_points <- function(keys, reference_keys, reference_values) {
+  reference_values <- unlist(reference_values)
+  index <- match(keys, reference_keys)
+  if (anyNA(index)) return(rep(NA_real_, length(keys) + 1))
+  reference_values[index]
+}
+baseline_keys <- function(stratum, time, stratified) {
+  if (stratified) sprintf("%s|%a", unlist(stratum), unlist(time)) else sprintf("%a", unlist(time))
+}
 
 # When the last Newton step lowers the log-likelihood at rounding level, pprof_py halves it (up to
 # 20 times) before it tests convergence and survival keeps it whole (D-57). The two paths agree up
@@ -107,15 +125,31 @@ calibrate_cox <- function(id, fx) {
         ratio(py$measures$expected, r$expected$at_r_beta$provider_expected, "cox_baseline"),
         list(other_ties = ratio(fx$pprof_py[[other(ties)]]$measures$expected, py$measures$expected, "cox_baseline")),
         note = fit_note)
-    add(id, ties, "baseline cumulative hazard (basehaz, centered = FALSE)", "cox_baseline",
-        ratio(py$baseline$public_cumulative_hazard, r$basehaz$hazard, "cox_baseline"),
+    stratified <- isTRUE(def$stratified)
+    py_keys <- baseline_keys(py$baseline$raw$stratum, py$baseline$raw$time, stratified)
+    r_keys <- baseline_keys(r$basehaz$stratum, r$basehaz$time, stratified)
+    py_hazard <- unlist(py$baseline$public_cumulative_hazard)
+    baseline_note <- note
+    if (identical(id, "zero-weights") && anyNA(match(py_keys, r_keys))) {
+      # pprof_py's baseline also has the times of zero-weight events, which survival's fit leaves out
+      # (M-25): the common times are compared, and the extra ones are D-58's.
+      common <- !is.na(match(py_keys, r_keys))
+      py_keys <- py_keys[common]
+      py_hazard <- py_hazard[common]
+      baseline_note <- "D-58"
+    }
+    survival_hazard <- at_points(py_keys, r_keys, r$basehaz$hazard)
+    add(id, ties, "baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE)", "cox_baseline",
+        ratio(py_hazard, survival_hazard, "cox_baseline"),
         list(other_ties = ratio(fx$pprof_py[[other(ties)]]$baseline$public_cumulative_hazard,
-                                py$baseline$public_cumulative_hazard, "cox_baseline")), note = note)
+                                py$baseline$public_cumulative_hazard, "cox_baseline")), note = baseline_note)
     if (!is.null(py$residuals)) {
       kept <- unlist(fx$survival$kept_rows) + 1L
+      # pprof_py's residuals for the rows survival fitted: a vector (martingale) or a list of columns.
+      kept_rows <- function(v) if (is.list(v)) lapply(v, function(column) unlist(column)[kept]) else unlist(v)[kept]
       for (q in c("martingale", "score", "dfbeta")) {
         add(id, ties, paste(q, "residuals"), "cox_residual",
-            ratio(lapply(py$residuals[[q]], function(v) unlist(v)[kept]), r$residuals[[q]], "cox_residual"),
+            ratio(kept_rows(py$residuals[[q]]), r$residuals[[q]], "cox_residual"),
             list(other_ties = ratio(fx$pprof_py[[other(ties)]]$residuals[[q]], py$residuals[[q]], "cox_residual")),
             note = note)
       }
@@ -166,10 +200,10 @@ calibrate_competing <- function(id, fx) {
       add(id, ties, label("iterations, default and tight"), "exact",
           ratio(c(a$default$iterations, a$tight$iterations), c(b$default$iterations, b$tight$iterations), "exact"))
       tight_ratio <- ratio(a$tight$coef, b$tight$coef, "cox_coefficient")
+      fit_note <- last_step_note(tight_ratio, a$tight$coef, b$tight$coef, a$iterates, a$tight$iterations)
       add(id, ties, label("coefficients, tight"), "cox_coefficient", tight_ratio,
           list(other_ties = ratio(fx$pprof_py[[other(ties)]]$fine_gray[[key]]$tight$coef, a$tight$coef,
-                                  "cox_coefficient")),
-          note = last_step_note(tight_ratio, a$tight$coef, b$tight$coef, a$iterates, a$tight$iterations))
+                                  "cox_coefficient")), note = fit_note)
       add(id, ties, label("robust covariance, tight"), "cox_variance",
           ratio(a$tight$covariance, b$tight$covariance, "cox_variance"), note = if (ties == "breslow") "D-56" else "")
       add(id, ties, label("model-based covariance, tight"), "cox_variance",
@@ -178,9 +212,13 @@ calibrate_competing <- function(id, fx) {
         ca <- a$cumulative_incidence[[i]]
         cb <- b$cumulative_incidence[[i]]
         stratum <- if (is.null(ca$stratum)) "all" else ca$stratum
-        add(id, ties, label(sprintf("cumulative incidence, stratum %s", stratum)),
-            "cox_baseline", max(ratio(ca$time, cb$time, "exact"),
-                                ratio(ca$cumulative_incidence, cb$cumulative_incidence, "cox_baseline")))
+        keys <- sprintf("%a", unlist(ca$time))
+        reference_keys <- sprintf("%a", unlist(cb$time))
+        survival_incidence <- lapply(cb$cumulative_incidence, function(v) at_points(keys, reference_keys, v))
+        incidence_ratio <- ratio(ca$cumulative_incidence, survival_incidence, "cox_baseline")
+        # The incidence inherits the coefficients' difference when D-57 explains it.
+        add(id, ties, label(sprintf("cumulative incidence at pprof_py's times, stratum %s", stratum)),
+            "cox_baseline", incidence_ratio, note = if (!is.na(incidence_ratio) && incidence_ratio > 1) fit_note else "")
       }
     }
   }
