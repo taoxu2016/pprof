@@ -1,0 +1,87 @@
+# Regenerate the Cox reference fixtures, by hand (CoxPH brief §12; dev/reference/cox/README.md).
+#
+# The job builds the generator's pinned environments (Python 3.12.3 with dev/reference/cox/
+# requirements.txt and pprof_py at commit 9320766; R 4.4.0 with the isolated library of
+# setup_cox_library.R from the CRAN snapshot of DEC-017), regenerates both fixture sets into a
+# scratch folder, and uploads them with a diff report against the committed fixtures and a
+# calibration report. Nothing is committed: replacing the committed fixtures needs the project
+# lead's approval and the diff report (CLAUDE.md).
+name: cox-fixtures
+
+on:
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  regenerate:
+    runs-on: windows-latest
+    name: regenerate the Cox fixtures (R 4.4.0, Python 3.12.3)
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      OMP_THREAD_LIMIT: 1
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/checkout@v5
+        with:
+          repository: UM-KevinHe/pprof_py
+          ref: 9320766e35e5b385d596a2b75418192098a124c4
+          path: pprof_py_checkout
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.4.0"
+          use-public-rspm: false
+
+      - name: Use the CRAN snapshot of the reference library
+        shell: Rscript {0}
+        run: |
+          cat('options(repos = c(CRAN = "https://packagemanager.posit.co/cran/2026-10-01"))\n',
+              file = file.path(R.home("etc"), "Rprofile.site"), append = TRUE)
+
+      - name: Build the isolated R library
+        shell: Rscript {0}
+        run: |
+          install.packages(c("callr", "jsonlite"))
+          source("dev/reference/cox/setup_cox_library.R")
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12.3"
+
+      - name: Build the Python environment
+        shell: bash
+        run: |
+          python -m venv dev/reference/cox/venv
+          dev/reference/cox/venv/Scripts/python -m pip install --no-deps -r dev/reference/cox/requirements.txt
+          dev/reference/cox/venv/Scripts/python -m pip install tzdata==2026.5  # pandas 3 needs it on Windows
+          dev/reference/cox/venv/Scripts/python -m pip install --no-deps ./pprof_py_checkout
+
+      - name: Regenerate the fixtures
+        shell: bash
+        env:
+          PPROF_PY: pprof_py_checkout
+          RSCRIPT: Rscript
+        run: |
+          dev/reference/cox/venv/Scripts/python dev/reference/cox/generate.py \
+            --out-core regenerated/core --out-full regenerated/full
+
+      - name: Compare with the committed fixtures and calibrate
+        if: always()
+        shell: bash
+        run: |
+          Rscript dev/reference/cox/compare.R tests/testthat/fixtures/cox regenerated/core --report regenerated/core-diff.md || true
+          Rscript dev/reference/cox/compare.R validation/fixtures/cox regenerated/full --report regenerated/full-diff.md || true
+          Rscript dev/reference/cox/calibrate.R regenerated/cox-calibration-report.md regenerated/core regenerated/full
+          for f in regenerated/core-diff.md regenerated/full-diff.md; do
+            echo "::notice title=$(basename $f)::$(grep -m1 '^- Cases' $f)"
+          done
+
+      - name: Upload the fixtures and the reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cox-fixtures-regenerated
+          path: regenerated/
+          if-no-files-found: ignore
