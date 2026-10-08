@@ -134,7 +134,7 @@ def main():
                                   capture_output=True, text=True, timeout=7200)
             result = json.loads(proc.stdout.strip().splitlines()[-1]) if proc.returncode == 0 else {}
             rows.append({"scenario": sc["id"], "n": sc["n"], "providers": sc["m"], "covariates": sc["p"],
-                         "task": task, "status": "ok" if proc.returncode == 0 else proc.stderr.strip()[-200:],
+                         "task": task, "status": "ok" if proc.returncode == 0 else " ".join(proc.stderr.split())[-200:],
                          **{k: result.get(k) for k in ("first_s", "median_s", "min_s", "max_s", "runs",
                                                        "peak_before_mb", "peak_after_mb", "numba_threads")}})
             with open(out_file, "w", newline="", encoding="utf-8") as handle:

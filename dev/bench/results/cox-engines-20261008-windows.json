@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-08",
+  "commit": "69d007d779c9455011275f49a12ed6402e2b7c6a",
+  "r": "R version 4.4.0 (2024-04-24 ucrt)",
+  "platform": "x86_64-w64-mingw32",
+  "os": "Windows 11 x64 (build 22621)",
+  "cpu": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+  "logical_cores": 8,
+  "blas": "",
+  "lapack": "3.12.0",
+  "packages": {
+    "survival": "3.8.12",
+    "glmnet": "5.1",
+    "Matrix": "1.7.6",
+    "bench": "1.1.4",
+    "callr": "3.8.0"
+  },
+  "threads": "OMP_THREAD_LIMIT = 1, OMP_NUM_THREADS = 1; survival and glmnet are single-threaded"
+}

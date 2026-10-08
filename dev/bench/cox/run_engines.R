@@ -126,7 +126,7 @@ for (i in seq_len(nrow(scenarios))) {
     res <- tryCatch(
       callr::r(run_task, args = list(dir = dir, task = task, scenarios_file = scenarios_file),
                env = c(callr::rcmd_safe_env(), OMP_THREAD_LIMIT = "1", OMP_NUM_THREADS = "1"), timeout = 7200),
-      error = function(e) list(status = conditionMessage(e))
+      error = function(e) list(status = gsub("[\r\n]+", " ", conditionMessage(e)))  # one CSV line
     )
     value <- function(name) if (is.null(res[[name]])) NA else res[[name]]
     measures <- c("first_s", "median_s", "min_s", "max_s", "runs", "peak_before_mb", "peak_after_mb", "gc_max_mb")
