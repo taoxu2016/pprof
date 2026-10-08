@@ -1,6 +1,6 @@
 # CoxPH design (Phase C0)
 
-> **Status: the Phase C0 deliverable of `dev/coxph_brief.md` (§9), 2026-10-07, for the C0 gate.** Its decisions were made under the project lead's delegation of 2026-10-07 (DEC-087 to DEC-093; M-23 to M-41). The gate confirms them, and Phases C1 to C6 implement them.
+> **Status: the Phase C0 deliverable of `dev/coxph_brief.md` (§9), 2026-10-07; approved at the C0 gate (2026-10-08).** Its decisions were made under the project lead's delegation of 2026-10-07 (DEC-087 to DEC-093; M-23 to M-41), and the project lead confirmed them at the gate. Phases C1 to C6 implement them.
 
 This document says how the Cox models of pprof_py v0.7.0 enter `pprof`:
 

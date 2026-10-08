@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C0 (design and decisions) delivered; at the C0 gate, awaiting the project lead's approval. Phase C1 has not started.
+**Status:** Phase C0 closed (the project lead approved its gate on 2026-10-08). Phase C1, reference capture, is in progress on `coxph/phase-1`.
 
 ## 2026-10-07
 
@@ -33,3 +33,14 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
   - the manual workflow that regenerates the Cox fixtures (brief §12), which comes with the C1 generator;
   - timing `devtools::test()` per file, since COXPH_DESIGN §C.2 runs it before and after every data-layer commit of C2.
 - Next step: the project lead's approval of the C0 gate; then the pull request of `coxph/phase-0` into `main`, and Phase C1 (reference capture) on `coxph/phase-1` when the lead asks for it.
+
+## 2026-10-08: the C0 gate closed
+
+- The project lead approved closing the C0 gate and asked to continue with the recommendations of the gate report wherever a decision is needed. In particular:
+  - the delegated decisions stand: DEC-087 to DEC-093, M-23 to M-41, and the Class B items D-56 to D-61, D-64, and D-72 are confirmed by the project lead; a methodology owner's confirmation still waits for M-16;
+  - the brief's title no longer says "(draft)";
+  - the remedy for the processor dependence of the fixture-platform CI job (D-53), building lme4 there with Eigen's cache query turned off and its cache sizes fixed at the fixtures' machine's, is tried in C1 and kept only if it reproduces the fixtures;
+  - `devtools::test()` is timed per file in C1.
+- CI on `cb5b99e`, the C0 head: check, coverage, lint, and pkgdown passed; in `rewrite-reference` (run 37785727924), the three per-platform jobs matched pprof 1.0.3 on their runners (368 of 368), and the fixture-platform job failed the 42 lme4-backed cases on an AMD Zen 3 runner: the sixth run that records a processor, and the sixth to fit D-53's pattern.
+- The pull request of `coxph/phase-0` into `main` goes through the compare page (`gh` is not installed here): <https://github.com/taoxu2016/pprof/compare/main...coxph/phase-0?expand=1>.
+- Next step: Phase C1 on `coxph/phase-1`, stacked on `coxph/phase-0` until its pull request is merged; first, its plan.

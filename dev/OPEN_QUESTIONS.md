@@ -30,7 +30,7 @@ Added after Phase 0:
 
 ## The CoxPH phase
 
-Questions raised by the CoxPH brief (`dev/coxph_brief.md` §10, Q1 to Q16) and by the Phase C0 design (`dev/design/COXPH_DESIGN.md`). Their reference is pprof_py v0.7.0 (DEC-086), so a proposed default reproduces pprof_py. The project lead delegated them on 2026-10-07 ("use your best judgement or recommendation for the decisions"): each is decided as recommended, as the Phase 8 decisions were (DEC-080 to DEC-085), and is listed for confirmation by the methodology owners once M-16 names them. The Class B items are also in the CoxPH section of `dev/DISCREPANCIES.md`.
+Questions raised by the CoxPH brief (`dev/coxph_brief.md` §10, Q1 to Q16) and by the Phase C0 design (`dev/design/COXPH_DESIGN.md`). Their reference is pprof_py v0.7.0 (DEC-086), so a proposed default reproduces pprof_py. The project lead delegated them on 2026-10-07 ("use your best judgement or recommendation for the decisions"): each is decided as recommended, as the Phase 8 decisions were (DEC-080 to DEC-085), and is listed for confirmation by the methodology owners once M-16 names them. The project lead confirmed the decisions at the C0 gate (2026-10-08). The Class B items are also in the CoxPH section of `dev/DISCREPANCIES.md`.
 
 | ID | Question | Proposed default | Related |
 |---|---|---|---|

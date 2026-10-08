@@ -955,7 +955,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 
 ## The CoxPH phase: differences from pprof_py v0.7.0
 
-The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0.3, which has none. The classes above apply with pprof_py as the reference (`dev/coxph_brief.md` §3.4). The defects found in pprof_py while writing the brief (its Appendix B, B1 to B13) are all registered here. The decisions marked "delegation" were made under the project lead's delegation of 2026-10-07 (DEC-087) and await confirmation by a methodology owner (M-16). Minimal examples are the scripts in `dev/design/coxph-facts/`, run against pprof_py v0.7.0 and R with `survival` 3.8-12 and `glmnet` 5.1; code locations in pprof_py are `pprof_py/<path>:line` at `9320766`.
+The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0.3, which has none. The classes above apply with pprof_py as the reference (`dev/coxph_brief.md` §3.4). The defects found in pprof_py while writing the brief (its Appendix B, B1 to B13) are all registered here. The decisions marked "delegation" were made under the project lead's delegation of 2026-10-07 (DEC-087), confirmed by the project lead at the C0 gate (2026-10-08), and await confirmation by a methodology owner (M-16). Minimal examples are the scripts in `dev/design/coxph-facts/`, run against pprof_py v0.7.0 and R with `survival` 3.8-12 and `glmnet` 5.1; code locations in pprof_py are `pprof_py/<path>:line` at `9320766`.
 
 | ID | Component | Class | Status | One line |
 |---|---|---|---|---|
