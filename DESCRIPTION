@@ -33,12 +33,14 @@ Depends:
     R (>= 4.4.0)
 Suggests:
     caret,
+    glmnet (>= 5.0),
     jsonlite,
     knitr,
     logistf,
     olsrr,
     pROC,
     rmarkdown,
+    survival (>= 3.5-8),
     testthat (>= 3.0.0),
     withr
 URL: https://github.com/UM-KevinHe/pprof, https://um-kevinhe.github.io/pprof/
