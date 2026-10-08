@@ -488,28 +488,47 @@ Each default is the current behavior (DEC-092), proved as in §C.2.
 
 ## F. Algorithms and their cost
 
-1. **Expected events at the national baseline** (K-136, K-137).
-   - Computed once at fit time and stored per observation as `expected_events`; `expected_outcome()` scales it.
-   - Steps:
-     1. Compute η_i = x_i'β̂ + o_i and r_i = exp(η_i − max η).
-     2. Take the distinct event times and the number of events d(t) at each.
-     3. Bin entries and exits with `findInterval()` and take suffix sums, giving the risk-set sums RS(t) = Σ_{start_i < t ≤ stop_i} r_i as the difference of two suffix sums, as pprof_py computes them (K-136).
-     4. Λ0 is the cumulative sum of d(t) / RS(t).
-     5. Each observation's expected events are r_i [Λ0(stop_i) − Λ0(start_i)].
-   - Cost: O(n log n); 0.34 s at 1,000,000 rows in plain R (`07_cox_fit_timing_r.txt`), with Σ_j E_j = O exactly.
-2. **Direct standardization** (K-138).
-   - E^(j) is the sum over provider j's event times t of d_j(t) RS(t) / RS_j(t). RS_j(t) comes from the same suffix sums within provider j, and RS(t) from the national sums by binary search.
-   - Cost: O(n log n).
-3. **The exact test and its limits** (K-140): closed forms with `ppois()`, `qchisq()`, and Byar's approximation; O(m).
-4. **The mid-p test and its limits** (K-141).
-   - The test is a closed form, O(m).
-   - The limits come from root finding per provider: `uniroot()` with pprof_py's equation and tolerances, bracketed by the exact limits.
-   - Target: under 1 s at 3,000 providers, against pprof_py's 50 s (`07_cox_fit_timing.txt`).
-5. **Fits.**
-   - `survival`'s fitters: O(np²) per iteration plus O(n log n).
-   - `glmnet`'s path.
-   - Cross-validation: K + 1 paths.
-6. **Memory.** As §B.2.
+### F.1 Expected events at the national baseline
+
+K-136, K-137.
+
+- Computed once at fit time and stored per observation as `expected_events`; `expected_outcome()` scales it.
+- Steps:
+  1. Compute η_i = x_i'β̂ + o_i and r_i = exp(η_i − max η).
+  2. Take the distinct event times and the number of events d(t) at each.
+  3. Bin entries and exits with `findInterval()` and take suffix sums, giving the risk-set sums RS(t) = Σ_{start_i < t ≤ stop_i} r_i as the difference of two suffix sums, as pprof_py computes them (K-136).
+  4. Λ0 is the cumulative sum of d(t) / RS(t).
+  5. Each observation's expected events are r_i [Λ0(stop_i) − Λ0(start_i)].
+- Cost: O(n log n); 0.34 s at 1,000,000 rows in plain R (`07_cox_fit_timing_r.txt`), with Σ_j E_j = O exactly.
+
+### F.2 Direct standardization
+
+K-138.
+
+- E^(j) is the sum over provider j's event times t of d_j(t) RS(t) / RS_j(t). RS_j(t) comes from the same suffix sums within provider j, and RS(t) from the national sums by binary search.
+- Cost: O(n log n).
+
+### F.3 The exact test and its limits
+
+K-140. Closed forms with `ppois()`, `qchisq()`, and Byar's approximation; O(m).
+
+### F.4 The mid-p test and its limits
+
+K-141.
+
+- The test is a closed form, O(m).
+- The limits come from root finding per provider: `uniroot()` on pprof_py's equation, bracket, and split point, with its tolerances (§A.4). R's `uniroot()` and SciPy's `brentq` take different paths to a root within those tolerances, which the `root` tier allows (§G.2).
+- Target: under 1 s at 3,000 providers, against pprof_py's 50 s (`07_cox_fit_timing.txt`).
+
+### F.5 Fits
+
+- `survival`'s fitters: O(np²) per iteration plus O(n log n).
+- `glmnet`'s path.
+- Cross-validation: K + 1 paths.
+
+### F.6 Memory
+
+As §B.2.
 
 ## G. Validation
 

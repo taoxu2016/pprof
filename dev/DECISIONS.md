@@ -882,7 +882,7 @@ The decisions below were made in CoxPH Phase C0 under the project lead's delegat
 - Context: The brief's §5.7 proposed four fit functions; the design (COXPH_DESIGN §B) works out what each needs.
 - Decision: Three fit functions, `fit_cox_stratified()`, `fit_cox_penalized()` with `select_lambda()`, and `fit_fine_gray()`, plus `baseline_hazard()`. Cause-specific models are `fit_cox_stratified()` with the event of interest written in `Surv()` (for example `Surv(time, status == 1)`), so there is no `fit_cox_cause_specific()`. No pooled (unstratified) Cox model in this phase. The arguments follow `dev/NAMING.md` §4, extended by this phase.
 - Alternatives considered: a cause-specific fit function (it would only recode the event); a `stratify` argument for the pooled model (pprof_py offers it, but He and Schaubel's measures use the stratified fit, and the pooled model can come with the explicit-effect brief).
-- Consequences: `dev/NAMING.md` gains the functions and arguments of COXPH_DESIGN §B.4.
+- Consequences: `dev/NAMING.md` gains the functions, arguments, classes, and fields of COXPH_DESIGN §B.
 
 ### DEC-091: The survival adapter calls survival's fitters, and `coxph()` only where it must
 
