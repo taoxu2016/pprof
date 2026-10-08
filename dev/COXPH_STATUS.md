@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C0 closed (the project lead approved its gate on 2026-10-08). Phase C1, reference capture, is in progress on `coxph/phase-1`.
+**Status:** Phase C1 (reference capture) delivered on `coxph/phase-1`; at the C1 gate, awaiting the project lead's approval. Phase C0 closed on 2026-10-08.
 
 ## 2026-10-07
 
@@ -44,3 +44,34 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
 - CI on `cb5b99e`, the C0 head: check, coverage, lint, and pkgdown passed; in `rewrite-reference` (run 37785727924), the three per-platform jobs matched pprof 1.0.3 on their runners (368 of 368), and the fixture-platform job failed the 42 lme4-backed cases on an AMD Zen 3 runner: the sixth run that records a processor, and the sixth to fit D-53's pattern.
 - The pull request of `coxph/phase-0` into `main` goes through the compare page (`gh` is not installed here): <https://github.com/taoxu2016/pprof/compare/main...coxph/phase-0?expand=1>.
 - Next step: Phase C1 on `coxph/phase-1`, stacked on `coxph/phase-0` until its pull request is merged; first, its plan.
+
+## 2026-10-08: Phase C1 at its gate
+
+- Plan: `dev/design/COXPH_C1_PLAN.md`, adopted under the project lead's delegation at the C0 gate; its decisions are DEC-094 to DEC-097.
+- Delivered (brief §4, row C1):
+  - the generator, `dev/reference/cox/` (`generate.py`, `cases.py`, `survival.R`, `convert.R`, `calibrate.R`, `compare.R`, README), with its pinned environments: Python 3.12.3 from `uv` with pprof_spark's pins and pprof_py at `9320766`, checked module by module; an isolated R library with `survival` 3.8-12, `glmnet` 5.1, and `jsonlite` from the DEC-017 snapshot (DEC-095);
+  - the imported inputs, vendored from their commits with their SHA-256: pprof_spark's six Cox cases and pprof_py's penalized and competing-risk datasets;
+  - 20 fixtures with manifests: 7 shipped in `tests/testthat/fixtures/cox/` (396 KB), 13 in `validation/fixtures/cox/` (2.1 MB); a second generation reproduced every fixture and manifest byte for byte (DEC-096);
+  - the calibration report, `validation/cox-calibration-report.md`, and eight Cox tiers in `tests/testthat/helper-tolerances.R` (DEC-097): all 598 scored rows pass, and 46 rows are differences the registers explain (D-56 14, D-57 3, D-58 18, D-64 9, M-23 2); pprof_py here against pprof_spark's committed outputs: default fits within 1e-14, tight fits within 4e-9;
+  - `tests/testthat/test-cox-fixtures.R`: every fixture against its manifest, and the installed `survival` and `glmnet` reproducing the fixtures' engine outputs; `survival` and `glmnet` in Suggests;
+  - the benchmark baseline, `dev/bench/cox/` and `dev/bench/results/cox-*-20261008-windows.*`;
+  - CI: `cox-fixtures.yaml`, which regenerates the fixtures by hand into an artifact (not yet dispatched), and the fixture-platform job's lme4 build (DEC-094), confirmed on a Zen 4 runner.
+- Found:
+  - with Efron ties, `glmnet` 5.x's `coxnet.deviance()` uses another saturated term than pprof_py (a constant 336.7 on `penalized_wide`), so the cross-validation deviance is computed with pprof_py's (K-144, COXPH_DESIGN §E.2);
+  - D-57 occurs at tight control too: pprof_py halved the last step of a Fine–Gray fit with Efron ties once or five times;
+  - the `large-mean` case exercises D-64 only in part: its fitted linear predictor stays below pprof_py's clipping at 700;
+  - on the baseline's data pprof_py fits faster than `survival` at 1,000,000 rows, with one numba thread or eight (4.3 s against `agreg.fit()`'s 17.2 s; robust variance 5.2 s against `coxph()`'s 130 s), so the brief's "no slower than pprof_py" will not hold for large fits;
+  - the first calibration report counted outputs it could not compare as passes; corrected in `ed9c04e`.
+- `devtools::test()` per file: 13.1 minutes in all (68 files, the slowest 77 s), so the 3 hours at the C0 gate came from that run's circumstances.
+- Gate checks:
+  - `devtools::document()` changed nothing;
+  - `devtools::test()`: 68 files, 1,126 tests, 7,928 expectations; none failed or skipped, no warnings or errors (424 s);
+  - `R CMD check --as-cran --no-manual`: 0 errors, 0 warnings, the 2 notes of the previous gates (780 s);
+  - `validation/run-reference.R`: 368 of 368 cases, none skipped, no provider within tolerance of a flag threshold; the report equals the committed one but for its date and commit (117 s);
+  - the Cox comparisons: the calibration report above, and `test-cox-fixtures.R` (166 expectations).
+- Open for the project lead:
+  - approving the Cox tiers (DEC-097), since a tolerance changes only with sign-off;
+  - regenerating the fixtures with a stronger `large-mean` case (a covariate near 3,000), which needs approval and a diff report;
+  - the brief's "no slower than pprof_py" for large fits: accept it as not met, or look in C2 for a cheaper robust variance than `coxph()` with one cluster per row;
+  - dispatching `cox-fixtures.yaml` once, to try the workflow.
+- Next step: the project lead's approval of the C1 gate; then Phase C2 (the data layer and the stratified Cox model) on `coxph/phase-2`.
