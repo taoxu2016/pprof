@@ -1,0 +1,14 @@
+R version 4.4.0 (2024-04-24 ucrt); lme4 2.0-6 from the CRAN snapshot of 2026-10-01; processor here: Intel64 Family 6 Model 140 Stepping 1, GenuineIntel
+
+zen3 (-DEIGEN_NO_CPUID -DEIGEN_DEFAULT_L1_CACHE_SIZE=32768 -DEIGEN_DEFAULT_L2_CACHE_SIZE=524288 -DEIGEN_DEFAULT_L3_CACHE_SIZE=33554432):
+  lme4 loaded from the scratch build: C:/Users/taoxu/AppData/Local/Temp/claude/c--Users-taoxu-python-KevinHe-pprof-rewrite-pprof/f3853950-3403-4f83-9cac-87cc60d5229f/scratchpad/facts/lme4-cache-sizes/zen3/lme4
+  - Compared and matching: 326; failing: 42; skipped: 0.
+  - Largest absolute difference over all compared values: 0.00335; largest relative difference: 3.92.
+  failing cases (42): logis_re-binary-columns, logis_re-extreme, logis_cre-binary, logis_cre-extreme, logis_re-extreme-control, logis_cre-extreme-control, logis_re-vectors-matrix, logis_re-vectors-chr-df, logis_re-extreme-chr, logis_cre-extreme-int, SM_output-linear-re-both, test-logis-re-two.sided, test-logis-re-greater, test-logis-re-less, SM_output-logis-re-both, confint-logis-re-alpha, confint-logis-re-sm, summary-logis-re, SM_output-linear-cre-both, test-logis-cre-two.sided, test-logis-cre-greater, test-logis-cre-less, summary-logis-cre, summary-logis-re-extreme, test-logis-cre-extreme-two.sided, test-logis-cre-extreme-greater, test-logis-cre-extreme-less, SM_output-logis-cre-extreme-both, confint-logis-cre-extreme-alpha, confint-logis-cre-extreme-sm, summary-logis-cre-extreme, confint-logis-re-sm-less, confint-logis-re-alpha-level90, test-logis-re-parm-level90, SM_output-logis-re-parm, summary-logis-re-parm-level90, summary-logis-cre-parm-level90, test-logis-re-extreme-chr, SM_output-logis-re-extreme-chr, confint-logis-re-extreme-chr-sm, test-logis-cre-extreme-int-parm, linear_cre-ecls
+
+fixture_machine (-DEIGEN_NO_CPUID -DEIGEN_DEFAULT_L1_CACHE_SIZE=49152 -DEIGEN_DEFAULT_L2_CACHE_SIZE=1310720 -DEIGEN_DEFAULT_L3_CACHE_SIZE=8388608):
+  lme4 loaded from the scratch build: C:/Users/taoxu/AppData/Local/Temp/claude/c--Users-taoxu-python-KevinHe-pprof-rewrite-pprof/f3853950-3403-4f83-9cac-87cc60d5229f/scratchpad/facts/lme4-cache-sizes/fixture_machine/lme4
+  - Compared and matching: 368; failing: 0; skipped: 0.
+  - Largest absolute difference over all compared values: 2e-11; largest relative difference: 3.92.
+  failing cases (0): 
+

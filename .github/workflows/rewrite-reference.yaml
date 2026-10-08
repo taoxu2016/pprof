@@ -6,8 +6,10 @@
 # - fixture-platform: the committed fixtures on the platform that produced them, Windows x86_64
 #   with R 4.4.0 (its internal BLAS and LAPACK 3.12.0) and every package from the CRAN snapshot
 #   of the reference library (2026-10-01, DEC-017), so that lme4 and Matrix match the fixture
-#   manifest. Every case of the core and full sets runs; the job fails if a case fails or if
-#   lme4 or Matrix differ from the manifest.
+#   manifest, with lme4 built from source with Eigen's cache sizes fixed at those of the machine
+#   that produced the fixtures, so that its results do not depend on the runner's processor
+#   (D-53, DEC-094). Every case of the core and full sets runs; the job fails if a case fails or
+#   if lme4 or Matrix differ from the manifest.
 # - platforms: on Linux, macOS, and Windows with a current R, the job builds pprof 1.0.3 there
 #   (dev/reference/setup_reference_library.R), regenerates both fixture sets into a scratch
 #   folder with the committed generator (never committed), reports how far they lie from the
@@ -64,6 +66,32 @@ jobs:
         run: |
           Rscript .github/scripts/ci-annotate.R dependencies hard TRUE deps::. any::sessioninfo any::devtools any::jsonlite any::withr any::testthat
           exit 1
+
+      # Eigen sizes the blocks of lme4's matrix products from the L1 cache it reads from the
+      # processor, so CRAN's lme4 binary reproduces the fixtures only on runners with the 48 KB L1
+      # cache of the machine that made them (D-53; dev/design/coxph-facts/16_lme4_cache_sizes.R).
+      # lme4 is rebuilt here from the snapshot's source with the cache query off and that machine's
+      # cache sizes, which match every case there whatever the processor (DEC-094).
+      - name: Build lme4 with the fixture machine's cache sizes
+        shell: Rscript {0}
+        run: |
+          makevars <- file.path(tempdir(), "Makevars-lme4")
+          writeLines(paste("CPPFLAGS += -DEIGEN_NO_CPUID -DEIGEN_DEFAULT_L1_CACHE_SIZE=49152",
+                           "-DEIGEN_DEFAULT_L2_CACHE_SIZE=1310720 -DEIGEN_DEFAULT_L3_CACHE_SIZE=8388608"), makevars)
+          Sys.setenv(R_MAKEVARS_USER = makevars)
+          tarball <- utils::download.packages("lme4", destdir = tempdir(), type = "source")[1, 2]
+          lib <- .libPaths()[1]
+          log <- system2(file.path(R.home("bin"), "R"), c("CMD", "INSTALL", "--preclean", paste0("--library=", lib), tarball),
+                         stdout = TRUE, stderr = TRUE)
+          if (!is.null(attr(log, "status")) || !any(grepl("EIGEN_NO_CPUID", log))) {
+            writeLines(log)
+            stop("Building lme4 from source with fixed Eigen cache sizes failed.")
+          }
+          if (!startsWith(normalizePath(find.package("lme4"), winslash = "/"), normalizePath(lib, winslash = "/"))) {
+            stop("lme4 does not load from ", lib, ", where it was built.")
+          }
+          cat(sprintf("::notice title=lme4 built from source::lme4 %s, built with %s\n", utils::packageVersion("lme4"),
+                      sub("^CPPFLAGS \\+= ", "", readLines(makevars))))
 
       - name: Require the fixtures' platform and the manifest's lme4 and Matrix
         shell: Rscript {0}

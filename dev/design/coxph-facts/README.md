@@ -21,6 +21,7 @@ Each numbered script writes the output file of the same name (`.txt`). Where an 
 | `13_pprof_py_probes.py` | pprof_py's defects B2–B5, B9, B10; the SMR golden file | Appendix A, B |
 | `14_engine_interfaces.R` | what the adapters rely on: `survival`'s fitters against `coxph()`, per-row robust variance, `glmnet`'s per-call control and `coxnet.deviance()` (added in Phase C0) | COXPH_DESIGN §E |
 | `15_eigen_cache_blocking.R`, `.cpp` | why CI's fixture-platform job fails the lme4-backed cases on some runners: Eigen sizes the blocks of its matrix products from the processor's L1 cache (added at the C0 gate) | D-53 |
+| `16_lme4_cache_sizes.R` | the same with lme4 itself: lme4 built with Eigen's cache sizes fixed at Zen 3's fails the 42 cases, and at the fixtures' machine's matches all (Phase C1) | D-53, DEC-094 |
 
 ## Running them
 
@@ -48,10 +49,11 @@ Rscript $f/12_newton_path.R && python $f/12_newton_path.py $f/12_newton_path.txt
 python $f/13_pprof_py_probes.py $f/13_pprof_py_probes.txt
 Rscript $f/14_engine_interfaces.R $f/14_engine_interfaces.txt
 Rscript $f/15_eigen_cache_blocking.R $f/15_eigen_cache_blocking.txt
+Rscript $f/16_lme4_cache_sizes.R $f/16_lme4_cache_sizes.txt
 ```
 
-R needs `survival`, `glmnet` and `data.table`, and for 15 `Rcpp`, `RcppEigen` and a C++ toolchain (Rtools on Windows, which 15 alone needs on the PATH); Python needs pprof_py's dependencies (NumPy, SciPy, pandas, numba, fast_poibin) and pytest.
+R needs `survival`, `glmnet` and `data.table`, for 15 `Rcpp`, `RcppEigen` and a C++ toolchain, and for 16 the package's dependencies and a C++ toolchain (Rtools on Windows, which 15 and 16 alone need on the PATH; 16 builds lme4 twice and runs the reference suite twice, about 20 minutes); Python needs pprof_py's dependencies (NumPy, SciPy, pandas, numba, fast_poibin) and pytest.
 
 ## The run behind the outputs
 
-On 2026-10-07, on one Windows 11 machine (8 logical cores, 7.4 GB of memory): R 4.4.0 with `survival` 3.8-12, `glmnet` 5.1 and `data.table` 1.18.6.1; Python 3.9.7 with NumPy 1.24.4, SciPy 1.13.1, pandas 2.3.3 and numba 0.57.1 (pprof_py declares Python 3.10 or later; every script and test ran under 3.9). Timings vary from run to run: an earlier run, with other work on the machine, was 20–40% slower. The whole set took about 13 minutes. The PATH held R and Git Bash's tools but not Rtools: Rtools' MSYS2 `bash` and `grep` mixed with Git Bash's lose exported variables and garble pipes. Phase C1 of the brief measures again with committed benchmarks in `dev/bench/`. 15 ran on 2026-10-08 on the same machine (an Intel Family 6 Model 140 processor, Tiger Lake, whose 48 KB L1 data cache Eigen reads) with RcppEigen 0.3.4.0.2.
+On 2026-10-07, on one Windows 11 machine (8 logical cores, 7.4 GB of memory): R 4.4.0 with `survival` 3.8-12, `glmnet` 5.1 and `data.table` 1.18.6.1; Python 3.9.7 with NumPy 1.24.4, SciPy 1.13.1, pandas 2.3.3 and numba 0.57.1 (pprof_py declares Python 3.10 or later; every script and test ran under 3.9). Timings vary from run to run: an earlier run, with other work on the machine, was 20–40% slower. The whole set took about 13 minutes. The PATH held R and Git Bash's tools but not Rtools: Rtools' MSYS2 `bash` and `grep` mixed with Git Bash's lose exported variables and garble pipes. Phase C1 of the brief measures again with committed benchmarks in `dev/bench/`. 15 and 16 ran on 2026-10-08 on the same machine (an Intel Family 6 Model 140 processor, Tiger Lake, whose 48 KB L1 data cache Eigen reads) with RcppEigen 0.3.4.0.2, and for 16 lme4 2.0-6 built from the snapshot's source.

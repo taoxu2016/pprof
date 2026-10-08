@@ -910,3 +910,14 @@ The decisions below were made in CoxPH Phase C0 under the project lead's delegat
 - Decision: The fixtures live in `tests/testthat/fixtures/cox/` as RDS, with a manifest of the pprof_py commit, the Python and R environments, and the SHA-256 of every input. The generator is `dev/reference/cox/`: a Python script adapted from pprof_spark's `reference/fixtures/generate.py` (MIT, same group) with a pinned `requirements.txt`, and an R script for the `survival` and `glmnet` outputs, run in an isolated library. pprof_spark's six cases are imported with their inputs unchanged and their commit recorded; C1 adds the cases of COXPH_DESIGN §G.1.
 - Alternatives considered: computing pprof_py's outputs in the tests through reticulate (tests would need Python).
 - Consequences: `.claude/settings.json` already protects the folder; regenerating fixtures needs the project lead's approval and a diff report.
+
+The decisions below were made in CoxPH Phase C1 under the project lead's delegation of 2026-10-08 ("continue with all your recommendations if you need decisions"), following the C1 plan (`dev/design/COXPH_C1_PLAN.md`); the C1 gate lists them for confirmation.
+
+### DEC-094: CI's fixture-platform job builds lme4 with Eigen's cache sizes fixed
+
+- Date: 2026-10-08
+- Status: accepted under the project lead's delegation (2026-10-08), as recommended at the C0 gate; CI runs on both kinds of runner confirm it
+- Context: The fixture-platform job of `rewrite-reference.yaml` failed the same 42 lme4-backed cases on every runner with an AMD Zen 3 processor and passed on Zen 5 ones (D-53). Eigen sizes the blocks of lme4's matrix products from the L1 cache it reads from the processor. lme4 2.0-6 built on the fixtures' machine with the cache query off (`EIGEN_NO_CPUID`) fails the same 42 cases with Zen 3's cache sizes and matches all 368 with that machine's (`dev/design/coxph-facts/16_lme4_cache_sizes.R`).
+- Decision: The job builds lme4 from the snapshot's source with `-DEIGEN_NO_CPUID` and the default cache sizes of the fixtures' machine (L1 48 KB, L2 1.25 MB, L3 8 MB) before it runs the reference suite, and fails if the flags do not reach the compiler. The fixtures, the tolerances, and the other jobs are unchanged.
+- Alternatives considered: rerunning the job until it lands on a 48 KB runner (a gate that passes by chance); comparing the lme4 cases only on such runners (weakens the gate on half the runs); regenerating the fixtures with a fixed-size build (needs the project lead's approval and changes nothing users run).
+- Consequences: the job compares CRAN's lme4 source, built as CRAN builds it but with Eigen's cache sizes fixed, rather than CRAN's binary; the per-platform jobs still use the binaries. The job takes a few minutes longer.
