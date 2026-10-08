@@ -1,6 +1,6 @@
 # CoxPH facts
 
-The scripts behind the evidence in the CoxPH phase brief (`dev/coxph_brief.md`, Appendices A and B) and its Phase C0 design (`dev/design/COXPH_DESIGN.md`), with the output each one produced. They compare pprof_py v0.7.0 with R's `survival` and `glmnet` and time them; 15 explains a CI failure found at the C0 gate. None of them is part of the package or its tests.
+The scripts behind the evidence in the CoxPH phase brief (`dev/coxph_brief.md`, Appendices A and B), its Phase C0 design (`dev/design/COXPH_DESIGN.md`), and the Phase C2 plan (`dev/design/COXPH_C2_PLAN.md`), with the output each one produced. They compare pprof_py v0.7.0 with R's `survival` and `glmnet` and time them; 15 explains a CI failure found at the C0 gate. None of them is part of the package or its tests.
 
 Each numbered script writes the output file of the same name (`.txt`). Where an R script and a Python script share a number, the R script runs first and leaves its results in the scratch directory, and the Python script compares and writes the output (07 and 09 also write an R output, `_r.txt`).
 
@@ -22,6 +22,10 @@ Each numbered script writes the output file of the same name (`.txt`). Where an 
 | `14_engine_interfaces.R` | what the adapters rely on: `survival`'s fitters against `coxph()`, per-row robust variance, `glmnet`'s per-call control and `coxnet.deviance()` (added in Phase C0) | COXPH_DESIGN §E |
 | `15_eigen_cache_blocking.R`, `.cpp` | why CI's fixture-platform job fails the lme4-backed cases on some runners: Eigen sizes the blocks of its matrix products from the processor's L1 cache (added at the C0 gate) | D-53 |
 | `16_lme4_cache_sizes.R` | the same with lme4 itself: lme4 built with Eigen's cache sizes fixed at Zen 3's fails the 42 cases, and at the fixtures' machine's matches all (Phase C1) | D-53, DEC-094 |
+| `17_robust_from_fitter.R` | `survival`'s fitters called as `coxph()` calls them give its fit bitwise, and its own dfbeta residuals on the fitter's result give its robust variance bitwise, in a tenth of the time (C2 plan) | DEC-098, `dev/design/COXPH_C2_PLAN.md` §2 |
+| `18_fitter_arguments.R` | what `coxph()`'s preprocessing and the row order change in `agreg.fit()`'s results, and how far single timings vary (C2 plan) | `dev/design/COXPH_C2_PLAN.md` §2 |
+| `19_survival_inputs.R` | how `Surv()`, `all.vars()`, `model.frame()`, and `model.offset()` treat the inputs the data layer checks (C2 plan) | COXPH_DESIGN §C.1 |
+| `20_baseline_offset.R` | which `survival` call gives the baseline at x = 0 and offset 0 of a fit with an offset: `survfit()` there, not `basehaz(centered = FALSE)`, on the full Cox fixture set's two offset cases (C2 plan) | M-28, D-60 |
 
 ## Running them
 
@@ -50,10 +54,14 @@ python $f/13_pprof_py_probes.py $f/13_pprof_py_probes.txt
 Rscript $f/14_engine_interfaces.R $f/14_engine_interfaces.txt
 Rscript $f/15_eigen_cache_blocking.R $f/15_eigen_cache_blocking.txt
 Rscript $f/16_lme4_cache_sizes.R $f/16_lme4_cache_sizes.txt
+Rscript $f/17_robust_from_fitter.R $f/17_robust_from_fitter.txt
+Rscript $f/18_fitter_arguments.R $f/18_fitter_arguments.txt
+Rscript --vanilla $f/19_survival_inputs.R $f/19_survival_inputs.txt
+Rscript $f/20_baseline_offset.R $f/20_baseline_offset.txt
 ```
 
 R needs `survival`, `glmnet` and `data.table`, for 15 `Rcpp`, `RcppEigen` and a C++ toolchain, and for 16 the package's dependencies and a C++ toolchain (Rtools on Windows, which 15 and 16 alone need on the PATH; 16 builds lme4 twice and runs the reference suite twice, about 20 minutes); Python needs pprof_py's dependencies (NumPy, SciPy, pandas, numba, fast_poibin) and pytest.
 
 ## The run behind the outputs
 
-On 2026-10-07, on one Windows 11 machine (8 logical cores, 7.4 GB of memory): R 4.4.0 with `survival` 3.8-12, `glmnet` 5.1 and `data.table` 1.18.6.1; Python 3.9.7 with NumPy 1.24.4, SciPy 1.13.1, pandas 2.3.3 and numba 0.57.1 (pprof_py declares Python 3.10 or later; every script and test ran under 3.9). Timings vary from run to run: an earlier run, with other work on the machine, was 20–40% slower. The whole set took about 13 minutes. The PATH held R and Git Bash's tools but not Rtools: Rtools' MSYS2 `bash` and `grep` mixed with Git Bash's lose exported variables and garble pipes. Phase C1 of the brief measures again with committed benchmarks in `dev/bench/`. 15 and 16 ran on 2026-10-08 on the same machine (an Intel Family 6 Model 140 processor, Tiger Lake, whose 48 KB L1 data cache Eigen reads) with RcppEigen 0.3.4.0.2, and for 16 lme4 2.0-6 built from the snapshot's source.
+On 2026-10-07, on one Windows 11 machine (8 logical cores, 7.4 GB of memory): R 4.4.0 with `survival` 3.8-12, `glmnet` 5.1 and `data.table` 1.18.6.1; Python 3.9.7 with NumPy 1.24.4, SciPy 1.13.1, pandas 2.3.3 and numba 0.57.1 (pprof_py declares Python 3.10 or later; every script and test ran under 3.9). Timings vary from run to run: an earlier run, with other work on the machine, was 20–40% slower. The whole set took about 13 minutes. The PATH held R and Git Bash's tools but not Rtools: Rtools' MSYS2 `bash` and `grep` mixed with Git Bash's lose exported variables and garble pipes. Phase C1 of the brief measures again with committed benchmarks in `dev/bench/`. 15 and 16 ran on 2026-10-08 on the same machine (an Intel Family 6 Model 140 processor, Tiger Lake, whose 48 KB L1 data cache Eigen reads) with RcppEigen 0.3.4.0.2, and for 16 lme4 2.0-6 built from the snapshot's source. 17 to 20 ran there on 2026-10-08, one after another, with `survival` 3.8-12 (about 6 minutes; 17 and 18 hold 1,000,000-row data sets in memory, so they should not run alongside other work); 20 reads the full Cox fixture set in `validation/fixtures/cox/`.

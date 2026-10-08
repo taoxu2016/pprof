@@ -1,0 +1,7 @@
+R version 4.4.0 (2024-04-24 ucrt), survival 3.8.12, 1000000 rows
+generated order, the baseline's call           10.00 s, 3 iterations, log-likelihood -4884331.1422284059
+generated order, coxph()'s call                10.62 s, 3 iterations, log-likelihood -4884331.1422284124
+provider order, the baseline's call             4.81 s, 3 iterations, log-likelihood -4884331.1422284059
+provider order, coxph()'s call                 11.62 s, 3 iterations, log-likelihood -4884331.1422284124
+coefficients, generated against provider order: identical with the baseline's call, identical with coxph()'s
+largest coefficient difference between the two calls: 3.5e-16

@@ -1,0 +1,21 @@
+R version 4.4.0 (2024-04-24 ucrt), survival 3.8.12
+
+rc-stratified-weights-offset: the offset's weighted mean -0.00271025 (pprof_py's offset_mean -0.00271025), unweighted mean -0.00270833
+  breslow ties, largest relative difference at pprof_py's 292 event times:
+    basehaz(centered = FALSE) against pprof_py's baseline_hazard_ 3.0e-10, against its raw baseline 2.7e-03
+    basehaz(centered = FALSE) / exp(weighted mean offset) against the raw baseline 3.0e-10
+    survfit() at x = 0 and offset 0 against the raw baseline 3.0e-10 (292 points found)
+  efron ties, largest relative difference at pprof_py's 292 event times:
+    basehaz(centered = FALSE) against pprof_py's baseline_hazard_ 6.1e-10, against its raw baseline 2.7e-03
+    basehaz(centered = FALSE) / exp(weighted mean offset) against the raw baseline 6.1e-10
+    survfit() at x = 0 and offset 0 against the raw baseline 6.1e-10 (292 points found)
+
+lt-weights-offset: the offset's weighted mean 0.02520227 (pprof_py's offset_mean 0.02520227), unweighted mean 0.02104167
+  breslow ties, largest relative difference at pprof_py's 191 event times:
+    basehaz(centered = FALSE) against pprof_py's baseline_hazard_ 8.9e-15, against its raw baseline 2.6e-02
+    basehaz(centered = FALSE) / exp(weighted mean offset) against the raw baseline 8.9e-15
+    survfit() at x = 0 and offset 0 against the raw baseline 9.0e-15 (191 points found)
+  efron ties, largest relative difference at pprof_py's 191 event times:
+    basehaz(centered = FALSE) against pprof_py's baseline_hazard_ 5.9e-15, against its raw baseline 2.6e-02
+    basehaz(centered = FALSE) / exp(weighted mean offset) against the raw baseline 5.8e-15
+    survfit() at x = 0 and offset 0 against the raw baseline 5.8e-15 (191 points found)

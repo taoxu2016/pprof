@@ -1,0 +1,25 @@
+R version 4.4.0 (2024-04-24 ucrt), survival 3.8.12 (not attached)
+all.vars(survival::Surv(time, status)): time   | status
+all.vars(Surv(time, status == 1)): time   | status
+model.frame() of Surv(time, status) ~ ...: error: could not find function "Surv"
+model.frame() of survival::Surv(time, status) ~ ...: class: Surv
+  type: right
+  status coded 1/2 becomes: 0 | 1 | 0 | 1
+  times, one of them 0: 5 | 3 | 0 | 7
+  model.offset(): -2.3025851 | -1.6094379 | -1.2039728 | -0.9162907
+  two offset() terms, model.offset(): -1.3025851 |  0.3905621 |  1.7960272 |  3.0837093
+  attr(terms, "offset"): 3 | 4
+  term.labels: x
+Surv(): logical status: 1 | 0
+Surv(): numeric status 0/1/2: warning: Invalid status value, converted to NA
+Surv(): numeric status 0/1/2: NA |  0 |  1
+Surv(): numeric status 0/1/2, type: warning: Invalid status value, converted to NA
+Surv(): numeric status 0/1/2, type: right
+Surv(): factor status, type: mright
+Surv(): start >= stop (start, stop, status by column): warning: Stop time must be > start time, NA created
+Surv(): start >= stop (start, stop, status by column):  1 | NA |  2 |  3 |  1 |  0
+Surv(): a negative right-censored time (time, status by column): -1 |  2 |  1 |  0
+Surv(): a missing status (time, status by column):  1 |  2 | NA |  1
+Surv(): status 2/3 (time, status by column): warning: Invalid status value, converted to NA
+Surv(): status 2/3 (time, status by column):  1 |  2 | NA | NA
+as.integer(strata(c(3, 1, 3, 7))): 2 | 1 | 2 | 3

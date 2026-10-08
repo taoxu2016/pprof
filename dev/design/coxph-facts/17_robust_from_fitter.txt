@@ -1,0 +1,21 @@
+R version 4.4.0 (2024-04-24 ucrt), survival 3.8.12
+
+100000 rows, 1,000 providers, 20 covariates, Breslow ties:
+  (start, stop]: agreg.fit() 0.44 s; coxph() 1.32 s
+    fitter against coxph(): coefficients identical, variance identical, log-likelihood identical, iterations 3 and 3, martingale residuals identical
+    robust, row: from the fitter's result 0.14 s; coxph(cluster) 1.70 s; variances identical (largest difference 0.0e+00); naive variance identical to the fitter's
+    robust, 40 clusters: from the fitter's result 0.14 s; coxph(cluster) 1.56 s; variances identical (largest difference 0.0e+00); naive variance identical to the fitter's
+  right-censored: coxph.fit() 0.41 s; coxph() 1.28 s
+    fitter against coxph(): coefficients identical, variance identical, log-likelihood identical, iterations 3 and 3, martingale residuals identical
+    robust, row: from the fitter's result 0.17 s; coxph(cluster) 1.58 s; variances identical (largest difference 0.0e+00); naive variance identical to the fitter's
+    robust, 40 clusters: from the fitter's result 0.09 s; coxph(cluster) 1.23 s; variances identical (largest difference 0.0e+00); naive variance identical to the fitter's
+
+1000000 rows, 1,000 providers, 20 covariates, Breslow ties:
+  (start, stop]: agreg.fit() 4.33 s; coxph() 14.53 s
+    fitter against coxph(): coefficients identical, variance identical, log-likelihood identical, iterations 3 and 3, martingale residuals identical
+    robust, row: from the fitter's result 2.05 s; coxph(cluster) 20.65 s; variances identical (largest difference 0.0e+00); naive variance identical to the fitter's
+    robust, 40 clusters: from the fitter's result 2.02 s; coxph(cluster) 19.83 s; variances identical (largest difference 0.0e+00); naive variance identical to the fitter's
+  right-censored: coxph.fit() 3.03 s; coxph() 10.16 s
+    fitter against coxph(): coefficients identical, variance identical, log-likelihood identical, iterations 3 and 3, martingale residuals identical
+    robust, row: from the fitter's result 1.39 s; coxph(cluster) 17.63 s; variances identical (largest difference 0.0e+00); naive variance identical to the fitter's
+    robust, 40 clusters: from the fitter's result 1.75 s; coxph(cluster) 14.92 s; variances identical (largest difference 0.0e+00); naive variance identical to the fitter's

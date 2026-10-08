@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C1 closed (the project lead approved its gate on 2026-10-08). Phase C2, the data layer and the stratified Cox model, is next, on `coxph/phase-2` in a new session; its plan comes first.
+**Status:** Phase C2, the data layer and the stratified Cox model, is in progress on `coxph/phase-2`: its plan, `dev/design/COXPH_C2_PLAN.md`, awaits the project lead's approval.
 
 ## 2026-10-07
 
@@ -84,3 +84,14 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
   - large fits may be slower than pprof_py's (DEC-098); C2 looks for a cheaper robust variance than `coxph()` with one cluster per row;
   - the project lead runs `cox-fixtures.yaml` once from the fork's Actions tab, to try it.
 - Next step: Phase C2 in a new session. Its plan first, `dev/design/COXPH_C2_PLAN.md`, for the project lead's approval; then the data layer, the `survival` adapter, `fit_cox_stratified()`, and its methods (brief §4, row C2; COXPH_DESIGN §B to §E), on `coxph/phase-2` from `coxph/phase-1`.
+
+## 2026-10-08: the C2 plan
+
+- Branch `coxph/phase-2`, from `coxph/phase-1` at `78e3e15`.
+- The plan, `dev/design/COXPH_C2_PLAN.md`, for the project lead's approval, with the evidence behind it in `dev/design/coxph-facts/17` to `20`. Found while planning:
+  - `survival`'s fitters give `coxph()`'s fit bitwise only when called with `coxph()`'s preprocessing (the offset minus its mean, `nocenter = c(-1, 0, 1)`, integer strata codes); C1's engine baseline called `agreg.fit()` without it, on rows in the generator's order, so the C2 benchmarks pair each fit with its own engine call;
+  - a robust variance bitwise equal to `coxph(cluster = row)`'s, from `survival`'s own dfbeta residuals on the fitter's result: 2.0 s against 20.7 s at 1,000,000 rows (DEC-098's search);
+  - pprof_py computes the covariate p-values as upper tails, 2Φ̄(|z|), where the package's default rule gives 0 above |z| = 8.3;
+  - `Surv()` reads a 0/1/2 status as 1/2 coding and turns start ≥ stop into NA, so the data layer must raise errors there rather than delete rows;
+  - the fixtures of D-58, D-64, D-56's `recurrent`, and D-60 are in the full set, outside the tarball, so unit tests carry those decisions under `R CMD check`.
+- Next step: the project lead's approval of the plan and its §6 decisions; then its §5 commits, starting with the `data_prepare()` snapshot.
