@@ -1,0 +1,76 @@
+{
+ "pprof_py": {
+  "commit": "9320766e35e5b385d596a2b75418192098a124c4",
+  "files": {
+   "combined.csv": {
+    "path": "pprof_py/r_reference/data/combined.csv",
+    "sha256": "6d0ea60c88debbd4dd838adb85144b2c282fd5ea80f37085d0147110660e19a5"
+   },
+   "competing_risks_simple.csv": {
+    "path": "pprof_py/r_reference/data/competing_risks_simple.csv",
+    "sha256": "626dbe693b91178f860b8ed19ec5133a9644656a50197b459a8455955a18c8b7"
+   },
+   "competing_risks_truncated.csv": {
+    "path": "pprof_py/r_reference/data/competing_risks_truncated.csv",
+    "sha256": "eac0b5339bcb52cac601ed9aa4ff40e3d71d875a63f7226dae21ee024883cdd4"
+   },
+   "left_truncation.csv": {
+    "path": "pprof_py/r_reference/data/left_truncation.csv",
+    "sha256": "0e5fae3ffcc2653439da2876c84fe945c86ddd1ef4049242cd3ccf96774c38ff"
+   },
+   "offset.csv": {
+    "path": "pprof_py/r_reference/data/offset.csv",
+    "sha256": "1bccd40c7a172977550e9d94452db2966bd38ab41f09779ed0ebf48a199c6e37"
+   },
+   "penalized_wide.csv": {
+    "path": "pprof_py/r_reference/data/penalized_wide.csv",
+    "sha256": "c8f73e472d6cfbd806f2cce901b22bb201c483f5aeef1eaefe503b70ecf00382"
+   },
+   "penalized_wide_foldid.csv": {
+    "path": "pprof_py/r_reference/data/penalized_wide_foldid.csv",
+    "sha256": "601cce6ba58f1207ed1846824153b1c63baba625612333ef14bdaca66785927e"
+   },
+   "strata.csv": {
+    "path": "pprof_py/r_reference/data/strata.csv",
+    "sha256": "6aa623e9bc209974ade901d49b48295592d442df35d081b113bddcbb7fe9589c"
+   },
+   "weights.csv": {
+    "path": "pprof_py/r_reference/data/weights.csv",
+    "sha256": "87a735ff5ddaf448c828716cbfdde8651f992911e0db49794977905c779ac298"
+   }
+  },
+  "license": "MIT",
+  "repository": "https://github.com/UM-KevinHe/pprof_py"
+ },
+ "pprof_spark": {
+  "commit": "e917a68",
+  "files": {
+   "lt-stratified.csv": {
+    "path": "fixtures/cox/lt-stratified/input.csv",
+    "sha256": "b2798ed650e04ca38ffaa429d36a7206f578b0c91033576db9b96a527bd8a5ef"
+   },
+   "lt-weights-offset.csv": {
+    "path": "fixtures/cox/lt-weights-offset/input.csv",
+    "sha256": "2c475b0f83cddc99a94e1b2c9148a95741b44789072c5c478b1cc411a6bdfa07"
+   },
+   "rc-stratified-weights-offset.csv": {
+    "path": "fixtures/cox/rc-stratified-weights-offset/input.csv",
+    "sha256": "af173851d3543f3fd9b1e66efd642f9daa63c362b409da09f6c01556a098bcdb"
+   },
+   "rc-stratified.csv": {
+    "path": "fixtures/cox/rc-stratified/input.csv",
+    "sha256": "5a6c1340d449d6eeca9bc17b5b68dc6b1e1ce35c9163a6efec6451ffaa0ab296"
+   },
+   "rc-unstratified.csv": {
+    "path": "fixtures/cox/rc-unstratified/input.csv",
+    "sha256": "d48d51d700730080922c50dda93c840df88d06b108e9fd7052117dfc67f547c7"
+   },
+   "tiny-ties.csv": {
+    "path": "fixtures/cox/tiny-ties/input.csv",
+    "sha256": "013a5178b49cd73c21b9c312f48fa7309bdc7aeaffc62821151f0534f98fc88f"
+   }
+  },
+  "license": "MIT",
+  "repository": "https://github.com/UM-KevinHe/pprof_spark"
+ }
+}

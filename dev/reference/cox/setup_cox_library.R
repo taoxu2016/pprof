@@ -4,10 +4,11 @@
 #   Rscript dev/reference/cox/setup_cox_library.R [library-dir]
 #
 # The library (default dev/reference/cox/lib, gitignored) holds survival and glmnet, the engines
-# whose outputs the Cox fixtures record next to pprof_py's, and their recursive hard dependencies
-# (Depends, Imports, LinkingTo), all from the CRAN snapshot of DEC-017 (2026-10-01): survival
-# 3.8-12 and glmnet 5.1. Nothing is taken from the user library: installation and verification run
-# in child R sessions whose library path is only this library plus base R.
+# whose outputs the Cox fixtures record next to pprof_py's, jsonlite, with which the generator's R
+# half reads and writes its staging files (no numerical role), and their recursive hard
+# dependencies (Depends, Imports, LinkingTo), all from the CRAN snapshot of DEC-017 (2026-10-01):
+# survival 3.8-12 and glmnet 5.1. Nothing is taken from the user library: installation and
+# verification run in child R sessions whose library path is only this library plus base R.
 #
 # It writes dev/reference/cox/cox-library-lock.json, the committed record of the library.
 
@@ -23,6 +24,7 @@ if (nzchar(Sys.getenv("PPROF_REFERENCE_SNAPSHOT_REPO"))) {
   }
 }
 engines <- c(survival = "3.8-12", glmnet = "5.1")
+helpers <- "jsonlite"
 
 args <- commandArgs(trailingOnly = TRUE)
 lib_dir <- if (length(args) >= 1) args[[1]] else file.path("dev", "reference", "cox", "lib")
@@ -45,9 +47,9 @@ binary_type <- if (.Platform$OS.type == "windows") {
 }
 bin_db <- utils::available.packages(repos = snapshot_repo, type = binary_type)
 base_pkgs <- rownames(utils::installed.packages(priority = "base"))
-closure <- tools::package_dependencies(names(engines), db = src_db, which = c("Depends", "Imports", "LinkingTo"),
-                                       recursive = TRUE)
-needed <- sort(unique(setdiff(c(names(engines), unlist(closure)), base_pkgs)))
+closure <- tools::package_dependencies(c(names(engines), helpers), db = src_db,
+                                       which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE)
+needed <- sort(unique(setdiff(c(names(engines), helpers, unlist(closure)), base_pkgs)))
 missing <- setdiff(needed, rownames(src_db))
 if (length(missing)) stop("Not in the snapshot: ", paste(missing, collapse = ", "), call. = FALSE)
 in_bin <- needed[needed %in% rownames(bin_db)]
@@ -101,7 +103,8 @@ if (length(record$outside)) {
 }
 record$packages$source <- ifelse(record$packages$package %in% as_binary, "snapshot binary", "snapshot source")
 lock <- list(
-  purpose = "Isolated library of the Cox fixture generator: the engines survival and glmnet (DEC-093, DEC-017).",
+  purpose = paste("Isolated library of the Cox fixture generator: the engines survival and glmnet, and jsonlite",
+                  "for the staging files (DEC-093, DEC-017)."),
   created = format(Sys.time(), tz = "UTC", usetz = TRUE),
   snapshot = snapshot_repo,
   engines = as.list(record$engines),

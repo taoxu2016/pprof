@@ -1,6 +1,6 @@
 {
-  "purpose": "Isolated library of the Cox fixture generator: the engines survival and glmnet (DEC-093, DEC-017).",
-  "created": "2026-10-08 14:50:06 UTC",
+  "purpose": "Isolated library of the Cox fixture generator: the engines survival and glmnet, and jsonlite for the staging files (DEC-093, DEC-017).",
+  "created": "2026-10-08 14:58:58 UTC",
   "snapshot": "https://packagemanager.posit.co/cran/2026-10-01",
   "engines": {
     "survival": "3.8.12",
@@ -37,6 +37,13 @@
     {
       "package": "iterators",
       "version": "1.0.14",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "jsonlite",
+      "version": "2.0.0",
       "built": "4.4.0",
       "repository": "RSPM",
       "source": "snapshot binary"
