@@ -35,6 +35,43 @@ pprof_tolerances <- list(
     tier = 4, atol = 1e-10, rtol = 1e-8,
     why = paste("lme4-backed results under the pinned lme4 and Matrix versions; identical calls gave identical",
                 "results in Phase 0 (V15.1), and the margin covers optimizer sensitivity to rounding across platforms.")
+  ),
+  # The Cox tiers (CoxPH brief §3.5, COXPH_DESIGN §G.2), calibrated in Phase C1 against the Cox
+  # fixtures: pprof_py against survival and glmnet within 1, every negative control beyond 10
+  # (validation/cox-calibration-report.md, dev/reference/cox/calibrate.R).
+  cox_engine = list(
+    tier = 0, atol = 0, rtol = 0,
+    why = "The package against direct survival and glmnet calls on one platform: the same computation."
+  ),
+  cox_function = list(
+    tier = 1, atol = 1e-12, rtol = 1e-12,
+    why = "The partial likelihood, score, and information at a fixed beta: closed forms in another summation order."
+  ),
+  cox_coefficient = list(
+    tier = 2, atol = 1e-10, rtol = 1e-8,
+    why = "Tight fits (eps 1e-11): the last Newton step is computed from a score at rounding level."
+  ),
+  cox_variance = list(
+    tier = 2, atol = 1e-12, rtol = 1e-7,
+    why = "Variances and covariances of the tight fits, which inherit the coefficients' differences."
+  ),
+  cox_baseline = list(
+    tier = 2, atol = 1e-12, rtol = 1e-8,
+    why = "Baselines and expected counts, each at its own side's tight beta."
+  ),
+  cox_residual = list(
+    tier = 2, atol = 1e-8, rtol = 0,
+    why = paste("Martingale, score, and dfbeta residuals of the tight fits, which inherit their coefficients'",
+                "differences; up to 2.8e-9 observed, and residuals can be near 0, so absolute.")
+  ),
+  cox_statistic = list(
+    tier = 1, atol = 0, rtol = 1e-8,
+    why = "Provider test statistics given the same observed and expected counts (calibrated in Phase C3)."
+  ),
+  penalized_path = list(
+    tier = 2, atol = 5e-6, rtol = 0,
+    why = paste("Elastic-net paths of two solvers at the same lambda values: pprof_py stops at its defaults",
+                "(outer_tol 1e-9), within 1.06e-6 of glmnet at thresh 1e-12 on the fixtures.")
   )
 )
 
