@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C1 (reference capture) delivered on `coxph/phase-1`; at the C1 gate, awaiting the project lead's approval. Phase C0 closed on 2026-10-08.
+**Status:** Phase C1 closed (the project lead approved its gate on 2026-10-08). Phase C2, the data layer and the stratified Cox model, is next, on `coxph/phase-2` in a new session; its plan comes first.
 
 ## 2026-10-07
 
@@ -75,3 +75,12 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
   - the brief's "no slower than pprof_py" for large fits: accept it as not met, or look in C2 for a cheaper robust variance than `coxph()` with one cluster per row;
   - dispatching `cox-fixtures.yaml` once, to try the workflow.
 - Next step: the project lead's approval of the C1 gate; then Phase C2 (the data layer and the stratified Cox model) on `coxph/phase-2`.
+
+## 2026-10-08: the C1 gate closed
+
+- The project lead approved closing the C1 gate and every recommendation of its report:
+  - the Cox tiers are approved (DEC-097), and DEC-093 to DEC-096 confirmed;
+  - the fixtures were regenerated with a stronger `large-mean` case, a covariate near 3,000, so that pprof_py's clipping shows (D-64). The diff reports (`dev/reference/diff-reports/20261008-cox-large-mean-core.md` and `-full.md`) show `large-mean` changed throughout and the other cases only in the R side's expected counts, by at most 9.5e-14 relative, from shifting the linear predictor by its maximum. The calibration passes 586 of 586 scored rows, with 58 explained (D-56 14, D-57 3, D-58 18, D-64 21, M-23 2), and `test-cox-fixtures.R` passes;
+  - large fits may be slower than pprof_py's (DEC-098); C2 looks for a cheaper robust variance than `coxph()` with one cluster per row;
+  - the project lead runs `cox-fixtures.yaml` once from the fork's Actions tab, to try it.
+- Next step: Phase C2 in a new session. Its plan first, `dev/design/COXPH_C2_PLAN.md`, for the project lead's approval; then the data layer, the `survival` adapter, `fit_cox_stratified()`, and its methods (brief §4, row C2; COXPH_DESIGN §B to §E), on `coxph/phase-2` from `coxph/phase-1`.

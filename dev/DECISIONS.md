@@ -905,7 +905,7 @@ The decisions below were made in CoxPH Phase C0 under the project lead's delegat
 ### DEC-093: The Cox fixtures
 
 - Date: 2026-10-07
-- Status: accepted under the project lead's delegation (2026-10-07); confirmed by the project lead (2026-10-08, C0 gate); the C1 gate confirms
+- Status: accepted under the project lead's delegation (2026-10-07); confirmed by the project lead (2026-10-08, C0 gate, and again at the C1 gate)
 - Context: The brief's §3.1 starts the Cox fixtures from pprof_spark's committed Cox cases and requires a committed generator that runs pinned pprof_py and pinned R packages.
 - Decision: The fixtures live in `tests/testthat/fixtures/cox/` as RDS, with a manifest of the pprof_py commit, the Python and R environments, and the SHA-256 of every input. The generator is `dev/reference/cox/`: a Python script adapted from pprof_spark's `reference/fixtures/generate.py` (MIT, same group) with a pinned `requirements.txt`, and an R script for the `survival` and `glmnet` outputs, run in an isolated library. pprof_spark's six cases are imported with their inputs unchanged and their commit recorded; C1 adds the cases of COXPH_DESIGN §G.1.
 - Alternatives considered: computing pprof_py's outputs in the tests through reticulate (tests would need Python).
@@ -916,7 +916,7 @@ The decisions below were made in CoxPH Phase C1 under the project lead's delegat
 ### DEC-094: CI's fixture-platform job builds lme4 with Eigen's cache sizes fixed
 
 - Date: 2026-10-08
-- Status: accepted under the project lead's delegation (2026-10-08), as recommended at the C0 gate; confirmed on CI at `dce985e` (run 37802219652): on an AMD Family 25 Model 17 runner (Zen 4, a 32 KB L1 cache, where CRAN's binary fails), lme4 built so matched all 368 cases
+- Status: accepted under the project lead's delegation (2026-10-08), as recommended at the C0 gate; confirmed on CI at `dce985e` (run 37802219652): on an AMD Family 25 Model 17 runner (Zen 4, a 32 KB L1 cache, where CRAN's binary fails), lme4 built so matched all 368 cases; again at `661c1a6` (run 37853216129) on an Intel Family 6 Model 207 runner (48 KB); confirmed by the project lead (2026-10-08, C1 gate)
 - Context: The fixture-platform job of `rewrite-reference.yaml` failed the same 42 lme4-backed cases on every runner with an AMD Zen 3 processor and passed on Zen 5 ones (D-53). Eigen sizes the blocks of lme4's matrix products from the L1 cache it reads from the processor. lme4 2.0-6 built on the fixtures' machine with the cache query off (`EIGEN_NO_CPUID`) fails the same 42 cases with Zen 3's cache sizes and matches all 368 with that machine's (`dev/design/coxph-facts/16_lme4_cache_sizes.R`).
 - Decision: The job builds lme4 from the snapshot's source with `-DEIGEN_NO_CPUID` and the default cache sizes of the fixtures' machine (L1 48 KB, L2 1.25 MB, L3 8 MB) before it runs the reference suite, and fails if the flags do not reach the compiler. The fixtures, the tolerances, and the other jobs are unchanged.
 - Alternatives considered: rerunning the job until it lands on a 48 KB runner (a gate that passes by chance); comparing the lme4 cases only on such runners (weakens the gate on half the runs); regenerating the fixtures with a fixed-size build (needs the project lead's approval and changes nothing users run).
@@ -925,7 +925,7 @@ The decisions below were made in CoxPH Phase C1 under the project lead's delegat
 ### DEC-095: The Cox generator's pinned Python environment
 
 - Date: 2026-10-08
-- Status: accepted under the project lead's delegation (2026-10-08)
+- Status: accepted under the project lead's delegation (2026-10-08); confirmed by the project lead (2026-10-08, C1 gate)
 - Context: The brief's §3.1 requires a pinned Python environment for pprof_py v0.7.0, which declares Python 3.10 or later; this machine had Python 3.9.7 only. pprof_spark generated its Cox fixtures with Python 3.12.3 and pins recorded in its `REFERENCE.lock`.
 - Decision: Python 3.12.3 from `uv` (installed into the user site of the machine's Python; it downloads a standalone Python into the user profile, without administrator rights), a virtual environment in `dev/reference/cox/venv/` (gitignored), `dev/reference/cox/requirements.txt` equal to pprof_spark's pins, and pprof_py installed with `--no-deps` from a checkout at commit `9320766`. `generate.py` refuses to run unless the checkout is at that commit and every installed module equals the file there. Every thread pool runs one thread.
 - Alternatives considered: the system Python 3.9 (below pprof_py's declared minimum); a system-wide Python 3.12 (changes the machine for one generator).
@@ -934,7 +934,7 @@ The decisions below were made in CoxPH Phase C1 under the project lead's delegat
 ### DEC-096: The Cox fixtures: two sets, inputs vendored, engines in Suggests
 
 - Date: 2026-10-08
-- Status: accepted under the project lead's delegation (2026-10-08); the C1 gate confirms
+- Status: accepted under the project lead's delegation (2026-10-08); confirmed by the project lead (2026-10-08, C1 gate), with the fixtures regenerated there for a stronger `large-mean` case (`dev/reference/diff-reports/20261008-cox-large-mean-*.md`)
 - Context: DEC-093 placed the Cox fixtures in `tests/testthat/fixtures/cox/`, but the 20 cases of COXPH_DESIGN §G.1 take 2.5 MB, and the shipped fixtures already fill DEC-018's budget.
 - Decision: A core set of 7 cases (396 KB: `tiny-ties`, `rc-stratified`, `lt-stratified`, `near-ties`, `empty-providers`, `competing-simple`, `penalized-strata`) ships with the tests; the other 13 are in `validation/fixtures/cox/`, read when present, as the full reference set is. Imported inputs are vendored in `dev/reference/cox/inputs/` from their commits with their SHA-256, byte for byte (`.gitattributes`). Manifests record SHA-256 and MD5 of every fixture and no timestamps; two generations gave byte-identical files. `survival` (≥ 3.5-8) and `glmnet` (≥ 5.0) join Suggests for the fixtures' tests; `survival` moves to Imports in C2 (COXPH_DESIGN §H). A manual workflow, `cox-fixtures.yaml`, regenerates the fixtures into an artifact with diff and calibration reports.
 - Alternatives considered: shipping all 20 cases (2.5 MB beyond the budget); generating on Linux, as pprof_spark did (the comparisons run on every platform under the calibrated tiers, COXPH_DESIGN §G.5, so the generating platform matters less than reproducibility).
@@ -943,8 +943,17 @@ The decisions below were made in CoxPH Phase C1 under the project lead's delegat
 ### DEC-097: The Cox tolerance tiers
 
 - Date: 2026-10-08
-- Status: proposed in Phase C1 under the project lead's delegation (2026-10-08); a tolerance changes only with sign-off, so the C1 gate lists them for approval
+- Status: proposed in Phase C1 under the project lead's delegation (2026-10-08); approved by the project lead (2026-10-08, C1 gate), the sign-off a tolerance change needs
 - Context: The brief's §3.5 asks C1 to propose named tiers, each calibrated so that pprof_py and `survival` or `glmnet` agree within 1 unit and every negative control differs by at least 10.
-- Decision: Eight tiers in `tests/testthat/helper-tolerances.R`: `cox_engine` (0, 0), `cox_function` (1e-12, 1e-12), `cox_coefficient` (1e-10, 1e-8), `cox_variance` (1e-12, 1e-7), `cox_baseline` (1e-12, 1e-8), `cox_residual` (1e-8, 0), `cox_statistic` (0, 1e-8; calibrated in C3), and `penalized_path` (5e-6, 0), as atol and rtol under the package's elementwise rule. Default fits, and tight fits whose last Newton step pprof_py halved, are compared within the longer of the two last steps (D-57). The calibration report (`validation/cox-calibration-report.md`) passes 598 of 598 scored rows; 46 rows are differences the registers explain (D-56: 14, D-57: 3, D-58: 18, D-64: 9, M-23: 2). Step functions are compared where pprof_py reports them (its event times), matched to survival's at the same stratum and time; a value that cannot be compared fails.
+- Decision: Eight tiers in `tests/testthat/helper-tolerances.R`: `cox_engine` (0, 0), `cox_function` (1e-12, 1e-12), `cox_coefficient` (1e-10, 1e-8), `cox_variance` (1e-12, 1e-7), `cox_baseline` (1e-12, 1e-8), `cox_residual` (1e-8, 0), `cox_statistic` (0, 1e-8; calibrated in C3), and `penalized_path` (5e-6, 0), as atol and rtol under the package's elementwise rule. Default fits, and tight fits whose last Newton step pprof_py halved, are compared within the longer of the two last steps (D-57). The calibration report (`validation/cox-calibration-report.md`) passes 586 of 586 scored rows; 58 rows are differences the registers explain (D-56: 14, D-57: 3, D-58: 18, D-64: 21, M-23: 2). Step functions are compared where pprof_py reports them (its event times), matched to survival's at the same stratum and time; a value that cannot be compared fails.
 - Alternatives considered: pprof_spark's classes under its vector-scaled rule (the package's rule is elementwise, so absolute floors had to be set for values near 0); COXPH_DESIGN §G.2's proposed `cox_residual` (1e-9) and `penalized_path` (1e-6), which the calibration showed too tight (2.8e-9 and 1.06e-6 observed).
 - Consequences: C2 to C5 compare under these tiers; `cox_statistic` and the mid-p limits' `root` tier are calibrated when C3 computes the tests.
+
+### DEC-098: Large Cox fits may be slower than pprof_py's
+
+- Date: 2026-10-08
+- Status: accepted by the project lead (2026-10-08, C1 gate), as recommended in the C1 gate report
+- Context: The brief's §3.7 requires a fit to be at most 10% slower than the engine call it wraps (MUST) and no slower than pprof_py (SHOULD). On the C1 baseline's data (`dev/bench/results/cox-baseline-20261008-windows.md`), pprof_py v0.7.0 fits 1,000,000 rows in 4.3 s against `survival::agreg.fit()`'s 17.2 s, with one numba thread or eight, and its robust variance takes 5.2 s against 130 s through `coxph()` with one cluster per row; at 10,000 rows `survival` is faster (0.08 s against 0.37 s). In Phase C0, on other data, `agreg.fit()` was the faster (6.3 s against 9.4 s).
+- Decision: The SHOULD is not a requirement for fits at large sizes: the package keeps `survival` as its engine (DEC-086, DEC-091), and the MUST holds against the engine calls. Phase C2 looks for a cheaper robust variance than `coxph()` with one cluster per row, from `survival`'s own residual routines on the fitter's result, and reports the measures and tests (the package's own code) against pprof_py's.
+- Alternatives considered: a Cox engine of the package's own (contrary to the brief's strategy, DEC-086); `threads` for `survival` (it is single-threaded).
+- Consequences: the C2 benchmarks compare each fit with its engine call (MUST) and report pprof_py's times; the brief's §3.7 SHOULD is read as applying to the measures, the tests, and the robust variance.

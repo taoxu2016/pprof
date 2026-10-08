@@ -1,6 +1,6 @@
 # CoxPH Phase C1 plan: reference capture
 
-> **Status: adopted on 2026-10-08 under the project lead's delegation** ("continue with all your recommendations if you need decisions", at the C0 gate), and carried out the same day; at the C1 gate (`dev/COXPH_STATUS.md`). It implements the brief's §4 row C1 (`dev/coxph_brief.md`; also §3.1, §3.5, §3.7, §6, §12) and COXPH_DESIGN §G and §I. Its decisions are DEC-094 to DEC-097.
+> **Status: adopted on 2026-10-08 under the project lead's delegation** ("continue with all your recommendations if you need decisions", at the C0 gate), and carried out the same day; the project lead approved its gate on 2026-10-08 (`dev/COXPH_STATUS.md`). It implements the brief's §4 row C1 (`dev/coxph_brief.md`; also §3.1, §3.5, §3.7, §6, §12) and COXPH_DESIGN §G and §I. Its decisions are DEC-094 to DEC-097.
 
 C1 changes no package code under `R/` or `src/`. It produces the Cox reference fixtures, the tolerance tiers they are compared under, and the benchmark baseline, so that C2 to C5 have a fixed target.
 
