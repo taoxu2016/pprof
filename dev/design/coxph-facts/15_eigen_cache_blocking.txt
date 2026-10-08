@@ -1,0 +1,13 @@
+R version 4.4.0 (2024-04-24 ucrt), RcppEigen 0.3.4.0.2
+Processor: Intel64 Family 6 Model 140 Stepping 1, GenuineIntel; Eigen's cache sizes read from it: L1 49152, L2 1310720, L3 8388608 bytes
+
+Inner dimension k of a 50 x k by k x 50 product (A B) and of V'V for a k x 10 matrix V (rank update);
+Eigen's inner block, and the results, with its L1 size set to 32 KB and to 48 KB:
+  k =   100: inner block 100 at 32 KB, 100 at 48 KB; A B:    0 of 2500 elements differ (up to 0.0e+00 relative); V'V:  0 of 55 differ (up to 0.0e+00); repeated at 48 KB, identical: TRUE
+  k =   400: inner block 400 at 32 KB, 400 at 48 KB; A B:    0 of 2500 elements differ (up to 0.0e+00 relative); V'V:  0 of 55 differ (up to 0.0e+00); repeated at 48 KB, identical: TRUE
+  k =  1000: inner block 504 at 32 KB, 504 at 48 KB; A B:    0 of 2500 elements differ (up to 0.0e+00 relative); V'V:  0 of 55 differ (up to 0.0e+00); repeated at 48 KB, identical: TRUE
+  k =  5000: inner block 504 at 32 KB, 720 at 48 KB; A B: 2370 of 2500 elements differ (up to 7.7e-12 relative); V'V: 54 of 55 differ (up to 1.4e-14); repeated at 48 KB, identical: TRUE
+  k =  7944: inner block 504 at 32 KB, 728 at 48 KB; A B: 2376 of 2500 elements differ (up to 3.2e-13 relative); V'V: 48 of 55 differ (up to 8.4e-14); repeated at 48 KB, identical: TRUE
+  k = 20000: inner block 504 at 32 KB, 744 at 48 KB; A B: 2365 of 2500 elements differ (up to 6.0e-12 relative); V'V: 53 of 55 differ (up to 6.9e-13); repeated at 48 KB, identical: TRUE
+
+(7,944 is the number of rows of ExampleDataBinary, the data of the failing lme4 cases.)
