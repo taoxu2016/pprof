@@ -79,12 +79,21 @@ jobs:
           writeLines(paste("CPPFLAGS += -DEIGEN_NO_CPUID -DEIGEN_DEFAULT_L1_CACHE_SIZE=49152",
                            "-DEIGEN_DEFAULT_L2_CACHE_SIZE=1310720 -DEIGEN_DEFAULT_L3_CACHE_SIZE=8388608"), makevars)
           Sys.setenv(R_MAKEVARS_USER = makevars)
+          # lme4 compiles against the headers of its LinkingTo packages (RcppEigen), which its
+          # binary does not need and the dependency step does not install.
+          db <- utils::available.packages(type = "source")
+          linking <- tools::package_dependencies("lme4", db = db, which = "LinkingTo")[[1]]
+          missing <- setdiff(linking, rownames(utils::installed.packages()))
+          if (length(missing)) utils::install.packages(missing)
           tarball <- utils::download.packages("lme4", destdir = tempdir(), type = "source")[1, 2]
           lib <- .libPaths()[1]
           log <- system2(file.path(R.home("bin"), "R"), c("CMD", "INSTALL", "--preclean", paste0("--library=", lib), tarball),
                          stdout = TRUE, stderr = TRUE)
           if (!is.null(attr(log, "status")) || !any(grepl("EIGEN_NO_CPUID", log))) {
             writeLines(log)
+            # The job log needs signing in; the annotation is public.
+            cat("::error title=Building lme4 failed::", paste(gsub("[\r\n]+", " ", tail(log, 12)), collapse = "%0A"),
+                "\n", sep = "")
             stop("Building lme4 from source with fixed Eigen cache sizes failed.")
           }
           if (!startsWith(normalizePath(find.package("lme4"), winslash = "/"), normalizePath(lib, winslash = "/"))) {
