@@ -21,18 +21,18 @@
    "events": 223,
    "file": "large-mean.rds",
    "kind": "cox",
-   "md5": "1be3cfadfb3cbcb24aa7440f97e22987",
+   "md5": "a7b77bbfc0278db812cff1a8ff1e072a",
    "provenance": null,
    "rows": 300,
    "seed": 14,
-   "sha256": "dd88dbf2625ea2d264387266feb0a93e094e54ccc840eeeb12fe384efc5bb329",
+   "sha256": "829e67ab066c2817289129d19da65285bfa90a0b0b00de6029f20747fbbb9856",
    "source": "synthetic"
   },
   "lt-weights-offset": {
    "events": 385,
    "file": "lt-weights-offset.rds",
    "kind": "cox",
-   "md5": "ce5ce9350e1bc0bded43bf205ee4a629",
+   "md5": "aa0ce446230d76a0052d3b0a63fbe33a",
    "provenance": {
     "commit": "e917a68",
     "license": "MIT",
@@ -42,7 +42,7 @@
    },
    "rows": 600,
    "seed": null,
-   "sha256": "8b0a66152e8085d3d660070d55c35c0733a77e92a5e41227e41eee52ab4cef3e",
+   "sha256": "dabaccd9d3e04e3032ea146827bc9ff64e843d9b0f821cc8840f8ab0f0d723c3",
    "source": "pprof_spark"
   },
   "penalized-combined": {
@@ -134,18 +134,18 @@
    "events": 16892,
    "file": "provider-scale.rds",
    "kind": "cox",
-   "md5": "328bd0cab40928f66e7ecb949d8e5fdb",
+   "md5": "43f7e96be8694aefb01d9799026d5279",
    "provenance": null,
    "rows": 20000,
    "seed": 16,
-   "sha256": "c48940a775009547f584c9a686f803e0ae4773e415df44d3c21a7e920126322e",
+   "sha256": "6b99075455b1ff7464913d2c3c0f74fb61ee2db4adc822fa63fd4e8b13536a60",
    "source": "synthetic"
   },
   "rc-stratified-weights-offset": {
    "events": 434,
    "file": "rc-stratified-weights-offset.rds",
    "kind": "cox",
-   "md5": "4a008fdd7fd4022d6bb6b74c1b1b8d76",
+   "md5": "79db4a17b1928908efd00381a8a62b20",
    "provenance": {
     "commit": "e917a68",
     "license": "MIT",
@@ -155,14 +155,14 @@
    },
    "rows": 600,
    "seed": null,
-   "sha256": "e85fa2d2542c176ee9c520699b7688046120e4cbccba4a4a5a060962c27fbce2",
+   "sha256": "29299480ffbfa4fd6fab98621fb8232d8c482f26b51fc00dcbeb92ca31d016ea",
    "source": "pprof_spark"
   },
   "rc-unstratified": {
    "events": 304,
    "file": "rc-unstratified.rds",
    "kind": "cox",
-   "md5": "83391f96aef6a5c59af11c76e486ffeb",
+   "md5": "f5072510c56585238bcb6a54a23d0939",
    "provenance": {
     "commit": "e917a68",
     "license": "MIT",
@@ -172,36 +172,36 @@
    },
    "rows": 400,
    "seed": null,
-   "sha256": "b3df113011680facad58eb203781338f729b59b36012c3b428ffda480647340f",
+   "sha256": "d17c2ab6b23bd6684ccd8a85562df0160d96caa18c630119974812784aabbd2b",
    "source": "pprof_spark"
   },
   "recurrent": {
    "events": 266,
    "file": "recurrent.rds",
    "kind": "cox",
-   "md5": "4b0c76df231d78d901aac5802f5992a4",
+   "md5": "2dccad4d7e7d08b3a2151dfab0299d0c",
    "provenance": null,
    "rows": 506,
    "seed": 11,
-   "sha256": "5ac51ace9172b93b2363a7c26b39f0d26f4193993d27e869a94adcf5782735dc",
+   "sha256": "983a9fa6b0980ea0c3b4326d156c09cd4ae24288d5a57d455c0ca8c40166bd89",
    "source": "synthetic"
   },
   "zero-weights": {
    "events": 451,
    "file": "zero-weights.rds",
    "kind": "cox",
-   "md5": "78dca03b7f159abc6cab5b31ebe2110b",
+   "md5": "6eade41301b0ff959d9741e699f29927",
    "provenance": null,
    "rows": 600,
    "seed": 13,
-   "sha256": "40bbdc8c9af845eec2a741a5d83ec1a5fb0b22045db6feb8e4b8cd5da2794608",
+   "sha256": "88d0eaa86fa6b1139abbddf2e67fcea00de8cc1cef05bdd52187b82e79bbfc99",
    "source": "synthetic"
   }
  },
  "format_version": 1,
  "generator": "dev/reference/cox/generate.py",
  "generator_clean": true,
- "generator_commit": "59c9dc048822f4a83513a56d5dceb5c293aaae97",
+ "generator_commit": "bcab1b8ab0389832ec173847b3b7abfe69f91d71",
  "inputs_sources_sha256": "d0c87691242e803962b9b52f83b56592eecf52daf8a88db94e0f4b8ac5c0d761",
  "options": {
   "clusters": "the cluster column, or id mod 40",
