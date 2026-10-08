@@ -1,0 +1,283 @@
+{
+ "cases": {
+  "competing-truncated": {
+   "events": 231,
+   "file": "competing-truncated.rds",
+   "kind": "competing",
+   "md5": "c77e10d8f3388b4eaafe1d3b727c72e9",
+   "provenance": {
+    "commit": "9320766e35e5b385d596a2b75418192098a124c4",
+    "license": "MIT",
+    "path": "pprof_py/r_reference/data/competing_risks_truncated.csv",
+    "repository": "https://github.com/UM-KevinHe/pprof_py",
+    "sha256": "eac0b5339bcb52cac601ed9aa4ff40e3d71d875a63f7226dae21ee024883cdd4"
+   },
+   "rows": 400,
+   "seed": null,
+   "sha256": "3d3fd309c17cc591b4362ee4c40c3e4f7dae0281ae8a6136f9b09f6ef3bf76ab",
+   "source": "pprof_py"
+  },
+  "large-mean": {
+   "events": 223,
+   "file": "large-mean.rds",
+   "kind": "cox",
+   "md5": "1be3cfadfb3cbcb24aa7440f97e22987",
+   "provenance": null,
+   "rows": 300,
+   "seed": 14,
+   "sha256": "dd88dbf2625ea2d264387266feb0a93e094e54ccc840eeeb12fe384efc5bb329",
+   "source": "synthetic"
+  },
+  "lt-weights-offset": {
+   "events": 385,
+   "file": "lt-weights-offset.rds",
+   "kind": "cox",
+   "md5": "ce5ce9350e1bc0bded43bf205ee4a629",
+   "provenance": {
+    "commit": "e917a68",
+    "license": "MIT",
+    "path": "fixtures/cox/lt-weights-offset/input.csv",
+    "repository": "https://github.com/UM-KevinHe/pprof_spark",
+    "sha256": "2c475b0f83cddc99a94e1b2c9148a95741b44789072c5c478b1cc411a6bdfa07"
+   },
+   "rows": 600,
+   "seed": null,
+   "sha256": "8b0a66152e8085d3d660070d55c35c0733a77e92a5e41227e41eee52ab4cef3e",
+   "source": "pprof_spark"
+  },
+  "penalized-combined": {
+   "events": 434,
+   "file": "penalized-combined.rds",
+   "kind": "penalized",
+   "md5": "ce59202e1c16ada12d04cd124bd94a1b",
+   "provenance": {
+    "commit": "9320766e35e5b385d596a2b75418192098a124c4",
+    "license": "MIT",
+    "path": "pprof_py/r_reference/data/combined.csv",
+    "repository": "https://github.com/UM-KevinHe/pprof_py",
+    "sha256": "6d0ea60c88debbd4dd838adb85144b2c282fd5ea80f37085d0147110660e19a5"
+   },
+   "rows": 900,
+   "seed": null,
+   "sha256": "e46fb301654a4a142545312bf1f0011ee082a09b29da06450e1729378abc6250",
+   "source": "pprof_py"
+  },
+  "penalized-offset": {
+   "events": 207,
+   "file": "penalized-offset.rds",
+   "kind": "penalized",
+   "md5": "c31cd5b6fe04fd968ba27fee09df7f95",
+   "provenance": {
+    "commit": "9320766e35e5b385d596a2b75418192098a124c4",
+    "license": "MIT",
+    "path": "pprof_py/r_reference/data/offset.csv",
+    "repository": "https://github.com/UM-KevinHe/pprof_py",
+    "sha256": "1bccd40c7a172977550e9d94452db2966bd38ab41f09779ed0ebf48a199c6e37"
+   },
+   "rows": 400,
+   "seed": null,
+   "sha256": "c1cd99794d162e4d5c0bed59902d34e755a46e0abfad8a43d6a6ee7eb63292b0",
+   "source": "pprof_py"
+  },
+  "penalized-truncation": {
+   "events": 218,
+   "file": "penalized-truncation.rds",
+   "kind": "penalized",
+   "md5": "4985fd93100470717e917363f93ca47c",
+   "provenance": {
+    "commit": "9320766e35e5b385d596a2b75418192098a124c4",
+    "license": "MIT",
+    "path": "pprof_py/r_reference/data/left_truncation.csv",
+    "repository": "https://github.com/UM-KevinHe/pprof_py",
+    "sha256": "0e5fae3ffcc2653439da2876c84fe945c86ddd1ef4049242cd3ccf96774c38ff"
+   },
+   "rows": 400,
+   "seed": null,
+   "sha256": "663853e78fbb8aaa8bca9652204b82f7232dda6a5b35d90baa3ac862002d2a93",
+   "source": "pprof_py"
+  },
+  "penalized-weights": {
+   "events": 209,
+   "file": "penalized-weights.rds",
+   "kind": "penalized",
+   "md5": "4ab874ff423a489d2e43c88cec1e95ee",
+   "provenance": {
+    "commit": "9320766e35e5b385d596a2b75418192098a124c4",
+    "license": "MIT",
+    "path": "pprof_py/r_reference/data/weights.csv",
+    "repository": "https://github.com/UM-KevinHe/pprof_py",
+    "sha256": "87a735ff5ddaf448c828716cbfdde8651f992911e0db49794977905c779ac298"
+   },
+   "rows": 400,
+   "seed": null,
+   "sha256": "d93ebecfb614b781c51b141f88870a629dd333e297dfbc1f7adc46857347656b",
+   "source": "pprof_py"
+  },
+  "penalized-wide": {
+   "events": 202,
+   "file": "penalized-wide.rds",
+   "kind": "penalized",
+   "md5": "b97cd1907d62f220e5288fb62b91699f",
+   "provenance": {
+    "commit": "9320766e35e5b385d596a2b75418192098a124c4",
+    "license": "MIT",
+    "path": "pprof_py/r_reference/data/penalized_wide.csv",
+    "repository": "https://github.com/UM-KevinHe/pprof_py",
+    "sha256": "c8f73e472d6cfbd806f2cce901b22bb201c483f5aeef1eaefe503b70ecf00382"
+   },
+   "rows": 400,
+   "seed": null,
+   "sha256": "cc693998dc7484dd433e203edc09633340e649399ab75124047fb35ef43da5dc",
+   "source": "pprof_py"
+  },
+  "provider-scale": {
+   "events": 16892,
+   "file": "provider-scale.rds",
+   "kind": "cox",
+   "md5": "328bd0cab40928f66e7ecb949d8e5fdb",
+   "provenance": null,
+   "rows": 20000,
+   "seed": 16,
+   "sha256": "c48940a775009547f584c9a686f803e0ae4773e415df44d3c21a7e920126322e",
+   "source": "synthetic"
+  },
+  "rc-stratified-weights-offset": {
+   "events": 434,
+   "file": "rc-stratified-weights-offset.rds",
+   "kind": "cox",
+   "md5": "4a008fdd7fd4022d6bb6b74c1b1b8d76",
+   "provenance": {
+    "commit": "e917a68",
+    "license": "MIT",
+    "path": "fixtures/cox/rc-stratified-weights-offset/input.csv",
+    "repository": "https://github.com/UM-KevinHe/pprof_spark",
+    "sha256": "af173851d3543f3fd9b1e66efd642f9daa63c362b409da09f6c01556a098bcdb"
+   },
+   "rows": 600,
+   "seed": null,
+   "sha256": "e85fa2d2542c176ee9c520699b7688046120e4cbccba4a4a5a060962c27fbce2",
+   "source": "pprof_spark"
+  },
+  "rc-unstratified": {
+   "events": 304,
+   "file": "rc-unstratified.rds",
+   "kind": "cox",
+   "md5": "83391f96aef6a5c59af11c76e486ffeb",
+   "provenance": {
+    "commit": "e917a68",
+    "license": "MIT",
+    "path": "fixtures/cox/rc-unstratified/input.csv",
+    "repository": "https://github.com/UM-KevinHe/pprof_spark",
+    "sha256": "d48d51d700730080922c50dda93c840df88d06b108e9fd7052117dfc67f547c7"
+   },
+   "rows": 400,
+   "seed": null,
+   "sha256": "b3df113011680facad58eb203781338f729b59b36012c3b428ffda480647340f",
+   "source": "pprof_spark"
+  },
+  "recurrent": {
+   "events": 266,
+   "file": "recurrent.rds",
+   "kind": "cox",
+   "md5": "4b0c76df231d78d901aac5802f5992a4",
+   "provenance": null,
+   "rows": 506,
+   "seed": 11,
+   "sha256": "5ac51ace9172b93b2363a7c26b39f0d26f4193993d27e869a94adcf5782735dc",
+   "source": "synthetic"
+  },
+  "zero-weights": {
+   "events": 451,
+   "file": "zero-weights.rds",
+   "kind": "cox",
+   "md5": "78dca03b7f159abc6cab5b31ebe2110b",
+   "provenance": null,
+   "rows": 600,
+   "seed": 13,
+   "sha256": "40bbdc8c9af845eec2a741a5d83ec1a5fb0b22045db6feb8e4b8cd5da2794608",
+   "source": "synthetic"
+  }
+ },
+ "format_version": 1,
+ "generator": "dev/reference/cox/generate.py",
+ "generator_clean": true,
+ "generator_commit": "59c9dc048822f4a83513a56d5dceb5c293aaae97",
+ "inputs_sources_sha256": "d0c87691242e803962b9b52f83b56592eecf52daf8a88db94e0f4b8ac5c0d761",
+ "options": {
+  "clusters": "the cluster column, or id mod 40",
+  "cv_deviance": "coxnet.deviance(std.weights = FALSE), normalized by the held-out event weight",
+  "fixed_beta": [
+   0.375,
+   -0.1875,
+   0.0625,
+   0.125,
+   -0.25
+  ],
+  "glmnet_control": "list(thresh = 1e-12, maxit = 1e5, fdev = 0, devmax = 1)",
+  "ties": [
+   "breslow",
+   "efron"
+  ],
+  "tight": {
+   "eps": 1e-11,
+   "max_iter": 100
+  },
+  "timefix": false,
+  "zero_weights": "left out of survival's fits; kept in the measures (M-25)"
+ },
+ "python": {
+  "machine": "AMD64",
+  "numba_threading_layer": "default",
+  "packages": {
+   "contourpy": "1.4.0",
+   "cycler": "0.12.1",
+   "fast-poibin": "0.4.2",
+   "fonttools": "4.66.1",
+   "kiwisolver": "1.5.1",
+   "llvmlite": "0.50.0",
+   "matplotlib": "3.11.2",
+   "numba": "0.68.0",
+   "numpy": "2.5.3",
+   "packaging": "26.3",
+   "pandas": "3.0.6",
+   "pillow": "12.3.0",
+   "pprof_py": "0.7.0",
+   "pyparsing": "3.3.3",
+   "python-dateutil": "2.9.0.post0",
+   "scipy": "1.18.1",
+   "six": "1.17.0",
+   "tzdata": "2026.5"
+  },
+  "platform": "Windows-11-10.0.22621-SP0",
+  "pprof_py": {
+   "commit": "9320766e35e5b385d596a2b75418192098a124c4",
+   "version": "0.7.0"
+  },
+  "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+  "python": "3.12.3",
+  "python_implementation": "CPython"
+ },
+ "r": {
+  "blas": "",
+  "compiler": "g++",
+  "lapack": "3.12.0",
+  "library": "lib",
+  "os": "Windows 11 x64 (build 22621)",
+  "packages": {
+   "Matrix": "1.7.6",
+   "glmnet": "5.1",
+   "jsonlite": "2.0.0",
+   "survival": "3.8.12"
+  },
+  "platform": "x86_64-w64-mingw32",
+  "r": "R version 4.4.0 (2024-04-24 ucrt)"
+ },
+ "r_library_lock_sha256": "96adbbf1eaf0b4840c636916d0c21dbc0316cd9ebf3a2b471129cbb0d87eadb8",
+ "set": "full",
+ "threads": {
+  "MKL_NUM_THREADS": "1",
+  "NUMBA_NUM_THREADS": "1",
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1"
+ }
+}
