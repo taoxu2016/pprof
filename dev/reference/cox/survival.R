@@ -130,7 +130,10 @@ national_expected <- function(def, d, beta_r, beta_py) {
   offset <- if (isTRUE(def$offset)) d$offset else rep(0, nrow(d))
   response <- if (isTRUE(def$truncated)) Surv(d$entry, d$time, d$event) else Surv(d$time, d$event)
   one <- function(beta) {
+    # Shifted by its maximum, as K-136's r_i = exp(eta_i - max eta): the expected counts do not change,
+    # and exp() cannot overflow when the linear predictor is large (D-64).
     eta <- drop(x %*% as.numeric(beta)) + offset
+    eta <- eta - max(eta)
     fit <- coxph(response ~ offset(eta), ties = "breslow", control = coxph.control(timefix = FALSE))
     e <- predict(fit, type = "expected")
     sums <- tapply(e, provider, sum)

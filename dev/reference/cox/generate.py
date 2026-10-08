@@ -123,6 +123,15 @@ def quiet(function, *args, **kwargs):
     return result, sorted({f"{w.category.__name__}: {w.message}" for w in caught})
 
 
+def attempt(function):
+    """(result, None), or (None, the error) when pprof_py raises: the fixture records the error as the
+    outcome, as dev/reference's generator records the reference's errors."""
+    try:
+        return quiet(function)[0], None
+    except Exception as error:  # recorded in the fixture, not hidden
+        return None, f"{type(error).__name__}: {error}"
+
+
 def pprof_fit(df, case, ties, **control):
     model, caught = quiet(lambda: CoxPH(ties=ties, **control).fit(x_of(df, case), **fit_arguments(df, case)))
     return {
@@ -198,20 +207,28 @@ def pprof_residuals(df, case, ties):
                             data.strata_codes, data.strata_labels, ties=ties)
     dfbeta = dfbeta_residuals(score, data.weight, model.naive_covariance_)
     cluster = clusters_of(df)
-    per_row, _ = quiet(lambda: CoxPH(ties=ties, robust=True, **TIGHT).fit(X, **arguments))
-    clustered, _ = quiet(lambda: CoxPH(ties=ties, **TIGHT).fit(X, cluster=cluster, **arguments))
+    per_row, per_row_error = attempt(lambda: CoxPH(ties=ties, robust=True, **TIGHT).fit(X, **arguments))
+    clustered, clustered_error = attempt(lambda: CoxPH(ties=ties, **TIGHT).fit(X, cluster=cluster, **arguments))
     sums = pd.DataFrame(dfbeta).groupby(cluster).sum().to_numpy()
-    return {
+    out = {
         "martingale": hexes(model.martingale_residuals_),
         "score": [hexes(score[:, j]) for j in range(score.shape[1])],
         "dfbeta": [hexes(dfbeta[:, j]) for j in range(dfbeta.shape[1])],
         "naive_covariance": hexes(packed(model.naive_covariance_)),
-        "robust_per_row": hexes(packed(per_row.covariance_)),
-        "robust_clustered": hexes(packed(clustered.covariance_)),
         "robust_per_row_from_dfbeta": hexes(packed(dfbeta.T @ dfbeta)),
         "robust_clustered_from_dfbeta": hexes(packed(sums.T @ sums)),
-        "clusters": int(clustered.n_clusters_),
     }
+    # An output pprof_py fails to compute is recorded as its error (D-64), with no value.
+    if per_row_error:
+        out["robust_per_row_error"] = per_row_error
+    else:
+        out["robust_per_row"] = hexes(packed(per_row.covariance_))
+    if clustered_error:
+        out["robust_clustered_error"] = clustered_error
+    else:
+        out["robust_clustered"] = hexes(packed(clustered.covariance_))
+        out["clusters"] = int(clustered.n_clusters_)
+    return out
 
 
 def providers_of(df, case):

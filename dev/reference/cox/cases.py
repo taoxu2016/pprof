@@ -187,7 +187,8 @@ def load(case):
     elif case["id"] == "zero-weights":
         df = _zero_weights(case)
     elif case["id"] == "large-mean":
-        df, _ = _standard(case, 300, 6, 60, [0.375, -0.25], x_mean=2000.0)
+        # A covariate near 3,000: the fitted linear predictor passes pprof_py's clipping at 700 (D-64).
+        df, _ = _standard(case, 300, 6, 60, [0.375, -0.25], x_mean=3000.0)
     elif case["id"] == "empty-providers":
         df = _empty_providers(case)
     elif case["id"] == "provider-scale":
