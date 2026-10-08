@@ -1,0 +1,20 @@
+# The Python environment of the Cox fixture generator (dev/reference/cox/README.md): Python 3.12.3
+# and these pins, which are pprof_spark's (reference/fixtures/requirements.txt at commit e917a68,
+# its REFERENCE.lock), so both projects' pprof_py outputs come from the same stack. pprof_py itself
+# is installed separately, from a checkout at commit 9320766 (v0.7.0), with --no-deps.
+contourpy==1.4.0
+cycler==0.12.1
+fast-poibin==0.4.2
+fonttools==4.66.1
+kiwisolver==1.5.1
+llvmlite==0.50.0
+matplotlib==3.11.2
+numba==0.68.0
+numpy==2.5.3
+packaging==26.3
+pandas==3.0.6
+pillow==12.3.0
+pyparsing==3.3.3
+python-dateutil==2.9.0.post0
+scipy==1.18.1
+six==1.17.0

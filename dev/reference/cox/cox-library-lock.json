@@ -1,0 +1,87 @@
+{
+  "purpose": "Isolated library of the Cox fixture generator: the engines survival and glmnet (DEC-093, DEC-017).",
+  "created": "2026-10-08 14:50:06 UTC",
+  "snapshot": "https://packagemanager.posit.co/cran/2026-10-01",
+  "engines": {
+    "survival": "3.8.12",
+    "glmnet": "5.1"
+  },
+  "r_version": "R version 4.4.0 (2024-04-24 ucrt)",
+  "platform": "x86_64-w64-mingw32",
+  "compiler": "g++",
+  "blas": "",
+  "lapack": "",
+  "lapack_version": "3.12.0",
+  "packages": [
+    {
+      "package": "codetools",
+      "version": "0.2-20",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "foreach",
+      "version": "1.5.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "glmnet",
+      "version": "5.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "iterators",
+      "version": "1.0.14",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "lattice",
+      "version": "0.23-1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "Matrix",
+      "version": "1.7-6",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "Rcpp",
+      "version": "1.1.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "RcppEigen",
+      "version": "0.3.4.0.2",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "shape",
+      "version": "1.4.6.1",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "survival",
+      "version": "3.8-12",
+      "built": "4.4.0",
+      "repository": "RSPM",
+      "source": "snapshot binary"
+    }
+  ]
+}

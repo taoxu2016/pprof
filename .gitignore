@@ -25,6 +25,9 @@ CLAUDE.local.md
 *.Rcheck/
 # Isolated reference library for fixture generation (dev/reference/setup_reference_library.R)
 dev/reference/lib/
+# Isolated environments of the Cox fixture generator (dev/reference/cox/README.md)
+dev/reference/cox/lib/
+dev/reference/cox/venv/
 # Vignettes built locally (devtools::build_vignettes())
 /doc/
 /Meta/
