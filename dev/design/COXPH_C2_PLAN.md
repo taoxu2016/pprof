@@ -1,6 +1,6 @@
 # CoxPH Phase C2 plan: the data layer and the provider-stratified Cox model
 
-> **Status: proposed on 2026-10-08, for the project lead's approval** (CLAUDE.md: plan first for numerical code). It implements the brief's §4 row C2 (`dev/coxph_brief.md`; also §3.3, §3.7, §5.1, §5.2, §5.6, §6) and COXPH_DESIGN §B to §E, under DEC-086 to DEC-098. No package code changes until it is approved. §6 lists the decisions it asks for.
+> **Status: approved by the project lead on 2026-10-08, with the seven decisions of §6 as recommended** (DEC-099 to DEC-104). It implements the brief's §4 row C2 (`dev/coxph_brief.md`; also §3.3, §3.7, §5.1, §5.2, §5.6, §6) and COXPH_DESIGN §B to §E, under DEC-086 to DEC-098.
 
 C2 adds survival data to the data layer, the `survival` adapter, and `fit_cox_stratified()` with its object, coefficient inference, baselines, residuals, predictions, and methods. The existing families stay bitwise identical. The evidence gathered for this plan is in §2; the scripts are `dev/design/coxph-facts/17` to `20`.
 

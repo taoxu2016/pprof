@@ -887,7 +887,7 @@ The decisions below were made in CoxPH Phase C0 under the project lead's delegat
 ### DEC-091: The survival adapter calls survival's fitters, and `coxph()` only where it must
 
 - Date: 2026-10-07
-- Status: accepted under the project lead's delegation (2026-10-07); confirmed by the project lead (2026-10-08, C0 gate); the C2 benchmarks confirm
+- Status: accepted under the project lead's delegation (2026-10-07); confirmed by the project lead (2026-10-08, C0 gate); the C2 benchmarks confirm; amended by DEC-099 (the robust variance comes from the fitter's result, not from `coxph()`) and made precise by DEC-100 (the fitters' arguments)
 - Context: `coxph()` took 18 s on 1,000,000 rows where its fitter `agreg.fit()` took 6.3 s (`dev/design/coxph-facts/07_cox_fit_timing_r.txt`); the fitters, called with a prepared design, give `coxph()`'s results (`14_engine_interfaces.txt`). The robust variance, baselines, predictions, and score and dfbeta residuals need a `coxph` object.
 - Decision: The fits call `survival::coxph.fit()` (right-censored data) or `survival::agreg.fit()` (counting-process data) with the prepared design, the provider strata, the offset, the positive weights, and `coxph.control(eps = tol, iter.max = max_iter)`. With robust variance requested, the fit calls `survival::coxph()` on the prepared data with `timefix = FALSE` and an explicit cluster (the row, when none is given). Baselines, predictions, and score and dfbeta residuals come from a `coxph()` refit with the same settings, kept with `keep_data = TRUE` or built from `data`, as the other methods that need the covariates do (DEC-005).
 - Alternatives considered: `coxph()` for every fit (three times slower on large data); computing baselines and residuals in pprof (reimplements what `survival` provides, contrary to the brief's §1).
@@ -952,8 +952,64 @@ The decisions below were made in CoxPH Phase C1 under the project lead's delegat
 ### DEC-098: Large Cox fits may be slower than pprof_py's
 
 - Date: 2026-10-08
-- Status: accepted by the project lead (2026-10-08, C1 gate), as recommended in the C1 gate report
+- Status: accepted by the project lead (2026-10-08, C1 gate), as recommended in the C1 gate report; the cheaper robust variance it asked C2 to look for is DEC-099, and the comparator of the 10% rule is made precise by DEC-100
 - Context: The brief's §3.7 requires a fit to be at most 10% slower than the engine call it wraps (MUST) and no slower than pprof_py (SHOULD). On the C1 baseline's data (`dev/bench/results/cox-baseline-20261008-windows.md`), pprof_py v0.7.0 fits 1,000,000 rows in 4.3 s against `survival::agreg.fit()`'s 17.2 s, with one numba thread or eight, and its robust variance takes 5.2 s against 130 s through `coxph()` with one cluster per row; at 10,000 rows `survival` is faster (0.08 s against 0.37 s). In Phase C0, on other data, `agreg.fit()` was the faster (6.3 s against 9.4 s).
 - Decision: The SHOULD is not a requirement for fits at large sizes: the package keeps `survival` as its engine (DEC-086, DEC-091), and the MUST holds against the engine calls. Phase C2 looks for a cheaper robust variance than `coxph()` with one cluster per row, from `survival`'s own residual routines on the fitter's result, and reports the measures and tests (the package's own code) against pprof_py's.
 - Alternatives considered: a Cox engine of the package's own (contrary to the brief's strategy, DEC-086); `threads` for `survival` (it is single-threaded).
 - Consequences: the C2 benchmarks compare each fit with its engine call (MUST) and report pprof_py's times; the brief's §3.7 SHOULD is read as applying to the measures, the tests, and the robust variance.
+
+The decisions below were made in CoxPH Phase C2 and approved by the project lead with the C2 plan (`dev/design/COXPH_C2_PLAN.md` §6, 2026-10-08), each as recommended there.
+
+### DEC-099: The robust variance comes from survival's dfbeta residuals on the fitter's result
+
+- Date: 2026-10-08
+- Status: accepted by the project lead (2026-10-08, with the C2 plan, its decision 1); amends DEC-091; answers DEC-098's search
+- Context: DEC-091 computed the robust variance by calling `coxph()` with an explicit cluster, which took 129.7 s at 1,000,000 rows in C1's baseline (DEC-098) and 20.7 s on rows sorted by provider in the plan's evidence. `coxph()`'s robust step applies survival's `residuals.coxph(type = "dfbeta", collapse = cluster, weighted = TRUE)` to an object it builds from its fitter's result, then `crossprod()`; the rest of `coxph()` builds a model frame, computes the concordance, and adds a robust score test at β = 0, none of which the package uses.
+- Decision: The adapter does exactly that with its own fitter result: the fitter's list with `x`, `y`, `weights`, `strata`, and `terms`, of class `coxph`, passed to `residuals()` with the cluster codes (one cluster per fitted row when no cluster is given), then `crossprod()`. The model-based variance is kept as `naive_vcov`.
+- Alternatives considered: `coxph()` with a cluster (DEC-091: the same numbers, ten times slower at scale); score residuals computed in the package (reimplements survival, contrary to the brief's §1).
+- Consequences: The robust variance equals `coxph()`'s bitwise, with one cluster per row and with a cluster column, for both fitters (`dev/design/coxph-facts/17_robust_from_fitter.txt`; the engine-identity tests). It relies on what `residuals.coxph()` reads from `coxph()`'s internal object; the engine-identity tests pin that, and if a later survival breaks it, the fit returns to DEC-091's `coxph()` call.
+
+### DEC-100: The adapter calls survival's fitters as `coxph()` calls them
+
+- Date: 2026-10-08
+- Status: accepted by the project lead (2026-10-08, with the C2 plan, its decisions 2 and 7)
+- Context: `survival::coxph.fit()` and `agreg.fit()` give `coxph()`'s fit bitwise only when called with `coxph()`'s preprocessing; called as C1's engine baseline called `agreg.fit()` (the raw offset, no `nocenter`, rows in the generator's order), the coefficients move by up to 3.5e-16 and the log-likelihood in its last digits (`dev/design/coxph-facts/17_robust_from_fitter.txt`, `18_fitter_arguments.txt`).
+- Decision: On the rows with positive weight, in `data_prepare()`'s order, the adapter passes the design without intercept, `Surv(stop, status)` or `Surv(start, stop, status)`, integer strata codes in provider order, the offset minus its mean (zeros without one, or when it is 0 everywhere), the weights or `NULL`, `init = NULL`, `method = ties`, `coxph.control(eps = tol, iter.max = max_iter, timefix = FALSE)`, and `nocenter = c(-1, 0, 1)`; clusters are coded as `coxph()` codes them (a factor's codes, otherwise the order of first appearance among the fitted rows); offsets whose exp() is not finite are rejected, as `coxph()` rejects them. The benchmarks compare each fit with the engine calls it makes, on the same prepared data in the same session, under DEC-038's rule with its 0.05 s floor (decision 7 of the plan).
+- Alternatives considered: the fitters with their own defaults (last-bit differences from `coxph()`, so no bitwise engine identity); `coxph()` for every fit (DEC-091: three times slower).
+- Consequences: Fits are bitwise `coxph(timefix = FALSE, robust = FALSE)`'s on the same rows. C1's `cox-engines-20261008-windows.csv` stays the baseline of record, but the paired runs, not the CSV, decide the brief's 10% rule (DEC-098).
+
+### DEC-101: The covariate p-value of Cox fits is computed as an upper tail
+
+- Date: 2026-10-08
+- Status: accepted by the project lead (2026-10-08, with the C2 plan, its decision 3)
+- Context: pprof_py computes the covariate p-value as 2·`norm.sf(|z|)` (`pprof_py/inference/survival/inference.py:39-45`). The package's default covariate rule, logistic fixed effects' 2(1 − Φ(|z|)) (K-100), gives 0 for |z| above 8.3; the `lt-stratified` fixture has a coefficient with z = 9.15 and p = 5.5e-20.
+- Decision: The covariate rule of the family specification (`coefficient_wald`, DEC-046) gains `p_value = "two_sided_upper"`, 2F̄(|z|) computed as an upper tail. The stratified Cox family uses it with the normal distribution and the default interval, β̂ ∓ Φ⁻¹(1 − α/2)·se, which is pprof_py's. Every other family keeps its rule (K-148).
+- Alternatives considered: the default rule (p-values of 0 where pprof_py reports values below 1e-16, a Class B difference).
+- Consequences: The Cox coefficient table reproduces pprof_py's p-values; the existing families' tests are unchanged.
+
+### DEC-102: C2's part of the model contract
+
+- Date: 2026-10-08
+- Status: accepted by the project lead (2026-10-08, with the C2 plan, its decision 4)
+- Context: COXPH_DESIGN §D.3 lists six shared-layer changes for the Cox models, and the brief's §4 places the contract hooks in C3. A model without provider effects cannot be built, or safely passed to the profiling functions, without two of them.
+- Decision: C2 brings §D.3's item 1 (`validate_pprof_model()` accepts `provider_effects = NULL`) and item 2 (`provider_effects()` raises `pprof_error_unsupported_inference` when `provider_estimates()` is `NULL`); items 3 to 6 stay in C3. In C2 the stratified Cox model declares `coef_wald` only, and its `profile_spec()` has the required fields and the covariate rule (DEC-101); C3 completes COXPH_DESIGN §D.2 with the capabilities and their hooks.
+- Alternatives considered: all six hooks in C2 (brings C3's profiling work forward, before its tests and tiers); none (the model could not be built through `new_pprof_model()`).
+- Consequences: Every profiling function raises `pprof_error_unsupported_inference` on a C2 Cox fit; the defaults of both hooks are the existing behavior.
+
+### DEC-103: The presentation of the stratified Cox model
+
+- Date: 2026-10-08
+- Status: accepted by the project lead (2026-10-08, with the C2 plan, its decision 5)
+- Context: COXPH_DESIGN §B.1 lists the methods but leaves the shape of their outputs open where survival and pprof_py differ, and NAMING §5 fixes `augment()`'s columns for every model.
+- Decision: `augment()`'s `fitted` is each observation's expected number of events under the fitted model (survival's `predict(type = "expected")`, the status minus the martingale residual) and its `residual` the martingale residual; `glance()` has the shared columns with `n_events`, and `aic` and `bic` as `AIC()` and `BIC()` give for the `coxph()` fit; `predict()`'s cumulative hazard and survival, and `baseline_hazard()`, are long tables at each provider's event times, as pprof_py's are; rows with weight 0 are left out of the fit (M-25) and reported in the object (`n_zero_weight`), by `print()`, and with `verbose`, without a warning; `Surv()` is re-exported from survival, as `tidy()`, `glance()`, and `augment()` are from generics.
+- Alternatives considered: broom's convention (`.fitted` the linear predictor, which breaks NAMING §5's rule that the residual is observed minus fitted); a warning for zero weights (they are a deliberate input).
+- Consequences: NAMING §10 records the new field and values; `library(pprof)` suffices to write a Cox formula.
+
+### DEC-104: `check_data()` for survival data
+
+- Date: 2026-10-08
+- Status: accepted by the project lead (2026-10-08, with the C2 plan, its decision 6)
+- Context: The brief's §5.1 lists the checks for survival data; two of them need a rule the brief does not give.
+- Decision: With a `Surv()` response, `check_data()` takes `weights` and `cluster` and reports, without stopping (DEC-073): near-tied times, the rows whose times `survival::aeqSurv()` would merge (survival's own rule, M-23); zero and negative weights; rows with start ≥ stop, a right-censored time of 0 or less, or an invalid status; providers with no events and with no person-time; covariates linearly dependent within providers (QR with pivoting, as D-38's check); and covariates whose |mean| exceeds `large_mean_ratio` = 100 standard deviations, such as a calendar year, which survival centers and pprof_py does not (D-64).
+- Alternatives considered: a tolerance of the package's own for near ties (survival's is the one `coxph()` applies by default); no large-mean rule (the brief asks for the check).
+- Consequences: The checks report and change no result; `large_mean_ratio` is named in `R/constants.R`.
