@@ -21,13 +21,16 @@ import os
 THREADS = {"NUMBA_NUM_THREADS": "1", "OMP_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"}
 os.environ.update(THREADS)
 
+import sys
+
+sys.dont_write_bytecode = True  # no __pycache__ in the generator's folder, which must stay clean
+
 import argparse
 import hashlib
 import json
 import platform
 import shutil
 import subprocess
-import sys
 import tempfile
 import warnings
 from importlib import metadata
