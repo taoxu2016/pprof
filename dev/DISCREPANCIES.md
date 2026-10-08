@@ -990,8 +990,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Options: (1) reproduce pprof_py (would mean reimplementing its kernel); (2) `survival`'s, which is correct (pprof_py's own dfbeta residuals give R's value, X-015).
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-24).
-- Status: verified (2026-10-07); decided; implemented in C2.
-- Regression test: the C1 fixtures (`lt-stratified`, `lt-weights-offset`) compare the robust variance with R's.
+- Status: verified (2026-10-07); decided; implemented in C2. The C1 fixtures confirm it (2026-10-08): with Breslow ties on (start, stop] data, pprof_py's robust variances differ from survival's in `lt-stratified`, `lt-weights-offset`, `recurrent`, and every Breslow Fine–Gray fit, and agree with Efron ties (`validation/cox-calibration-report.md`).
+- Regression test: the C1 fixtures (`lt-stratified`, `lt-weights-offset`, `recurrent`, `competing-*`) hold both robust variances; C2 compares the package's with survival's.
 
 ### D-57: The order of step halving and the convergence test
 
@@ -1004,8 +1004,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Options: (1) reproduce pprof_py; (2) `survival`'s order, which the adapter gets by delegating.
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-27).
-- Status: verified (2026-10-07); decided; implemented in C2.
-- Regression test: the C1 fixtures compare default fits on iteration counts exactly and on estimates within a tolerance set by the last Newton step (brief §3.5), and tight fits within `cox_reference`.
+- Status: verified (2026-10-07); decided; implemented in C2. The C1 fixtures confirm it, at tight control too (2026-10-08): in `competing-simple`'s Fine–Gray fit of cause 2 with Efron ties (eps 1e-11), the full fourth step lowered the log-likelihood by 1.1e-13, and pprof_py halved it once (stratified) or five times (unstratified) where survival kept it: survival's step was −1.37e-8 and pprof_py's −6.86e-9, and the tight estimates differ by 6.9e-9 and 6.7e-9, 1.4 times `cox_coefficient`.
+- Regression test: the C1 fixtures compare default fits on iteration counts exactly and on estimates within the longer of the two last Newton steps, and tight fits within `cox_coefficient` or, when pprof_py halved its last step, within that bound (DEC-097).
 
 ### D-58: Zero case weights
 
@@ -1018,8 +1018,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Options: (1) reproduce pprof_py; (2) leave zero-weight rows out of the Cox fit and keep them in the provider table and the measures, which do not use weights (M-29); (3) refuse zero weights, as `survival` does.
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-25).
-- Status: verified (2026-10-07); decided; implemented in C2.
-- Regression test: C1 case with zero weights: Breslow fits equal pprof_py's; Efron fits equal pprof_py's with the zero-weight rows removed; the measures equal pprof_py's.
+- Status: verified (2026-10-07); decided; implemented in C2. The C1 fixture `zero-weights` confirms it (2026-10-08): with Breslow ties, survival's fits on the positive-weight rows equal pprof_py's within the tiers; with Efron ties they differ (the tight coefficients by 2.8e5 times `cox_coefficient`).
+- Regression test: the C1 case `zero-weights`: Breslow fits equal pprof_py's; Efron fits equal pprof_py's with the zero-weight rows removed; the measures equal pprof_py's.
 
 ### D-59: Aliased covariates and no events
 
@@ -1097,8 +1097,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Options: (1) reproduce pprof_py; (2) `survival`'s.
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (DEC-087).
-- Status: verified (2026-10-07); decided; implemented in C2.
-- Regression test: a C1 case with a covariate of large mean.
+- Status: verified (2026-10-07); decided; implemented in C2. The C1 fixture `large-mean` (a covariate near 2,000) reproduces it only in part (2026-10-08): at the fitted β̂ its linear predictor stays between 587 and 611, below pprof_py's clipping at 700, so the coefficients, residuals, robust variances, and expected counts agree with survival's; at the fixed β, where the linear predictor reaches 751, pprof_py's log-likelihood, score, and information differ, as do its Breslow information at β = 0 and its baseline at x = 0 (about 1e-255, where the comparison is void). A covariate near 3,000 would put the fitted linear predictor beyond 700, as C0's probe did; strengthening the case means regenerating the fixtures, which needs the project lead's approval.
+- Regression test: the C1 case `large-mean`.
 
 ### D-65: Provider-penalized Cox
 

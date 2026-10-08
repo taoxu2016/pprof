@@ -916,8 +916,35 @@ The decisions below were made in CoxPH Phase C1 under the project lead's delegat
 ### DEC-094: CI's fixture-platform job builds lme4 with Eigen's cache sizes fixed
 
 - Date: 2026-10-08
-- Status: accepted under the project lead's delegation (2026-10-08), as recommended at the C0 gate; CI runs on both kinds of runner confirm it
+- Status: accepted under the project lead's delegation (2026-10-08), as recommended at the C0 gate; confirmed on CI at `dce985e` (run 37802219652): on an AMD Family 25 Model 17 runner (Zen 4, a 32 KB L1 cache, where CRAN's binary fails), lme4 built so matched all 368 cases
 - Context: The fixture-platform job of `rewrite-reference.yaml` failed the same 42 lme4-backed cases on every runner with an AMD Zen 3 processor and passed on Zen 5 ones (D-53). Eigen sizes the blocks of lme4's matrix products from the L1 cache it reads from the processor. lme4 2.0-6 built on the fixtures' machine with the cache query off (`EIGEN_NO_CPUID`) fails the same 42 cases with Zen 3's cache sizes and matches all 368 with that machine's (`dev/design/coxph-facts/16_lme4_cache_sizes.R`).
 - Decision: The job builds lme4 from the snapshot's source with `-DEIGEN_NO_CPUID` and the default cache sizes of the fixtures' machine (L1 48 KB, L2 1.25 MB, L3 8 MB) before it runs the reference suite, and fails if the flags do not reach the compiler. The fixtures, the tolerances, and the other jobs are unchanged.
 - Alternatives considered: rerunning the job until it lands on a 48 KB runner (a gate that passes by chance); comparing the lme4 cases only on such runners (weakens the gate on half the runs); regenerating the fixtures with a fixed-size build (needs the project lead's approval and changes nothing users run).
 - Consequences: the job compares CRAN's lme4 source, built as CRAN builds it but with Eigen's cache sizes fixed, rather than CRAN's binary; the per-platform jobs still use the binaries. The job takes a few minutes longer.
+
+### DEC-095: The Cox generator's pinned Python environment
+
+- Date: 2026-10-08
+- Status: accepted under the project lead's delegation (2026-10-08)
+- Context: The brief's §3.1 requires a pinned Python environment for pprof_py v0.7.0, which declares Python 3.10 or later; this machine had Python 3.9.7 only. pprof_spark generated its Cox fixtures with Python 3.12.3 and pins recorded in its `REFERENCE.lock`.
+- Decision: Python 3.12.3 from `uv` (installed into the user site of the machine's Python; it downloads a standalone Python into the user profile, without administrator rights), a virtual environment in `dev/reference/cox/venv/` (gitignored), `dev/reference/cox/requirements.txt` equal to pprof_spark's pins, and pprof_py installed with `--no-deps` from a checkout at commit `9320766`. `generate.py` refuses to run unless the checkout is at that commit and every installed module equals the file there. Every thread pool runs one thread.
+- Alternatives considered: the system Python 3.9 (below pprof_py's declared minimum); a system-wide Python 3.12 (changes the machine for one generator).
+- Consequences: pprof_py's outputs here equal pprof_spark's to rounding on the imported cases (default fits to 1e-14, tight fits within 4e-9, the calibration report's last section); pandas 3 adds `tzdata` on Windows, which the manifest records.
+
+### DEC-096: The Cox fixtures: two sets, inputs vendored, engines in Suggests
+
+- Date: 2026-10-08
+- Status: accepted under the project lead's delegation (2026-10-08); the C1 gate confirms
+- Context: DEC-093 placed the Cox fixtures in `tests/testthat/fixtures/cox/`, but the 20 cases of COXPH_DESIGN §G.1 take 2.5 MB, and the shipped fixtures already fill DEC-018's budget.
+- Decision: A core set of 7 cases (396 KB: `tiny-ties`, `rc-stratified`, `lt-stratified`, `near-ties`, `empty-providers`, `competing-simple`, `penalized-strata`) ships with the tests; the other 13 are in `validation/fixtures/cox/`, read when present, as the full reference set is. Imported inputs are vendored in `dev/reference/cox/inputs/` from their commits with their SHA-256, byte for byte (`.gitattributes`). Manifests record SHA-256 and MD5 of every fixture and no timestamps; two generations gave byte-identical files. `survival` (≥ 3.5-8) and `glmnet` (≥ 5.0) join Suggests for the fixtures' tests; `survival` moves to Imports in C2 (COXPH_DESIGN §H). A manual workflow, `cox-fixtures.yaml`, regenerates the fixtures into an artifact with diff and calibration reports.
+- Alternatives considered: shipping all 20 cases (2.5 MB beyond the budget); generating on Linux, as pprof_spark did (the comparisons run on every platform under the calibrated tiers, COXPH_DESIGN §G.5, so the generating platform matters less than reproducibility).
+- Consequences: the tests check every fixture against its manifest and that the installed engines reproduce the fixtures' engine outputs; C2 to C5 compare the package with the core set in the tests and with both sets in validation.
+
+### DEC-097: The Cox tolerance tiers
+
+- Date: 2026-10-08
+- Status: proposed in Phase C1 under the project lead's delegation (2026-10-08); a tolerance changes only with sign-off, so the C1 gate lists them for approval
+- Context: The brief's §3.5 asks C1 to propose named tiers, each calibrated so that pprof_py and `survival` or `glmnet` agree within 1 unit and every negative control differs by at least 10.
+- Decision: Eight tiers in `tests/testthat/helper-tolerances.R`: `cox_engine` (0, 0), `cox_function` (1e-12, 1e-12), `cox_coefficient` (1e-10, 1e-8), `cox_variance` (1e-12, 1e-7), `cox_baseline` (1e-12, 1e-8), `cox_residual` (1e-8, 0), `cox_statistic` (0, 1e-8; calibrated in C3), and `penalized_path` (5e-6, 0), as atol and rtol under the package's elementwise rule. Default fits, and tight fits whose last Newton step pprof_py halved, are compared within the longer of the two last steps (D-57). The calibration report (`validation/cox-calibration-report.md`) passes 598 of 598 scored rows; 46 rows are differences the registers explain (D-56: 14, D-57: 3, D-58: 18, D-64: 9, M-23: 2). Step functions are compared where pprof_py reports them (its event times), matched to survival's at the same stratum and time; a value that cannot be compared fails.
+- Alternatives considered: pprof_spark's classes under its vector-scaled rule (the package's rule is elementwise, so absolute floors had to be set for values near 0); COXPH_DESIGN §G.2's proposed `cox_residual` (1e-9) and `penalized_path` (1e-6), which the calibration showed too tight (2.8e-9 and 1.06e-6 observed).
+- Consequences: C2 to C5 compare under these tiers; `cox_statistic` and the mid-p limits' `root` tier are calibrated when C3 computes the tests.

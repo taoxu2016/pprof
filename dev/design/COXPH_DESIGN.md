@@ -473,7 +473,7 @@ Each default is the current behavior (DEC-092), proved as in §C.2.
 - **Degenerate columns** (weighted population variance below 10ε) are handled as pprof_py handles them, before the call: left out with a classed warning, with coefficient 0. `glmnet`'s rescaling of the penalty factors over the remaining columns is then pprof_py's rescaling over its non-degenerate columns. M-26's error applies to the unpenalized fits only.
 - **Cross-validation (`select_lambda()`).**
   - Folds: event-stratified, drawn with R's random numbers (D-61), or `folds` given.
-  - Per fold: a `glmnet` path on the training rows with the full-data grid; the fold's deviance with `glmnet::coxnet.deviance()` as pprof_py defines it, normalized by the held-out event weight (§A.5, M-30).
+  - Per fold: a `glmnet` path on the training rows with the full-data grid; the fold's deviance as pprof_py defines it, normalized by the held-out event weight (§A.5, M-30, K-144). Its saturated term is the Breslow form for both tie methods: `glmnet::coxnet.deviance()` gives it for Breslow ties, but for Efron ties glmnet 5.x uses another saturated term, off by a constant (336.7 on `penalized_wide`; Phase C1), so the Efron deviance is computed from the partial likelihood with pprof_py's saturated term.
   - `cvm`, `cvsd`, `lambda_min`, and `lambda_1se` by pprof_py's formulas.
   - Not `cv.glmnet()`, whose normalization changed in 5.0 (04).
 - **The difference from pprof_py's proximal-Newton solver** is absorbed by the `penalized_path` tier: 2.2e-7 was measured at `thresh = 1e-12` (`09_penalized_glmnet.txt`).
@@ -552,30 +552,31 @@ As §B.2.
 7. A covariate with a large mean (D-64).
 8. Providers with no events, and with E_j = 0.
 
-**The generator.**
+**The generator.** As built in C1 (`dev/reference/cox/README.md`; DEC-095, DEC-096):
 
-- Python: `dev/reference/cox/generate.py`, adapted from pprof_spark's generator. Its `requirements.txt` pins pprof_py at `9320766` and the stack of pprof_spark's lock (Python 3.12, NumPy, SciPy, pandas, numba).
-- R: `dev/reference/cox/survival.R`, run in the isolated library with `survival` and `glmnet` pinned.
-- Output: JSON with doubles as hexadecimal strings, converted to RDS by an R step, and `manifest.json` with the versions and the SHA-256 of every file.
+- Python: `dev/reference/cox/generate.py`, adapted from pprof_spark's generator. Its `requirements.txt` holds the pins of pprof_spark's lock (Python 3.12.3, NumPy, SciPy, pandas, numba), and pprof_py comes from a checkout at `9320766`, checked module by module.
+- R: `dev/reference/cox/survival.R`, run in the isolated library with `survival` 3.8-12 and `glmnet` 5.1.
+- Output: JSON with doubles as hexadecimal strings, converted to one RDS per case by `convert.R`, and per set a `manifest.json` with the environments and the SHA-256 and MD5 of every fixture. Two generations are byte-identical.
+- Sets: a core set of 7 cases ships with the tests (396 KB); the other 13 are in `validation/fixtures/cox/`.
 - Tests never need Python.
 
 ### G.2 Tolerance tiers
 
-These are proposed values. C1 calibrates them with negative controls (brief §3.5). The pprof_py comparisons start from pprof_spark's classes, calibrated on the same cases.
+Calibrated in C1 (DEC-097; `validation/cox-calibration-report.md`): pprof_py against `survival` or `glmnet` within 1 unit, every negative control beyond 10, under the package's elementwise rule.
 
-| Tier | Compares | Proposed atol, rtol | Basis |
+| Tier | Compares | atol, rtol | Basis |
 |---|---|---|---|
 | `cox_engine` | pprof against direct `survival` and `glmnet` calls, same platform | 0, 0 for the engines' outputs | the same computation (`14_engine_interfaces.txt`) |
-| `cox_function` | ℓ, U, and I at fixed β against pprof_py | 0, 1e-12 | pprof_spark's T-fn |
-| `cox_coefficient` | tight-fit coefficients against pprof_py | 1e-10, 1e-8 | T-coef |
-| `cox_variance` | standard errors and covariances against pprof_py | 0, 1e-7 | T-var |
-| `cox_baseline` | baselines, and expected counts given each side's β̂ | 0, 1e-8 | T-base |
-| `cox_residual` | residuals | 1e-9, 0 | T-res |
-| `cox_statistic` | test statistics; p-values compared on the statistic | 0, 1e-8 | T-test, T-p |
-| `penalized_path` | coefficient paths at the same λ values | 1e-6, 0 | 2.2e-7 measured (`09_penalized_glmnet.txt`) |
-| `closed_form`, `probability`, `root` (existing) | measures given the same β̂; p-values; mid-p limits | as now | `tests/testthat/helper-tolerances.R` |
+| `cox_function` | ℓ, U, and I at fixed β against pprof_py | 1e-12, 1e-12 | closed forms in another order |
+| `cox_coefficient` | tight-fit coefficients against pprof_py | 1e-10, 1e-8 | the last step from a score at rounding level |
+| `cox_variance` | standard errors and covariances against pprof_py | 1e-12, 1e-7 | inherit the coefficients' differences |
+| `cox_baseline` | baselines, and expected counts given each side's β̂ | 1e-12, 1e-8 | each at its own β̂ |
+| `cox_residual` | residuals | 1e-8, 0 | 2.8e-9 observed |
+| `cox_statistic` | test statistics; p-values compared on the statistic | 0, 1e-8 | calibrated in C3 |
+| `penalized_path` | coefficient paths at the same λ values | 5e-6, 0 | pprof_py's defaults: 1.06e-6 observed |
+| `closed_form`, `probability`, `root` (existing) | measures given the same β̂; p-values; mid-p limits | as now | `tests/testthat/helper-tolerances.R`; `root` recalibrated in C3 |
 
-- **Fits at default settings:** iteration counts must match exactly, and coefficients must agree within the last Newton step (D-57).
+- **Fits at default settings, and tight fits whose last step pprof_py halved:** iteration counts must match exactly, and coefficients must agree within the longer of the two last Newton steps (D-57).
 - **Flags** match exactly, except for providers within tolerance of a threshold, which the equivalence report lists.
 
 ### G.3 Test layers (brief §6)
