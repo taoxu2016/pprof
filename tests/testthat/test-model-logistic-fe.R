@@ -130,6 +130,21 @@ test_that("covariates that are dependent within providers warn but are fitted as
   if (reference_platform()$ok) expect_s3_class(outcome, "pprof_error_convergence")
 })
 
+test_that("the rank warning names every covariate when all are constant within providers (D-38)", {
+  # Within-provider rank 0: provider-level covariates only, which the provider effects absorb.
+  data <- data.frame(provider = rep(1:20, each = 30))
+  data$y <- as.integer(seq_len(nrow(data)) %% 3 == 0)
+  data$size <- data$provider / 10
+  data$beds <- data$provider %% 4 + 1
+  warning <- expect_warning(
+    tryCatch(fit_logistic_fe(y ~ size + beds, data, "provider"), pprof_error_convergence = function(error) error),
+    class = "pprof_warning_rank_deficient"
+  )
+  expect_identical(warning$rank, 0L)
+  expect_setequal(warning$aliased, c("size", "beds"))
+  expect_true(all(vapply(c("size", "beds"), grepl, logical(1), conditionMessage(warning), fixed = TRUE)))
+})
+
 test_that("verbose = FALSE prints nothing, and verbose = TRUE reports through pprof_message", {
   data <- example_data()
   expect_silent(fit_logistic_fe(example_formula, data, "hospital"))

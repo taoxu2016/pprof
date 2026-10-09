@@ -170,7 +170,8 @@ logistic_fe_check_rank <- function(prepared) {
   for (j in seq_len(ncol(design))) within[, j] <- design[, j] - stats::ave(design[, j], prepared$provider_index)
   decomposition <- qr(within)
   if (decomposition$rank < ncol(design)) {
-    aliased <- colnames(design)[decomposition$pivot[-seq_len(decomposition$rank)]]
+    # The columns past the rank in the pivot order, every column when the rank is 0 (D-38).
+    aliased <- colnames(design)[decomposition$pivot[seq.int(decomposition$rank + 1L, ncol(design))]]
     warn_rank_deficient(
       sprintf(paste("The covariates are linearly dependent within providers (rank %d of %d),",
                     "so these coefficients are not identified: %s."),
