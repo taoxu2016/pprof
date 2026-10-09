@@ -211,6 +211,104 @@ for (set in c("core", "full")) {
         }
       }
     })
+
+    # Phase C3: the measures, tests, limits, and funnels, first given pprof_py's own inputs, which
+    # isolates the closed forms of R/model-cox-measures.R and R/inference-poisson.R from the fit
+    # (the CoxPH C3 plan, §4.2), on every Cox case and cause-specific record.
+    test_that(sprintf("measures, tests, and funnels at pprof_py's inputs, %s Cox fixtures", set_name), {
+      ids <- c(cox_reference_ids(set_name), cox_reference_ids(set_name, kind = "competing"))
+      if (!length(ids)) skip(sprintf("no %s Cox fixture set here", set_name))
+      if (identical(set_name, "full")) skip_on_cran()
+      for (id in ids) {
+        fx <- cox_fixture(id, set_name)
+        for (ties in c("breslow", "efron")) {
+          for (rec in cox_profile_records(fx, ties)) {
+            label <- rec$label
+            measures <- rec$py$measures
+            labels <- sort(unique(rec$provider))
+            codes <- match(rec$provider, labels)
+            rows <- seq_along(labels)
+            eta <- drop(rec$x %*% unlist(measures$beta)) + rec$offset
+            expected <- cox_expected_events(eta, rec$start, rec$stop, rec$event)
+            expect_identical(data_provider_sums(rec$event, codes, rows), unlist(measures$observed), label = label)
+            expect_cox_match(data_provider_sums(expected, codes, rows), measures$expected, "closed_form",
+                             paste(label, "expected events"))
+            expect_cox_match(sum(expected), sum(rec$event), "closed_form", paste(label, "sum of the expected events"))
+            expect_cox_match(data_provider_sums(rec$stop - rec$start, codes, rows), measures$person_time,
+                             "closed_form", paste(label, "person-time"))
+            model <- list(linear_predictor = eta, offset = NULL, provider_index = codes, response = rec$event,
+                          start = rec$start, stop = rec$stop)
+            expect_cox_match(cox_direct_expected(model, rows), measures$direct_expected, "closed_form",
+                             paste(label, "direct expected events"))
+            for (test in c("midp", "exact")) {
+              py <- rec$py$tests[[test]]
+              observed <- unlist(py$observed)
+              expected_py <- unlist(py$expected)
+              result <- infer_poisson_test(observed, expected_py, test, 0.95)
+              expect_cox_match(result$statistic, py$z_raw, "cox_statistic", paste(label, test, "statistics"))
+              expect_cox_match(result$p_value, py$p_value, "probability", paste(label, test, "p-values"))
+              expect_identical(result$flag, as.integer(unlist(py$flag)), label = paste(label, test, "flags"))
+              limits <- if (test == "midp") {
+                infer_poisson_midp_limits(observed, expected_py, 0.95)
+              } else {
+                infer_poisson_exact_limits(observed, expected_py, 0.95)
+              }
+              tier <- if (test == "midp") "cox_root" else "closed_form"
+              expect_cox_match(limits[, "lower"], py$ci_lower, tier, paste(label, test, "lower limits"))
+              expect_cox_match(limits[, "upper"], py$ci_upper, tier, paste(label, test, "upper limits"))
+            }
+            # The funnel limits are counts and a half over the same expected count: equal (DEC-107).
+            for (part in cox_funnel_parts(rec$py$funnel)) {
+              expect_cox_match(unname(part$ours), part$theirs, "exact", paste(label, "funnel limits"))
+            }
+          }
+        }
+      }
+    })
+
+    # Then from the package's own tight fits, whose strata are pprof_py's providers in the stratified
+    # cases: the expected events at each side's coefficients, and the flags, except for a provider within
+    # tolerance of a threshold (the CoxPH brief's §3.5; none here, validation/cox-calibration-report.md).
+    test_that(sprintf("measures and flags of the package's fits, %s Cox fixtures (D-58, M-29)", set_name), {
+      ids <- c(cox_reference_ids(set_name), cox_reference_ids(set_name, kind = "competing"))
+      if (!length(ids)) skip(sprintf("no %s Cox fixture set here", set_name))
+      if (identical(set_name, "full")) skip_on_cran()
+      quiet <- function(expr) {
+        withCallingHandlers(expr, pprof_warning_zero_expected = function(w) invokeRestart("muffleWarning"))
+      }
+      for (id in ids) {
+        fx <- cox_fixture(id, set_name)
+        for (ties in c("breslow", "efron")) {
+          for (rec in cox_profile_records(fx, ties)) {
+            if (is.null(rec$fit)) next
+            label <- rec$label
+            fit <- rec$fit()
+            measures <- quiet(standardize_providers(fit, c("indirect", "direct")))$table
+            indirect <- measures[measures$standardization == "indirect", ]
+            direct <- measures[measures$standardization == "direct", ]
+            py <- rec$py$measures
+            expect_identical(indirect$provider_id, as.character(unlist(py$provider)), label = label)
+            expect_identical(indirect$observed, unlist(py$observed), label = label)
+            expect_cox_match(fit$providers$person_time, py$person_time, "closed_form", paste(label, "person-time"))
+            # D-58: pprof_py's Efron fit counts zero-weight events among tied deaths, so its coefficients,
+            # and the expected events at them, differ; with Breslow ties they agree.
+            d58 <- identical(id, "zero-weights") && identical(ties, "efron")
+            check <- if (d58) expect_cox_differ else expect_cox_match
+            check(indirect$expected, py$expected, "cox_baseline", paste(label, "expected events"))
+            check(direct$expected, py$direct_expected, "cox_baseline", paste(label, "direct expected events"))
+            if (d58) next
+            expect_cox_match(indirect$estimate, py$indirect_ratio, "cox_baseline", paste(label, "indirect ratios"))
+            expect_cox_match(direct$estimate, py$direct_ratio, "cox_baseline", paste(label, "direct ratios"))
+            for (test in c("midp", "exact")) {
+              flags <- quiet(test_providers(fit, test = test))$table$flag
+              near <- cox_near_threshold(indirect$observed, indirect$expected, test)
+              expect_identical(flags[!near], as.integer(unlist(rec$py$tests[[test]]$flag))[!near],
+                               label = paste(label, test, "flags"))
+            }
+          }
+        }
+      }
+    })
   })
 }
 

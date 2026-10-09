@@ -102,3 +102,60 @@ cox_last_step_bound <- function(a, b, iterates, iterations) {
   previous <- unlist(iterates[[max(iterations - 1, 1)]]$beta)
   max(abs(unlist(a) - previous), abs(unlist(b) - previous)) + reference_tolerance("cox_coefficient")$atol
 }
+
+# --- The measures, tests, and funnels of the Cox cases (Phase C3) --------------------------------
+
+# The records of a fixture for one tie method: a Cox case, or each cause of a competing-risk case with
+# the other causes censored (M-35), with what the measures need: the event, the providers as pprof_py
+# grouped them (the stratum, or id mod 10 in an unstratified case, dev/reference/cox/generate.py's
+# providers_of()), the times, the offset, and the covariates; pprof_py's outputs (its `measures`,
+# `tests`, and `funnel`); and for stratified records the package's tight fit, whose strata are those
+# providers.
+cox_profile_records <- function(fx, ties) {
+  def <- fx$case
+  d <- fx$input
+  start <- if (isTRUE(def$truncated)) d$entry else rep(0, nrow(d))
+  x <- as.matrix(d[, unlist(def$features), drop = FALSE])
+  if (identical(def$kind, "cox")) {
+    return(list(list(
+      label = paste(def$id, ties), event = d$event, provider = if (isTRUE(def$stratified)) d$stratum else d$id %% 10,
+      start = start, stop = d$time, offset = if (isTRUE(def$offset)) d$offset else 0, x = x,
+      py = fx$pprof_py[[ties]], fit = if (isTRUE(def$stratified)) function() cox_case_fit(fx, ties, tight = TRUE)
+    )))
+  }
+  lhs <- if (isTRUE(def$truncated)) "Surv(entry, time, event == %d)" else "Surv(time, event == %d)"
+  lapply(names(fx$pprof_py[[ties]]$cause_specific), function(cause) {
+    f <- stats::as.formula(paste(sprintf(lhs, as.integer(cause)), "~", paste(unlist(def$features), collapse = " + ")),
+                           env = list2env(list(Surv = survival::Surv), parent = globalenv()))
+    list(label = sprintf("%s %s cause %s", def$id, ties, cause), event = as.numeric(d$event == as.integer(cause)),
+         provider = d$stratum, start = start, stop = d$time, offset = 0, x = x,
+         py = fx$pprof_py[[ties]]$cause_specific[[cause]],
+         fit = function() fit_cox_stratified(f, d, provider = "stratum", ties = ties, max_iter = 100, tol = 1e-11))
+  })
+}
+
+# The providers whose flag the test changes as their expected count moves within cox_baseline's
+# allowance: within tolerance of a threshold, so their flags are not compared (the CoxPH brief's §3.5).
+cox_near_threshold <- function(observed, expected, test, level = 0.95) {
+  tolerance <- reference_tolerance("cox_baseline")
+  width <- tolerance$atol + tolerance$rtol * expected
+  infer_poisson_test(observed, pmax(expected - width, 0), test, level)$flag !=
+    infer_poisson_test(observed, expected + width, test, level)$flag
+}
+
+# pprof_py's count boundaries of the funnel at level 0.95, and its curves where the fixture has them,
+# from the package's construction at pprof_py's expected counts (K-149).
+cox_funnel_parts <- function(funnel) {
+  parts <- list(providers = list(ours = infer_poisson_funnel_limits(unlist(funnel$expected), "midp", 0.95),
+                                 theirs = cbind(unlist(funnel$lower), unlist(funnel$upper))))
+  curves <- funnel$curves
+  if (!is.null(curves)) {
+    levels <- unlist(curves$level)
+    ours <- do.call(rbind, lapply(sort(unique(levels)), function(level) {
+      infer_poisson_funnel_limits(unlist(curves$precision)[levels == level], "midp", level)
+    }))
+    order <- order(levels, seq_along(levels))
+    parts$curves <- list(ours = ours, theirs = cbind(unlist(curves$lower), unlist(curves$upper))[order, , drop = FALSE])
+  }
+  parts
+}
