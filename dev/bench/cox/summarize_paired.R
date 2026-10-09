@@ -33,14 +33,20 @@ pairs$median_ratio <- pairs$median_s_fit / pairs$median_s_engine
 pairs$min_ratio <- pairs$min_s_fit / pairs$min_s_engine
 pairs$slower <- pairs$median_ratio > 1.10 & pairs$min_ratio > 1.10 &
   (pairs$median_s_fit - pairs$median_s_engine) >= 0.05
+# The same rule against the engine call plus the preparation of its inputs from the data frame.
+pairs$prepared_median_ratio <- pairs$median_s_fit / (pairs$median_s_engine + pairs$prep_s_engine)
+pairs$prepared_min_ratio <- pairs$min_s_fit / (pairs$min_s_engine + pairs$prep_s_engine)
+pairs$prepared_slower <- pairs$prepared_median_ratio > 1.10 & pairs$prepared_min_ratio > 1.10 &
+  (pairs$median_s_fit - pairs$median_s_engine - pairs$prep_s_engine) >= 0.05
 labels <- paste(pairs$scenario, pairs$task)
 groups <- split(pairs, factor(labels, levels = unique(labels)))
-verdict <- function(p) {
+verdict <- function(p, slower) {
   if (any(p$status_engine != "ok" | p$status_fit != "ok")) return("FAILED")
   if (!all(p$identical_to_engine_fit %in% TRUE)) return("ESTIMATES DIFFER")
-  if (all(p$slower)) "TOO SLOW" else "ok"
+  if (all(slower)) "TOO SLOW" else "ok"
 }
-verdicts <- vapply(groups, verdict, character(1))
+verdicts <- vapply(groups, function(p) verdict(p, p$slower), character(1))
+prepared_verdicts <- vapply(groups, function(p) verdict(p, p$prepared_slower), character(1))
 
 fmt <- function(x) ifelse(is.na(x), "-", trimws(formatC(x, digits = 3, format = "fg")))
 ratio <- function(x) ifelse(is.na(x), "-", sprintf("%.3f", x))
@@ -67,35 +73,57 @@ lines <- c(
         "same data (`dev/bench/cox/scenarios.R`, C1's grid). The engine call is survival's fitter as the adapter calls",
         "it, on the inputs the adapter builds, prepared outside the timing (DEC-100); for the robust fit, the fitter",
         "followed by coxph()'s robust step with one cluster per row (DEC-099). The fit is `fit_cox_stratified()` on",
-        "the data frame, with weights and an offset, from the formula to the model object; the preparation of the",
-        "engine's inputs from the data frame (`data_prepare()` and the adapter's inputs) is timed once per round."),
+        "the data frame, with weights and an offset, from the formula to the model object. The preparation of the",
+        "engine's inputs from the data frame (`data_prepare()` and the adapter's inputs) is timed in the engine's",
+        "process after its measurement: the median of three calls."),
   "",
   paste("Rule (DEC-038, the brief's §3.7 MUST): a fit is too slow when, in every round, its median and its fastest",
         "run are more than 10% above the engine call's and its median at least 0.05 s above. The fit's estimates must",
         "equal the engine call's bitwise (coefficients, and the robust variance). Times in seconds; peak memory of the",
         "process after the first run, in MB (recorded, DEC-004)."),
   "",
-  sprintf("- Fits: %d; too slow: %d; failed or differing from the engine call: %d.", length(verdicts),
-          sum(verdicts == "TOO SLOW"), sum(verdicts %in% c("FAILED", "ESTIMATES DIFFER"))),
+  sprintf("- Fits: %d; too slow against the engine call: %d; failed or differing from the engine call: %d.",
+          length(verdicts), sum(verdicts == "TOO SLOW"), sum(verdicts %in% c("FAILED", "ESTIMATES DIFFER"))),
+  sprintf("- Too slow against the engine call plus the preparation of its inputs: %d.",
+          sum(prepared_verdicts == "TOO SLOW")),
   "",
   "## The fit against its engine call", "",
   paste("| Scenario | Rows | Providers | Covariates | Task | Round | Engine median | Fit median | Ratio |",
-        "Engine fastest | Fit fastest | Ratio | Fit − engine, median | Inputs' preparation, median of 3 |",
-        "Fit − engine − preparation | Peak MB, engine / fit | Estimates | Verdict |"),
-  "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"
+        "Engine fastest | Fit fastest | Ratio | Fit − engine, median | Peak MB, engine / fit | Estimates |",
+        "Verdict |"),
+  "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"
 )
 for (g in names(groups)) {
   p <- groups[[g]]
   for (j in seq_len(nrow(p))) {
-    excess <- p$median_s_fit[j] - p$median_s_engine[j]
-    lines <- c(lines, sprintf("| %s | %s | %d | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s / %s | %s | %s |",
+    lines <- c(lines, sprintf("| %s | %s | %d | %s | %s | %s | %s | %s | %s | %s | %s / %s | %s | %s |",
                               size_of(p$scenario[j]), p$task[j], p$round[j], fmt(p$median_s_engine[j]),
                               fmt(p$median_s_fit[j]), ratio(p$median_ratio[j]), fmt(p$min_s_engine[j]),
-                              fmt(p$min_s_fit[j]), ratio(p$min_ratio[j]), fmt(excess), fmt(p$prep_s_engine[j]),
-                              fmt(excess - p$prep_s_engine[j]), fmt(p$peak_after_mb_engine[j]),
+                              fmt(p$min_s_fit[j]), ratio(p$min_ratio[j]),
+                              fmt(p$median_s_fit[j] - p$median_s_engine[j]), fmt(p$peak_after_mb_engine[j]),
                               fmt(p$peak_after_mb_fit[j]),
                               if (isTRUE(p$identical_to_engine_fit[j])) "identical" else "DIFFER",
                               if (j == nrow(p)) verdicts[[g]] else ""))
+  }
+}
+lines <- c(lines, "", "## Where the fit's time goes", "",
+           paste("The fit's time beyond the engine call, the preparation of the engine's inputs from the data frame,",
+                 "and what is left: the adapter's own steps, the model object, and noise. The last column applies",
+                 "DEC-038's rule to the engine call plus the preparation (medians, and fastest runs plus the",
+                 "preparation)."),
+           "",
+           paste("| Scenario | Task | Round | Fit − engine, median | Inputs' preparation, median of 3 |",
+                 "Fit − engine − preparation | Ratio, fit / (engine + preparation), medians | Fastest |",
+                 "Verdict against engine plus preparation |"),
+           "|---|---|---|---|---|---|---|---|---|")
+for (g in names(groups)) {
+  p <- groups[[g]]
+  for (j in seq_len(nrow(p))) {
+    excess <- p$median_s_fit[j] - p$median_s_engine[j]
+    lines <- c(lines, sprintf("| %s | %s | %d | %s | %s | %s | %s | %s | %s |", p$scenario[j], p$task[j], p$round[j],
+                              fmt(excess), fmt(p$prep_s_engine[j]), fmt(excess - p$prep_s_engine[j]),
+                              ratio(p$prepared_median_ratio[j]), ratio(p$prepared_min_ratio[j]),
+                              if (j == nrow(p)) prepared_verdicts[[g]] else ""))
   }
 }
 
