@@ -40,18 +40,29 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # As rewrite-check.yaml's job with R 4.4.0 on this image: current binaries from the public
+      # package manager, and the package's hard dependencies with the benchmark's packages. The
+      # paired rule compares the sides on the runner, so no CRAN snapshot is needed; the run's JSON
+      # records the versions of survival, Matrix, bench, and callr.
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: "4.4.0"
-          use-public-rspm: false
-
-      - name: Use the CRAN snapshot of the reference library
-        run: echo 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2026-10-01"))' >> ~/.Rprofile
+          use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
+        id: dependencies
+        continue-on-error: true
         with:
           extra-packages: any::bench, any::callr, any::jsonlite, any::ps
-          needs: check
+          dependencies: '"hard"'
+
+      # The action's own log is not readable without signing in.
+      - name: Report a failure to install the dependencies
+        if: steps.dependencies.outcome == 'failure'
+        run: |
+          Rscript .github/scripts/ci-annotate.R dependencies hard FALSE deps::. any::sessioninfo any::bench any::callr \
+            any::jsonlite any::ps
+          exit 1
 
       - name: Describe the runner
         run: |
@@ -74,6 +85,10 @@ jobs:
           set -o pipefail
           Rscript dev/bench/cox/run_paired.R bench-data "bench-results/cox-paired-$STAMP-linux.csv" \
             --only "$ONLY" --rounds "$ROUNDS" 2>&1 | tee bench-results/run.log
+
+      - name: Report a failed measurement
+        if: failure() && steps.dependencies.outcome == 'success'
+        run: Rscript .github/scripts/ci-annotate.R tail "The benchmark's log, last lines" bench-results/run.log 40
 
       - name: Report
         if: always()
