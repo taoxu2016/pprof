@@ -10,11 +10,13 @@
 #
 # Usage, from the repository root:
 #   Rscript dev/bench/cox/summarize_paired.R <report md> <C1 engines csv> <C1 pprof_py csv> <paired csv> [...]
-#     [--notes <md file>]
+#     [--notes <md file>] [--notices]
 # Several paired CSVs are the runs of one session, for example one per group of scenarios. A later run
 # that repeats a scenario and task replaces the earlier runs' rows of it, for example a task run again
 # after a change to the code it times; the report names them. A notes file (Markdown) goes into the
 # report after its summary, for what the measurements do not show, such as the conditions of the run.
+# With --notices, the verdicts are also printed as GitHub Actions notices, which the public API returns
+# without signing in (dev/tools/ci_runs.R), as .github/workflows/cox-bench.yaml uses them.
 # Exit status is 1 when a fit is too slow by DEC-105's rule, fails, or differs from its engine call.
 args <- commandArgs(trailingOnly = TRUE)
 notes <- character()
@@ -23,6 +25,8 @@ if (!is.na(at)) {
   notes <- c(readLines(args[[at + 1L]], encoding = "UTF-8"), "")
   args <- args[-c(at, at + 1L)]
 }
+notices <- "--notices" %in% args
+args <- setdiff(args, "--notices")
 if (length(args) < 4L) {
   stop(paste("Usage: Rscript dev/bench/cox/summarize_paired.R <report md> <C1 engines csv> <C1 pprof_py csv>",
              "<paired csv> ..."), call. = FALSE)
@@ -209,6 +213,7 @@ for (g in names(groups)) {
                             ratio(fit_median / py_median)))
 }
 midp_verdicts <- character()
+midp_notes <- character()
 if (nrow(profile)) {
   lines <- c(lines, "", "## Measures and tests beside pprof_py's", "",
              paste("The `profile` task fits once outside the timing, then times on that fit: the expected events'",
@@ -230,11 +235,16 @@ if (nrow(profile)) {
     of <- function(column) stats::median(p[[column]])
     if (any(p$status != "ok")) {
       midp_verdicts[[s]] <- "FAILED"
+      midp_notes[[s]] <- sprintf("%s: FAILED", s)
       lines <- c(lines, sprintf("| %s | %s | - | - | - | - | - | - | - | - | - | FAILED |", s, format(p$providers[1])))
       next
     }
     midp_ratio <- median_of(py, s, "test_midp") / (of("expected_s") + of("midp_s"))
     midp_verdicts[[s]] <- if (is.na(midp_ratio)) "-" else if (midp_ratio >= 10) "ok" else "NOT 10 TIMES FASTER"
+    midp_notes[[s]] <- sprintf("%s: expected events %s s, mid-p test and limits %s s, pprof_py's %s s (C1): %s; %s",
+                               s, fmt(of("expected_s")), fmt(of("midp_s")), fmt(median_of(py, s, "test_midp")),
+                               if (is.na(midp_ratio)) "-" else sprintf("%.0f times faster", midp_ratio),
+                               midp_verdicts[[s]])
     lines <- c(lines, sprintf("| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |", s,
                               format(p$providers[1], big.mark = ","), fmt(of("expected_s")), fmt(of("measures_s")),
                               fmt(median_of(py, s, "measures")), fmt(of("midp_s")), fmt(median_of(py, s, "test_midp")),
@@ -249,5 +259,28 @@ cat(sprintf("wrote %s: %d fits, %d too slow (DEC-105), %d against the engine cal
 if (length(midp_verdicts)) {
   cat(sprintf("mid-p limits: %d scenarios, %d not ten times faster than pprof_py's or failed\n", length(midp_verdicts),
               sum(midp_verdicts %in% c("NOT 10 TIMES FASTER", "FAILED"))))
+}
+if (notices) {
+  # GitHub Actions workflow commands, one notice for the machine and one for each kind of verdict; a
+  # message escapes %, CR, and LF, so that its lines arrive as one annotation.
+  escape <- function(x) {
+    gsub("\n", "%0A", gsub("\r", "%0D", gsub("%", "%25", x, fixed = TRUE), fixed = TRUE), fixed = TRUE)
+  }
+  notice <- function(title, body) cat(sprintf("::notice title=%s::%s\n", title, escape(paste(body, collapse = "\n"))))
+  fit_notes <- vapply(names(groups), function(g) {
+    p <- groups[[g]]
+    sprintf("%s: %s (DEC-105); fit over engine call plus preparation, medians %s, fastest %s; estimates %s", g,
+            prepared_verdicts[[g]], paste(sprintf("%.3f", p$prepared_median_ratio), collapse = " and "),
+            paste(sprintf("%.3f", p$prepared_min_ratio), collapse = " and "),
+            if (all(p$identical_to_engine_fit %in% TRUE)) "identical" else "DIFFER")
+  }, "")
+  notice("Cox paired benchmark", sprintf(paste("%s, %d logical cores, %s, survival %s, commit %s: %d fits, %d too slow",
+                                               "by DEC-105's rule; %d mid-p scenarios, %d not ten times faster"),
+                                         machine$cpu, machine$logical_cores, machine$r, machine$packages$survival,
+                                         paste(commits, collapse = " and "), length(verdicts),
+                                         sum(prepared_verdicts == "TOO SLOW"), length(midp_verdicts),
+                                         sum(midp_verdicts %in% c("NOT 10 TIMES FASTER", "FAILED"))))
+  if (length(fit_notes)) notice("Fits against their engine calls", fit_notes)
+  if (length(midp_notes)) notice("Mid-p tests against pprof_py", midp_notes)
 }
 if (any(prepared_verdicts != "ok") || any(midp_verdicts %in% c("NOT 10 TIMES FASTER", "FAILED"))) quit(status = 1)

@@ -1,0 +1,92 @@
+# The paired Cox benchmark on a GitHub-hosted runner, by hand (CoxPH brief §3.7; DEC-105, DEC-111).
+#
+# The project lead's machine (7.4 GB of memory, most of it committed by other applications) cannot hold
+# the corner scenario of the Cox grid (1,000,000 rows, 7,500 providers, 50 covariates), whose processes
+# need about 2 GB each. This job runs dev/bench/cox/run_paired.R on a standard GitHub-hosted Ubuntu
+# runner, which has 16 GB of memory and 4 processors for a public repository: by default on the corner,
+# and on the two fits that the C3 run found at DEC-105's line, measured again alongside it
+# (providers-7500 with Breslow ties and covariates-5 robust; the project lead, C3 gate). As on the
+# gate's machine, the sides alternate in fresh single-threaded processes on the same data.
+#
+# The 10% rule compares the sides on the runner. The report sets the package's mid-p times beside
+# pprof_py's from C1, which ran on the project lead's machine, so those ratios are indicative. The job
+# uploads the CSV, its JSON, the report, the notes, and the log, writes the report to the run's summary,
+# and repeats the verdicts as notices, which the public API returns without signing in
+# (dev/tools/ci_runs.R). Nothing is committed, and no verdict fails the job.
+name: cox-bench
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: 'Regular expression selecting "<scenario> <task>" (tasks: breslow, efron, robust, profile)'
+        required: false
+        default: "^corner |^providers-7500 breslow$|^covariates-5 robust$"
+      rounds:
+        description: "Rounds of the paired measurement"
+        required: false
+        default: "2"
+
+permissions: read-all
+
+jobs:
+  bench:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      ONLY: ${{ inputs.only }}
+      ROUNDS: ${{ inputs.rounds }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.4.0"
+          use-public-rspm: false
+
+      - name: Use the CRAN snapshot of the reference library
+        run: echo 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2026-10-01"))' >> ~/.Rprofile
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::bench, any::callr, any::jsonlite, any::ps
+          needs: check
+
+      - name: Describe the runner
+        run: |
+          mkdir -p bench-results
+          cpu="$(lscpu | sed -n 's/^Model name: *//p' | head -n 1)"
+          memory="$(awk '/^MemTotal:/ {printf "%.1f", $2 / 1048576}' /proc/meminfo)"
+          # run_paired.R records the processor from this variable, which only Windows sets.
+          echo "PROCESSOR_IDENTIFIER=$cpu" >> "$GITHUB_ENV"
+          echo "STAMP=$(date -u +%Y%m%d)" >> "$GITHUB_ENV"
+          cat > bench-results/notes.md <<EOF
+          ## Notes on this run
+
+          - **The runner.** GitHub-hosted \`ubuntu-24.04\`, run ${GITHUB_RUN_ID}: ${cpu}, $(nproc) processors, ${memory} GB of memory. Tasks selected with \`--only "${ONLY}"\`, ${ROUNDS} rounds. The pprof_py times beside the package's are C1's, from the project lead's Windows machine, so their ratios are indicative.
+          EOF
+          cat bench-results/notes.md
+          free -m
+
+      - name: Measure
+        run: |
+          set -o pipefail
+          Rscript dev/bench/cox/run_paired.R bench-data "bench-results/cox-paired-$STAMP-linux.csv" \
+            --only "$ONLY" --rounds "$ROUNDS" 2>&1 | tee bench-results/run.log
+
+      - name: Report
+        if: always()
+        run: |
+          report="bench-results/cox-paired-$STAMP-linux.md"
+          Rscript dev/bench/cox/summarize_paired.R "$report" dev/bench/results/cox-engines-20261008-windows.csv \
+            dev/bench/results/cox-pprof_py-20261008-windows.csv "bench-results/cox-paired-$STAMP-linux.csv" \
+            --notes bench-results/notes.md --notices || true
+          if [ -f "$report" ]; then cat "$report" >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - name: Upload the results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cox-bench-results
+          path: bench-results
