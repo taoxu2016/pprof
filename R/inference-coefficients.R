@@ -144,8 +144,10 @@ infer_coefficient_terms <- function(model, parm) {
 }
 
 # The covariate Wald rule of a model's family (`coefficient_wald` in its family
-# specification, DEC-046): `p_value`, "two_sided" for 2 (1 - F(|z|)) or "upper_doubled" for
-# 2 (1 - F(z)); `p_value_distribution`, "normal" or "t"; `interval`, "critical" for
+# specification, DEC-046): `p_value`, "two_sided" for 2 (1 - F(|z|)), "two_sided_upper" for the
+# same p-value computed as an upper tail, 2 F(|z|, lower.tail = FALSE), which stays above 0 where
+# 1 - F(|z|) rounds to 0 (the stratified Cox model, as pprof_py computes it, DEC-101), or
+# "upper_doubled" for 2 (1 - F(z)); `p_value_distribution`, "normal" or "t"; `interval`, "critical" for
 # beta -/+ q(1 - alpha / 2) se or "quantile" for lme4's beta + se q(a); `interval_distribution`;
 # and `df` for t. A family that sets none has the rule of logistic fixed effects (K-100).
 infer_coefficient_default_rule <- list(p_value = "two_sided", p_value_distribution = "normal", interval = "critical",
@@ -170,6 +172,7 @@ infer_coefficient_wald <- function(model, terms, level, null) {
   statistic <- (estimate - null) / std_error
   p_value <- switch(rule$p_value,
     two_sided = 2 * (1 - infer_cdf(abs(statistic), rule$p_value_distribution, rule$df)),
+    two_sided_upper = 2 * infer_upper_tail(abs(statistic), rule$p_value_distribution, rule$df),
     upper_doubled = 2 * (1 - infer_cdf(statistic, rule$p_value_distribution, rule$df))
   )
   limits <- if (identical(rule$interval, "quantile")) {

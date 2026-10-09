@@ -134,3 +134,28 @@ test_that("confint() returns the Wald limits of the coefficients (K-100)", {
   expect_identical(unname(limits[, 2]), table$upper)
   expect_identical(rownames(confint(fit, parm = "z2")), "z2")
 })
+
+test_that("the covariate rule can compute the two-sided p-value as an upper tail (DEC-101)", {
+  # A model whose family uses the rule of the stratified Cox model: with z = 10, 1 - pnorm(z) rounds
+  # to 0, and the upper tail does not.
+  data <- data.frame(y = c(1, 0, 1, 0, 1, 1), z1 = c(1, 2, 3, 4, 5, 7), z2 = c(0, 1, 0, 1, 1, 0),
+                     id = c(1, 1, 2, 2, 3, 3))
+  prepared <- data_prepare(y ~ z1 + z2, data, "id")
+  vcov <- matrix(c(1, 0, 0, 0.25), 2L, 2L, dimnames = list(c("z1", "z2"), c("z1", "z2")))
+  model <- new_pprof_model(prepared, coefficients = c(z1 = 10, z2 = -0.5), vcov = vcov, provider_effects = NULL,
+                           linear_predictor = rep(0, 6), spec = list(family = "rule test"),
+                           class = "pprof_upper_tail_rule_model")
+  .S3method("inference_capabilities", "pprof_upper_tail_rule_model", function(model) "coef_wald")
+  .S3method("profile_spec", "pprof_upper_tail_rule_model", function(model) {
+    list(coefficient_wald = list(p_value = "two_sided_upper", p_value_distribution = "normal", interval = "critical",
+                                 interval_distribution = "normal", df = NULL))
+  })
+  table <- test_coefficients(model)$table
+  expect_identical(table$statistic, c(10, -1))
+  expect_identical(table$p_value, 2 * stats::pnorm(c(10, 1), lower.tail = FALSE))
+  expect_gt(table$p_value[1], 0)
+  expect_identical(2 * (1 - stats::pnorm(10)), 0)
+  critical <- stats::qnorm(1 - (1 - 0.95) / 2)
+  expect_identical(table$lower, c(10, -0.5) - critical * c(1, 0.5))
+  expect_identical(table$upper, c(10, -0.5) + critical * c(1, 0.5))
+})
