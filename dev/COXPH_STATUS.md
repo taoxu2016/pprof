@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is next and not started.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, has its plan (`dev/design/COXPH_C3_PLAN.md`), awaiting the project lead's approval.
 
 ## 2026-10-07
 
@@ -142,3 +142,13 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
 - CI on `34243d6`: coverage, reference, lint, pkgdown, and `rewrite-check` on ten of its eleven jobs pass. The "fixtures" job (Windows, R 4.4.0) failed 229 lme4-backed comparisons with the pprof 1.0.3 fixtures, by about 1e-5 relative: survival 3.8-12 brought Matrix 1.7-6, the manifest's, so the job compared the lme4 cases, which it had skipped before (240 skips at `e744e3f`, 11 now; R 4.4.0 bundles Matrix 1.7-0, and the job logs, which would show the versions, need signing in), and CRAN's lme4 binary on its Zen 3 runner is D-53's case. The job now builds lme4 from source with the fixture machine's Eigen cache sizes before the check, as `rewrite-reference.yaml`'s fixture-platform job does (DEC-094).
 - CI on `9882934`: every workflow passes, all eleven `rewrite-check` jobs among them (run 37966221816). The "fixtures" job, on a Zen 3 runner again, built lme4 2.0-6 with the fixed cache sizes against Matrix 1.7-6 and passed with the lme4-backed cases compared (8,511 expectations passed, none failed, 11 skipped).
 - Next step: Phase C3 when the project lead asks.
+
+## 2026-10-09: the C3 plan
+
+- The project lead asked for Phase C3. Branch `coxph/phase-3`, from `main` at `eedc5a1`.
+- The plan, `dev/design/COXPH_C3_PLAN.md`, for the project lead's approval, with the evidence behind it in `dev/design/coxph-facts/22` and `23`. Found while planning:
+  - pprof_py v0.7.0 has funnel limits for Cox models, `CoxPH.funnel_limits()`: count boundaries under the test's Poisson null, which agree with its flags. The brief's §2.4 and COXPH_DESIGN §A do not record them, and M-39 chose normal limits for "Cox models, which pprof_py lacks"; on the `provider-scale` fixture those limits disagree with the mid-p flags for 13 of 1,000 providers. A plain-R construction reproduces pprof_py's limits exactly (the plan's decisions 1 and 2);
+  - pprof_py's measures and tests, written in plain R, reproduce its fixture outputs on all 32 Cox and cause-specific records: expected counts within 2.5e-4 of `closed_form`, statistics within 1.2e-3 of `cox_statistic`, flags identical, mid-p limits within 0.25 of pprof_py's own root tolerance; the brief's negative controls differ by at least 4,000 tier units, which calibrates `cox_statistic` as it stands and a new tier for the mid-p limits (decision 4);
+  - the mid-p limits on the Poisson-mean scale depend on the observed count alone, so computing them once per distinct count takes 0.43 s at 3,000 providers, where pprof_py took 62.6 s on the same data (decision 5);
+  - a `measure_limits` function in the Cox model's specification could not call the inference layer's Poisson limits under the layer rules, so the plan routes the limits by `count_distribution` instead (decision 3).
+- Next step: the project lead's approval of the plan and its §6 decisions; then its §5 commits, starting with §4.1's runs of the unchanged code.

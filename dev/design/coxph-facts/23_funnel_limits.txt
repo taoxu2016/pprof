@@ -1,0 +1,14 @@
+R version 4.4.0 (2024-04-24 ucrt)
+
+Columns: providers; flagged by pprof_py; tested providers outside pprof_py's limits but unflagged, and
+flagged but inside; under M-39's normal limits, the same two counts; and the providers (limits) and
+curve points (both levels) where the R construction differs from pprof_py's (exact comparison).
+case            ties     test       n flagged  py: out,unfl   py: in,flag M-39: out,unfl M-39: in,flag  R limits  R curves
+rc-stratified   breslow  midp      25       1             0             0             1             0         0         0
+rc-stratified   breslow  exact     25       1             0             0             1             0         0         0
+rc-stratified   efron    midp      25       1             0             0             1             0         0         0
+rc-stratified   efron    exact     25       1             0             0             1             0         0         0
+provider-scale  breslow  midp    1000      67             0             0            11             2         0         0
+provider-scale  breslow  exact   1000      55             0             0            21             0         0         0
+provider-scale  efron    midp    1000      67             0             0            13             2         0         0
+provider-scale  efron    exact   1000      56             0             0            22             0         0         0

@@ -1,0 +1,4 @@
+Python 3.12.3, NumPy 2.5.3
+ 1000 providers,  141 distinct O: pprof_py  21.56 s, R once per distinct O  0.22 s; largest difference 0.25 xtol; lower limits 0 in both: True
+ 3000 providers,  212 distinct O: pprof_py  62.56 s, R once per distinct O  0.43 s; largest difference 0.25 xtol; lower limits 0 in both: True
+ 7500 providers,  273 distinct O: pprof_py 184.60 s, R once per distinct O  0.42 s; largest difference 0.25 xtol; lower limits 0 in both: True

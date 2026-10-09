@@ -1,0 +1,149 @@
+R version 4.4.0 (2024-04-24 ucrt)
+
+A. Measures at pprof_py's beta, against pprof_py (ratios to the closed_form allowance, 1e-12 + 1e-10|b|)
+case                                 ties      O exact         E pers.time   sum E=O direct (1) direct (2)     E=0
+competing-simple cause 1             breslow      TRUE   6.6e-06         0   2.2e-16    7.1e-05    3.2e-05       0
+competing-simple cause 2             breslow      TRUE   1.8e-06         0   1.3e-16    1.1e-05    2.1e-05       0
+competing-simple cause 1             efron        TRUE   5.8e-06         0         0    2.9e-05    2.3e-05       0
+competing-simple cause 2             efron        TRUE   8.5e-06         0         0    2.1e-05    1.2e-05       0
+empty-providers                      breslow      TRUE   5.3e-06         0         0    2.9e-05    5.9e-05       1
+empty-providers                      efron        TRUE   6.5e-06         0         0    0.00028    0.00012       1
+lt-stratified                        breslow      TRUE   7.1e-06         0         0    6.7e-05    6.3e-05       0
+lt-stratified                        efron        TRUE     5e-06         0         0    6.7e-05      6e-05       0
+near-ties                            breslow      TRUE   2.3e-06         0         0    2.8e-05    2.4e-05       0
+near-ties                            efron        TRUE   1.3e-06         0         0    3.7e-05    3.7e-05       0
+rc-stratified                        breslow      TRUE   1.1e-05         0         0    0.00038    0.00014       0
+rc-stratified                        efron        TRUE   7.9e-06         0         0     0.0004    0.00023       0
+tiny-ties                            breslow      TRUE   2.8e-06         0         0      1e-05    4.1e-06       0
+tiny-ties                            efron        TRUE         0         0         0    8.2e-06    4.5e-06       0
+competing-truncated cause 1          breslow      TRUE   6.1e-06         0         0      3e-05    3.4e-05       0
+competing-truncated cause 2          breslow      TRUE   1.5e-06         0         0    1.3e-05    2.1e-05       0
+competing-truncated cause 1          efron        TRUE   1.5e-06         0         0    1.8e-05    2.6e-05       0
+competing-truncated cause 2          efron        TRUE   3.8e-06         0         0    4.3e-05    4.3e-05       0
+large-mean                           breslow      TRUE   8.6e-05         0         0    0.00013    0.00011       0
+large-mean                           efron        TRUE   0.00025         0   1.3e-16    0.00019    0.00019       0
+lt-weights-offset                    breslow      TRUE   5.9e-06         0         0    7.5e-05    0.00012       0
+lt-weights-offset                    efron        TRUE   8.3e-06         0   1.5e-16    7.2e-05    6.5e-05       0
+provider-scale                       breslow      TRUE   1.8e-05         0         0      0.034      0.024       0
+provider-scale                       efron        TRUE   1.3e-05         0         0      0.039      0.019       0
+rc-stratified-weights-offset         breslow      TRUE     1e-05         0         0    0.00033     0.0003       0
+rc-stratified-weights-offset         efron        TRUE   6.7e-06         0         0    0.00015    0.00014       0
+rc-unstratified                      breslow      TRUE   5.9e-06         0         0    0.00012    0.00012       0
+rc-unstratified                      efron        TRUE   2.1e-06         0         0    8.3e-05    6.2e-05       0
+recurrent                            breslow      TRUE     1e-05         0         0    3.2e-05    5.7e-05       0
+recurrent                            efron        TRUE   1.3e-05         0         0    6.9e-05    6.8e-05       0
+zero-weights                         breslow      TRUE     6e-06         0   1.3e-16    0.00086     0.0004       0
+zero-weights                         efron        TRUE   4.6e-06         0         0    0.00022     0.0003       0
+
+B. Tests given pprof_py's O and E (ratios to each tier's allowance; flags compared exactly). Mid-p limits:
+   once per distinct O (2), on the ratio scale under the candidate cox_root tier (1e-10, 1e-8), and on the
+   mean scale in units of pprof_py's xtol, 1e-10 max(E, 1); per provider as pprof_py (1), in xtol units.
+case                                 ties    midp z  midp p flags exact z exact p flags exact ci midp root (2) xtol (1) xtol
+competing-simple cause 1             breslow 5.1e-07 3.4e-05  TRUE 1.1e-05 1.4e-05  TRUE  4.1e-06    0.0032     0.18   0.0094
+competing-simple cause 2             breslow 2.1e-07 1.8e-05  TRUE 1.3e-07 7.8e-06  TRUE  9.9e-06    0.0026     0.25     0.19
+competing-simple cause 1             efron  4.8e-07 1.6e-05  TRUE 1.1e-05 1.4e-05  TRUE  4.1e-06    0.0032     0.18   0.0093
+competing-simple cause 2             efron  1.5e-07 2.3e-05  TRUE 1.3e-07 1.1e-05  TRUE  8.6e-06    0.0026     0.25     0.19
+empty-providers                      breslow 1.6e-05 5.5e-05  TRUE 1.1e-05 9.1e-05  TRUE  6.2e-06    0.0023     0.24     0.24
+empty-providers                      efron  3.2e-05 8.5e-05  TRUE 1.1e-05 0.00015  TRUE  6.6e-06    0.0023     0.24     0.24
+lt-stratified                        breslow 4.9e-07 0.00016  TRUE 7.9e-07 3.2e-05  TRUE  1.7e-06   0.00053    0.045      0.2
+lt-stratified                        efron  4.4e-07 0.00021  TRUE 8.3e-07 4.1e-05  TRUE  3.4e-06   0.00054    0.045      0.2
+near-ties                            breslow 1.8e-06 9.9e-05  TRUE 8.4e-06   9e-05  TRUE  9.5e-06    0.0032     0.21    0.012
+near-ties                            efron  1.2e-06 8.2e-05  TRUE 3.5e-06 3.2e-05  TRUE  9.5e-06    0.0032     0.21    0.012
+rc-stratified                        breslow 6.5e-06 3.4e-05  TRUE 1.1e-05 5.1e-05  TRUE  5.9e-06    0.0041     0.24     0.24
+rc-stratified                        efron    3e-06 3.4e-05  TRUE 1.8e-05 4.1e-05  TRUE  5.8e-06    0.0041     0.24     0.23
+tiny-ties                            breslow   1e-07 8.5e-06  TRUE 1.1e-05 4.2e-06  TRUE  2.4e-06   0.00031      0.1  4.4e-05
+tiny-ties                            efron    5e-07 7.2e-06  TRUE 1.1e-05 3.6e-06  TRUE  2.5e-06   0.00029    0.095  2.7e-05
+competing-truncated cause 1          breslow 1.9e-06 1.8e-05  TRUE 2.3e-05 1.8e-05  TRUE  9.1e-06    0.0032     0.23  6.1e-06
+competing-truncated cause 2          breslow 8.6e-07   2e-05  TRUE   2e-06 2.5e-05  TRUE  6.4e-06    0.0019     0.18    0.086
+competing-truncated cause 1          efron  1.6e-06 2.2e-05  TRUE 8.6e-06 1.9e-05  TRUE  9.1e-06    0.0032     0.22  6.1e-06
+competing-truncated cause 2          efron  4.5e-07 4.4e-05  TRUE 1.6e-06 1.1e-05  TRUE  5.6e-06    0.0019     0.18    0.086
+large-mean                           breslow   4e-07 5.6e-05  TRUE 3.2e-07   3e-05  TRUE  3.6e-06    0.0018     0.21  4.2e-06
+large-mean                           efron  5.9e-07 4.5e-05  TRUE 5.6e-07 3.5e-05  TRUE  5.4e-06    0.0017      0.2  8.5e-06
+lt-weights-offset                    breslow 1.1e-06 5.3e-05  TRUE 1.2e-06 3.7e-05  TRUE  2.5e-06    0.0017     0.11    0.063
+lt-weights-offset                    efron  2.5e-06 5.3e-05  TRUE 7.6e-06 3.1e-05  TRUE  2.8e-06    0.0017    0.087     0.13
+provider-scale                       breslow 0.00011 0.00029  TRUE   6e-05 9.1e-05  TRUE    1e-05    0.0062     0.25     0.47
+provider-scale                       efron   0.0012 0.00017  TRUE 4.8e-05 0.00012  TRUE  9.9e-06    0.0063     0.25     0.47
+rc-stratified-weights-offset         breslow 1.1e-06 9.2e-05  TRUE 1.1e-05 5.6e-05  TRUE  6.2e-06    0.0041     0.23     0.32
+rc-stratified-weights-offset         efron  1.4e-06 6.3e-05  TRUE 1.1e-05 2.8e-05  TRUE  5.7e-06    0.0041     0.23     0.32
+rc-unstratified                      breslow 5.8e-06 2.8e-05  TRUE 1.1e-05   3e-05  TRUE  2.9e-06    0.0026     0.19  9.4e-06
+rc-unstratified                      efron  4.7e-06   3e-05  TRUE 1.1e-05   3e-05  TRUE  2.9e-06    0.0026      0.2  7.3e-06
+recurrent                            breslow 3.7e-06 3.2e-05  TRUE 1.1e-05 2.4e-05  TRUE    9e-06     0.004     0.24     0.11
+recurrent                            efron  2.7e-06 2.6e-05  TRUE 1.1e-05 1.7e-05  TRUE    1e-05     0.004     0.24     0.11
+zero-weights                         breslow 2.8e-06   4e-05  TRUE 1.1e-05 5.6e-05  TRUE  8.3e-06    0.0017     0.25     0.36
+zero-weights                         efron  7.6e-06 7.4e-05  TRUE 1.1e-05   6e-05  TRUE  8.3e-06     0.002     0.24     0.36
+
+C. Negative controls against pprof_py's tests of this tie method (same tiers as B; each must be >= 10)
+competing-simple cause 1             breslow other ties      z   6.2e+05  p  1.76e+07  mid-p limits  3.22e+04  exact limits  3.22e+06
+competing-simple cause 2             breslow other ties      z  4.49e+04  p  4.12e+06  mid-p limits  4.13e+03  exact limits  4.13e+05
+competing-simple cause 1             efron  other ties      z  6.17e+05  p  1.76e+07  mid-p limits  3.22e+04  exact limits  3.22e+06
+competing-simple cause 2             efron  other ties      z  4.49e+04  p  4.12e+06  mid-p limits  4.13e+03  exact limits  4.13e+05
+empty-providers                      breslow other ties      z  1.51e+08  p  1.64e+08  mid-p limits  1.62e+06  exact limits  1.62e+08
+empty-providers                      breslow moved tie       z  5.78e+06  p  5.11e+08  mid-p limits  3.62e+06  exact limits  3.62e+08
+empty-providers                      efron  other ties      z  2.98e+08  p  1.61e+08  mid-p limits  1.65e+06  exact limits  1.65e+08
+empty-providers                      efron  moved tie       z  6.16e+06  p  5.04e+08  mid-p limits  3.63e+06  exact limits  3.63e+08
+lt-stratified                        breslow other ties      z  5.18e+06  p  8.04e+08  mid-p limits  7.03e+05  exact limits  7.03e+07
+lt-stratified                        breslow moved tie       z  5.69e+06  p  2.26e+08  mid-p limits  3.19e+05  exact limits  3.19e+07
+lt-stratified                        efron  other ties      z  4.92e+06  p  8.75e+08  mid-p limits  6.98e+05  exact limits  6.98e+07
+lt-stratified                        efron  moved tie       z  5.72e+06  p  2.25e+08  mid-p limits  3.18e+05  exact limits  3.18e+07
+near-ties                            breslow other ties      z  1.71e+06  p  2.66e+07  mid-p limits  4.49e+04  exact limits  4.49e+06
+near-ties                            breslow moved tie       z  1.31e+08  p  4.11e+09  mid-p limits  7.62e+06  exact limits  7.62e+08
+near-ties                            efron  other ties      z  1.69e+06  p  2.67e+07  mid-p limits  4.49e+04  exact limits  4.49e+06
+near-ties                            efron  moved tie       z   1.3e+08  p  4.11e+09  mid-p limits  7.63e+06  exact limits  7.63e+08
+rc-stratified                        breslow other ties      z  3.69e+07  p  3.81e+08  mid-p limits  8.78e+05  exact limits  8.88e+07
+rc-stratified                        breslow moved tie       z  1.59e+07  p  3.24e+08  mid-p limits  8.14e+05  exact limits  8.14e+07
+rc-stratified                        efron  other ties      z  3.57e+07  p  3.97e+08  mid-p limits  8.85e+05  exact limits  8.96e+07
+rc-stratified                        efron  moved tie       z  1.55e+07  p  3.35e+08  mid-p limits  8.36e+05  exact limits  8.36e+07
+tiny-ties                            breslow other ties      z  4.51e+06  p  2.37e+07  mid-p limits  3.15e+05  exact limits  3.15e+07
+tiny-ties                            breslow moved tie       z  6.12e+07  p  5.98e+09  mid-p limits  9.75e+07  exact limits  9.75e+09
+tiny-ties                            efron  other ties      z  4.72e+06  p  2.38e+07  mid-p limits  3.14e+05  exact limits  3.14e+07
+tiny-ties                            efron  moved tie       z  5.42e+07  p  6.03e+09  mid-p limits  9.78e+07  exact limits  9.78e+09
+competing-truncated cause 1          breslow other ties      z  4.29e+06  p  4.13e+07  mid-p limits  9.55e+04  exact limits  9.55e+06
+competing-truncated cause 2          breslow other ties      z  4.89e+05  p  1.48e+07  mid-p limits  2.01e+04  exact limits  2.01e+06
+competing-truncated cause 1          efron  other ties      z  4.11e+06  p  4.14e+07  mid-p limits  9.56e+04  exact limits  9.56e+06
+competing-truncated cause 2          efron  other ties      z  4.87e+05  p  1.47e+07  mid-p limits  2.01e+04  exact limits  2.01e+06
+large-mean                           breslow other ties      z  6.41e+06  p  3.68e+08  mid-p limits  4.98e+05  exact limits  4.98e+07
+large-mean                           breslow moved tie       z  7.63e+05  p  1.32e+08  mid-p limits  1.38e+05  exact limits  1.38e+07
+large-mean                           efron  other ties      z  6.02e+06  p  3.82e+08  mid-p limits     5e+05  exact limits     5e+07
+large-mean                           efron  moved tie       z  7.47e+05  p   1.3e+08  mid-p limits  1.36e+05  exact limits  1.36e+07
+lt-weights-offset                    breslow other ties      z  7.55e+06  p  6.75e+08  mid-p limits  6.85e+05  exact limits  6.85e+07
+lt-weights-offset                    breslow moved tie       z  1.41e+07  p  3.02e+08  mid-p limits  5.73e+05  exact limits  5.73e+07
+lt-weights-offset                    breslow dropped weight  z  1.16e+06  p  6.01e+07  mid-p limits  5.68e+04  exact limits  5.68e+06
+lt-weights-offset                    efron  other ties      z  7.02e+06  p  7.23e+08  mid-p limits   6.8e+05  exact limits   6.8e+07
+lt-weights-offset                    efron  moved tie       z  1.32e+07  p  3.08e+08  mid-p limits  5.78e+05  exact limits  5.78e+07
+lt-weights-offset                    efron  dropped weight  z  1.39e+06  p  6.61e+07  mid-p limits  6.47e+04  exact limits  6.47e+06
+provider-scale                       breslow other ties      z  5.04e+08  p  8.99e+08  mid-p limits  9.83e+05  exact limits  9.83e+07
+provider-scale                       breslow moved tie       z  7.37e+06  p  2.52e+08  mid-p limits  4.46e+05  exact limits  4.46e+07
+provider-scale                       efron  other ties      z  2.08e+09  p  9.87e+08  mid-p limits  9.93e+05  exact limits  9.93e+07
+provider-scale                       efron  moved tie       z  2.26e+07  p  2.52e+08  mid-p limits   4.5e+05  exact limits   4.5e+07
+rc-stratified-weights-offset         breslow other ties      z  2.42e+07  p  8.39e+08  mid-p limits  1.21e+06  exact limits  1.21e+08
+rc-stratified-weights-offset         breslow moved tie       z  2.98e+07  p  1.21e+09  mid-p limits  3.43e+06  exact limits  3.43e+08
+rc-stratified-weights-offset         breslow dropped weight  z  3.32e+06  p  7.84e+07  mid-p limits  1.24e+05  exact limits  1.24e+07
+rc-stratified-weights-offset         efron  other ties      z   3.2e+07  p  9.16e+08  mid-p limits  1.22e+06  exact limits  1.22e+08
+rc-stratified-weights-offset         efron  moved tie       z  2.86e+07  p  1.27e+09  mid-p limits  3.54e+06  exact limits  3.54e+08
+rc-stratified-weights-offset         efron  dropped weight  z  3.66e+06  p  8.07e+07  mid-p limits  1.29e+05  exact limits  1.29e+07
+rc-unstratified                      breslow other ties      z  1.49e+07  p  4.31e+08  mid-p limits  5.94e+05  exact limits  5.94e+07
+rc-unstratified                      breslow moved tie       z  5.73e+06  p  2.78e+08  mid-p limits  3.84e+05  exact limits  3.84e+07
+rc-unstratified                      efron  other ties      z  1.76e+07  p  4.51e+08  mid-p limits  5.91e+05  exact limits  5.91e+07
+rc-unstratified                      efron  moved tie       z  6.82e+06  p  2.83e+08  mid-p limits   3.9e+05  exact limits   3.9e+07
+recurrent                            breslow other ties      z  3.17e+06  p   4.9e+07  mid-p limits  6.12e+04  exact limits  6.12e+06
+recurrent                            breslow moved tie       z  8.96e+05  p  1.58e+07  mid-p limits  1.53e+04  exact limits  1.53e+06
+recurrent                            efron  other ties      z  3.27e+06  p  4.93e+07  mid-p limits  6.12e+04  exact limits  6.12e+06
+recurrent                            efron  moved tie       z  1.83e+06  p  1.43e+07  mid-p limits  1.68e+04  exact limits  1.68e+06
+zero-weights                         breslow other ties      z  1.93e+07  p  1.11e+09  mid-p limits  1.39e+06  exact limits  1.39e+08
+zero-weights                         breslow moved tie       z  6.72e+06  p  1.79e+08  mid-p limits  1.71e+05  exact limits  1.71e+07
+zero-weights                         breslow dropped weight  z  2.93e+06  p  3.24e+07  mid-p limits   5.1e+04  exact limits   5.1e+06
+zero-weights                         efron  other ties      z  1.62e+07  p  1.24e+09  mid-p limits  1.37e+06  exact limits  1.37e+08
+zero-weights                         efron  moved tie       z  5.91e+06  p   1.7e+08  mid-p limits  1.63e+05  exact limits  1.63e+07
+zero-weights                         efron  dropped weight  z  2.43e+06  p  2.64e+07  mid-p limits  4.35e+04  exact limits  4.35e+06
+Weakest control: z 4.49e+04, p 4.12e+06, mid-p limits 4.13e+03, exact limits 4.13e+05
+
+D. Time of the mid-p limits (seconds; one run each, after a warm-up). The data sets go to
+   COXPH_FACTS_SCRATCH, where 22_measures_tests.py times pprof_py's own limits on them.
+ 1000 providers,  141 distinct O: per provider   1.59 s; per distinct O  0.22 s; largest difference 0.25 xtol
+ 3000 providers,  212 distinct O: per provider   5.03 s; per distinct O  0.43 s; largest difference 0.25 xtol
+ 7500 providers,  273 distinct O: per provider  13.31 s; per distinct O  0.42 s; largest difference 0.25 xtol
+
+E. Time of the measures at 1,000,000 rows and 7,500 providers (the benchmark's corner data, 5 covariates;
+   seconds, one run each)
+national expected counts per row 0.46 s, summed by provider 0.05 s; direct (1) composite keys 2.49 s,
+(2) within providers 2.34 s; the two directs differ by at most 7.9e-11 relative; sum(E) - O = 0
