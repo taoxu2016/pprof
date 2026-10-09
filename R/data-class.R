@@ -85,6 +85,11 @@ validate_pprof_data_survival <- function(x, n) {
     if (!all(is.finite(x[["start"]]) & is.finite(x[["stop"]]) & x[["start"]] < x[["stop"]])) {
       fail("every `start` time must be finite and below its finite `stop` time")
     }
+    type <- x[["settings"]][["survival_type"]]
+    if (!(identical(type, "right") || identical(type, "counting"))) {
+      fail("`settings$survival_type` must be \"right\" or \"counting\"")
+    }
+    if (identical(type, "right") && any(x[["start"]] != 0)) fail("right-censored data must start at 0")
     if (!is.numeric(x[["response"]]) || !all(x[["response"]] %in% c(0, 1))) fail("the status must be 0 or 1")
     if (isTRUE(x[["settings"]][["event_counts"]]) && !"person_time" %in% names(x[["providers"]])) {
       fail("the provider table of survival data must have `person_time`")

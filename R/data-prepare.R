@@ -29,7 +29,8 @@
 #' (`strata()`, `cluster()`, `tt()`, `frailty()`, `ridge()`, `pspline()`), since the provider
 #' is the strata. `response` holds the status, which `Surv()` makes 0 or 1 from 0/1, logical,
 #' and 1/2 codings, and the elements `start` (0 for right-censored data) and `stop` hold the
-#' times. Right-censored times must be finite and above 0, and entry times finite and below
+#' times; `settings$survival_type` is `"right"` or `"counting"`, the type of the response.
+#' Right-censored times must be finite and above 0, and entry times finite and below
 #' their exit times; a status `Surv()` cannot read, or an entry time not below its exit time, is
 #' an error rather than a missing value. With `event_counts = TRUE` the provider table also has
 #' `person_time`, the sum of `stop - start`. Rows with a missing value in the weights, the
@@ -168,6 +169,8 @@ data_prepare <- function(formula, data, provider, within_between = NULL, min_pro
   if (extended) {
     settings <- c(settings, list(response_type = response_type, weights = weights, cluster = cluster,
                                  allow_offset = allow_offset))
+    # The type of the Surv() response, which selects survival's fitter (R/model-survival.R).
+    if (survival) settings$survival_type <- if (times$counting) "counting" else "right"
   }
   new_pprof_data(
     formula = formula,

@@ -91,7 +91,8 @@ For survival data (\code{response_type = "survival"}, the Cox models), the respo
 (\code{strata()}, \code{cluster()}, \code{tt()}, \code{frailty()}, \code{ridge()}, \code{pspline()}), since the provider
 is the strata. \code{response} holds the status, which \code{Surv()} makes 0 or 1 from 0/1, logical,
 and 1/2 codings, and the elements \code{start} (0 for right-censored data) and \code{stop} hold the
-times. Right-censored times must be finite and above 0, and entry times finite and below
+times; \code{settings$survival_type} is \code{"right"} or \code{"counting"}, the type of the response.
+Right-censored times must be finite and above 0, and entry times finite and below
 their exit times; a status \code{Surv()} cannot read, or an entry time not below its exit time, is
 an error rather than a missing value. With \code{event_counts = TRUE} the provider table also has
 \code{person_time}, the sum of \code{stop - start}. Rows with a missing value in the weights, the

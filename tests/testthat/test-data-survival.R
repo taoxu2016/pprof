@@ -31,8 +31,9 @@ test_that("right-censored data keep the status as the response, start 0, and sto
   expect_identical(p$start, rep(0, 10))
   expect_identical(p$stop, d$time[p$row_index])
   expect_identical(p$settings$response_type, "survival")
+  expect_identical(p$settings$survival_type, "right")
   expect_identical(names(p$settings), c("min_provider_size", "intercept", "event_counts", "response_type", "weights",
-                                        "cluster", "allow_offset"))
+                                        "cluster", "allow_offset", "survival_type"))
   expect_null(p$weights)
   expect_null(p$offset)
   expect_identical(colnames(p$design), "x")
@@ -41,6 +42,7 @@ test_that("right-censored data keep the status as the response, start 0, and sto
 test_that("counting-process data keep the entry and exit times", {
   d <- survival_data()
   p <- prepare_survival(Surv(entry, time, status) ~ x + f, d)
+  expect_identical(p$settings$survival_type, "counting")
   expect_identical(p$start, d$entry[p$row_index])
   expect_identical(p$stop, d$time[p$row_index])
   expect_identical(colnames(p$design), c("x", "fb", "fc"))
@@ -216,6 +218,9 @@ test_that("the validator rejects inconsistent survival data", {
   rejected(x)
   x <- p
   x$providers$person_time <- NULL
+  rejected(x)
+  x <- p
+  x$settings$survival_type <- "right"
   rejected(x)
   expect_identical(validate_pprof_data(p), p)
 })
