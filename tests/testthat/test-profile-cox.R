@@ -1,7 +1,7 @@
 # Provider profiling of the provider-stratified Cox model (CoxPH Phase C3; COXPH_DESIGN §B.3, §D):
 # test_providers(), standardize_providers(), funnel_limits(), and profile_providers() on
 # fit_cox_stratified() fits, with the register entries C3 implements without fixtures (D-58, D-63,
-# D-70, D-73, M-29, M-36, M-39, M-40, K-142, K-147, K-149) and the measures' part of the brief's
+# D-70, D-73, D-77, M-25, M-29, M-36, M-39, M-40, K-142, K-147, K-149) and the measures' part of the brief's
 # metamorphic and edge-case tests (§6 E, F). test-inference-poisson.R tests the Poisson tests and
 # limits, test-model-cox-measures.R the expected events, and test-cox-reference.R all of it against
 # pprof_py's fixtures.
@@ -74,6 +74,15 @@ test_that("test_providers() gives the mid-p test by default, and the exact test 
   expect_identical(sub$table$provider_id, c("p01", "p03"))
   expect_identical(sub$table$statistic, tests$table$statistic[chosen])
   expect_identical(sub$table$flag, tests$table$flag[chosen])
+})
+
+test_that("IDs in `providers` that the model does not have raise, where pprof_py ignores them (D-77)", {
+  fit <- cox_profile_fit()
+  invalid <- function(expr) expect_error(expr, class = "pprof_error_invalid_input")
+  invalid(test_providers(fit, providers = c("p01", "p99")))
+  invalid(standardize_providers(fit, providers = "p99"))
+  invalid(funnel_limits(fit, providers = c("p99", "p02")))
+  invalid(profile_providers(fit, providers = "p99"))
 })
 
 test_that("standardize_providers() gives the indirect and direct ratios (K-137 to K-139)", {
@@ -283,6 +292,23 @@ test_that("edge cases: no events, one-row providers, a large covariate mean (§6
   tolerance <- reference_tolerance("cox_baseline")
   expect_true(all(is.finite(far$expected)))
   expect_true(all(abs(far$expected - measures$expected) <= tolerance$atol + tolerance$rtol * abs(measures$expected)))
+})
+
+test_that("a provider whose rows all have weight 0 is out of the fit and in the measures (M-25, M-29, D-58)", {
+  d <- cox_profile_data()
+  d$w[d$provider == "p03"] <- 0
+  fit <- cox_profile_fit(d)
+  expect_identical(as.integer(fit$n_zero_weight), sum(d$w == 0))
+  # The fit is that of the other providers' rows.
+  without <- cox_profile_fit(d[d$provider != "p03", ])
+  tolerance <- reference_tolerance("closed_form")
+  expect_true(all(abs(coef(fit) - coef(without)) <= tolerance$atol + tolerance$rtol * abs(coef(without))))
+  # The measures count every row, p03's too.
+  measures <- without_zero_warning(standardize_providers(fit, interval = "midp"))$table
+  p03 <- measures$provider_id == "p03"
+  expect_identical(measures$observed[p03], as.double(sum(d$status[d$provider == "p03"])))
+  expect_true(measures$expected[p03] > 0 && all(is.finite(c(measures$lower[p03], measures$upper[p03]))))
+  expect_true(abs(sum(measures$expected) - sum(d$status)) <= tolerance$atol + tolerance$rtol * sum(d$status))
 })
 
 test_that("the plots draw a Cox profile, leaving out a provider without expected events with a caption", {
