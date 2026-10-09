@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is in progress on `coxph/phase-2`: its plan, `dev/design/COXPH_C2_PLAN.md`, awaits the project lead's approval.
+**Status:** Phase C2, the data layer and the stratified Cox model, is at its gate on `coxph/phase-2` (plan `dev/design/COXPH_C2_PLAN.md`, approved 2026-10-08), awaiting the project lead's review; DEC-105 (the benchmark rule) and D-75 await decisions.
 
 ## 2026-10-07
 
@@ -95,3 +95,30 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
   - `Surv()` reads a 0/1/2 status as 1/2 coding and turns start ≥ stop into NA, so the data layer must raise errors there rather than delete rows;
   - the fixtures of D-58, D-64, D-56's `recurrent`, and D-60 are in the full set, outside the tarball, so unit tests carry those decisions under `R CMD check`.
 - Next step: the project lead's approval of the plan and its §6 decisions; then its §5 commits, starting with the `data_prepare()` snapshot.
+
+## 2026-10-09: Phase C2 at its gate
+
+- On 2026-10-08 the project lead approved the plan and its seven decisions as recommended (DEC-099 to DEC-104; decision 7, the benchmark comparator, under DEC-100).
+- Delivered on `coxph/phase-2` (brief §4, row C2), in the plan's §5 order:
+  - the plan and its evidence, `dev/design/coxph-facts/17` to `20` (`a039fed`, `7b0cb5e`; the plan's D-60 unit test corrected in `071dff3`);
+  - a snapshot of `data_prepare()` on the 368 reference cases, taken from the unchanged code, and its test (`8b6908b`, `8260ed0`; `validation/fixtures/data-prepare-snapshot.rds`, `dev/tools/data_prepare_snapshot.R`);
+  - the data layer: `Surv()` responses, entry times, weights, clusters, and offsets; `survival` in Imports and `Surv()` re-exported (`c290bd0`, `fde52e8`); models without provider effects (`f0fb94e`); the covariate p-value as an upper tail (`fc3e734`); survival data in `check_data()` (`6358f53`);
+  - the survival adapter, `R/model-survival.R` (`f0fbe45`); `fit_cox_stratified()`, `baseline_hazard()`, and their methods, `R/model-cox-stratified.R` (`f5e6440`); the tests against the Cox fixtures, `tests/testthat/test-cox-reference.R` (`1b6db94`);
+  - the paired benchmarks, `dev/bench/cox/run_paired.R` and `summarize_paired.R` (`120511b` to `464a269`), their report, `dev/bench/results/cox-c2-paired-20261009-windows.md` (`ec42837`), and fact 21, where a fit's time goes (`abd009b`);
+  - the registers and documents (`65ea803`).
+- The existing families are unchanged: at each data-layer commit (`c290bd0`, `fde52e8`, `f0fb94e`, `fc3e734`, `6358f53`) `devtools::test()` passed and `validation/run-reference.R` gave the committed equivalence report but for its date and commit, and the `data_prepare()` snapshot test passes.
+- Found:
+  - the benchmark rule: every fit's estimates equal its engine call's bitwise, but against the bare fitter call (the plan's decision 7) 17 of 21 fits are more than 10% slower, by the preparation of the inputs from the data frame (the model frame alone takes 13% of the fitter's time at 20 covariates); against the fitter plus that preparation none is, and the fits take 0.2 to 0.5 of `coxph()`'s time. DEC-105 proposes the reading with the preparation. The corner scenario could not be measured: the machine paged (17 GB committed on 7.4 GB of memory), and a corner fit got 11.0 s of processor time in 28.7 s;
+  - the SHOULD for the robust variance (DEC-098) holds with 5 covariates and not at the other sizes: the robust step takes 2.0 to 2.4 s at 1,000,000 rows where pprof_py's adds 0.9 s;
+  - D-75: survival's `survfit()` cannot give the baseline or the curves of a fit without covariates at offset 0, so the package raises `pprof_error_unsupported_inference` there, where pprof_py reports them (Class B, awaiting the project lead);
+  - on D-38: the logistic rank warning names no covariate when the within-provider rank is 0 (Class C, existing family, not fixed);
+  - survival 3.8-12's quirks, handled in the adapter and recorded in its comments: `coxph.control()` warns for `eps` below `toler.chol`; `coxph.fit()` reports `iter.max + 1` iterations when it does not converge and warns only when `iter.max > 1`; `survfit()` fails with new data that name the stratum of a one-stratum model, and with new data for a model without covariates.
+- Gate checks:
+  - `devtools::document()` changed nothing;
+  - `devtools::test()`: 74 files, 1,191 tests, 9,846 expectations; none failed or skipped, no warnings or errors (965 s, beside `R CMD check`). The Cox comparisons: `test-cox-reference.R` 1,032 expectations on the core and full sets, `test-cox-fixtures.R` 166, `test-model-survival.R` 183, `test-model-cox-stratified.R` 189;
+  - `R CMD check --as-cran --no-manual`: 0 errors, 0 warnings, the 2 notes of the previous gates (1,096 s, beside the coverage run); in a git worktree it adds a third note, the worktree's `.git` file, which `R CMD build` drops only as a directory;
+  - `validation/run-reference.R`: 368 of 368 cases, none skipped, no provider within tolerance of a flag threshold; the report equals the committed one but for its date and commit (167 s);
+  - `covr::package_coverage()`: 96.45% of the package; of the R lines C2 added (against `coxph/phase-1`), 598 of 628 relevant lines, 95.22%, the uncovered ones mostly the failure branches of `validate_pprof_cox_stratified()` (698 s; covr runs the tests without `skip_on_cran()`'s heavy ones);
+  - `lintr`: the 30 changed package, test, and benchmark files are clean (the plan's fact scripts 17 to 20 keep `<<-` and long lines).
+- Open for the project lead: DEC-105; D-75; the D-38 message; measuring the corner scenario on a machine with more memory.
+- Next step: the project lead's review of the C2 gate.
