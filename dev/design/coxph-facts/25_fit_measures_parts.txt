@@ -1,0 +1,13 @@
+R version 4.4.0 (2024-04-24 ucrt); survival 3.8.12
+
+A. Medians of 9 interleaved runs (seconds); the ratio is DEC-105's: fit with measures over engine call plus preparation
+scenario        task       engine  preparation  fit+meas.  fit alone    ratio
+center          breslow     0.509        0.116      0.567      0.555    0.908
+center          robust      0.582        0.125      0.693      0.691    0.979
+center          B. cox_expected_events() 0.0289, standardize_providers() 0.0106, plain-R expected events 0.0286
+providers-7500  breslow     0.394        0.156      0.609      0.566    1.107
+providers-7500  robust      0.532        0.155      0.743      0.823    1.082
+providers-7500  B. cox_expected_events() 0.0402, standardize_providers() 0.0477, plain-R expected events 0.0440
+covariates-5    breslow     0.149        0.100      0.276      0.270    1.111
+covariates-5    robust      0.199        0.101      0.326      0.323    1.087
+covariates-5    B. cox_expected_events() 0.0275, standardize_providers() 0.0110, plain-R expected events 0.0263

@@ -11,10 +11,11 @@
 # Usage, from the repository root:
 #   Rscript dev/bench/cox/summarize_paired.R <report md> <C1 engines csv> <C1 pprof_py csv> <paired csv> [...]
 #     [--notes <md file>]
-# Several paired CSVs are the runs of one session, for example one per group of scenarios. A notes
-# file (Markdown) goes into the report after its summary, for what the measurements do not show,
-# such as the conditions of the run. Exit status is 1 when a fit is too slow by DEC-105's rule,
-# fails, or differs from its engine call.
+# Several paired CSVs are the runs of one session, for example one per group of scenarios. A later run
+# that repeats a scenario and task replaces the earlier runs' rows of it, for example a task run again
+# after a change to the code it times; the report names them. A notes file (Markdown) goes into the
+# report after its summary, for what the measurements do not show, such as the conditions of the run.
+# Exit status is 1 when a fit is too slow by DEC-105's rule, fails, or differs from its engine call.
 args <- commandArgs(trailingOnly = TRUE)
 notes <- character()
 at <- match("--notes", args)
@@ -31,8 +32,11 @@ c1 <- utils::read.csv(args[[2]])
 py <- utils::read.csv(args[[3]])
 py_machine <- jsonlite::read_json(sub("\\.csv$", ".json", args[[3]]))
 runs <- args[-(1:3)]
-paired <- do.call(rbind, lapply(runs, utils::read.csv))
+paired <- do.call(rbind, lapply(seq_along(runs), function(r) cbind(utils::read.csv(runs[[r]]), run = r)))
 machines <- lapply(runs, function(f) jsonlite::read_json(sub("\\.csv$", ".json", f)))
+last_run <- stats::ave(paired$run, paired$scenario, paired$task, FUN = max)
+superseded <- unique(paste(paired$scenario, paired$task)[paired$run < last_run])
+paired <- paired[paired$run == last_run, , drop = FALSE]
 
 scenario_order <- unique(paired$scenario)
 task_order <- c("breslow", "efron", "robust")
@@ -87,6 +91,10 @@ lines <- c(
           paste0("`", commits, "`", collapse = " and "), machine$rounds,
           if (all(vapply(machines, function(m) isTRUE(m$package_code_clean), TRUE))) "unchanged" else "changed",
           machine$cpu, machine$logical_cores, machine$r, machine$packages$survival, machine$packages$pprof),
+  if (length(superseded)) {
+    c("", sprintf("A later run repeated, and its rows replace the earlier run's for: %s.",
+                  paste(superseded, collapse = ", ")))
+  },
   "",
   paste("Each round runs the engine call, `coxph()`, and the fit, each in a fresh process, one after the other, on the",
         "same data (`dev/bench/cox/scenarios.R`, C1's grid). The engine call is survival's fitter as the adapter calls",
@@ -203,14 +211,15 @@ for (g in names(groups)) {
 midp_verdicts <- character()
 if (nrow(profile)) {
   lines <- c(lines, "", "## Measures and tests beside pprof_py's", "",
-             paste("The `profile` task fits once outside the timing, then times on that fit: the expected events' closed",
-                   "form (`cox_expected_events()`, which the fit itself runs), `standardize_providers()` with both",
-                   "standardizations, `test_providers()` with each test followed by `standardize_providers()` with",
-                   "that test's interval, and `funnel_limits()`. pprof_py's `calculate_standardized_measures()` and",
-                   "`test()` compute the expected events themselves, so its times are set beside the package's plus",
-                   "the expected events. Medians of the rounds' medians, in seconds; pprof_py's are C1's, from",
-                   "another session, so the ratios are indicative. The brief's §3.7 MUST: mid-p limits substantially",
-                   "faster than pprof_py's, read as at least ten times (DEC-111)."),
+             paste("The `profile` task fits once outside the timing, then times on that fit: the expected events'",
+                   "closed form (`cox_expected_events()`, which the fit itself runs), `standardize_providers()`",
+                   "with both standardizations, `test_providers()` with each test followed by",
+                   "`standardize_providers()` with that test's interval, and `funnel_limits()`. pprof_py's",
+                   "`calculate_standardized_measures()` and `test()` compute the expected events themselves, so its",
+                   "times are set beside the package's plus the expected events. Medians of the rounds' medians, in",
+                   "seconds; pprof_py's are C1's, from another session, so the ratios are indicative. The brief's",
+                   "§3.7 MUST: mid-p limits substantially faster than pprof_py's, read as at least ten times",
+                   "(DEC-111)."),
              "",
              paste("| Scenario | Providers | Expected events | Measures | pprof_py measures | Mid-p test and limits |",
                    "pprof_py mid-p | pprof_py / package, mid-p | Exact test and limits | pprof_py exact |",
