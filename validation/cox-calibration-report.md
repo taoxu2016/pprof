@@ -14,11 +14,14 @@ Rows with a register entry in the note column are explained differences, not cal
 | `cox_variance` | 1e-12 | 1e-07 | Variances and covariances of the tight fits, which inherit the coefficients' differences. |
 | `closed_form` | 1e-12 | 1e-10 | Closed-form recomputations with a different summation order differed by at most 1.1e-14 relative in Phase 0 (V10.17, V13.12, V14.1, B2); four orders of margin for BLAS and compiler differences. |
 | `cox_baseline` | 1e-12 | 1e-08 | Baselines and expected counts, each at its own side's tight beta. |
+| `cox_statistic` | 0 | 1e-08 | Mid-p and exact statistics given the same observed and expected counts: within 1.2e-3 of the tier in the Phase C3 calibration, every negative control beyond 4.4e4 (DEC-109). |
+| `probability` | 1e-14 | 1e-10 | p-values need an absolute floor near 0; 1e-14 is above the recomputation noise observed in Phase 0 (V13.4: 2.7e-15 in statistics). |
+| `cox_root` | 1e-10 | 1e-08 | Mid-p limits given the same observed and expected counts, from pprof_py's root tolerance (1e-10 max(E, 1) on the Poisson mean): within 0.0063 of the tier in the Phase C3 calibration, every negative control beyond 4e3. |
 | `cox_function` | 1e-12 | 1e-12 | The partial likelihood, score, and information at a fixed beta: closed forms in another summation order. |
 | `cox_residual` | 1e-08 | 0 | Martingale, score, and dfbeta residuals of the tight fits, which inherit their coefficients' differences; up to 2.8e-9 observed, and residuals can be near 0, so absolute. |
 | `penalized_path` | 5e-06 | 0 | Elastic-net paths of two solvers at the same lambda values: pprof_py stops at its defaults (outer_tol 1e-9), within 1.06e-6 of glmnet at thresh 1e-12 on the fixtures. |
 
-Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
+Result: 842 of 842 rows pass; 58 rows are explained by a register entry.
 
 | Case | Ties | Quantity | Tier | pprof_py vs R | Weakest control | OK | Note |
 |---|---|---|---|---|---|---|---|
@@ -94,6 +97,38 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | competing-simple | efron | Fine-Gray 2_unstratified: robust covariance, tight | cox_variance | 0.222 | - | yes |  |
 | competing-simple | efron | Fine-Gray 2_unstratified: model-based covariance, tight | cox_variance | 0.0608 | - | yes |  |
 | competing-simple | efron | Fine-Gray 2_unstratified: cumulative incidence at pprof_py's times, stratum all | cox_baseline | 0.866 | - | yes |  |
+| competing-simple | breslow | cause 1: direct expected counts at pprof_py's beta | closed_form | 3.24e-05 | 3.48e+06 | yes |  |
+| competing-simple | breslow | cause 1: mid-p statistics at pprof_py's counts | cox_statistic | 5.05e-07 | 6.2e+05 | yes |  |
+| competing-simple | breslow | cause 1: exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 9.14e+05 | yes |  |
+| competing-simple | breslow | cause 1: p-values, mid-p and exact | probability | 3.42e-05 | 1.76e+07 | yes |  |
+| competing-simple | breslow | cause 1: flags, mid-p and exact | exact |    0 | - | yes |  |
+| competing-simple | breslow | cause 1: exact limits | closed_form | 4.14e-06 | 3.22e+06 | yes |  |
+| competing-simple | breslow | cause 1: mid-p limits | cox_root | 0.00319 | 3.22e+04 | yes |  |
+| competing-simple | breslow | cause 1: funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| competing-simple | breslow | cause 2: direct expected counts at pprof_py's beta | closed_form | 2.09e-05 | 4.41e+05 | yes |  |
+| competing-simple | breslow | cause 2: mid-p statistics at pprof_py's counts | cox_statistic | 2.15e-07 | 4.49e+04 | yes |  |
+| competing-simple | breslow | cause 2: exact statistics at pprof_py's counts | cox_statistic | 1.33e-07 | 6.61e+04 | yes |  |
+| competing-simple | breslow | cause 2: p-values, mid-p and exact | probability | 1.8e-05 | 4.12e+06 | yes |  |
+| competing-simple | breslow | cause 2: flags, mid-p and exact | exact |    0 | - | yes |  |
+| competing-simple | breslow | cause 2: exact limits | closed_form | 9.86e-06 | 4.13e+05 | yes |  |
+| competing-simple | breslow | cause 2: mid-p limits | cox_root | 0.00262 | 4.13e+03 | yes |  |
+| competing-simple | breslow | cause 2: funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| competing-simple | efron | cause 1: direct expected counts at pprof_py's beta | closed_form | 2.27e-05 | 3.48e+06 | yes |  |
+| competing-simple | efron | cause 1: mid-p statistics at pprof_py's counts | cox_statistic | 4.81e-07 | 6.17e+05 | yes |  |
+| competing-simple | efron | cause 1: exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 9.06e+05 | yes |  |
+| competing-simple | efron | cause 1: p-values, mid-p and exact | probability | 1.55e-05 | 1.76e+07 | yes |  |
+| competing-simple | efron | cause 1: flags, mid-p and exact | exact |    0 | - | yes |  |
+| competing-simple | efron | cause 1: exact limits | closed_form | 4.14e-06 | 3.22e+06 | yes |  |
+| competing-simple | efron | cause 1: mid-p limits | cox_root | 0.00319 | 3.22e+04 | yes |  |
+| competing-simple | efron | cause 1: funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| competing-simple | efron | cause 2: direct expected counts at pprof_py's beta | closed_form | 1.19e-05 | 4.41e+05 | yes |  |
+| competing-simple | efron | cause 2: mid-p statistics at pprof_py's counts | cox_statistic | 1.52e-07 | 4.49e+04 | yes |  |
+| competing-simple | efron | cause 2: exact statistics at pprof_py's counts | cox_statistic | 1.32e-07 | 6.61e+04 | yes |  |
+| competing-simple | efron | cause 2: p-values, mid-p and exact | probability | 2.34e-05 | 4.12e+06 | yes |  |
+| competing-simple | efron | cause 2: flags, mid-p and exact | exact |    0 | - | yes |  |
+| competing-simple | efron | cause 2: exact limits | closed_form | 8.63e-06 | 4.13e+05 | yes |  |
+| competing-simple | efron | cause 2: mid-p limits | cox_root | 0.00262 | 4.13e+03 | yes |  |
+| competing-simple | efron | cause 2: funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | empty-providers | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | empty-providers | breslow | coefficients, tight | cox_coefficient | 0.00646 | 2.61e+05 | yes |  |
 | empty-providers | breslow | log-likelihood, tight | cox_function | 0.000399 | 9.64e+07 | yes |  |
@@ -134,6 +169,22 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | empty-providers | efron | dfbeta residuals | cox_residual | 7.03e-09 | 1.52e+05 | yes |  |
 | empty-providers | efron | robust per row | cox_variance | 5.02e-08 | 8.36e+05 | yes |  |
 | empty-providers | efron | robust clustered | cox_variance | 4.29e-07 | 3.28e+06 | yes |  |
+| empty-providers | breslow | direct expected counts at pprof_py's beta | closed_form | 5.93e-05 | 1.62e+08 | yes |  |
+| empty-providers | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 1.64e-05 | 5.78e+06 | yes |  |
+| empty-providers | breslow | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 1.44e+06 | yes |  |
+| empty-providers | breslow | p-values, mid-p and exact | probability | 9.1e-05 | 1.64e+08 | yes |  |
+| empty-providers | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| empty-providers | breslow | exact limits | closed_form | 6.19e-06 | 1.62e+08 | yes |  |
+| empty-providers | breslow | mid-p limits | cox_root | 0.0023 | 1.62e+06 | yes |  |
+| empty-providers | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| empty-providers | efron | direct expected counts at pprof_py's beta | closed_form | 0.000122 | 1.65e+08 | yes |  |
+| empty-providers | efron | mid-p statistics at pprof_py's counts | cox_statistic | 3.24e-05 | 6.16e+06 | yes |  |
+| empty-providers | efron | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 1.46e+06 | yes |  |
+| empty-providers | efron | p-values, mid-p and exact | probability | 0.000147 | 1.61e+08 | yes |  |
+| empty-providers | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| empty-providers | efron | exact limits | closed_form | 6.6e-06 | 1.65e+08 | yes |  |
+| empty-providers | efron | mid-p limits | cox_root | 0.0023 | 1.65e+06 | yes |  |
+| empty-providers | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | lt-stratified | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | lt-stratified | breslow | coefficients, tight | cox_coefficient | 6.61e-07 | 1.2e+06 | yes |  |
 | lt-stratified | breslow | log-likelihood, tight | cox_function | 0.000407 | 5.73e+07 | yes |  |
@@ -174,6 +225,22 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | lt-stratified | efron | dfbeta residuals | cox_residual | 9.71e-09 | 1.15e+05 | yes |  |
 | lt-stratified | efron | robust per row | cox_variance | 3.96e-07 | 8.34e+06 | yes |  |
 | lt-stratified | efron | robust clustered | cox_variance | 8.77e-07 | 3.18e+06 | yes |  |
+| lt-stratified | breslow | direct expected counts at pprof_py's beta | closed_form | 6.29e-05 | 6.7e+07 | yes |  |
+| lt-stratified | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 4.87e-07 | 5.18e+06 | yes |  |
+| lt-stratified | breslow | exact statistics at pprof_py's counts | cox_statistic | 7.91e-07 | 7.08e+06 | yes |  |
+| lt-stratified | breslow | p-values, mid-p and exact | probability | 0.000161 | 2.26e+08 | yes |  |
+| lt-stratified | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| lt-stratified | breslow | exact limits | closed_form | 1.68e-06 | 3.19e+07 | yes |  |
+| lt-stratified | breslow | mid-p limits | cox_root | 0.000528 | 3.19e+05 | yes |  |
+| lt-stratified | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| lt-stratified | efron | direct expected counts at pprof_py's beta | closed_form | 6e-05 | 6.65e+07 | yes |  |
+| lt-stratified | efron | mid-p statistics at pprof_py's counts | cox_statistic | 4.35e-07 | 4.92e+06 | yes |  |
+| lt-stratified | efron | exact statistics at pprof_py's counts | cox_statistic | 8.32e-07 | 6.88e+06 | yes |  |
+| lt-stratified | efron | p-values, mid-p and exact | probability | 0.000206 | 2.25e+08 | yes |  |
+| lt-stratified | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| lt-stratified | efron | exact limits | closed_form | 3.36e-06 | 3.18e+07 | yes |  |
+| lt-stratified | efron | mid-p limits | cox_root | 0.000536 | 3.18e+05 | yes |  |
+| lt-stratified | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | near-ties | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | near-ties | breslow | coefficients, tight | cox_coefficient | 6.13e-08 | 3.97e+05 | yes |  |
 | near-ties | breslow | log-likelihood, tight | cox_function | 0.000375 | 1.59e+09 | yes |  |
@@ -216,6 +283,22 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | near-ties | efron | dfbeta residuals | cox_residual | 5.64e-09 | 5.26e+04 | yes |  |
 | near-ties | efron | robust per row | cox_variance | 2.54e-07 | 4.29e+05 | yes |  |
 | near-ties | efron | robust clustered | cox_variance | 4.17e-07 | 1.94e+06 | yes |  |
+| near-ties | breslow | direct expected counts at pprof_py's beta | closed_form | 2.38e-05 | 5.57e+06 | yes |  |
+| near-ties | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 1.75e-06 | 1.71e+06 | yes |  |
+| near-ties | breslow | exact statistics at pprof_py's counts | cox_statistic | 8.44e-06 | 1e+07 | yes |  |
+| near-ties | breslow | p-values, mid-p and exact | probability | 9.93e-05 | 2.66e+07 | yes |  |
+| near-ties | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| near-ties | breslow | exact limits | closed_form | 9.51e-06 | 4.49e+06 | yes |  |
+| near-ties | breslow | mid-p limits | cox_root | 0.0032 | 4.49e+04 | yes |  |
+| near-ties | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| near-ties | efron | direct expected counts at pprof_py's beta | closed_form | 3.69e-05 | 5.57e+06 | yes |  |
+| near-ties | efron | mid-p statistics at pprof_py's counts | cox_statistic | 1.16e-06 | 1.69e+06 | yes |  |
+| near-ties | efron | exact statistics at pprof_py's counts | cox_statistic | 3.52e-06 | 9.1e+06 | yes |  |
+| near-ties | efron | p-values, mid-p and exact | probability | 8.22e-05 | 2.67e+07 | yes |  |
+| near-ties | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| near-ties | efron | exact limits | closed_form | 9.51e-06 | 4.49e+06 | yes |  |
+| near-ties | efron | mid-p limits | cox_root | 0.0032 | 4.49e+04 | yes |  |
+| near-ties | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | penalized-strata | breslow | alpha_1: coefficient path | penalized_path | 0.0367 | 9.33e+03 | yes |  |
 | penalized-strata | efron | alpha_1: coefficient path | penalized_path | 0.0387 | 9.33e+03 | yes |  |
 | rc-stratified | breslow | iterations, default and tight | exact |    0 | - | yes |  |
@@ -258,6 +341,22 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | rc-stratified | efron | dfbeta residuals | cox_residual | 3.25e-09 | 1.18e+05 | yes |  |
 | rc-stratified | efron | robust per row | cox_variance | 3.32e-07 | 1.49e+07 | yes |  |
 | rc-stratified | efron | robust clustered | cox_variance | 1.08e-07 | 1.21e+06 | yes |  |
+| rc-stratified | breslow | direct expected counts at pprof_py's beta | closed_form | 0.000136 | 8.39e+07 | yes |  |
+| rc-stratified | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 6.46e-06 | 1.59e+07 | yes |  |
+| rc-stratified | breslow | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 3.48e+07 | yes |  |
+| rc-stratified | breslow | p-values, mid-p and exact | probability | 5.12e-05 | 3.24e+08 | yes |  |
+| rc-stratified | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| rc-stratified | breslow | exact limits | closed_form | 5.87e-06 | 8.14e+07 | yes |  |
+| rc-stratified | breslow | mid-p limits | cox_root | 0.00409 | 8.14e+05 | yes |  |
+| rc-stratified | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| rc-stratified | efron | direct expected counts at pprof_py's beta | closed_form | 0.000225 | 8.46e+07 | yes |  |
+| rc-stratified | efron | mid-p statistics at pprof_py's counts | cox_statistic | 3.01e-06 | 1.55e+07 | yes |  |
+| rc-stratified | efron | exact statistics at pprof_py's counts | cox_statistic | 1.83e-05 | 3.22e+07 | yes |  |
+| rc-stratified | efron | p-values, mid-p and exact | probability | 4.14e-05 | 3.35e+08 | yes |  |
+| rc-stratified | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| rc-stratified | efron | exact limits | closed_form | 5.85e-06 | 8.36e+07 | yes |  |
+| rc-stratified | efron | mid-p limits | cox_root | 0.00409 | 8.36e+05 | yes |  |
+| rc-stratified | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | tiny-ties | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | tiny-ties | breslow | coefficients, tight | cox_coefficient | 0.995 | 1.76e+06 | yes |  |
 | tiny-ties | breslow | log-likelihood, tight | cox_function |    0 | 5.63e+07 | yes |  |
@@ -298,6 +397,22 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | tiny-ties | efron | dfbeta residuals | cox_residual | 0.0401 | 2.6e+06 | yes |  |
 | tiny-ties | efron | robust per row | cox_variance | 0.0109 | 1.84e+06 | yes |  |
 | tiny-ties | efron | robust clustered | cox_variance | 0.0109 | 1.84e+06 | yes |  |
+| tiny-ties | breslow | direct expected counts at pprof_py's beta | closed_form | 4.11e-06 | 3.04e+07 | yes |  |
+| tiny-ties | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 1e-07 | 4.51e+06 | yes |  |
+| tiny-ties | breslow | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 2e+05 | yes |  |
+| tiny-ties | breslow | p-values, mid-p and exact | probability | 8.51e-06 | 2.37e+07 | yes |  |
+| tiny-ties | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| tiny-ties | breslow | exact limits | closed_form | 2.42e-06 | 3.15e+07 | yes |  |
+| tiny-ties | breslow | mid-p limits | cox_root | 0.000307 | 3.15e+05 | yes |  |
+| tiny-ties | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| tiny-ties | efron | direct expected counts at pprof_py's beta | closed_form | 4.47e-06 | 3.03e+07 | yes |  |
+| tiny-ties | efron | mid-p statistics at pprof_py's counts | cox_statistic | 5.01e-07 | 4.72e+06 | yes |  |
+| tiny-ties | efron | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 2e+05 | yes |  |
+| tiny-ties | efron | p-values, mid-p and exact | probability | 7.25e-06 | 2.38e+07 | yes |  |
+| tiny-ties | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| tiny-ties | efron | exact limits | closed_form | 2.53e-06 | 3.14e+07 | yes |  |
+| tiny-ties | efron | mid-p limits | cox_root | 0.000293 | 3.14e+05 | yes |  |
+| tiny-ties | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | competing-truncated | breslow | cause 1: iterations, default and tight | exact |    0 | - | yes |  |
 | competing-truncated | breslow | cause 1: coefficients, tight | cox_coefficient | 0.0106 | 6.53e+05 | yes |  |
 | competing-truncated | breslow | cause 1: covariance, tight | cox_variance | 0.00117 | - | yes |  |
@@ -370,6 +485,38 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | competing-truncated | efron | Fine-Gray 2_unstratified: robust covariance, tight | cox_variance | 7.74e-07 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2_unstratified: model-based covariance, tight | cox_variance | 5.1e-07 | - | yes |  |
 | competing-truncated | efron | Fine-Gray 2_unstratified: cumulative incidence at pprof_py's times, stratum all | cox_baseline | 1.18e-06 | - | yes |  |
+| competing-truncated | breslow | cause 1: direct expected counts at pprof_py's beta | closed_form | 3.35e-05 | 1.08e+07 | yes |  |
+| competing-truncated | breslow | cause 1: mid-p statistics at pprof_py's counts | cox_statistic | 1.91e-06 | 4.29e+06 | yes |  |
+| competing-truncated | breslow | cause 1: exact statistics at pprof_py's counts | cox_statistic | 2.28e-05 | 4.9e+07 | yes |  |
+| competing-truncated | breslow | cause 1: p-values, mid-p and exact | probability | 1.83e-05 | 4.13e+07 | yes |  |
+| competing-truncated | breslow | cause 1: flags, mid-p and exact | exact |    0 | - | yes |  |
+| competing-truncated | breslow | cause 1: exact limits | closed_form | 9.13e-06 | 9.55e+06 | yes |  |
+| competing-truncated | breslow | cause 1: mid-p limits | cox_root | 0.0032 | 9.55e+04 | yes |  |
+| competing-truncated | breslow | cause 1: funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| competing-truncated | breslow | cause 2: direct expected counts at pprof_py's beta | closed_form | 2.13e-05 | 2.08e+06 | yes |  |
+| competing-truncated | breslow | cause 2: mid-p statistics at pprof_py's counts | cox_statistic | 8.61e-07 | 4.89e+05 | yes |  |
+| competing-truncated | breslow | cause 2: exact statistics at pprof_py's counts | cox_statistic | 1.97e-06 | 1.18e+06 | yes |  |
+| competing-truncated | breslow | cause 2: p-values, mid-p and exact | probability | 2.47e-05 | 1.48e+07 | yes |  |
+| competing-truncated | breslow | cause 2: flags, mid-p and exact | exact |    0 | - | yes |  |
+| competing-truncated | breslow | cause 2: exact limits | closed_form | 6.35e-06 | 2.01e+06 | yes |  |
+| competing-truncated | breslow | cause 2: mid-p limits | cox_root | 0.00186 | 2.01e+04 | yes |  |
+| competing-truncated | breslow | cause 2: funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| competing-truncated | efron | cause 1: direct expected counts at pprof_py's beta | closed_form | 2.56e-05 | 1.08e+07 | yes |  |
+| competing-truncated | efron | cause 1: mid-p statistics at pprof_py's counts | cox_statistic | 1.56e-06 | 4.11e+06 | yes |  |
+| competing-truncated | efron | cause 1: exact statistics at pprof_py's counts | cox_statistic | 8.59e-06 | 3.29e+07 | yes |  |
+| competing-truncated | efron | cause 1: p-values, mid-p and exact | probability | 2.21e-05 | 4.14e+07 | yes |  |
+| competing-truncated | efron | cause 1: flags, mid-p and exact | exact |    0 | - | yes |  |
+| competing-truncated | efron | cause 1: exact limits | closed_form | 9.13e-06 | 9.56e+06 | yes |  |
+| competing-truncated | efron | cause 1: mid-p limits | cox_root | 0.0032 | 9.56e+04 | yes |  |
+| competing-truncated | efron | cause 1: funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| competing-truncated | efron | cause 2: direct expected counts at pprof_py's beta | closed_form | 4.3e-05 | 2.08e+06 | yes |  |
+| competing-truncated | efron | cause 2: mid-p statistics at pprof_py's counts | cox_statistic | 4.51e-07 | 4.87e+05 | yes |  |
+| competing-truncated | efron | cause 2: exact statistics at pprof_py's counts | cox_statistic | 1.61e-06 | 1.17e+06 | yes |  |
+| competing-truncated | efron | cause 2: p-values, mid-p and exact | probability | 4.4e-05 | 1.47e+07 | yes |  |
+| competing-truncated | efron | cause 2: flags, mid-p and exact | exact |    0 | - | yes |  |
+| competing-truncated | efron | cause 2: exact limits | closed_form | 5.57e-06 | 2.01e+06 | yes |  |
+| competing-truncated | efron | cause 2: mid-p limits | cox_root | 0.00186 | 2.01e+04 | yes |  |
+| competing-truncated | efron | cause 2: funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | large-mean | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | large-mean | breslow | coefficients, tight | cox_coefficient | 3.65e-08 | 1.25e+05 | yes |  |
 | large-mean | breslow | log-likelihood, tight | cox_function | 0.000833 | 2.51e+07 | yes |  |
@@ -410,6 +557,22 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | large-mean | efron | dfbeta residuals | cox_residual | Inf |    0 | explained | D-64 |
 | large-mean | efron | robust per row | cox_variance | - |    0 | explained | D-64 |
 | large-mean | efron | robust clustered | cox_variance | - |    0 | explained | D-64 |
+| large-mean | breslow | direct expected counts at pprof_py's beta | closed_form | 0.00011 | 4.9e+07 | yes |  |
+| large-mean | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 4.01e-07 | 7.63e+05 | yes |  |
+| large-mean | breslow | exact statistics at pprof_py's counts | cox_statistic | 3.22e-07 | 8.31e+05 | yes |  |
+| large-mean | breslow | p-values, mid-p and exact | probability | 5.56e-05 | 1.32e+08 | yes |  |
+| large-mean | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| large-mean | breslow | exact limits | closed_form | 3.58e-06 | 1.38e+07 | yes |  |
+| large-mean | breslow | mid-p limits | cox_root | 0.00179 | 1.38e+05 | yes |  |
+| large-mean | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| large-mean | efron | direct expected counts at pprof_py's beta | closed_form | 0.000188 | 4.93e+07 | yes |  |
+| large-mean | efron | mid-p statistics at pprof_py's counts | cox_statistic | 5.93e-07 | 7.47e+05 | yes |  |
+| large-mean | efron | exact statistics at pprof_py's counts | cox_statistic | 5.63e-07 | 8.13e+05 | yes |  |
+| large-mean | efron | p-values, mid-p and exact | probability | 4.55e-05 | 1.3e+08 | yes |  |
+| large-mean | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| large-mean | efron | exact limits | closed_form | 5.37e-06 | 1.36e+07 | yes |  |
+| large-mean | efron | mid-p limits | cox_root | 0.00171 | 1.36e+05 | yes |  |
+| large-mean | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | lt-weights-offset | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | lt-weights-offset | breslow | coefficients, tight | cox_coefficient | 1.62e-07 | 3.81e+05 | yes |  |
 | lt-weights-offset | breslow | log-likelihood, tight | cox_function | 0.000277 | 4.62e+07 | yes |  |
@@ -450,6 +613,22 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | lt-weights-offset | efron | dfbeta residuals | cox_residual | 4.16e-09 | 1.56e+05 | yes |  |
 | lt-weights-offset | efron | robust per row | cox_variance | 4.51e-07 | 1.89e+06 | yes |  |
 | lt-weights-offset | efron | robust clustered | cox_variance | 8.17e-08 | 9.22e+06 | yes |  |
+| lt-weights-offset | breslow | direct expected counts at pprof_py's beta | closed_form | 0.000117 | 6.39e+07 | yes |  |
+| lt-weights-offset | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 1.09e-06 | 1.16e+06 | yes |  |
+| lt-weights-offset | breslow | exact statistics at pprof_py's counts | cox_statistic | 1.25e-06 | 1.69e+06 | yes |  |
+| lt-weights-offset | breslow | p-values, mid-p and exact | probability | 5.25e-05 | 6.01e+07 | yes |  |
+| lt-weights-offset | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| lt-weights-offset | breslow | exact limits | closed_form | 2.54e-06 | 5.68e+06 | yes |  |
+| lt-weights-offset | breslow | mid-p limits | cox_root | 0.00168 | 5.68e+04 | yes |  |
+| lt-weights-offset | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| lt-weights-offset | efron | direct expected counts at pprof_py's beta | closed_form | 6.52e-05 | 6.35e+07 | yes |  |
+| lt-weights-offset | efron | mid-p statistics at pprof_py's counts | cox_statistic | 2.48e-06 | 1.39e+06 | yes |  |
+| lt-weights-offset | efron | exact statistics at pprof_py's counts | cox_statistic | 7.62e-06 | 1.78e+06 | yes |  |
+| lt-weights-offset | efron | p-values, mid-p and exact | probability | 5.32e-05 | 6.61e+07 | yes |  |
+| lt-weights-offset | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| lt-weights-offset | efron | exact limits | closed_form | 2.75e-06 | 6.47e+06 | yes |  |
+| lt-weights-offset | efron | mid-p limits | cox_root | 0.00168 | 6.47e+04 | yes |  |
+| lt-weights-offset | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | penalized-combined | breslow | alpha_1: coefficient path | penalized_path | 0.0595 | 1.05e+04 | yes |  |
 | penalized-combined | breslow | alpha_1: cross-validation mean deviance | penalized_path | 0.00891 | - | yes |  |
 | penalized-combined | breslow | alpha_1: cross-validation standard error | penalized_path | 0.00477 | - | yes |  |
@@ -506,6 +685,22 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | provider-scale | efron | expected counts at pprof_py's beta | closed_form | 3.18e-05 | 9.9e+07 | yes |  |
 | provider-scale | efron | expected counts at each side's beta | cox_baseline | 3.19e-07 | 9.91e+05 | yes |  |
 | provider-scale | efron | baseline cumulative hazard at pprof_py's times (basehaz, centered = FALSE) | cox_baseline | 2.37e-06 | 2.49e+07 | yes |  |
+| provider-scale | breslow | direct expected counts at pprof_py's beta | closed_form | 0.0242 | 1.33e+08 | yes |  |
+| provider-scale | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 0.000112 | 7.37e+06 | yes |  |
+| provider-scale | breslow | exact statistics at pprof_py's counts | cox_statistic | 5.99e-05 | 2.56e+06 | yes |  |
+| provider-scale | breslow | p-values, mid-p and exact | probability | 0.00029 | 2.52e+08 | yes |  |
+| provider-scale | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| provider-scale | breslow | exact limits | closed_form | 1e-05 | 4.46e+07 | yes |  |
+| provider-scale | breslow | mid-p limits | cox_root | 0.00625 | 4.46e+05 | yes |  |
+| provider-scale | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| provider-scale | efron | direct expected counts at pprof_py's beta | closed_form | 0.0188 | 1.31e+08 | yes |  |
+| provider-scale | efron | mid-p statistics at pprof_py's counts | cox_statistic | 0.00125 | 2.26e+07 | yes |  |
+| provider-scale | efron | exact statistics at pprof_py's counts | cox_statistic | 4.77e-05 | 3.61e+06 | yes |  |
+| provider-scale | efron | p-values, mid-p and exact | probability | 0.000169 | 2.52e+08 | yes |  |
+| provider-scale | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| provider-scale | efron | exact limits | closed_form | 9.89e-06 | 4.5e+07 | yes |  |
+| provider-scale | efron | mid-p limits | cox_root | 0.00629 | 4.5e+05 | yes |  |
+| provider-scale | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | rc-stratified-weights-offset | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | rc-stratified-weights-offset | breslow | coefficients, tight | cox_coefficient | 0.12 | 3.66e+06 | yes |  |
 | rc-stratified-weights-offset | breslow | log-likelihood, tight | cox_function | 0.00115 | 3.01e+08 | yes |  |
@@ -546,6 +741,22 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | rc-stratified-weights-offset | efron | dfbeta residuals | cox_residual | 0.000572 | 1.03e+05 | yes |  |
 | rc-stratified-weights-offset | efron | robust per row | cox_variance | 0.0366 | 7.35e+06 | yes |  |
 | rc-stratified-weights-offset | efron | robust clustered | cox_variance | 0.0295 | 2.87e+06 | yes |  |
+| rc-stratified-weights-offset | breslow | direct expected counts at pprof_py's beta | closed_form | 0.000297 | 1.26e+08 | yes |  |
+| rc-stratified-weights-offset | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 1.07e-06 | 3.32e+06 | yes |  |
+| rc-stratified-weights-offset | breslow | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 1.72e+07 | yes |  |
+| rc-stratified-weights-offset | breslow | p-values, mid-p and exact | probability | 9.19e-05 | 7.84e+07 | yes |  |
+| rc-stratified-weights-offset | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| rc-stratified-weights-offset | breslow | exact limits | closed_form | 6.24e-06 | 1.24e+07 | yes |  |
+| rc-stratified-weights-offset | breslow | mid-p limits | cox_root | 0.00409 | 1.24e+05 | yes |  |
+| rc-stratified-weights-offset | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| rc-stratified-weights-offset | efron | direct expected counts at pprof_py's beta | closed_form | 0.000136 | 1.24e+08 | yes |  |
+| rc-stratified-weights-offset | efron | mid-p statistics at pprof_py's counts | cox_statistic | 1.45e-06 | 3.66e+06 | yes |  |
+| rc-stratified-weights-offset | efron | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 2.12e+07 | yes |  |
+| rc-stratified-weights-offset | efron | p-values, mid-p and exact | probability | 6.3e-05 | 8.07e+07 | yes |  |
+| rc-stratified-weights-offset | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| rc-stratified-weights-offset | efron | exact limits | closed_form | 5.69e-06 | 1.29e+07 | yes |  |
+| rc-stratified-weights-offset | efron | mid-p limits | cox_root | 0.00409 | 1.29e+05 | yes |  |
+| rc-stratified-weights-offset | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | rc-unstratified | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | rc-unstratified | breslow | coefficients, tight | cox_coefficient | 0.022 | 6.22e+04 | yes |  |
 | rc-unstratified | breslow | log-likelihood, tight | cox_function | 0.0015 | 2.42e+06 | yes |  |
@@ -586,6 +797,22 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | rc-unstratified | efron | dfbeta residuals | cox_residual | 0.000204 | 1.01e+05 | yes |  |
 | rc-unstratified | efron | robust per row | cox_variance | 0.00404 | 2.45e+06 | yes |  |
 | rc-unstratified | efron | robust clustered | cox_variance | 0.035 | 1.04e+07 | yes |  |
+| rc-unstratified | breslow | direct expected counts at pprof_py's beta | closed_form | 0.00012 | 5.85e+07 | yes |  |
+| rc-unstratified | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 5.76e-06 | 5.73e+06 | yes |  |
+| rc-unstratified | breslow | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 3.67e+06 | yes |  |
+| rc-unstratified | breslow | p-values, mid-p and exact | probability | 2.99e-05 | 2.78e+08 | yes |  |
+| rc-unstratified | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| rc-unstratified | breslow | exact limits | closed_form | 2.95e-06 | 3.84e+07 | yes |  |
+| rc-unstratified | breslow | mid-p limits | cox_root | 0.00262 | 3.84e+05 | yes |  |
+| rc-unstratified | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| rc-unstratified | efron | direct expected counts at pprof_py's beta | closed_form | 6.18e-05 | 5.81e+07 | yes |  |
+| rc-unstratified | efron | mid-p statistics at pprof_py's counts | cox_statistic | 4.73e-06 | 6.82e+06 | yes |  |
+| rc-unstratified | efron | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 3.74e+06 | yes |  |
+| rc-unstratified | efron | p-values, mid-p and exact | probability | 3.03e-05 | 2.83e+08 | yes |  |
+| rc-unstratified | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| rc-unstratified | efron | exact limits | closed_form | 2.92e-06 | 3.9e+07 | yes |  |
+| rc-unstratified | efron | mid-p limits | cox_root | 0.00262 | 3.9e+05 | yes |  |
+| rc-unstratified | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | recurrent | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | recurrent | breslow | coefficients, tight | cox_coefficient | 2.7e-08 | 3.41e+04 | yes |  |
 | recurrent | breslow | log-likelihood, tight | cox_function |    0 | 3.71e+07 | yes |  |
@@ -626,6 +853,22 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | recurrent | efron | dfbeta residuals | cox_residual | 2.95e-09 | 4.48e+04 | yes |  |
 | recurrent | efron | robust per row | cox_variance | 6.24e-08 | 8.72e+04 | yes |  |
 | recurrent | efron | robust clustered | cox_variance | 1.36e-07 | 1.28e+05 | yes |  |
+| recurrent | breslow | direct expected counts at pprof_py's beta | closed_form | 5.74e-05 | 5.81e+06 | yes |  |
+| recurrent | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 3.72e-06 | 8.96e+05 | yes |  |
+| recurrent | breslow | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 3.29e+05 | yes |  |
+| recurrent | breslow | p-values, mid-p and exact | probability | 3.2e-05 | 1.58e+07 | yes |  |
+| recurrent | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| recurrent | breslow | exact limits | closed_form | 8.98e-06 | 1.53e+06 | yes |  |
+| recurrent | breslow | mid-p limits | cox_root | 0.00405 | 1.53e+04 | yes |  |
+| recurrent | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| recurrent | efron | direct expected counts at pprof_py's beta | closed_form | 6.78e-05 | 5.81e+06 | yes |  |
+| recurrent | efron | mid-p statistics at pprof_py's counts | cox_statistic | 2.66e-06 | 1.83e+06 | yes |  |
+| recurrent | efron | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 7.25e+05 | yes |  |
+| recurrent | efron | p-values, mid-p and exact | probability | 2.65e-05 | 1.43e+07 | yes |  |
+| recurrent | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| recurrent | efron | exact limits | closed_form | 1.05e-05 | 1.68e+06 | yes |  |
+| recurrent | efron | mid-p limits | cox_root | 0.00405 | 1.68e+04 | yes |  |
+| recurrent | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
 | zero-weights | breslow | iterations, default and tight | exact |    0 | - | yes |  |
 | zero-weights | breslow | coefficients, tight | cox_coefficient | 9.12e-08 | 1.61e+05 | yes |  |
 | zero-weights | breslow | log-likelihood, tight | cox_function |    0 | 2.34e+07 | yes |  |
@@ -666,6 +909,32 @@ Result: 586 of 586 rows pass; 58 rows are explained by a register entry.
 | zero-weights | efron | dfbeta residuals | cox_residual | 4.16e+04 | 1.28e+05 | explained | D-58 |
 | zero-weights | efron | robust per row | cox_variance | 1.19e+05 | 7.05e+06 | explained | D-58 |
 | zero-weights | efron | robust clustered | cox_variance | 2.35e+05 | 4.83e+06 | explained | D-58 |
+| zero-weights | breslow | direct expected counts at pprof_py's beta | closed_form | 0.000396 | 1.79e+08 | yes |  |
+| zero-weights | breslow | mid-p statistics at pprof_py's counts | cox_statistic | 2.8e-06 | 2.93e+06 | yes |  |
+| zero-weights | breslow | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 2.1e+05 | yes |  |
+| zero-weights | breslow | p-values, mid-p and exact | probability | 5.64e-05 | 3.24e+07 | yes |  |
+| zero-weights | breslow | flags, mid-p and exact | exact |    0 | - | yes |  |
+| zero-weights | breslow | exact limits | closed_form | 8.26e-06 | 5.1e+06 | yes |  |
+| zero-weights | breslow | mid-p limits | cox_root | 0.00174 | 5.1e+04 | yes |  |
+| zero-weights | breslow | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+| zero-weights | efron | direct expected counts at pprof_py's beta | closed_form | 0.000296 | 1.76e+08 | yes |  |
+| zero-weights | efron | mid-p statistics at pprof_py's counts | cox_statistic | 7.55e-06 | 2.43e+06 | yes |  |
+| zero-weights | efron | exact statistics at pprof_py's counts | cox_statistic | 1.11e-05 | 1.77e+05 | yes |  |
+| zero-weights | efron | p-values, mid-p and exact | probability | 7.4e-05 | 2.64e+07 | yes |  |
+| zero-weights | efron | flags, mid-p and exact | exact |    0 | - | yes |  |
+| zero-weights | efron | exact limits | closed_form | 8.27e-06 | 4.35e+06 | yes |  |
+| zero-weights | efron | mid-p limits | cox_root | 0.00201 | 4.35e+04 | yes |  |
+| zero-weights | efron | funnel limits at pprof_py's expected counts, and its curves | exact |    0 | Inf | yes |  |
+
+## Flags at each side's coefficients
+
+Every Cox case and cause-specific record, both tie methods and both tests: R's flags at survival's tight
+coefficients (the expected counts by this script's transcription) against pprof_py's at its own. A provider
+whose flag differs is near a threshold when its flag changes as its expected count moves within
+`cox_baseline`'s allowance (the CoxPH C3 plan, §4.2). Rows without a differing flag are not listed.
+
+Result: 4676 flags compared, 0 differ, 0 of them near a threshold; 0 records with other differences.
+
 
 ## pprof_py on two machines
 

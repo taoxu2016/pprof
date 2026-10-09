@@ -244,12 +244,225 @@ calibrate_penalized <- function(id, fx) {
   }
 }
 
+# --- Phase C3: the measures, tests, limits, and funnels (DEC-097, DEC-109) ------------------------------
+#
+# pprof_py's measures and tests given its own inputs, against R's functions: a transcription of K-136 to
+# K-142 and K-149 with ppois(), qnorm(), qchisq(), and uniroot(), written here apart from the package's
+# code (dev/design/coxph-facts/22_measures_tests.R and 23_funnel_limits.R). The direct expected counts at
+# pprof_py's beta and grouping of providers; the statistics, p-values, flags, and limits at its observed
+# and expected counts; the funnel limits at its expected counts. Negative controls, each through the
+# expected counts: the other tie method (pprof_py's), and for Cox cases the generator's moved-tie and
+# dropped-weight fits (their expected counts by the transcription). A last section compares the flags at
+# each side's tight beta, listing providers whose flag changes within cox_baseline of their expected count.
+
+# Sums of `values` by provider code 0..m-1, in row order.
+c3_sums <- function(values, codes, m) {
+  out <- numeric(m)
+  s <- rowsum(values, codes, reorder = TRUE)
+  out[as.integer(rownames(s)) + 1L] <- s[, 1]
+  out
+}
+# The sum of r over the rows whose key is at least q, for each q (pprof_py's suffix sums).
+c3_suffix_at <- function(keys, r, q) {
+  o <- order(keys, method = "radix")
+  s <- c(rev(cumsum(rev(r[o]))), 0)
+  s[findInterval(q, keys[o], left.open = TRUE) + 1L]
+}
+c3_at_risk <- function(q, start, stop, r) c3_suffix_at(stop, r, q) - c3_suffix_at(start, r, q)
+# K-136 to K-138: O, E, and the direct expected counts by provider code at linear predictor eta.
+c3_measures <- function(eta, start, stop, event, codes, m) {
+  r <- exp(eta - max(eta))
+  times <- sort(unique(stop[event == 1]))
+  rs <- c3_at_risk(times, start, stop, r)
+  cumulative <- c(0, cumsum(tabulate(match(stop[event == 1], times), length(times)) / rs))
+  rows <- r * (cumulative[findInterval(stop, times) + 1L] - cumulative[findInterval(start, times) + 1L])
+  direct <- numeric(m)
+  for (j in which(tabulate(codes[event == 1] + 1L, m) > 0)) {
+    own <- which(codes == j - 1L)
+    ev <- own[event[own] == 1]
+    direct[j] <- sum(rs[match(stop[ev], times)] / c3_at_risk(stop[ev], start[own], stop[own], r[own]))
+  }
+  list(O = c3_sums(as.numeric(event), codes, m), E = c3_sums(rows, codes, m), direct = direct)
+}
+c3_midp_z <- function(O, E) {
+  p_min <- 2 * stats::ppois(O, E) - stats::dpois(O, E)
+  p_max <- 2 * (1 - stats::ppois(O - 1, E)) - stats::dpois(O, E)
+  z <- stats::qnorm(pmax(1e-6, pmin(p_min, p_max) / 2))
+  ifelse(p_min <= p_max, z, -z)
+}
+c3_exact_z <- function(O, E) {
+  high <- !is.na(O / E) & O / E > 1
+  p <- ifelse(high, pmin(0.999, 2 * stats::ppois(O - 1, E, lower.tail = FALSE)), pmin(0.999, 2 * stats::ppois(O, E)))
+  sign(O - E) * stats::qnorm(p / 2, lower.tail = FALSE)
+}
+c3_p <- function(z) 2 * stats::pnorm(abs(z), lower.tail = FALSE)
+c3_flag <- function(z, alpha) {
+  p <- c3_p(z)
+  as.integer(ifelse(p < alpha & z > 0, 1L, ifelse(p < alpha & z < 0, -1L, 0L)))
+}
+c3_exact_limits <- function(O, E, alpha) {
+  zc <- stats::qnorm(1 - alpha / 2)
+  garwood <- E < 100
+  lower <- ifelse(O > 0, ifelse(garwood, stats::qchisq(alpha / 2, 2 * O) / 2 / E,
+                                (O / E) * (1 - 1 / (9 * O) - zc / (3 * sqrt(O)))^3), 0)
+  upper <- ifelse(garwood, stats::qchisq(1 - alpha / 2, 2 * (O + 1)) / 2 / E,
+                  ((O + 1) / E) * (1 - 1 / (9 * (O + 1)) + zc / (3 * sqrt(O + 1)))^3)
+  c(lower, upper)
+}
+# The mid-p limits on the ratio scale: the roots in the Poisson mean once per distinct O, to rounding,
+# with pprof_py's 0 where its equation is not negative at its bracket's lower end.
+c3_midp_limits <- function(O, E, alpha) {
+  values <- sort(unique(O))
+  roots <- vapply(values, function(o) {
+    excess <- function(t) c3_p(c3_midp_z(o, t)) - alpha
+    low <- .Machine$double.xmin
+    high <- 10 * (o + 10)
+    middle <- if (c3_midp_z(o, low) <= 0) low else
+      stats::uniroot(function(t) c3_midp_z(o, t), c(low, high), tol = 1e-300, maxiter = 2000L)$root
+    c(if (excess(low) >= 0) 0 else stats::uniroot(excess, c(low, middle), tol = 1e-300, maxiter = 2000L)$root,
+      stats::uniroot(excess, c(middle, high), tol = 1e-300, maxiter = 2000L)$root)
+  }, numeric(2))
+  lower <- roots[1, match(O, values)]
+  lower[c3_p(c3_midp_z(O, 1e-10 * pmax(E, 1))) - alpha >= 0] <- 0
+  c(lower / E, roots[2, match(O, values)] / E)
+}
+# K-149: the count boundaries of the mid-p test, by brute force over 0..n, at each expected count.
+c3_funnel_limits <- function(E, O, alpha) {
+  n <- ceiling(pmax(E, O) + 40 * sqrt(E) + 50)
+  limits <- vapply(seq_along(E), function(i) {
+    counts <- 0:n[i]
+    f <- c3_flag(c3_midp_z(counts, rep(E[i], length(counts))), alpha)
+    c(if (any(f == -1L)) (max(counts[f == -1L]) + 0.5) / E[i] else -Inf,
+      if (any(f == 1L)) (min(counts[f == 1L]) - 0.5) / E[i] else Inf)
+  }, numeric(2))
+  c(limits[1, ], limits[2, ])
+}
+# Everything compared, from observed and expected counts.
+c3_tests <- function(O, E, alpha) {
+  list(midp_z = c3_midp_z(O, E), exact_z = c3_exact_z(O, E), p = c3_p(c(c3_midp_z(O, E), c3_exact_z(O, E))),
+       exact_limits = c3_exact_limits(O, E, alpha), midp_limits = c3_midp_limits(O, E, alpha))
+}
+c3_py_tests <- function(t) {
+  list(midp_z = unlist(t$midp$z_raw), exact_z = unlist(t$exact$z_raw), p = unlist(c(t$midp$p_value, t$exact$p_value)),
+       exact_limits = unlist(c(t$exact$ci_lower, t$exact$ci_upper)),
+       midp_limits = unlist(c(t$midp$ci_lower, t$midp$ci_upper)))
+}
+
+# The generator's moved tie (generate.py's shifted_tie()): the first (stratum, time) of two or more events,
+# its first row a day later.
+c3_shifted_stop <- function(d) {
+  ev <- which(d$event == 1)
+  o <- order(d$stratum[ev], d$time[ev], ev)
+  i <- which(d$stratum[ev][o][-1] == d$stratum[ev][o][-length(ev)] & d$time[ev][o][-1] == d$time[ev][o][-length(ev)])[1]
+  stop <- d$time
+  stop[ev[o][i]] <- stop[ev[o][i]] + 1
+  stop
+}
+
+state$flags <- list()
+calibrate_profiling <- function(id, fx) {
+  def <- fx$case
+  d <- fx$input
+  truncated <- isTRUE(def$truncated)
+  start <- if (truncated) d$entry else rep(0, nrow(d))
+  x <- as.matrix(d[, unlist(def$features), drop = FALSE])
+  alpha <- 1 - 0.95
+  for (ties in c("breslow", "efron")) {
+    records <- if (identical(def$kind, "cox")) {
+      list(list(label = "", event = d$event, offset = if (isTRUE(def$offset)) d$offset else 0,
+                provider = if (isTRUE(def$stratified)) d$stratum else d$id %% 10, py = fx$pprof_py[[ties]],
+                other = fx$pprof_py[[other(ties)]], r_beta = unlist(fx$survival[[ties]]$tight$coef),
+                controls = fx$pprof_py[[ties]]$negative_controls))
+    } else {
+      lapply(names(fx$pprof_py[[ties]]$cause_specific), function(cause) {
+        list(label = sprintf("cause %s: ", cause), event = as.numeric(d$event == as.integer(cause)), offset = 0,
+             provider = d$stratum, py = fx$pprof_py[[ties]]$cause_specific[[cause]],
+             other = fx$pprof_py[[other(ties)]]$cause_specific[[cause]],
+             r_beta = unlist(fx$survival[[ties]]$cause_specific[[cause]]$tight$coef), controls = NULL)
+      })
+    }
+    for (rec in records) {
+      labels <- sort(unique(rec$provider))
+      codes <- match(rec$provider, labels) - 1L
+      m <- length(labels)
+      at <- function(beta, stop = d$time) c3_measures(drop(x %*% beta) + rec$offset, start, stop, rec$event, codes, m)
+      py <- rec$py
+      O <- unlist(py$tests$midp$observed)
+      E <- unlist(py$tests$midp$expected)
+      mine <- c3_tests(O, E, alpha)
+      theirs <- c3_py_tests(py$tests)
+      # The controls' tests, through their expected counts.
+      control_tests <- list(other_ties = c3_py_tests(rec$other$tests))
+      if (!is.null(rec$controls)) {
+        moved <- at(unlist(rec$controls$shifted_tie$coef), c3_shifted_stop(d))
+        control_tests$moved_tie <- c3_tests(moved$O, moved$E, alpha)
+        if (!is.null(rec$controls$dropped_weight)) {
+          dropped <- at(unlist(rec$controls$dropped_weight$coef))
+          control_tests$dropped_weight <- c3_tests(dropped$O, dropped$E, alpha)
+        }
+      }
+      controls_of <- function(part, tier) lapply(control_tests, function(ct) ratio(ct[[part]], theirs[[part]], tier))
+      label <- function(what) paste0(rec$label, what)
+      direct <- at(unlist(py$measures$beta))$direct
+      add(id, ties, label("direct expected counts at pprof_py's beta"), "closed_form",
+          ratio(direct, py$measures$direct_expected, "closed_form"),
+          list(other_ties = ratio(rec$other$measures$direct_expected, py$measures$direct_expected, "closed_form")))
+      add(id, ties, label("mid-p statistics at pprof_py's counts"), "cox_statistic",
+          ratio(mine$midp_z, theirs$midp_z, "cox_statistic"), controls_of("midp_z", "cox_statistic"))
+      add(id, ties, label("exact statistics at pprof_py's counts"), "cox_statistic",
+          ratio(mine$exact_z, theirs$exact_z, "cox_statistic"), controls_of("exact_z", "cox_statistic"))
+      add(id, ties, label("p-values, mid-p and exact"), "probability", ratio(mine$p, theirs$p, "probability"),
+          controls_of("p", "probability"))
+      add(id, ties, label("flags, mid-p and exact"), "exact",
+          ratio(c(c3_flag(mine$midp_z, alpha), c3_flag(mine$exact_z, alpha)),
+                unlist(c(py$tests$midp$flag, py$tests$exact$flag)), "exact"))
+      add(id, ties, label("exact limits"), "closed_form", ratio(mine$exact_limits, theirs$exact_limits, "closed_form"),
+          controls_of("exact_limits", "closed_form"))
+      add(id, ties, label("mid-p limits"), "cox_root", ratio(mine$midp_limits, theirs$midp_limits, "cox_root"),
+          controls_of("midp_limits", "cox_root"))
+      funnel <- py$funnel
+      curves <- funnel$curves
+      curve_limits <- unlist(lapply(sort(unique(unlist(curves$level))), function(level) {
+        k <- unlist(curves$level) == level
+        c3_funnel_limits(unlist(curves$precision)[k], rep(0, sum(k)), 1 - level)
+      }))
+      curve_reference <- unlist(lapply(sort(unique(unlist(curves$level))), function(level) {
+        k <- unlist(curves$level) == level
+        c(unlist(curves$lower)[k], unlist(curves$upper)[k])
+      }))
+      add(id, ties, label("funnel limits at pprof_py's expected counts, and its curves"), "exact",
+          max(ratio(c3_funnel_limits(unlist(funnel$expected), unlist(funnel$observed), alpha),
+                    unlist(c(funnel$lower, funnel$upper)), "exact"),
+              ratio(curve_limits, curve_reference, "exact")),
+          list(other_ties = ratio(unlist(c(rec$other$funnel$lower, rec$other$funnel$upper)),
+                                  unlist(c(funnel$lower, funnel$upper)), "exact")))
+      # The flags at each side's tight beta: R's counts at survival's beta against pprof_py's tests.
+      ours <- at(rec$r_beta)
+      allowance <- reference_tolerance("cox_baseline")
+      for (test in c("midp", "exact")) {
+        z_of <- if (test == "midp") c3_midp_z else c3_exact_z
+        flags_r <- c3_flag(z_of(ours$O, ours$E), alpha)
+        flags_py <- unlist(py$tests[[test]]$flag)
+        differ <- which(flags_r != flags_py)
+        width <- allowance$atol + allowance$rtol * ours$E
+        near <- differ[c3_flag(z_of(ours$O[differ], ours$E[differ] - width[differ]), alpha) !=
+                         c3_flag(z_of(ours$O[differ], ours$E[differ] + width[differ]), alpha)]
+        state$flags[[length(state$flags) + 1L]] <- data.frame(
+          case = id, ties = ties, record = sub(": $", "", rec$label), test = test, providers = length(flags_r),
+          differ = length(differ), near = length(near),
+          ids = paste(labels[setdiff(differ, near)], collapse = " "))
+      }
+    }
+  }
+}
+
 files <- unlist(lapply(dirs[dir.exists(dirs)], function(d) list.files(d, pattern = "\\.rds$", full.names = TRUE)))
 fixtures <- lapply(setNames(files, sub("\\.rds$", "", basename(files))), readRDS)
 for (id in names(fixtures)) {
   fx <- fixtures[[id]]
   switch(fx$case$kind, cox = calibrate_cox(id, fx), competing = calibrate_competing(id, fx),
          penalized = calibrate_penalized(id, fx))
+  if (fx$case$kind %in% c("cox", "competing")) calibrate_profiling(id, fx)
 }
 table <- do.call(rbind, state$rows)
 fmt <- function(x) ifelse(is.na(x), "-", ifelse(is.infinite(x), "Inf", formatC(x, format = "g", digits = 3)))
@@ -274,6 +487,25 @@ lines <- c("# Cox tolerance calibration", "",
            sprintf("| %s | %s | %s | %s | %s | %s | %s | %s |", table$case, table$ties, table$quantity, table$tier,
                    fmt(table$agreement), fmt(table$weakest_control),
                    ifelse(!scored, "explained", ifelse(table$ok, "yes", "**no**")), table$note))
+
+# Phase C3: the flags at each side's coefficients.
+flag_table <- do.call(rbind, state$flags)
+flag_table$note <- ifelse(flag_table$case == "zero-weights" & flag_table$ties == "efron", "D-58", "")
+unexplained <- flag_table$differ - flag_table$near > 0 & !nzchar(flag_table$note)
+lines <- c(lines, "", "## Flags at each side's coefficients", "",
+           "Every Cox case and cause-specific record, both tie methods and both tests: R's flags at survival's tight",
+           "coefficients (the expected counts by this script's transcription) against pprof_py's at its own. A provider",
+           "whose flag differs is near a threshold when its flag changes as its expected count moves within",
+           "`cox_baseline`'s allowance (the CoxPH C3 plan, §4.2). Rows without a differing flag are not listed.", "",
+           sprintf("Result: %d flags compared, %d differ, %d of them near a threshold; %d records with other differences.",
+                   sum(flag_table$providers), sum(flag_table$differ), sum(flag_table$near), sum(unexplained)), "")
+listed <- flag_table[flag_table$differ > 0, , drop = FALSE]
+if (nrow(listed)) {
+  lines <- c(lines, "| Case | Ties | Record | Test | Providers | Differing | Near a threshold | Others | Note |",
+             "|---|---|---|---|---|---|---|---|---|",
+             sprintf("| %s | %s | %s | %s | %d | %d | %d | %s | %s |", listed$case, listed$ties, listed$record,
+                     listed$test, listed$providers, listed$differ, listed$near, listed$ids, listed$note))
+}
 
 # pprof_py on this machine against pprof_py on pprof_spark's (same pins, other platform).
 spark <- Sys.getenv("PPROF_SPARK")

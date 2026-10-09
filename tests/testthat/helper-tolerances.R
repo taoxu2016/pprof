@@ -66,7 +66,17 @@ pprof_tolerances <- list(
   ),
   cox_statistic = list(
     tier = 1, atol = 0, rtol = 1e-8,
-    why = "Provider test statistics given the same observed and expected counts (calibrated in Phase C3)."
+    why = paste("Mid-p and exact statistics given the same observed and expected counts: within 1.2e-3 of the tier",
+                "in the Phase C3 calibration, every negative control beyond 4.4e4 (DEC-109).")
+  ),
+  # The mid-p limits (Phase C3, DEC-109), on the ratio scale. pprof_py finds their roots in the Poisson mean
+  # within 1e-10 max(E, 1): 1e-10 on the ratio scale when E >= 1, and when E < 1 at most 2e-9 of the limit,
+  # since every nonzero mid-p limit at level 0.95 is at least 0.05 on the mean scale.
+  cox_root = list(
+    tier = 3, atol = 1e-10, rtol = 1e-8,
+    why = paste("Mid-p limits given the same observed and expected counts, from pprof_py's root tolerance",
+                "(1e-10 max(E, 1) on the Poisson mean): within 0.0063 of the tier in the Phase C3 calibration,",
+                "every negative control beyond 4e3.")
   ),
   penalized_path = list(
     tier = 2, atol = 5e-6, rtol = 0,
