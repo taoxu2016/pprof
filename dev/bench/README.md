@@ -31,10 +31,15 @@ There is no pprof 1.0.3 baseline for Cox models (CoxPH brief §3.7). The Cox bas
 | `cox/scenarios.R` | Eight scenarios, one factor at a time around 100,000 rows, 1,000 providers, and 20 covariates, and the corner of 1,000,000 rows, 7,500 providers, and 50 covariates; delayed entry, daily ties, offsets, weights, and provider effects; data written once as raw doubles that R and NumPy read exactly |
 | `cox/run_engines.R` | `survival::agreg.fit()` (Breslow and Efron) and `coxph()` with robust variance, as the adapter calls them (COXPH_DESIGN §E.1); the closed-form expected counts of COXPH_DESIGN §F.1 in plain R; on the 50-covariate scenario, a `glmnet` path and a 10-fold cross-validation (§E.2) |
 | `cox/run_pprof_py.py` | pprof_py's `CoxPH` fits, standardized measures, mid-p and exact tests, and penalized path and cross-validation, with the Cox generator's Python |
+| `cox/summarize.R` | The baseline's report: the engines' and pprof_py's medians side by side (`results/cox-baseline-<date>-<platform>.md`) |
+| `cox/run_paired.R` | From Phase C2: each Cox fit against the engine call it makes, on the same data, in fresh processes that alternate the engine call, `coxph()` on the data frame, and the fit, for two or more rounds (DEC-038, DEC-100); the working tree installed with `--preclean`; the fit's estimates checked bitwise against the engine call's |
+| `cox/summarize_paired.R` | The paired runs' report: ratios and DEC-038's verdicts against the engine call, the fit against `coxph()`, and C1's pprof_py times beside the fits (`results/cox-c2-paired-<date>-<platform>.md`) |
 
 ```sh
 Rscript dev/bench/cox/run_engines.R <data dir> dev/bench/results/cox-engines-<date>-<platform>.csv
 dev/reference/cox/venv/Scripts/python dev/bench/cox/run_pprof_py.py <data dir> dev/bench/results/cox-pprof_py-<date>-<platform>.csv
+Rscript dev/bench/cox/run_paired.R <data dir> <paired csv> [--only '<regex of "scenario task">'] [--rounds 2]
+Rscript dev/bench/cox/summarize_paired.R <report md> dev/bench/results/cox-pprof_py-<date>-<platform>.csv <paired csv> [...]
 ```
 
 Each task runs in a fresh process. The R tasks follow `harness.R`'s measurements (the first run, `bench::mark()` with at least 5 runs, 3 from 10 s, 1 from 60 s, the process's peak memory, and `gc()`'s maximum of R's heap); the Python tasks warm up on 2,000 rows first, so that numba's compilation is not timed. Each CSV has a `.json` with the machine and the versions.
