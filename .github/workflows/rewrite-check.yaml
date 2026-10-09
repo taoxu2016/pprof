@@ -4,7 +4,8 @@
 #
 # The tests compare numbers with the committed reference fixtures only on the platform that
 # produced them (DEC-080), Windows x86_64 with R 4.4 (its internal BLAS and LAPACK 3.12.0), which
-# the job "fixtures" checks here; elsewhere they compare everything but the numbers, and
+# the job "fixtures" checks here, with lme4 built from source with the fixture machine's Eigen
+# cache sizes (D-53, DEC-094); elsewhere they compare everything but the numbers, and
 # rewrite-reference.yaml compares the numbers with fixtures pprof 1.0.3 produces on the platform.
 #
 # The job with R 4.4.0 on Linux checks the oldest R version DESCRIPTION declares, as the
@@ -85,6 +86,46 @@ jobs:
         run: |
           Rscript .github/scripts/ci-annotate.R dependencies ${{ matrix.config.minimal && 'Config/Needs/check,hard' || 'Config/Needs/check,all' }} FALSE deps::. any::sessioninfo "${{ env.EXTRA_PACKAGES }}"
           exit 1
+
+      # The job "fixtures" compares the lme4-backed cases with the fixtures when lme4 and Matrix
+      # match the manifest. Eigen sizes the blocks of lme4's matrix products from the L1 cache it
+      # reads from the processor, so CRAN's lme4 binary reproduces the fixtures only on runners
+      # with the 48 KB L1 cache of the machine that made them (D-53). lme4 is rebuilt here from
+      # source with the cache query off and that machine's cache sizes, as rewrite-reference.yaml's
+      # fixture-platform job builds it (DEC-094).
+      - name: Build lme4 with the fixture machine's cache sizes
+        if: matrix.config.fixtures
+        shell: Rscript {0}
+        run: |
+          makevars <- file.path(tempdir(), "Makevars-lme4")
+          writeLines(paste("CPPFLAGS += -DEIGEN_NO_CPUID -DEIGEN_DEFAULT_L1_CACHE_SIZE=49152",
+                           "-DEIGEN_DEFAULT_L2_CACHE_SIZE=1310720 -DEIGEN_DEFAULT_L3_CACHE_SIZE=8388608"), makevars)
+          Sys.setenv(R_MAKEVARS_USER = makevars)
+          # lme4 compiles against the headers of its LinkingTo packages (RcppEigen), which its
+          # binary does not need and the dependency step does not install.
+          db <- utils::available.packages(type = "source")
+          linking <- tools::package_dependencies("lme4", db = db, which = "LinkingTo")[[1]]
+          missing <- setdiff(linking, rownames(utils::installed.packages()))
+          if (length(missing)) utils::install.packages(missing)
+          tarball <- utils::download.packages("lme4", destdir = tempdir(), type = "source")[1, 2]
+          lib <- .libPaths()[1]
+          log <- system2(file.path(R.home("bin"), "R"), c("CMD", "INSTALL", "--preclean", paste0("--library=", lib), tarball),
+                         stdout = TRUE, stderr = TRUE)
+          if (!is.null(attr(log, "status")) || !any(grepl("EIGEN_NO_CPUID", log))) {
+            writeLines(log)
+            # The job log needs signing in; the annotation is public.
+            cat("::error title=Building lme4 failed::", paste(gsub("[\r\n]+", " ", tail(log, 12)), collapse = "%0A"),
+                "\n", sep = "")
+            stop("Building lme4 from source with fixed Eigen cache sizes failed.")
+          }
+          if (!startsWith(normalizePath(find.package("lme4"), winslash = "/"), normalizePath(lib, winslash = "/"))) {
+            stop("lme4 does not load from ", lib, ", where it was built.")
+          }
+          manifest <- jsonlite::read_json("tests/testthat/fixtures/reference/manifest.json")
+          wanted <- manifest$numerically_relevant_packages
+          cat(sprintf("::notice title=lme4 built from source::lme4 %s and Matrix %s (fixture manifest: %s and %s), built with %s\n",
+                      utils::packageVersion("lme4"), utils::packageVersion("Matrix"), wanted$lme4, wanted$Matrix,
+                      sub("^CPPFLAGS \\+= ", "", readLines(makevars))))
 
       - uses: r-lib/actions/check-r-package@v2
         with:
