@@ -288,8 +288,10 @@ def pprof_tests(df, case, ties):
 def pprof_funnel(df, case, ties):
     """pprof_py's funnel limits for the Cox model, CoxPH.funnel_limits() (inference/funnel.py:
     poisson_funnel_limits; the CoxPH C3 plan's decisions 1 and 2): with the mid-p test at the first of
-    FUNNEL_LEVELS, each provider's limits and flag, and the curves at every level. The limits are count
-    boundaries at half-integers on the O/E scale, -inf and inf where no count is flagged."""
+    FUNNEL_LEVELS, each provider's limits and flag, and for the full set's cases the curves at every
+    level (200 points each; left out of the shipped core set, which the tarball's 5 MB limit leaves no room
+    for, DEC-076). The limits are count boundaries at half-integers on the O/E scale, -inf and inf where no
+    count is flagged."""
     X = x_of(df, case)
     model, _ = quiet(lambda: CoxPH(ties=ties, **TIGHT).fit(X, **fit_arguments(df, case)))
     limits, caught = quiet(lambda: model.funnel_limits(X, provider_id=providers_of(df, case), test_method="midp",
@@ -298,16 +300,18 @@ def pprof_funnel(df, case, ties):
     providers = limits.providers
     curves = limits.curves
     flag = providers["flag"].to_numpy(dtype=float, na_value=np.nan)
-    return {
+    out = {
         "provider": [label(v) for v in providers.index],
         "observed": hexes(providers["observed"]), "expected": hexes(providers["expected"]),
         "estimate": hexes(providers["estimate"]), "precision": hexes(providers["precision"]),
         "lower": hexes(providers["lower"]), "upper": hexes(providers["upper"]),
         "flag": [None if np.isnan(f) else int(f) for f in flag],
-        "curves": {"level": hexes(curves["level"]), "precision": hexes(curves["precision"]),
-                   "lower": hexes(curves["lower"]), "upper": hexes(curves["upper"])},
         "warnings": caught,
     }
+    if case["set"] == "full":
+        out["curves"] = {"level": hexes(curves["level"]), "precision": hexes(curves["precision"]),
+                         "lower": hexes(curves["lower"]), "upper": hexes(curves["upper"])}
+    return out
 
 
 def shifted_tie(df):
@@ -665,7 +669,7 @@ def write_manifests(staging, out_dirs, ran):
                         "zero_weights": "left out of survival's fits; kept in the measures (M-25)",
                         "glmnet_control": "list(thresh = 1e-12, maxit = 1e5, fdev = 0, devmax = 1)",
                         "cv_deviance": "coxnet.deviance(std.weights = FALSE), normalized by the held-out event weight",
-                        "funnel": {"test": "midp", "levels": list(FUNNEL_LEVELS)}},
+                        "funnel": {"test": "midp", "levels": list(FUNNEL_LEVELS), "curves": "full set only"}},
             "cases": entries,
         })
         python_environment = json.load(open(os.path.join(staging, "environment.json"), encoding="utf-8"))
