@@ -63,6 +63,23 @@ test_that("the constructor rejects inconsistent inputs", {
                           rep(0, 12), list(method = "serbin")))
 })
 
+test_that("a model may have no provider effects, which the profiling functions do not report (DEC-102)", {
+  prepared <- data_prepare(y ~ x, model_data(), "id")
+  fit <- new_pprof_model(prepared, coefficients = c(x = 0.4), vcov = matrix(0.01, 1, 1, dimnames = list("x", "x")),
+                         provider_effects = NULL, linear_predictor = 0.4 * prepared$design[, "x"],
+                         spec = list(family = "test"), class = "pprof_test_model")
+  expect_true("provider_effects" %in% names(fit))
+  expect_null(provider_estimates(fit))
+  condition <- expect_error(provider_effects(fit), class = "pprof_error_unsupported_inference")
+  expect_identical(condition$requested, "provider_effects()")
+  # profile_providers() skips the effects and fails at the first step the model does not support.
+  condition <- expect_error(profile_providers(fit), class = "pprof_error_unsupported_inference")
+  expect_identical(condition$requested, "profile_spec()")
+  # A model with provider effects still needs one per included provider.
+  expect_error(new_pprof_model(prepared, c(x = 1), matrix(1, 1, 1, dimnames = list("x", "x")), c(a = 0, b = 0),
+                               rep(0, 12), list(family = "test")), class = "pprof_error_invalid_input")
+})
+
 test_that("the validator rejects objects that are not models", {
   fit <- minimal_model()
   invalid <- function(expr) expect_error(expr, class = "pprof_error_invalid_input")

@@ -31,7 +31,9 @@ without covariates).}
 \item{vcov}{The covariance matrix of \code{coefficients}, with matching row and column names.}
 
 \item{provider_effects}{Effects of the included providers, named by provider ID, in
-provider order.}
+provider order, or \code{NULL} for a model without provider-effect estimates, such as the
+provider-stratified Cox model of \code{\link[=fit_cox_stratified]{fit_cox_stratified()}}, whose providers are compared
+through their standardized measures.}
 
 \item{linear_predictor}{The covariate linear predictor of each observation, in the order of
 the observations in \code{data}, which \code{\link[=data_prepare]{data_prepare()}} sorts by provider (\code{data$row_index}

@@ -51,9 +51,10 @@ was fit without \code{keep_data = TRUE}.}
 \value{
 A \code{pprof_profile} result: a \code{table} with one row per provider in provider order
 (see "Provider order" in \code{\link[=fit_logistic_fe]{fit_logistic_fe()}}; \code{provider_id}, \code{n_obs}, \code{observed},
-\code{expected}, \code{statistic}, \code{p_value}, \code{flag}), the component results \code{effects}, \code{tests},
-\code{measures}, and \code{funnel} (\code{NULL} for models without funnel limits), and the settings
-\code{test}, \code{level}, \code{alternative}, \code{null_value}, and \code{interval}.
+\code{expected}, \code{statistic}, \code{p_value}, \code{flag}), the component results \code{effects} (\code{NULL} for
+models without provider effects), \code{tests}, \code{measures}, and \code{funnel} (\code{NULL} for models
+without funnel limits), and the settings \code{test}, \code{level}, \code{alternative}, \code{null_value}, and
+\code{interval}.
 }
 \description{
 Runs the profiling steps for a model and collects their results: the provider effects

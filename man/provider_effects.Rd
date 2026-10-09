@@ -46,7 +46,8 @@ random-effect, and correlated random-effect models only the Wald interval. For
 random-effect models, the Wald interval is centred on the conditional mode, which is shrunk
 toward 0, with its conditional standard deviation;
 \code{vignette("statistical-methods", package = "pprof")} describes how often such intervals
-cover a provider's effect.
+cover a provider's effect. Models without provider effects, such as the provider-stratified
+Cox model of \code{\link[=fit_cox_stratified]{fit_cox_stratified()}}, raise a \code{pprof_error_unsupported_inference} condition.
 }
 \examples{
 data(ExampleDataBinary)

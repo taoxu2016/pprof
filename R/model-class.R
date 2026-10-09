@@ -90,7 +90,9 @@ model_input_order <- function(model, values) {
 #'   without covariates).
 #' @param vcov The covariance matrix of `coefficients`, with matching row and column names.
 #' @param provider_effects Effects of the included providers, named by provider ID, in
-#'   provider order.
+#'   provider order, or `NULL` for a model without provider-effect estimates, such as the
+#'   provider-stratified Cox model of [fit_cox_stratified()], whose providers are compared
+#'   through their standardized measures.
 #' @param linear_predictor The covariate linear predictor of each observation, in the order of
 #'   the observations in `data`, which [data_prepare()] sorts by provider (`data$row_index`
 #'   gives each one's row in the input data).
@@ -180,8 +182,11 @@ validate_pprof_model <- function(x) {
     fail("`providers` must be a provider table with columns provider_id, n_obs, and included")
   }
   included_ids <- providers$provider_id[providers$included]
-  if (!is.numeric(x$provider_effects) || !identical(names(x$provider_effects), included_ids)) {
-    fail("`provider_effects` must be numeric and named by the included providers, in provider order")
+  # NULL for a model without provider-effect estimates, such as the provider-stratified Cox model
+  # (COXPH_DESIGN §D.3, DEC-102).
+  if (!is.null(x$provider_effects) &&
+        (!is.numeric(x$provider_effects) || !identical(names(x$provider_effects), included_ids))) {
+    fail("`provider_effects` must be NULL, or numeric and named by the included providers, in provider order")
   }
   if (!is.null(x$provider_effect_variance) &&
         (!is.numeric(x$provider_effect_variance) || !identical(names(x$provider_effect_variance), included_ids))) {

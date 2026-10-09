@@ -24,7 +24,8 @@
 #' random-effect models, the Wald interval is centred on the conditional mode, which is shrunk
 #' toward 0, with its conditional standard deviation;
 #' `vignette("statistical-methods", package = "pprof")` describes how often such intervals
-#' cover a provider's effect.
+#' cover a provider's effect. Models without provider effects, such as the provider-stratified
+#' Cox model of [fit_cox_stratified()], raise a `pprof_error_unsupported_inference` condition.
 #'
 #' @inheritParams test_providers
 #' @param interval `"none"`, `"exact"`, `"score"`, or `"wald"`.
@@ -45,6 +46,8 @@ provider_effects <- function(model, interval = "none", level = 0.95, providers =
   profile_check_model(model)
   check_choice(interval, c("none", "exact", "score", "wald"), "interval")
   check_level(level)
+  # A model without provider-effect estimates has none to report (COXPH_DESIGN §D.3, DEC-102).
+  if (is.null(provider_estimates(model))) abort_unsupported_inference(model, "provider_effects()")
   if (!identical(interval, "none")) require_capability(model, paste0("interval_", interval))
   spec <- profile_family(model)
   rows <- profile_provider_rows(model, providers)

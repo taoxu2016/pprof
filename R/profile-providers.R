@@ -15,9 +15,10 @@
 #'
 #' @return A `pprof_profile` result: a `table` with one row per provider in provider order
 #'   (see "Provider order" in [fit_logistic_fe()]; `provider_id`, `n_obs`, `observed`,
-#'   `expected`, `statistic`, `p_value`, `flag`), the component results `effects`, `tests`,
-#'   `measures`, and `funnel` (`NULL` for models without funnel limits), and the settings
-#'   `test`, `level`, `alternative`, `null_value`, and `interval`.
+#'   `expected`, `statistic`, `p_value`, `flag`), the component results `effects` (`NULL` for
+#'   models without provider effects), `tests`, `measures`, and `funnel` (`NULL` for models
+#'   without funnel limits), and the settings `test`, `level`, `alternative`, `null_value`, and
+#'   `interval`.
 #' @family provider profiling
 #' @examples
 #' data(ExampleDataBinary)
@@ -30,7 +31,8 @@
 profile_providers <- function(model, test = NULL, null = NULL, level = 0.95, alternative = "two.sided",
                               interval = "none", providers = NULL, score_type = "modified", n_resamples = 10000,
                               data = NULL, threads = 1) {
-  effects <- provider_effects(model, providers = providers)
+  # A model without provider-effect estimates has no effects to report (COXPH_DESIGN §D.3, DEC-102).
+  effects <- if (!is.null(provider_estimates(model))) provider_effects(model, providers = providers)
   tests <- test_providers(model, test = test, null = null, level = level, alternative = alternative,
                           providers = providers, score_type = score_type, n_resamples = n_resamples, data = data,
                           threads = threads)
