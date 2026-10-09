@@ -26,12 +26,41 @@ profile_spec_fields <- c("family", "effect", "null_default", "null_options", "in
 #                       measure limits (K-91);
 #   wald                the distributions of the provider Wald tests (`test`) and intervals
 #                       (`interval`), "normal" or "t", and the degrees of freedom `df` of t.
+# The CoxPH phase (COXPH_DESIGN §D.3, DEC-092 as amended by DEC-108) adds two:
+#   count_distribution  the null distribution of a provider's count: "poisson_binomial", the sum of
+#                       its observations' Bernoulli outcomes (the exact and bootstrap tests of
+#                       binary outcomes), or "poisson", a Poisson count with the provider's expected
+#                       count as its mean, which selects the Poisson tests, the limits of indirect
+#                       measures, and the funnel limits of R/inference-poisson.R (K-140 to K-142, K-149);
+#   direct_by_provider  NULL, or a function of the model and rows of the provider table giving each
+#                       provider's directly standardized expected outcome, for families without
+#                       provider effects (the provider-stratified Cox model, K-138).
 # The covariate rule `coefficient_wald` is read by the inference layer
 # (infer_coefficient_rule()).
 profile_spec_defaults <- list(
   test_default = "exact", comparison = "ratio", direct_reference = "observed", direct_limits = "mean_function",
-  one_sided_extremes = TRUE, wald = list(test = "normal", interval = "normal", df = NULL)
+  one_sided_extremes = TRUE, wald = list(test = "normal", interval = "normal", df = NULL),
+  count_distribution = "poisson_binomial", direct_by_provider = NULL
 )
+
+# Whether a family's provider counts are Poisson with their expected counts as means (DEC-108).
+profile_poisson <- function(spec) {
+  identical(profile_spec_option(spec, "count_distribution"), "poisson")
+}
+
+# D-70, K-147: one warning that counts the reported providers of a Poisson family with no expected
+# events, whose indirect ratios are then undefined (0 / 0) or infinite; pprof_py reports the same
+# values without a warning. `expected` holds the expected counts of the providers in `rows`.
+profile_warn_zero_expected <- function(model, spec, expected, rows) {
+  if (!profile_poisson(spec)) return(invisible(NULL))
+  zero <- which(expected == 0)
+  if (length(zero) == 0L) return(invisible(NULL))
+  ids <- provider_table(model)$provider_id[rows[zero]]
+  warn_zero_expected(sprintf("%d provider(s) have no expected events (%s), so their indirect ratios are %s.",
+                             length(ids), paste(utils::head(ids, 10L), collapse = ", "), "undefined or infinite"),
+                     providers = ids)
+  invisible(NULL)
+}
 
 # An optional field of the family specification, or its default.
 profile_spec_option <- function(spec, field) {

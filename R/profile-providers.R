@@ -11,7 +11,7 @@
 #'
 #' @inheritParams test_providers
 #' @param interval The interval of the standardized measures: `"none"`, `"exact"`,
-#'   `"score"`, or `"wald"`.
+#'   `"score"`, `"wald"`, or `"midp"`.
 #'
 #' @return A `pprof_profile` result: a `table` with one row per provider in provider order
 #'   (see "Provider order" in [fit_logistic_fe()]; `provider_id`, `n_obs`, `observed`,
@@ -33,14 +33,24 @@ profile_providers <- function(model, test = NULL, null = NULL, level = 0.95, alt
                               data = NULL, threads = 1) {
   # A model without provider-effect estimates has no effects to report (COXPH_DESIGN §D.3, DEC-102).
   effects <- if (!is.null(provider_estimates(model))) provider_effects(model, providers = providers)
-  tests <- test_providers(model, test = test, null = null, level = level, alternative = alternative,
-                          providers = providers, score_type = score_type, n_resamples = n_resamples, data = data,
-                          threads = threads)
-  measures <- standardize_providers(model, "indirect", null = null, interval = interval, level = level,
-                                    alternative = alternative, providers = providers, threads = threads)
-  funnel <- if (profile_has_capability(model, "funnel")) {
-    funnel_limits(model, level = level, null = null, providers = providers)
+  # The tests, the measures, and the funnel each warn about providers without expected events (D-70);
+  # the profile warns once.
+  zero_expected <- new.env(parent = emptyenv())
+  keep_warning <- function(w) {
+    zero_expected$warning <- w
+    invokeRestart("muffleWarning")
   }
+  withCallingHandlers({
+    tests <- test_providers(model, test = test, null = null, level = level, alternative = alternative,
+                            providers = providers, score_type = score_type, n_resamples = n_resamples, data = data,
+                            threads = threads)
+    measures <- standardize_providers(model, "indirect", null = null, interval = interval, level = level,
+                                      alternative = alternative, providers = providers, threads = threads)
+    funnel <- if (profile_has_capability(model, "funnel")) {
+      funnel_limits(model, level = level, null = null, providers = providers)
+    }
+  }, pprof_warning_zero_expected = keep_warning)
+  if (!is.null(zero_expected$warning)) warning(zero_expected$warning)
   first <- measures$table[measures$table$measure == measures$measure[1], , drop = FALSE]
   table <- data.frame(provider_id = tests$table$provider_id, n_obs = tests$table$n_obs, observed = first$observed,
                       expected = first$expected, statistic = tests$table$statistic, p_value = tests$table$p_value,

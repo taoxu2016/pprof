@@ -91,7 +91,7 @@ new_pprof_provider_tests <- function(table, test, level, alternative, null_value
 }
 
 new_pprof_measures <- function(table, interval, level, null_value, ...) {
-  check_choice(interval, c("none", "exact", "score", "wald"), "interval")
+  check_choice(interval, c("none", "exact", "score", "wald", "midp"), "interval")
   check_level(level)
   check_number(null_value, "null_value")
   new_pprof_result(table, list(interval = interval, level = level, null_value = null_value, ...), "pprof_measures")

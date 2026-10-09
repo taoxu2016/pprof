@@ -20,11 +20,12 @@ test_providers(
 \arguments{
 \item{model}{A model object, such as a \code{\link[=fit_logistic_fe]{fit_logistic_fe()}} fit.}
 
-\item{test}{\code{"exact"}, \code{"bootstrap"}, \code{"score"}, or \code{"wald"}; \code{NULL} for the family's
-default test: \code{"exact"} for logistic fixed-effect models, \code{"wald"} for the others.}
+\item{test}{\code{"exact"}, \code{"bootstrap"}, \code{"score"}, \code{"wald"}, or \code{"midp"}; \code{NULL} for the
+family's default test: \code{"exact"} for logistic fixed-effect models, \code{"midp"} for Cox models,
+\code{"wald"} for the others.}
 
 \item{null}{The null value: \code{NULL} for the family's default (\code{"median"} for fixed-effect
-models, the median of the provider effects; 0 for random-effect models), one of the
+models, the median of the provider effects; 0 for random-effect and Cox models), one of the
 family's named options (\code{"median"}, and for linear fixed-effect models also \code{"mean"}, the
 mean of the provider effects weighted by provider size), or a number.}
 
@@ -95,6 +96,24 @@ The conditional modes of random-effect models are shrunk toward 0, so their test
 shrunk estimates with their conditional standard deviations;
 \code{vignette("statistical-methods", package = "pprof")} describes how often these tests flag
 providers, compared with the fixed-effect tests.
+
+Provider-stratified Cox models (\code{\link[=fit_cox_stratified]{fit_cox_stratified()}}) compare each provider's observed events
+O with its expected events E at the national baseline (see \code{\link[=standardize_providers]{standardize_providers()}}), O being
+Poisson with mean E, or exp(\code{null}) E for a numeric \code{null}, as pprof_py's tests do:
+\itemize{
+\item \code{"midp"}, the default: the smaller of the two mid-p tails, 2 F(O) - f(O) and
+2 (1 - F(O - 1)) - f(O) with F and f the Poisson distribution and probability functions,
+halved and floored at 1e-6, gives z = qnorm(p), signed by the direction, so that |z| is at
+most 4.75.
+\item \code{"exact"}: the two-sided Poisson p-value, 2 P(X >= O) when O > E and 2 P(X <= O) otherwise,
+capped at 0.999, gives z = sign(O - E) qnorm(1 - p / 2).
+}
+
+The p-value is 2 (1 - pnorm(|z|)), and a provider is flagged, in the direction of z, when it is
+below alpha = 1 - \code{level}. The tests are two-sided only. A provider whose exact p-value is too
+small to represent gets an infinite statistic, the p-value 0, and a flag (pprof_py leaves it
+unflagged). Providers without expected events get z = 0 and a
+\code{pprof_warning_zero_expected} warning.
 }
 \examples{
 data(ExampleDataBinary)

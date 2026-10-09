@@ -52,11 +52,29 @@
 #' `vignette("statistical-methods", package = "pprof")` describes how often these tests flag
 #' providers, compared with the fixed-effect tests.
 #'
+#' Provider-stratified Cox models ([fit_cox_stratified()]) compare each provider's observed events
+#' O with its expected events E at the national baseline (see [standardize_providers()]), O being
+#' Poisson with mean E, or exp(`null`) E for a numeric `null`, as pprof_py's tests do:
+#'
+#' - `"midp"`, the default: the smaller of the two mid-p tails, 2 F(O) - f(O) and
+#'   2 (1 - F(O - 1)) - f(O) with F and f the Poisson distribution and probability functions,
+#'   halved and floored at 1e-6, gives z = qnorm(p), signed by the direction, so that |z| is at
+#'   most 4.75.
+#' - `"exact"`: the two-sided Poisson p-value, 2 P(X >= O) when O > E and 2 P(X <= O) otherwise,
+#'   capped at 0.999, gives z = sign(O - E) qnorm(1 - p / 2).
+#'
+#' The p-value is 2 (1 - pnorm(|z|)), and a provider is flagged, in the direction of z, when it is
+#' below alpha = 1 - `level`. The tests are two-sided only. A provider whose exact p-value is too
+#' small to represent gets an infinite statistic, the p-value 0, and a flag (pprof_py leaves it
+#' unflagged). Providers without expected events get z = 0 and a
+#' `pprof_warning_zero_expected` warning.
+#'
 #' @param model A model object, such as a [fit_logistic_fe()] fit.
-#' @param test `"exact"`, `"bootstrap"`, `"score"`, or `"wald"`; `NULL` for the family's
-#'   default test: `"exact"` for logistic fixed-effect models, `"wald"` for the others.
+#' @param test `"exact"`, `"bootstrap"`, `"score"`, `"wald"`, or `"midp"`; `NULL` for the
+#'   family's default test: `"exact"` for logistic fixed-effect models, `"midp"` for Cox models,
+#'   `"wald"` for the others.
 #' @param null The null value: `NULL` for the family's default (`"median"` for fixed-effect
-#'   models, the median of the provider effects; 0 for random-effect models), one of the
+#'   models, the median of the provider effects; 0 for random-effect and Cox models), one of the
 #'   family's named options (`"median"`, and for linear fixed-effect models also `"mean"`, the
 #'   mean of the provider effects weighted by provider size), or a number.
 #' @param level The confidence level; alpha = 1 - `level`.
@@ -87,7 +105,7 @@ test_providers <- function(model, test = NULL, null = NULL, level = 0.95, altern
                            threads = 1) {
   profile_check_model(model)
   test <- profile_test_name(model, test)
-  check_choice(test, c("exact", "bootstrap", "score", "wald"), "test")
+  check_choice(test, c("exact", "bootstrap", "score", "wald", "midp"), "test")
   check_choice(score_type, c("modified", "standard"), "score_type")
   check_level(level)
   check_choice(alternative, c("two.sided", "greater", "less"), "alternative")
@@ -118,9 +136,12 @@ profile_test_capability <- function(test, score_type) {
   paste0("provider_", test)
 }
 
-# The test table of the providers in `rows` for a declared test capability.
+# The test table of the providers in `rows` for a declared test capability. Families whose counts
+# are Poisson take the Poisson tests (DEC-108).
 profile_test_table <- function(model, spec, capability, null_value, level, alternative, rows, n_resamples = NULL,
                                data = NULL, threads = 1L) {
+  if (profile_poisson(spec)) return(profile_poisson_test_table(model, spec, capability, null_value, level, alternative,
+                                                               rows))
   result <- switch(capability,
     provider_exact = profile_count_test(model, null_value, rows, function(observed, probabilities) {
       infer_exact_poisson_binomial(observed, probabilities, alternative)
@@ -138,6 +159,23 @@ profile_test_table <- function(model, spec, capability, null_value, level, alter
                       p_value = unname(decided$p_value), flag = unname(decided$flag), stringsAsFactors = FALSE)
   if (!is.null(result$std_error)) table$std_error <- result$std_error
   table
+}
+
+# The Poisson tests (K-140 to K-142): each provider's observed count O_j against its expected count
+# E_j, both summed as indirect standardization sums them, E_j at the null (M-40), with pprof_py's
+# p-values and flags instead of infer_decide()'s rule. pprof_py's tests are two-sided only. Providers
+# with no expected events warn (D-70).
+profile_poisson_test_table <- function(model, spec, capability, null_value, level, alternative, rows) {
+  test <- switch(capability, provider_midp = "midp", provider_exact = "exact",
+                 abort_unsupported_inference(model, capability))
+  if (!identical(alternative, "two.sided")) {
+    abort_unsupported_inference(model, sprintf("one-sided %s tests (alternative = \"%s\")", test, alternative))
+  }
+  base <- profile_indirect(model, spec, null_value, rows)
+  profile_warn_zero_expected(model, spec, base$expected, rows)
+  result <- infer_poisson_test(base$observed, base$expected, test, level)
+  data.frame(provider_id = provider_table(model)$provider_id[rows], n_obs = provider_table(model)$n_obs[rows],
+             statistic = result$statistic, p_value = result$p_value, flag = result$flag, stringsAsFactors = FALSE)
 }
 
 # The exact and bootstrap tests (K-62, K-64): each provider's number of events against the

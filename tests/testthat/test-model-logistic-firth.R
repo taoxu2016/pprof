@@ -136,7 +136,8 @@ test_that("verbose = FALSE prints nothing, and verbose = TRUE reports every iter
 
 test_that("Firth models use the logistic fixed-effect methods, contract, and inference (DEC-004, D-12)", {
   fit <- fit_logistic_firth(firth_formula, firth_data(), "hospital")
-  expect_setequal(inference_capabilities(fit), capability_names)
+  # Every capability but the Poisson tests and limits of Cox models (CoxPH Phase C3).
+  expect_setequal(inference_capabilities(fit), setdiff(capability_names, c("provider_midp", "interval_midp")))
   expect_identical(profile_spec(fit)$family, "logistic_fe")
   expect_identical(unname(fitted(fit)), unname(logistic_fe_probabilities(fit)[order(fit$row_index)]))
   expect_identical(predict(fit, type = "response"), fitted(fit))

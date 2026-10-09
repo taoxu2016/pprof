@@ -215,7 +215,8 @@ test_that("the contract methods of pprof_logistic_fe", {
   expect_error(null_effect(fit, c(0, 1)), class = "pprof_error_invalid_input")
   expect_identical(provider_estimate_se(fit), sqrt(fit$provider_effect_variance))
   expect_identical(profile_spec(fit)$family, "logistic_fe")
-  expect_setequal(inference_capabilities(fit), capability_names)
+  # Every capability but the Poisson tests and limits of Cox models (CoxPH Phase C3).
+  expect_setequal(inference_capabilities(fit), setdiff(capability_names, c("provider_midp", "interval_midp")))
 })
 
 test_that("the AUC equals pROC's, including pROC's choice of direction (DEC-009, D-40)", {

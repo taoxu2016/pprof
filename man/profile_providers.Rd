@@ -21,11 +21,12 @@ profile_providers(
 \arguments{
 \item{model}{A model object, such as a \code{\link[=fit_logistic_fe]{fit_logistic_fe()}} fit.}
 
-\item{test}{\code{"exact"}, \code{"bootstrap"}, \code{"score"}, or \code{"wald"}; \code{NULL} for the family's
-default test: \code{"exact"} for logistic fixed-effect models, \code{"wald"} for the others.}
+\item{test}{\code{"exact"}, \code{"bootstrap"}, \code{"score"}, \code{"wald"}, or \code{"midp"}; \code{NULL} for the
+family's default test: \code{"exact"} for logistic fixed-effect models, \code{"midp"} for Cox models,
+\code{"wald"} for the others.}
 
 \item{null}{The null value: \code{NULL} for the family's default (\code{"median"} for fixed-effect
-models, the median of the provider effects; 0 for random-effect models), one of the
+models, the median of the provider effects; 0 for random-effect and Cox models), one of the
 family's named options (\code{"median"}, and for linear fixed-effect models also \code{"mean"}, the
 mean of the provider effects weighted by provider size), or a number.}
 
@@ -34,7 +35,7 @@ mean of the provider effects weighted by provider size), or a number.}
 \item{alternative}{\code{"two.sided"}, \code{"greater"}, or \code{"less"}.}
 
 \item{interval}{The interval of the standardized measures: \code{"none"}, \code{"exact"},
-\code{"score"}, or \code{"wald"}.}
+\code{"score"}, \code{"wald"}, or \code{"midp"}.}
 
 \item{providers}{The IDs of the providers to report, compared as character; \code{NULL} for
 all included providers.}

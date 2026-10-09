@@ -9,7 +9,8 @@
 capability_names <- c(
   "coef_wald", "coef_lr", "coef_score",
   "provider_exact", "provider_bootstrap", "provider_score", "provider_score_standard", "provider_wald",
-  "interval_exact", "interval_score", "interval_wald",
+  "provider_midp",
+  "interval_exact", "interval_score", "interval_wald", "interval_midp",
   "standardize_indirect", "standardize_direct",
   "funnel"
 )

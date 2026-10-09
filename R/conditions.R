@@ -72,6 +72,12 @@ warn_undefined_statistics <- function(message, ..., call = NULL) {
   warn_pprof("pprof_warning_undefined_statistics", message, ..., call = call)
 }
 
+# Providers of a Poisson family have no expected events, so their indirect ratios are undefined or
+# infinite (D-70, K-147).
+warn_zero_expected <- function(message, ..., call = NULL) {
+  warn_pprof("pprof_warning_zero_expected", message, ..., call = call)
+}
+
 # Wald tests or intervals were computed for providers with no events or only events, whose
 # maximum likelihood estimates are infinite: their fitted effects move toward the effect
 # bound with every iteration, so they depend on when the fit stopped (K-67, D-50).

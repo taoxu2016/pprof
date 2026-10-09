@@ -18,6 +18,15 @@
 #' outside the limits may not be flagged. These are the limits and flags of pprof 1.0.3's
 #' funnel plots. Random-effect models have no funnel plot.
 #'
+#' For provider-stratified Cox models, the points are the indirect ratios O_i / E_i and a
+#' provider's precision is its expected events E_i (see [standardize_providers()]). At each
+#' precision E and level, the limits are those of the mid-p test of [test_providers()], as pprof_py
+#' computes them: the largest count the test flags lower than expected and the smallest it flags
+#' higher, each moved half a count toward the middle, (o_lo + 1/2) / E and (o_hi - 1/2) / E, or
+#' `-Inf` and `Inf` where no count is flagged. So a provider lies outside its limits exactly when
+#' the test flags it, and the limits step with the counts. Providers without expected events have
+#' no limits, and `target` must be 1.
+#'
 #' @inheritParams test_providers
 #' @param level One or more confidence levels, each giving a pair of limits; the providers
 #'   are flagged at the first.
@@ -49,6 +58,12 @@ funnel_limits <- function(model, level = 0.95, null = NULL, target = NULL, provi
   funnel <- profile_spec_field(model, spec, "funnel")
   if (is.null(target)) target <- funnel$target
   check_number(target, "target")
+  # The limits of a family with Poisson counts come from its test, against the null ratio (K-149).
+  poisson <- profile_poisson(spec)
+  if (poisson && !identical(as.double(target), as.double(funnel$target))) {
+    abort_invalid_input(sprintf("The funnel limits of this model are those of its test, so `target` must be %s.",
+                                format(funnel$target)), arg = "target")
+  }
   null_value <- profile_null_value(model, spec, null)
   rows <- profile_provider_rows(model, providers)
   test_capability <- profile_test_capability(funnel$test, "modified")
@@ -61,7 +76,12 @@ funnel_limits <- function(model, level = 0.95, null = NULL, target = NULL, provi
   points <- data.frame(provider_id = provider_table(model)$provider_id[rows], n_obs = n_obs,
                        observed = base$observed, expected = base$expected, variance = base$variance,
                        precision = precision, estimate = estimate, flag = flags, stringsAsFactors = FALSE)
-  limits <- profile_funnel_limits(sort(unique(precision[is.finite(precision)])), 1 - level, target, funnel)
+  distinct <- sort(unique(precision[is.finite(precision)]))
+  limits <- if (poisson) {
+    profile_poisson_funnel_limits(distinct[distinct > 0], level, funnel)
+  } else {
+    profile_funnel_limits(distinct, 1 - level, target, funnel)
+  }
   table <- data.frame(level = level[match(limits$alpha, 1 - level)], precision = limits$precision,
                       lower = limits$lower, upper = limits$upper)
   new_pprof_funnel(table, target = as.double(target), measure = funnel$measure, null_value = null_value,
@@ -76,6 +96,19 @@ profile_funnel_limits <- function(precision, alpha, target, funnel) {
     half_width <- funnel$half_width(stats::qnorm(1 - value / 2), precision)
     data.frame(alpha = rep(value, length(precision)), precision = precision,
                lower = pmax(target - half_width, funnel$floor), upper = target + half_width)
+  })
+  do.call(rbind, limits)
+}
+
+# The funnel limits of a family with Poisson counts at each expected count E > 0 for each level
+# (K-149): pprof_py's count boundaries under the funnel's test, (o_lo + 1/2) / E and (o_hi - 1/2) / E,
+# -Inf and Inf where no count is flagged, so that a provider lies outside its limits exactly when the
+# test flags it. Providers with E = 0 have none, as in pprof_py's curves.
+profile_poisson_funnel_limits <- function(precision, level, funnel) {
+  limits <- lapply(level, function(value) {
+    bounds <- infer_poisson_funnel_limits(precision, funnel$test, value)
+    data.frame(alpha = rep(1 - value, length(precision)), precision = precision, lower = unname(bounds[, "lower"]),
+               upper = unname(bounds[, "upper"]))
   })
   do.call(rbind, limits)
 }

@@ -19,7 +19,7 @@ funnel_limits(
 are flagged at the first.}
 
 \item{null}{The null value: \code{NULL} for the family's default (\code{"median"} for fixed-effect
-models, the median of the provider effects; 0 for random-effect models), one of the
+models, the median of the provider effects; 0 for random-effect and Cox models), one of the
 family's named options (\code{"median"}, and for linear fixed-effect models also \code{"mean"}, the
 mean of the provider effects weighted by provider size), or a number.}
 
@@ -50,6 +50,16 @@ the providers are flagged by the Wald test. With \code{provider_variance = "full
 still use sigma^2 / n_i while the Wald test uses the full variance and t, so a point
 outside the limits may not be flagged. These are the limits and flags of pprof 1.0.3's
 funnel plots. Random-effect models have no funnel plot.
+}
+\details{
+For provider-stratified Cox models, the points are the indirect ratios O_i / E_i and a
+provider's precision is its expected events E_i (see \code{\link[=standardize_providers]{standardize_providers()}}). At each
+precision E and level, the limits are those of the mid-p test of \code{\link[=test_providers]{test_providers()}}, as pprof_py
+computes them: the largest count the test flags lower than expected and the smallest it flags
+higher, each moved half a count toward the middle, (o_lo + 1/2) / E and (o_hi - 1/2) / E, or
+\code{-Inf} and \code{Inf} where no count is flagged. So a provider lies outside its limits exactly when
+the test flags it, and the limits step with the counts. Providers without expected events have
+no limits, and \code{target} must be 1.
 }
 \examples{
 data(ExampleDataBinary)

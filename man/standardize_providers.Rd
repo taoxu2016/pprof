@@ -22,13 +22,14 @@ standardize_providers(
 \item{standardization}{\code{"indirect"}, \code{"direct"}, or both.}
 
 \item{measure}{The measures: \code{NULL} for all the family's measures (\code{"ratio"} and \code{"rate"}
-for logistic models, \code{"difference"} for linear models), or some of them.}
+for logistic models, \code{"difference"} for linear models, \code{"ratio"} for Cox models), or some of
+them.}
 
 \item{null}{The null value: \code{NULL} for the family's default (\code{"median"} for fixed-effect
-models, 0 for random-effect models), one of the family's named options, or a number.
+models, 0 for random-effect and Cox models), one of the family's named options, or a number.
 Direct standardization uses it only for linear fixed-effect models.}
 
-\item{interval}{\code{"none"}, \code{"exact"}, \code{"score"}, or \code{"wald"}.}
+\item{interval}{\code{"none"}, \code{"exact"}, \code{"score"}, \code{"wald"}, or \code{"midp"}.}
 
 \item{level}{The confidence level; alpha = 1 - \code{level}.}
 
@@ -97,6 +98,28 @@ of \code{\link[=test_providers]{test_providers()}}. For random-effect models, th
 conditional modes (see \code{\link[=provider_effects]{provider_effects()}} and
 \code{vignette("statistical-methods", package = "pprof")}). These are the measures and
 intervals of pprof 1.0.3's \code{SM_output()} and \code{confint()}, whose results they reproduce.
+
+For provider-stratified Cox models (\code{\link[=fit_cox_stratified]{fit_cox_stratified()}}), ratios, He and Schaubel's
+two-stage measures as pprof_py computes them:
+\itemize{
+\item indirect: the provider's observed events O_i over its expected events E_i, the sum over its
+observations of exp(eta) (L0(stop) - L0(start)), where L0 is the Breslow estimator of the
+cumulative baseline hazard over all observations with the linear predictor
+eta = x'beta + offset as offset (times exp(\code{null}) for a numeric \code{null}); the E_i add up to the
+events;
+\item direct: the events expected in the whole population with the provider's own baseline, the sum
+over the provider's events of the population's risk-set sum of exp(eta) over the provider's,
+over the population's number of events.
+}
+
+They use the fitted coefficients only: every observation counts once, observations with weight
+0 included, and the baselines are Breslow's whatever the ties of the fit. A provider without
+expected events has an undefined or infinite indirect ratio and a
+\code{pprof_warning_zero_expected} warning. The intervals of indirect ratios are \code{"exact"}, Garwood's
+limits when E_i < 100 and Byar's otherwise, or \code{"midp"}, the limits that invert the mid-p test
+of \code{\link[=test_providers]{test_providers()}}, so that an interval excludes 1 exactly when the test flags the provider;
+both are two-sided, and direct standardization has none. \code{variance} is E_i, the Poisson null
+variance.
 }
 \examples{
 data(ExampleDataBinary)

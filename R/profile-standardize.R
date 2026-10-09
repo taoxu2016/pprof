@@ -43,14 +43,36 @@
 #' `vignette("statistical-methods", package = "pprof")`). These are the measures and
 #' intervals of pprof 1.0.3's `SM_output()` and `confint()`, whose results they reproduce.
 #'
+#' For provider-stratified Cox models ([fit_cox_stratified()]), ratios, He and Schaubel's
+#' two-stage measures as pprof_py computes them:
+#'
+#' - indirect: the provider's observed events O_i over its expected events E_i, the sum over its
+#'   observations of exp(eta) (L0(stop) - L0(start)), where L0 is the Breslow estimator of the
+#'   cumulative baseline hazard over all observations with the linear predictor
+#'   eta = x'beta + offset as offset (times exp(`null`) for a numeric `null`); the E_i add up to the
+#'   events;
+#' - direct: the events expected in the whole population with the provider's own baseline, the sum
+#'   over the provider's events of the population's risk-set sum of exp(eta) over the provider's,
+#'   over the population's number of events.
+#'
+#' They use the fitted coefficients only: every observation counts once, observations with weight
+#' 0 included, and the baselines are Breslow's whatever the ties of the fit. A provider without
+#' expected events has an undefined or infinite indirect ratio and a
+#' `pprof_warning_zero_expected` warning. The intervals of indirect ratios are `"exact"`, Garwood's
+#' limits when E_i < 100 and Byar's otherwise, or `"midp"`, the limits that invert the mid-p test
+#' of [test_providers()], so that an interval excludes 1 exactly when the test flags the provider;
+#' both are two-sided, and direct standardization has none. `variance` is E_i, the Poisson null
+#' variance.
+#'
 #' @inheritParams test_providers
 #' @param standardization `"indirect"`, `"direct"`, or both.
 #' @param measure The measures: `NULL` for all the family's measures (`"ratio"` and `"rate"`
-#'   for logistic models, `"difference"` for linear models), or some of them.
+#'   for logistic models, `"difference"` for linear models, `"ratio"` for Cox models), or some of
+#'   them.
 #' @param null The null value: `NULL` for the family's default (`"median"` for fixed-effect
-#'   models, 0 for random-effect models), one of the family's named options, or a number.
+#'   models, 0 for random-effect and Cox models), one of the family's named options, or a number.
 #'   Direct standardization uses it only for linear fixed-effect models.
-#' @param interval `"none"`, `"exact"`, `"score"`, or `"wald"`.
+#' @param interval `"none"`, `"exact"`, `"score"`, `"wald"`, or `"midp"`.
 #' @param threads The number of threads for the direct expectations of logistic models.
 #'
 #' @return A `pprof_measures` result: a `table` with one row per standardization, measure,
@@ -85,17 +107,26 @@ standardize_providers <- function(model, standardization = "indirect", measure =
   spec <- profile_family(model)
   if (is.null(measure)) measure <- spec$measures
   check_choice(measure, spec$measures, "measure", multiple = TRUE)
-  check_choice(interval, c("none", "exact", "score", "wald"), "interval")
+  check_choice(interval, c("none", "exact", "score", "wald", "midp"), "interval")
   check_level(level)
   check_choice(alternative, c("two.sided", "greater", "less"), "alternative")
   check_threads(threads)
   for (method in standardization) require_capability(model, paste0("standardize_", method))
   if (!identical(interval, "none")) require_capability(model, paste0("interval_", interval))
+  # Families with Poisson counts take their limits from O_j and E_j, two-sided and for indirect
+  # standardization only, as pprof_py gives them (DEC-108).
+  poisson <- profile_poisson(spec)
+  if (poisson && !identical(interval, "none")) {
+    if ("direct" %in% standardization) abort_unsupported_inference(model, "intervals of direct standardization")
+    if (!identical(alternative, "two.sided")) {
+      abort_unsupported_inference(model, sprintf("one-sided intervals (alternative = \"%s\")", alternative))
+    }
+  }
   null_value <- profile_null_value(model, spec, null)
   rows <- profile_provider_rows(model, providers)
   standardization <- intersect(c("indirect", "direct"), standardization)
   measure <- intersect(spec$measures, measure)
-  effect_limits <- if (!identical(interval, "none")) {
+  effect_limits <- if (!identical(interval, "none") && !poisson) {
     profile_effect_limits(model, spec, interval, level, alternative, rows)
   }
   population_rate <- if ("rate" %in% measure) profile_population_rate(model)
@@ -113,7 +144,10 @@ standardize_providers <- function(model, standardization = "indirect", measure =
     } else {
       profile_compare(spec, method, base$expected, base$observed, n_obs, n)
     }
-    value_limits <- if (!is.null(effect_limits)) {
+    if (poisson && identical(method, "indirect")) profile_warn_zero_expected(model, spec, base$expected, rows)
+    value_limits <- if (poisson && !identical(interval, "none")) {
+      profile_poisson_limits(base, interval, level)
+    } else if (!is.null(effect_limits)) {
       profile_measure_limits(model, spec, method, base, effect_limits, alternative, rows, threads)
     }
     for (scale in measure) {
@@ -168,16 +202,35 @@ profile_indirect <- function(model, spec, null_value, rows) {
 # reference total is the sum of the outcomes, or for linear fixed effects the sum of the
 # outcomes expected under the null (K-83), which the table calls `observed` (DEC-048).
 profile_direct <- function(model, spec, null_value, rows, threads) {
-  direct_expected <- profile_spec_field(model, spec, "direct_expected")
-  effects <- unname(provider_estimates(model))[profile_positions(model, rows)]
+  # A family without provider effects gives each provider's direct expectation itself (K-138).
+  direct_by_provider <- profile_spec_option(spec, "direct_by_provider")
+  if (is.null(direct_by_provider)) {
+    direct_expected <- profile_spec_field(model, spec, "direct_expected")
+    effects <- unname(provider_estimates(model))[profile_positions(model, rows)]
+  }
   total <- switch(profile_spec_option(spec, "direct_reference"),
     observed = as.double(sum(observed_outcome(model))),
     null_expected = sum(expected_outcome(model, null_value)),
     abort_unsupported_inference(model, sprintf("direct standardization with the reference total '%s'",
                                                spec$direct_reference))
   )
-  data.frame(observed = rep(total, length(rows)),
-             expected = direct_expected(effects, linear_predictor(model), threads), variance = NA_real_)
+  expected <- if (is.null(direct_by_provider)) {
+    direct_expected(effects, linear_predictor(model), threads)
+  } else {
+    direct_by_provider(model, rows)
+  }
+  data.frame(observed = rep(total, length(rows)), expected = expected, variance = NA_real_)
+}
+
+# The limits of indirect ratios of a family with Poisson counts (K-140, K-141): the exact test's
+# Garwood or Byar limits, or the mid-p limits, from each provider's O_j and E_j (E_j at the null),
+# on the ratio scale.
+profile_poisson_limits <- function(base, interval, level) {
+  limits <- switch(interval,
+    exact = infer_poisson_exact_limits(base$observed, base$expected, level),
+    midp = infer_poisson_midp_limits(base$observed, base$expected, level)
+  )
+  unname(limits)
 }
 
 # The population rate in percent (K-80): sum(y) / n * rate_scale over the included
