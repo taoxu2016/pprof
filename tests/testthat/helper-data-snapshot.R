@@ -32,7 +32,9 @@ data_snapshot_lines <- function(x, path = "") {
   } else {
     ifelse(is.na(value), "<NA>", as.character(value))
   }
-  attribute_lines <- unlist(lapply(sort(names(a)), function(name) data_snapshot_lines(a[[name]], paste0(path, "@", name))))
+  attribute_lines <- unlist(lapply(sort(names(a)), function(name) {
+    data_snapshot_lines(a[[name]], paste0(path, "@", name))
+  }))
   c(sprintf("%s %s %d", path, typeof(x), length(value)), attribute_lines, body)
 }
 
@@ -68,9 +70,9 @@ data_snapshot_record <- function(ids, set = "core") {
     x
   }
   testthat::local_mocked_bindings(new_pprof_data = recorder, .package = "pprof")
-  results <- list()
+  log$results <- list()
   run <- function(id) {
-    if (!is.null(results[[id]])) return(results[[id]])
+    if (!is.null(log$results[[id]])) return(log$results[[id]])
     case <- reference_fixture(id, set)$case
     parents <- list()
     for (parent in reference_parent_ids(case)) parents[[parent]] <- run(parent)
@@ -81,8 +83,8 @@ data_snapshot_record <- function(ids, set = "core") {
     old <- options(warnPartialMatchDollar = TRUE, warnPartialMatchArgs = TRUE, warnPartialMatchAttr = TRUE)
     on.exit(options(old), add = TRUE)
     withr::local_collate("C")
-    results[[id]] <<- run_reference_case(case, reference_datasets_for(case, set), parents)
-    results[[id]]
+    log$results[[id]] <- run_reference_case(case, reference_datasets_for(case, set), parents)
+    log$results[[id]]
   }
   for (id in ids) run(id)
   list(signatures = log$signatures, cases = log$cases[ids])

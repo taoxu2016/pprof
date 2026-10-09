@@ -22,8 +22,9 @@ test_that("the reference cases build the pprof_data objects of the snapshot", {
       } else {
         changed <- unlist(lapply(seq_along(now), function(k) {
           names_now <- names(now[[k]])
-          if (!identical(names_now, names(before[[k]]))) return(sprintf("object %d has elements %s", k,
-                                                                      paste(names_now, collapse = ", ")))
+          if (!identical(names_now, names(before[[k]]))) {
+            return(sprintf("object %d has elements %s", k, paste(names_now, collapse = ", ")))
+          }
           different <- names_now[now[[k]] != before[[k]]]
           if (length(different)) sprintf("object %d differs in %s", k, paste(different, collapse = ", "))
         }))
