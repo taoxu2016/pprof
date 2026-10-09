@@ -292,3 +292,13 @@ Fields (§5): `start` and `stop`, the entry (0 for right-censored data) and exit
 The family specification (§5) adds three optional fields: `count_distribution` (`"poisson_binomial"`, the default, or `"poisson"`), `measure_limits` (a function giving the limits of the measures), and `direct_by_provider` (a function giving the directly standardized expected outcome of each provider). Capability names add `provider_midp` and `interval_midp`.
 
 Conditions (§6) add `pprof_warning_zero_expected`: providers with no expected events, whose ratios are infinite or undefined (D-70); and `pprof_warning_degenerate_covariates`: covariates with no variation, left out of a penalized path (K-143).
+
+Phase C2 added, with the stratified Cox model (`dev/design/COXPH_C2_PLAN.md`; DEC-101 to DEC-104):
+
+- `baseline_hazard()` is a generic: its default method raises `pprof_error_invalid_input`, and the method for `pprof_cox_stratified` returns one row per provider and event time (`provider_id`, `time`, `cumulative_hazard`). `Surv()` is re-exported from survival.
+- `predict()` of Cox fits takes `type = "linear_predictor"` (the default), `"risk"`, `"cumulative_hazard"`, or `"survival"`; `residuals()` takes `type = "martingale"` (the default), `"score"`, or `"dfbeta"`. Both take `data`, the data the model was fit to, when the method needs survival's `coxph()` object and the model was fit without `keep_data = TRUE`.
+- `check_data()` takes `weights` and `cluster` (the vocabulary above), for data with a `Surv()` response only; its result then has a `survival` element.
+- The object of `fit_cox_stratified()` adds `n_zero_weight`, the number of observations with weight 0, which stay in the data and the provider table and are left out of the fit (M-25); their martingale residuals are `NA`.
+- `glance()` of Cox fits adds `n_events`, `aic`, and `bic`; `augment()` gives `observed` (the status), `fitted` (the expected events, status minus martingale residual), and `residual` (the martingale residual).
+- The covariate rule of the family specification (`coefficient_wald`, DEC-046) takes `p_value = "two_sided_upper"`, 2F̄(\|z\|) computed as an upper tail (DEC-101, K-148).
+- The settings of `pprof_data` for survival data add `response_type = "survival"`, `weights`, `cluster`, and `allow_offset`, and `survival_type`, `"right"` or `"counting"`, the type of the `Surv()` response; the data add `start`, `stop`, `weights`, `cluster`, and `offset` where they apply.

@@ -661,7 +661,7 @@ Evidence IDs (`V10.8` and so on) refer to the Phase 0 audit logs in `dev/design/
 - Options: (1) reproduce the numbers and add a classed warning (`pprof_warning_rank_deficient`) when the design is rank deficient; (2) stop with a classed error (Class B: a result becomes an error); (3) drop aliased columns as `glm()` does (Class B).
 - Recommendation: (1). Methodology owners may prefer (3); recorded as part of question M-17.
 - Decision owner: project lead for (1); methodology owner for (2) or (3).
-- Status: verified (Phase 1 fixtures, 2026-10-02); option (1) implemented (Phase 3): `fit_logistic_fe()` warns with `pprof_warning_rank_deficient` when the provider-centered design is rank deficient and fits as the reference does, and the `logis_fe()` wrapper passes the warning on; options (2) and (3) remain question M-17.
+- Status: verified (Phase 1 fixtures, 2026-10-02); option (1) implemented (Phase 3): `fit_logistic_fe()` warns with `pprof_warning_rank_deficient` when the provider-centered design is rank deficient and fits as the reference does, and the `logis_fe()` wrapper passes the warning on; options (2) and (3) remain question M-17. Found in CoxPH Phase C2 (2026-10-09), not fixed: when the provider-centered design has rank 0 (every covariate constant within providers, such as a provider-level covariate alone), the warning names no covariate ("…so these coefficients are not identified: .") and its `aliased` field is empty, because `pivot[-seq_len(rank)]` is empty for rank 0 (`R/model-logistic-fe.R:173`, shared by `fit_logistic_firth()`). Example: `fit_logistic_fe(y ~ size, d, "provider")` with `size` constant within each of 20 providers. The fix of the message (Class C, `pivot[seq.int(rank + 1L, ncol(design))]`) is outside the CoxPH phase and awaits the project lead.
 - Regression test: the fixtures above, and `tests/testthat/test-model-logistic-fe.R` (the warning, with estimates as the reference's).
 
 ### D-39: `logis_fe` and `logis_firth` accept inputs without checking them
@@ -978,6 +978,7 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 | D-72 | Penalized coefficients at λ_max | B | verified; decided (delegation): exact zeros | With unpenalized columns, pprof_py's first path point carries penalized coefficients of order 1e-11, which count as nonzero |
 | D-73 | Failures of pprof_py that cannot arise | A | verified; does not arise | Measures without events, mid-p limits under a large empirical-null mean, a single CV fold, a missing event code |
 | D-74 | Status coded 1/2 | A | verified; decided: accepted | pprof_py rejects the 1/2 status coding that `Surv()` accepts |
+| D-75 | Baselines and curves without covariates | B | verified; awaiting decision | survival's `survfit()` cannot give them for a Cox fit without covariates, so the package raises a classed error where pprof_py reports them |
 
 ### D-56: Robust variance with Breslow ties on (start, stop] data
 
@@ -990,8 +991,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Options: (1) reproduce pprof_py (would mean reimplementing its kernel); (2) `survival`'s, which is correct (pprof_py's own dfbeta residuals give R's value, X-015).
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-24).
-- Status: verified (2026-10-07); decided; implemented in C2. The C1 fixtures confirm it (2026-10-08): with Breslow ties on (start, stop] data, pprof_py's robust variances differ from survival's in `lt-stratified`, `lt-weights-offset`, `recurrent`, and every Breslow Fine–Gray fit, and agree with Efron ties (`validation/cox-calibration-report.md`).
-- Regression test: the C1 fixtures (`lt-stratified`, `lt-weights-offset`, `recurrent`, `competing-*`) hold both robust variances; C2 compares the package's with survival's.
+- Status: verified (2026-10-07); decided; implemented in C2 (2026-10-09), with survival's robust step on the fitter's result (DEC-099). The C1 fixtures confirm it (2026-10-08): with Breslow ties on (start, stop] data, pprof_py's robust variances differ from survival's in `lt-stratified`, `lt-weights-offset`, `recurrent`, and every Breslow Fine–Gray fit, and agree with Efron ties (`validation/cox-calibration-report.md`).
+- Regression test: `tests/testthat/test-cox-reference.R`, "residuals and robust variances of the core (full) Cox cases": the package's robust variances, with one cluster per row and with the cluster column, equal survival's within `cox_variance`; with Breslow ties on (start, stop] data they differ from pprof_py's beyond it (`lt-stratified`; in the full set `lt-weights-offset`, `provider-scale`, and `recurrent`), and otherwise equal them. The `cox_engine` tests (`test-model-survival.R`, and the last test of `test-cox-reference.R`) hold them to `coxph()`'s bitwise. The Fine–Gray fits follow in C5.
 
 ### D-57: The order of step halving and the convergence test
 
@@ -1004,8 +1005,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Options: (1) reproduce pprof_py; (2) `survival`'s order, which the adapter gets by delegating.
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-27).
-- Status: verified (2026-10-07); decided; implemented in C2. The C1 fixtures confirm it, at tight control too (2026-10-08): in `competing-simple`'s Fine–Gray fit of cause 2 with Efron ties (eps 1e-11), the full fourth step lowered the log-likelihood by 1.1e-13, and pprof_py halved it once (stratified) or five times (unstratified) where survival kept it: survival's step was −1.37e-8 and pprof_py's −6.86e-9, and the tight estimates differ by 6.9e-9 and 6.7e-9, 1.4 times `cox_coefficient`.
-- Regression test: the C1 fixtures compare default fits on iteration counts exactly and on estimates within the longer of the two last Newton steps, and tight fits within `cox_coefficient` or, when pprof_py halved its last step, within that bound (DEC-097).
+- Status: verified (2026-10-07); decided; implemented in C2 (2026-10-09), by delegating to survival's fitters. The C1 fixtures confirm it, at tight control too (2026-10-08): in `competing-simple`'s Fine–Gray fit of cause 2 with Efron ties (eps 1e-11), the full fourth step lowered the log-likelihood by 1.1e-13, and pprof_py halved it once (stratified) or five times (unstratified) where survival kept it: survival's step was −1.37e-8 and pprof_py's −6.86e-9, and the tight estimates differ by 6.9e-9 and 6.7e-9, 1.4 times `cox_coefficient`.
+- Regression test: `tests/testthat/test-cox-reference.R`, "fits of the core (full) Cox cases match pprof_py's": iteration counts exactly; default fits within the longer of the two last Newton steps (`cox_last_step_bound()`), tight fits within `cox_coefficient` (DEC-097). The fits are survival's bitwise (`cox_engine`, the last test of the file). The Fine–Gray case of `competing-simple` follows in C5.
 
 ### D-58: Zero case weights
 
@@ -1018,8 +1019,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Options: (1) reproduce pprof_py; (2) leave zero-weight rows out of the Cox fit and keep them in the provider table and the measures, which do not use weights (M-29); (3) refuse zero weights, as `survival` does.
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-25).
-- Status: verified (2026-10-07); decided; implemented in C2. The C1 fixture `zero-weights` confirms it (2026-10-08): with Breslow ties, survival's fits on the positive-weight rows equal pprof_py's within the tiers; with Efron ties they differ (the tight coefficients by 2.8e5 times `cox_coefficient`).
-- Regression test: the C1 case `zero-weights`: Breslow fits equal pprof_py's; Efron fits equal pprof_py's with the zero-weight rows removed; the measures equal pprof_py's.
+- Status: verified (2026-10-07); decided; implemented in C2 (2026-10-09): rows with weight 0 stay in the data and the provider table, and are left out of every survival call (`survival_fit_rows()` in `R/model-survival.R`); the object counts them in `n_zero_weight`, and their martingale residuals are `NA` (DEC-103). The C1 fixture `zero-weights` confirms it (2026-10-08): with Breslow ties, survival's fits on the positive-weight rows equal pprof_py's within the tiers; with Efron ties they differ (the tight coefficients by 2.8e5 times `cox_coefficient`).
+- Regression test: the full set's `zero-weights` in `tests/testthat/test-cox-reference.R`: Breslow fits, residuals, and baselines equal pprof_py's; Efron fits equal survival's on the positive-weight rows and differ from pprof_py's beyond `cox_coefficient`. Unit tests: "rows with weight 0 are left out of the fit and kept in the data" (`test-model-survival.R`) and "zero weights leave rows out of the fit and in the provider table" (`test-model-cox-stratified.R`). The measures follow in C3.
 
 ### D-59: Aliased covariates and no events
 
@@ -1032,8 +1033,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Options: (1) reproduce pprof_py; (2) `survival`'s NA coefficients; (3) fail with `pprof_error_data`, naming the aliased covariates.
 - Recommendation: (3), as pprof_spark decided (its D-20).
 - Decision owner: methodology owners. Decided (3): delegation, 2026-10-07 (M-26).
-- Status: verified (2026-10-07); decided; implemented in C2.
-- Regression test: tests of the classed errors on collinear, constant, and event-free data.
+- Status: verified (2026-10-07); decided; implemented in C2 (2026-10-09): `pprof_error_data`, with the aliased covariates in its `aliased` field; `check_data()` lists covariates constant within every provider (DEC-104).
+- Regression test: "data the Cox fit cannot use raise classed errors" (`tests/testthat/test-model-survival.R`) and "covariates the stratified fit cannot estimate, and data without events, are errors" (`test-model-cox-stratified.R`), on collinear, constant, within-provider constant, and event-free data.
 
 ### D-60: The reported baseline hazard
 
@@ -1046,8 +1047,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Options: (1) reproduce pprof_py; (2) report the baseline at x = 0 and offset 0 and document the difference.
 - Recommendation: (2), as pprof_spark decided (its D-23).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-28).
-- Status: verified (2026-10-07); decided; implemented in C2.
-- Regression test: `baseline_hazard()` against pprof_py's `baseline_hazard_` divided by exp(mean offset) on the `offset` and `combined` cases.
+- Status: verified (2026-10-07); decided; implemented in C2 (2026-10-09): `baseline_hazard()` gives survival's `survfit()` curve of the fit at every covariate 0 and offset 0 (the C2 plan's fact 20).
+- Regression test: "baselines and curves of the core (full) Cox cases match pprof_py's" (`tests/testthat/test-cox-reference.R`): `baseline_hazard()` equals pprof_py's raw baseline, and its `baseline_hazard_` divided by exp(the weighted mean offset), within `cox_baseline`, on every Cox case but `large-mean` (D-64; the offset cases are the full set's `lt-weights-offset`, `rc-stratified-weights-offset`, and `zero-weights`); "the baseline is at offset 0" (`test-model-cox-stratified.R`): a constant c added to the offset scales the baseline by exp(−c).
 
 ### D-61: Cross-validation folds drawn with R's random numbers
 
@@ -1072,8 +1073,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Affected outputs: fits on data with missing values, which pprof_py does not fit.
 - Statistical impact: none on data without missing values.
 - Decision owner: project lead (Class A). Decided: listwise deletion.
-- Status: verified (2026-10-07); decided; implemented in C2.
-- Regression test: a case with missing values equals the same case without the incomplete rows.
+- Status: verified (2026-10-07); decided; implemented in C2 (2026-10-09), over the response, the provider, the covariates, the offset, the weights, and the cluster.
+- Regression test: a case with missing values equals the same case without the incomplete rows: "rows with a missing value anywhere in the model are dropped" (`tests/testthat/test-data-survival.R`) and "missing values drop their rows" (`test-model-cox-stratified.R`).
 
 ### D-63: Standardized measures matched covariates by position
 
@@ -1083,8 +1084,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Minimal reproducible example: `dev/design/coxph-facts/13_pprof_py_probes.txt`, B4: reordering three columns changed E_j by up to 44%.
 - Affected outputs: none in the package, whose measures come from the fitted model and its formula.
 - Decision owner: project lead (Class A). The defect cannot arise.
-- Status: verified (2026-10-07); does not arise.
-- Regression test: a metamorphic test (reordered data columns give the same measures).
+- Status: verified (2026-10-07); does not arise. In C2 the fit takes its covariates from the formula, by name (2026-10-09).
+- Regression test: a metamorphic test (reordered data columns give the same measures). C2's part: "the formula, not the order of the data's columns, determines the fit" (`tests/testthat/test-model-cox-stratified.R`); the measures follow in C3.
 
 ### D-64: Large linear predictors
 
@@ -1098,7 +1099,7 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (DEC-087).
 - Status: verified (2026-10-07); decided; implemented in C2. The C1 fixture `large-mean` confirms it (2026-10-08). With a covariate near 2,000 it did so only in part, its fitted linear predictor staying below the clipping at 700; with the project lead's approval at the C1 gate it was regenerated with a covariate near 3,000 (`dev/reference/diff-reports/20261008-cox-large-mean-*.md`), and the fitted linear predictor now reaches 881 to 915. pprof_py's coefficients, standard errors, and log-likelihood still agree with survival's; its martingale residuals differ, its score and dfbeta residuals are not finite, both robust variances raise `FloatingPointError` (recorded in the fixture), and its log-likelihood, score, and information at β = 0 and at the fixed β and its baseline at x = 0 differ or underflow.
-- Regression test: the C1 case `large-mean`.
+- Regression test: the full set's `large-mean` in `tests/testthat/test-cox-reference.R`: the fits match pprof_py's; the residuals and robust variances equal survival's within `cox_residual` and `cox_variance`; the baseline is found at every pprof_py point and not compared. Unit test: "a covariate of large mean gives survival's fit and finite residuals" (`test-model-cox-stratified.R`), with a covariate near 3,000. Implemented in C2 (2026-10-09).
 
 ### D-65: Provider-penalized Cox
 
@@ -1199,5 +1200,19 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Description: pprof_py rejects an event coded 1/2 ("R's Surv() also accepts 1/2 coding"); the package reads the status through `Surv()`, which accepts 0/1, logical, and 1/2 coding and turns them into 0/1.
 - Affected outputs: fits on data coded 1/2, which pprof_py does not fit.
 - Decision owner: project lead (Class A). Decided: accepted, as `Surv()` does.
-- Status: verified (2026-10-07); decided; implemented in C2.
-- Regression test: a case coded 1/2 equals the same case coded 0/1.
+- Status: verified (2026-10-07); decided; implemented in C2 (2026-10-09).
+- Regression test: a case coded 1/2 equals the same case coded 0/1: "a status coded 1/2 or logical gives the data of the status coded 0/1" (`tests/testthat/test-data-survival.R`) and "a status coded 1/2, or logical, gives the fit of 0/1" (`test-model-cox-stratified.R`).
+
+### D-75: Baselines and curves of a Cox fit without covariates
+
+- Component: `baseline_hazard()` and `predict(type = "cumulative_hazard")` or `"survival"` of `fit_cox_stratified()` (`cox_stratified_require_covariates()` in `R/model-cox-stratified.R`).
+- Class: B (an output pprof_py gives is not given; no number changes)
+- Description: A provider-stratified fit without covariates (`Surv(time, status) ~ 1`, or offsets alone) estimates nothing: survival's fitters return the partial log-likelihood of the offsets, and the package reports one iteration, converged, as pprof_py does. pprof_py also reports a baseline hazard and curves. The package takes both from survival's `survfit()` of `coxph()`'s object (DEC-091, D-60), and survival 3.8-12's `survfit()` of such an object (class `coxph.null`) fails with new data ("missing value where TRUE/FALSE needed"); without new data it gives each stratum's curve at the offsets' center, which is the baseline at offset 0 only when there is no offset. So the package raises `pprof_error_unsupported_inference` for these outputs. The fit, its log-likelihood, residuals, and linear predictors are given, and the measures of C3 use β̂ alone (K-136).
+- Minimal reproducible example: `fit_cox_stratified(Surv(time, status) ~ offset(o), d, "provider")`, then `baseline_hazard(fit)`; in survival alone, `survfit(coxph(Surv(time, status) ~ strata(g), d), newdata = data.frame(g = 1))` fails, and `survfit()` of the same fit without new data equals the Breslow estimator computed by hand (checked 2026-10-09 on 40 simulated rows; with an offset it does not). pprof_py v0.7.0's `CoxPH(ties = "breslow").fit()` with a design of no columns and two strata reports `n_iter_` 1, converged, and a `baseline_hazard_` that equals the Breslow estimator by hand without an offset, and with one that estimator at offset 0 times exp(the mean offset), as D-60 describes (checked 2026-10-09 on 40 simulated rows).
+- Affected outputs: `baseline_hazard()`, cumulative hazards, and survival curves of fits without covariates.
+- Statistical impact: none on the outputs the package gives.
+- Options: (1) keep these outputs unsupported, with the classed error; (2) without an offset, survival's `survfit()` of the fit without new data, which then is the baseline at x = 0, and (1) with an offset; (3) the baseline computed by the package, contrary to the CoxPH brief's §1.
+- Recommendation: (1), or (2) if the project lead wants the outputs for unadjusted fits.
+- Decision owner: project lead.
+- Status: verified (2026-10-09); awaiting the project lead's decision at the C2 gate; option (1) is implemented in C2.
+- Regression test: "without covariates the fit holds the log-likelihood of the offsets alone" (`tests/testthat/test-model-cox-stratified.R`).

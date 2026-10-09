@@ -360,22 +360,24 @@ Logistic models share one implementation of `expected_outcome()` (plogis of effe
 
 Capability names: `coef_wald`, `coef_lr`, `coef_score`, `provider_exact`, `provider_bootstrap`, `provider_score`, `provider_score_standard`, `provider_wald`, `interval_exact`, `interval_score`, `interval_wald`, `standardize_indirect`, `standardize_direct`, `funnel`. Every entry point calls `require_capability(model, name)` first; a model that does not declare the capability gets `pprof_error_unsupported_inference`, naming the model class and the capability. A model never receives a request it has not declared, so a penalized model cannot return a Wald number by accident.
 
-| Capability | Logistic FE | Firth | Linear FE | Logistic RE/CRE | Linear RE/CRE |
-|---|---|---|---|---|---|
-| coef_wald | yes | yes | yes | yes | yes |
-| coef_lr, coef_score | yes | yes (D-12, M-2) | no | no | no |
-| provider_exact, provider_bootstrap, provider_score, provider_score_standard | yes | yes | no | no | no |
-| provider_wald | yes | yes | yes | yes | yes |
-| interval_exact, interval_score | yes | yes | no | no | no |
-| interval_wald | yes | yes | yes | yes | yes |
-| standardize_indirect, standardize_direct | yes | yes | yes | yes | yes |
-| funnel | yes (score-test limits, K-110; exact limits unsupported, D-07) | yes | yes (normal limits, K-111) | no | no |
+| Capability | Logistic FE | Firth | Linear FE | Logistic RE/CRE | Linear RE/CRE | Cox stratified (as of CoxPH C2) |
+|---|---|---|---|---|---|---|
+| coef_wald | yes | yes | yes | yes | yes | yes (K-148) |
+| coef_lr, coef_score | yes | yes (D-12, M-2) | no | no | no | no |
+| provider_exact, provider_bootstrap, provider_score, provider_score_standard | yes | yes | no | no | no | provider_exact (Poisson) in C3, with provider_midp; the others no |
+| provider_wald | yes | yes | yes | yes | yes | no |
+| interval_exact, interval_score | yes | yes | no | no | no | interval_exact (Poisson) in C3, with interval_midp; interval_score no |
+| interval_wald | yes | yes | yes | yes | yes | no |
+| standardize_indirect, standardize_direct | yes | yes | yes | yes | yes | in C3 |
+| funnel | yes (score-test limits, K-110; exact limits unsupported, D-07) | yes | yes (normal limits, K-111) | no | no | in C3 (mid-p limits) |
 
 The table mirrors exactly what the reference offers per class; it adds no inference.
 
 As built in Phase 4 (DEC-040): Firth models have the logistic FE capabilities through their class, as the table shows. Linear FE, RE, and CRE models declare none yet (the shared `inference_capabilities.pprof_model()` returns an empty vector); their columns of the table arrive with their inference in Phase 5. Until then every entry point raises `pprof_error_unsupported_inference` for them, including `confint()`, whose method for `pprof_model` checks `coef_wald` so that `stats::confint.default()` cannot answer with normal intervals. The old methods of the reference's linear, RE, and CRE objects are unaffected: they still run the reference's code on the wrappers' objects.
 
 As built in Phase 5 (step 2): linear FE models declare `coef_wald`, `provider_wald`, `interval_wald`, `standardize_indirect`, `standardize_direct`, and `funnel`; the four mixed families the same without `funnel`, exactly the columns of the table. One `confint.pprof_model()` serves every family that declares `coef_wald`, with the family's covariate rule.
+
+As built in CoxPH Phase C2 (DEC-101, DEC-102): the provider-stratified Cox model, whose reference is pprof_py v0.7.0 rather than pprof 1.0.3, declares `coef_wald` only, with the covariate rule `p_value = "two_sided_upper"`; every other entry point raises `pprof_error_unsupported_inference` for it, and `provider_effects()` does so for any model without provider-effect estimates. Phase C3 adds the column's provider-level capabilities (COXPH_DESIGN §D.2, §D.3).
 
 ### E.4 Registration and the extension proof
 
@@ -411,6 +413,8 @@ A Cox model with provider effects, λ_ij(t) = λ0(t) exp(γ_i + z_ij'β), shows 
 - Tests: the exact Poisson-binomial test does not apply; the module declares its own capability (for example a Poisson exact test of O_i against E_i) and implements `provider_test()` for it. The funnel precision comes from the family specification's variance function (E_i for Poisson counts).
 
 As designed in CoxPH Phase C0 (DEC-090, DEC-092; `dev/design/COXPH_DESIGN.md`): the first Cox model is the provider-stratified model (He and Schaubel's two-stage measures), which has no provider effects; this sketch's model, with explicit effects γ_i, waits for a later brief (DEC-089). The data layer does not yet pass a `Surv` response through or screen on events, as the sketch assumed: the design's §C adds survival data to `data_prepare()`. The Poisson tests become built-in tests selected by the family specification's `count_distribution`, not `provider_test()` methods, because they need only observed and expected counts (the design's §D).
+
+As built in CoxPH Phase C2 (DEC-099 to DEC-104): `data_prepare()` takes a `Surv()` response (`response_type = "survival"`) and keeps the status as `response`, with `start`, `stop`, the response's type in `settings$survival_type`, and the weights, clusters, and offsets of each observation; the provider table adds events and person-time, and screening stays by size. The existing families' data are unchanged, which a snapshot of `data_prepare()` on the reference cases proves (`validation/fixtures/data-prepare-snapshot.rds`, COXPH_DESIGN §C.2). `fit_cox_stratified()` is `R/model-cox-stratified.R` on the survival adapter `R/model-survival.R`, which calls survival's fitters as `coxph()` does; its object has `provider_effects = NULL`. Besides the data layer, the shared code changed only by COXPH_DESIGN §D.3's items 1 and 2, the covariate rule's `two_sided_upper` (DEC-101), and `check_data()`'s survival checks (DEC-104), each with today's behavior as its default.
 
 ---
 
@@ -553,6 +557,8 @@ Result: the install tree shrinks from 131 to 38 packages (V16.5). Licenses: ppro
 R version: keep `R (>= 4.1.0)`, the current requirement, which the native pipe needs; compile as C++17 (`CXX_STD = CXX17`, the default from R 4.3). Question M-12.
 
 As built in Phase 8: caret, olsrr, and globals left Imports (DEC-073); caret and olsrr are suggested, for the tests that compare `check_data()`'s computations with theirs, as pROC is for the AUC and logistf for the Firth fit. The packages installed with pprof (recursive Depends, Imports, and LinkingTo on CRAN, besides R's base packages) went from 130 to 38 (PHASE8_PLAN F2). DESCRIPTION requires `ggplot2 (>= 4.0.0)`, under which the plots were compared with pprof 1.0.3's (DEC-074), and `R (>= 4.4.0)`, the oldest version CI finds working with the current dependencies: R 4.1 cannot install them, and on R 4.2 and 4.3 printing an lme4 fit fails in reformulas, which calls base R's `%||%` (DEC-081).
+
+As built in CoxPH Phase C2: survival (>= 3.5-8), whose fitters fit the Cox models (DEC-086, DEC-091), moved from Suggests, where Phase C1 put it, to Imports, so 39 packages are installed with pprof; glmnet stays in Suggests (DEC-088).
 
 ---
 
