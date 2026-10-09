@@ -39,3 +39,66 @@ cox_survival_tight_fit <- function(fx, ties) {
   survival::coxph(f, data = d, weights = .w, ties = ties, robust = FALSE,
                   control = survival::coxph.control(eps = 1e-11, iter.max = 100, timefix = FALSE))
 }
+
+# --- The package's fits of the Cox cases (Phase C2) ----------------------------------------------
+
+# A case's input with the provider column of the package's fits: the stratum for stratified cases
+# and one provider for the others, whose fits are then pprof_py's unstratified fits.
+cox_case_data <- function(fx) {
+  d <- fx$input
+  d$.provider <- if (isTRUE(fx$case$stratified)) d$stratum else 0L
+  # The clusters of the generator's clustered robust variances (dev/reference/cox/survival.R).
+  d$.cluster <- if ("cluster" %in% names(d)) d$cluster else d$id %% 40
+  d
+}
+
+# The formula of a case for fit_cox_stratified(): the response of its type, its features, and its
+# offset.
+cox_case_formula <- function(fx) {
+  def <- fx$case
+  rhs <- paste(unlist(def$features), collapse = " + ")
+  if (isTRUE(def$offset)) rhs <- paste(rhs, "+ offset(offset)")
+  lhs <- if (isTRUE(def$truncated)) "Surv(entry, time, event)" else "Surv(time, event)"
+  stats::as.formula(paste(lhs, "~", rhs), env = list2env(list(Surv = survival::Surv), parent = globalenv()))
+}
+
+# The package's fit of a case at the generator's default or tight control (dev/reference/cox/survival.R:
+# eps 1e-9 and 20 iterations, or eps 1e-11 and 100 iterations).
+cox_case_fit <- function(fx, ties, tight = FALSE, ...) {
+  fit_cox_stratified(cox_case_formula(fx), cox_case_data(fx), provider = ".provider",
+                     weights = if (isTRUE(fx$case$weighted)) "weight", ties = ties,
+                     max_iter = if (tight) 100 else 20, tol = if (tight) 1e-11 else 1e-9, ...)
+}
+
+# survival's coxph() called directly on a case's rows in the package's order (data_prepare() sorts
+# them by provider, stably), with the fit's settings: the engine-identity reference (DEC-043's
+# pattern; COXPH_DESIGN §E.1). `cluster` names a column of clusters, or "row" for one per row.
+cox_case_coxph <- function(fx, ties, tight = FALSE, cluster = NULL) {
+  d <- cox_case_data(fx)
+  if (isTRUE(fx$case$weighted)) d <- d[d$weight > 0, , drop = FALSE]
+  d <- d[order(d$.provider, method = "radix"), , drop = FALSE]
+  d$.row <- seq_len(nrow(d))
+  def <- fx$case
+  rhs <- c(unlist(def$features), "strata(.provider)", if (isTRUE(def$offset)) "offset(offset)")
+  lhs <- if (isTRUE(def$truncated)) "Surv(entry, time, event)" else "Surv(time, event)"
+  f <- stats::as.formula(paste(lhs, "~", paste(rhs, collapse = " + ")),
+                         env = list2env(list(Surv = survival::Surv, strata = survival::strata), parent = environment()))
+  d$.w <- if (isTRUE(def$weighted)) d$weight else rep(1, nrow(d))
+  control <- survival::coxph.control(eps = if (tight) 1e-11 else 1e-9, iter.max = if (tight) 100 else 20,
+                                     timefix = FALSE)
+  args <- list(f, data = d, ties = ties, robust = !is.null(cluster), control = control)
+  if (isTRUE(def$weighted)) args$weights <- d$.w
+  if (!is.null(cluster)) args$cluster <- if (identical(cluster, "row")) d$.row else d[[cluster]]
+  do.call(survival::coxph, args)
+}
+
+# The upper triangle of a covariance matrix row by row, as the fixtures store it.
+cox_packed_upper <- function(m) unname(unlist(lapply(seq_len(nrow(m)), function(i) m[i, i:ncol(m)])))
+
+# The longer of the two last Newton steps from pprof_py's previous iterate, plus the coefficient
+# tier's atol: the bound on the difference of two fits that stop at different points of the same
+# path (D-57; dev/reference/cox/calibrate.R's last_step_bound()).
+cox_last_step_bound <- function(a, b, iterates, iterations) {
+  previous <- unlist(iterates[[max(iterations - 1, 1)]]$beta)
+  max(abs(unlist(a) - previous), abs(unlist(b) - previous)) + reference_tolerance("cox_coefficient")$atol
+}

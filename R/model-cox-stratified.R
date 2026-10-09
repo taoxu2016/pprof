@@ -302,8 +302,11 @@ cox_stratified_newdata <- function(model, newdata) {
 # row, for its provider. survival's warnings here come from its internal steps and do not concern
 # the curves: survival 3.8-12's agsurv() takes min(diff()) of a stratum's event times even when there
 # is one, and survfit.coxph() of a model without covariates calls rep(length = n), which a session
-# that reports partial argument matching flags.
-cox_stratified_survfit <- function(engine, frame) {
+# that reports partial argument matching flags. survival 3.8-12's survfit() also fails with new data
+# that name the stratum of a model with one stratum (a fit with one provider); without the stratum,
+# each row gets that stratum's curve.
+cox_stratified_survfit <- function(model, engine, frame) {
+  if (length(unique(model$provider_index[survival_fit_rows(model)])) == 1L) frame$.provider <- NULL
   suppressWarnings(survival::survfit(engine, newdata = frame, se.fit = FALSE))
 }
 
@@ -340,7 +343,7 @@ cox_stratified_curves <- function(model, newdata, type, data) {
     rows <- which(usable)
     frame <- survival_engine_newdata(parts$design[rows, , drop = FALSE], parts$offset[rows], codes[rows],
                                      has_offset = !is.null(model$offset))
-    curves <- cox_stratified_survfit(engine, frame)
+    curves <- cox_stratified_survfit(model, engine, frame)
     for (k in seq_along(rows)) {
       curve <- curves[k]
       events <- curve$n.event > 0
@@ -400,7 +403,7 @@ baseline_hazard.pprof_cox_stratified <- function(model, data = NULL, ...) {
   p <- length(model$coefficients)
   frame <- survival_engine_newdata(matrix(0, length(codes), p), rep(0, length(codes)), codes,
                                    has_offset = !is.null(model$offset))
-  curves <- cox_stratified_survfit(engine, frame)
+  curves <- cox_stratified_survfit(model, engine, frame)
   ids <- model$providers$provider_id
   tables <- lapply(seq_along(codes), function(k) {
     curve <- curves[k]
