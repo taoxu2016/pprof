@@ -19,7 +19,11 @@
 #'   beta + se qnorm(a) at a = alpha / 2 and 1 - alpha / 2;
 #' - logistic random and correlated random effects, intercept included: p-value
 #'   2 (1 - pnorm(z)), as in pprof 1.0.3, which exceeds 1 for negative estimates, and lme4's
-#'   Wald interval.
+#'   Wald interval;
+#' - provider-stratified Cox models ([fit_cox_stratified()]): the two-sided p-value
+#'   2 (1 - pnorm(|z|)) computed as an upper tail, `2 * pnorm(|z|, lower.tail = FALSE)`, so that
+#'   it stays above 0 for large |z|, as pprof_py computes it, and the interval
+#'   beta -/+ qnorm(1 - alpha / 2) se, with the robust standard errors of a robust fit.
 #'
 #' For logistic fixed-effect models:
 #'
@@ -88,7 +92,8 @@ test_coefficients <- function(model, test = "wald", parm = NULL, level = 0.95, n
 #'
 #' Wald intervals for the covariate coefficients with the family's rule, as the summaries of
 #' pprof 1.0.3 report them, with alpha = 1 - `level`: beta -/+ qnorm(1 - alpha / 2) se for
-#' logistic fixed-effect and Firth models; beta -/+ qt(1 - alpha / 2, n - m - p) se for
+#' logistic fixed-effect, Firth, and provider-stratified Cox models (as pprof_py computes the
+#' Cox intervals); beta -/+ qt(1 - alpha / 2, n - m - p) se for
 #' linear fixed-effect models (n observations, m providers, p coefficients); and lme4's Wald
 #' intervals, beta + se qnorm(a) with a = alpha / 2 and 1 - alpha / 2, for random-effect and
 #' correlated random-effect models, intercept included. Models whose class declares no Wald

@@ -21,7 +21,8 @@ A matrix with one row per coefficient and the lower and upper limits.
 \description{
 Wald intervals for the covariate coefficients with the family's rule, as the summaries of
 pprof 1.0.3 report them, with alpha = 1 - \code{level}: beta -/+ qnorm(1 - alpha / 2) se for
-logistic fixed-effect and Firth models; beta -/+ qt(1 - alpha / 2, n - m - p) se for
+logistic fixed-effect, Firth, and provider-stratified Cox models (as pprof_py computes the
+Cox intervals); beta -/+ qt(1 - alpha / 2, n - m - p) se for
 linear fixed-effect models (n observations, m providers, p coefficients); and lme4's Wald
 intervals, beta + se qnorm(a) with a = alpha / 2 and 1 - alpha / 2, for random-effect and
 correlated random-effect models, intercept included. Models whose class declares no Wald

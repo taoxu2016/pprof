@@ -18,10 +18,12 @@ For binary outcomes, \code{\link[=fit_logistic_fe]{fit_logistic_fe()}} fits a fi
 SerBIN or BAN algorithm, \code{\link[=fit_logistic_firth]{fit_logistic_firth()}} adds Firth's bias-reducing penalty,
 \code{\link[=fit_logistic_re]{fit_logistic_re()}} fits random effects, and \code{\link[=fit_logistic_cre]{fit_logistic_cre()}} correlated random
 effects. For continuous outcomes, \code{\link[=fit_linear_fe]{fit_linear_fe()}}, \code{\link[=fit_linear_re]{fit_linear_re()}}, and
-\code{\link[=fit_linear_cre]{fit_linear_cre()}} fit the corresponding linear models. Every fit takes a formula, a data
-frame, and the name of the provider column. Before fitting, \code{\link[=check_data]{check_data()}} reports missing
-values, covariates with little or no variation, highly correlated covariates, and variance
-inflation factors.
+\code{\link[=fit_linear_cre]{fit_linear_cre()}} fit the corresponding linear models. For time-to-event outcomes,
+\code{\link[=fit_cox_stratified]{fit_cox_stratified()}} fits the Cox model with one baseline hazard per provider, through the
+survival package. Every fit takes a formula, a data frame, and the name of the provider
+column. Before fitting, \code{\link[=check_data]{check_data()}} reports missing values, covariates with little or no
+variation, highly correlated covariates, and variance inflation factors, and for survival
+data near-tied times, weights, and covariates a stratified fit cannot estimate.
 }
 
 \section{Profiling providers}{

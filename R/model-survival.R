@@ -68,7 +68,8 @@ survival_run_fitter <- function(inputs, ties, control) {
       if (grepl("Ran out of iterations", conditionMessage(w), fixed = TRUE)) invokeRestart("muffleWarning")
     }
   )
-  if (is.null(fit$iter)) return(list(fit = fit, converged = TRUE, iterations = 0L))  # no covariates: no iterations
+  # Without covariates survival does not iterate; pprof_py reports one iteration, converged.
+  if (is.null(fit$iter)) return(list(fit = fit, converged = TRUE, iterations = 1L))
   converged <- if (!is.null(fit$info)) unname(fit$info[["convergence"]]) == 0 else fit$iter <= control$iter.max
   list(fit = fit, converged = converged, iterations = as.integer(min(fit$iter, control$iter.max)))
 }

@@ -177,7 +177,9 @@ test_that("without covariates nothing is estimated, and the log-likelihood is su
     expect_identical(dim(fit$vcov), c(0L, 0L))
     expect_identical(fit$loglik, rep(direct$loglik, 2L))
     expect_identical(fit$martingale_residuals[survival_fit_rows(prepared)], unname(direct$residuals))
-    expect_identical(fit$convergence$iterations, 0L)
+    # survival does not iterate; pprof_py reports one iteration.
+    expect_identical(fit$convergence$iterations, 1L)
+    expect_true(fit$convergence$converged)
   }
 })
 

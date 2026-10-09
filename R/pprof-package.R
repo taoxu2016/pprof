@@ -16,10 +16,12 @@
 #' SerBIN or BAN algorithm, [fit_logistic_firth()] adds Firth's bias-reducing penalty,
 #' [fit_logistic_re()] fits random effects, and [fit_logistic_cre()] correlated random
 #' effects. For continuous outcomes, [fit_linear_fe()], [fit_linear_re()], and
-#' [fit_linear_cre()] fit the corresponding linear models. Every fit takes a formula, a data
-#' frame, and the name of the provider column. Before fitting, [check_data()] reports missing
-#' values, covariates with little or no variation, highly correlated covariates, and variance
-#' inflation factors.
+#' [fit_linear_cre()] fit the corresponding linear models. For time-to-event outcomes,
+#' [fit_cox_stratified()] fits the Cox model with one baseline hazard per provider, through the
+#' survival package. Every fit takes a formula, a data frame, and the name of the provider
+#' column. Before fitting, [check_data()] reports missing values, covariates with little or no
+#' variation, highly correlated covariates, and variance inflation factors, and for survival
+#' data near-tied times, weights, and covariates a stratified fit cannot estimate.
 #'
 #' @section Profiling providers:
 #' [test_providers()] tests and flags providers, [standardize_providers()] computes

@@ -38,6 +38,7 @@ formula(fit)
 }
 \seealso{
 Other model methods:
+\code{\link{cox_stratified_methods}},
 \code{\link{linear_fe_methods}},
 \code{\link{logistic_fe_methods}},
 \code{\link{mixed_methods}},

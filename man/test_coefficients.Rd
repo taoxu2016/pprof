@@ -48,7 +48,11 @@ coefficients;
 beta + se qnorm(a) at a = alpha / 2 and 1 - alpha / 2;
 \item logistic random and correlated random effects, intercept included: p-value
 2 (1 - pnorm(z)), as in pprof 1.0.3, which exceeds 1 for negative estimates, and lme4's
-Wald interval.
+Wald interval;
+\item provider-stratified Cox models (\code{\link[=fit_cox_stratified]{fit_cox_stratified()}}): the two-sided p-value
+2 (1 - pnorm(|z|)) computed as an upper tail, \verb{2 * pnorm(|z|, lower.tail = FALSE)}, so that
+it stays above 0 for large |z|, as pprof_py computes it, and the interval
+beta -/+ qnorm(1 - alpha / 2) se, with the robust standard errors of a robust fit.
 }
 
 For logistic fixed-effect models:

@@ -57,6 +57,7 @@ reference:
   - fit_linear_fe
   - fit_linear_re
   - fit_linear_cre
+  - fit_cox_stratified
 - title: Profiling providers
   contents:
   - test_providers
@@ -81,6 +82,8 @@ reference:
   - logistic_fe_methods
   - linear_fe_methods
   - mixed_methods
+  - cox_stratified_methods
+  - baseline_hazard
   - pprof_tidy
 - title: Example data
   contents:

@@ -5,6 +5,8 @@
 \alias{tidy.pprof_model}
 \alias{tidy.pprof_result}
 \alias{glance.pprof_model}
+\alias{glance.pprof_cox_stratified}
+\alias{augment.pprof_cox_stratified}
 \alias{augment.pprof_model}
 \title{Tidy outputs of models and results}
 \usage{
@@ -13,6 +15,10 @@
 \method{tidy}{pprof_result}(x, ...)
 
 \method{glance}{pprof_model}(x, ...)
+
+\method{glance}{pprof_cox_stratified}(x, ...)
+
+\method{augment}{pprof_cox_stratified}(x, ...)
 
 \method{augment}{pprof_model}(x, ...)
 }
@@ -37,6 +43,13 @@ input data, with its row in the input data (\code{row}), provider, observed outc
 value, and response residual.
 }
 }
+\details{
+For Cox models from \code{\link[=fit_cox_stratified]{fit_cox_stratified()}}, \code{glance()} also has \code{n_events}, and its \code{loglik},
+\code{aic}, and \code{bic} are those of the partial log-likelihood, as for survival's \code{coxph()} (with
+the number of events as the number of observations); \code{augment()}'s \code{observed} is the status,
+\code{fitted} each observation's expected number of events under the fitted model, and \code{residual}
+the martingale residual, observed minus fitted, missing for observations with weight 0.
+}
 \examples{
 data(ExampleDataBinary)
 example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
@@ -49,6 +62,7 @@ tidy(test_providers(fit))
 }
 \seealso{
 Other model methods:
+\code{\link{cox_stratified_methods}},
 \code{\link{linear_fe_methods}},
 \code{\link{logistic_fe_methods}},
 \code{\link{mixed_methods}},

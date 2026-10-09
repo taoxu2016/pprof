@@ -24,6 +24,37 @@ print.pprof_model <- function(x, ...) {
   invisible(x)
 }
 
+# The provider-stratified Cox model (fit_cox_stratified()): its tie method, events, rows left out
+# for weight 0, convergence, and variance (DEC-103).
+#' @export
+print.pprof_cox_stratified <- function(x, ...) {
+  ties <- if (identical(x$spec$ties, "efron")) "Efron" else "Breslow"
+  cat(sprintf("<pprof model: cox_stratified (%s ties)>\n", ties))
+  cat(sprintf("%s observations of %s providers, %s events", present_count(x$n_obs), present_count(x$n_providers),
+              present_count(x$n_events)))
+  if (x$n_zero_weight > 0L) {
+    cat(sprintf("; %s observations with weight 0 left out of the fit", present_count(x$n_zero_weight)))
+  }
+  cat("\n")
+  convergence <- x$convergence
+  status <- if (isTRUE(convergence$converged)) "Converged" else "Not converged"
+  cat(sprintf("%s after %d iterations (stop rule \"%s\", tol %s)\n", status, as.integer(convergence$iterations),
+              convergence$stop_rule, format(convergence$tol)))
+  variance <- if (!isTRUE(x$spec$robust)) {
+    "model-based"
+  } else if (is.null(x$spec$cluster)) {
+    "robust, one cluster per observation"
+  } else {
+    sprintf("robust, clustered by %s", x$spec$cluster)
+  }
+  cat(sprintf("Variance: %s\n", variance))
+  if (length(x$coefficients) > 0L) {
+    cat("Coefficients:\n")
+    print(signif(x$coefficients, 4))
+  }
+  invisible(x)
+}
+
 #' @export
 print.pprof_summary <- function(x, ...) {
   cat(sprintf("<pprof summary: %s%s>\n", x$family, if (is.null(x$method)) "" else sprintf(" (%s)", x$method)))
