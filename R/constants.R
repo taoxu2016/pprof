@@ -78,3 +78,41 @@ vif_threshold <- 10
 # fits center and pprof_py's other outputs do not (D-64). A diagnostic of the package's own; no
 # result depends on it. No reference: pprof_py's preflight report has no such check.
 large_mean_ratio <- 100
+
+# The Poisson tests of Cox models (CoxPH Phase C3; R/inference-poisson.R). Reference: pprof_py v0.7.0,
+# commit 9320766.
+
+# K-141: the mid-p test floors the smaller one-sided mid-p probability at midp_probability_floor
+# before turning it into a z-statistic, so |z| <= 4.7534 and the p-value is at least 2e-6.
+# Reference: pprof_py/inference/survival/empirical_null.py:205 (poisson_midp_zscore()).
+midp_probability_floor <- 1e-6
+
+# K-140: the exact test's two-sided p-value is capped at exact_poisson_cap, and its limits are
+# Garwood's (chi-square) when the expected count is below byar_expected_threshold and Byar's
+# otherwise.
+# Reference: pprof_py/inference/survival/inference.py:64-66, :127-133 (poisson_exact_test()).
+exact_poisson_cap <- 0.999
+byar_expected_threshold <- 100
+
+# K-141: pprof_py's bracket of the mid-p limits in the Poisson mean, whose ends decide where a limit
+# is 0 or Inf: from midp_bracket_low * max(E, 1) to midp_bracket_scale * (O + E + midp_bracket_scale),
+# the upper end multiplied by midp_bracket_scale while the statistic there exceeds
+# max(null mean, midp_bracket_threshold) and the end is below midp_bracket_max.
+# Reference: pprof_py/inference/survival/provider_tests.py:43-45 (_midp_limits()).
+midp_bracket_low <- 1e-10
+midp_bracket_scale <- 10
+midp_bracket_threshold <- -4.75
+midp_bracket_max <- 1e12
+
+# K-141, DEC-110: the package finds the mid-p limits to rounding, with uniroot() at this tolerance and
+# iteration limit (pprof_py stops within 1e-10 max(E, 1)). No reference value: the package's own.
+midp_root_tolerance <- 1e-300
+midp_root_max_iter <- 2000L
+
+# K-149: the funnel limits of a Poisson count search the counts 0 to
+# ceiling(E + funnel_count_spread * sqrt(E) + funnel_count_margin) and lie funnel_count_offset from
+# the boundary counts, (o_lo + 1/2) / E and (o_hi - 1/2) / E.
+# Reference: pprof_py/inference/funnel.py (_poisson_nmax(), _ratio_limits()).
+funnel_count_spread <- 40
+funnel_count_margin <- 50
+funnel_count_offset <- 0.5

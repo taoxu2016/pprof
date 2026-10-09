@@ -23,6 +23,19 @@ test_that("constants keep the reference values", {
   expect_identical(vif_threshold, 10)
 })
 
+test_that("the Poisson tests of Cox models keep pprof_py's values (K-140, K-141, K-149)", {
+  expect_identical(midp_probability_floor, 1e-6)                   # K-141
+  expect_identical(exact_poisson_cap, 0.999)                       # K-140
+  expect_identical(byar_expected_threshold, 100)                   # K-140
+  expect_identical(midp_bracket_low, 1e-10)                        # K-141: pprof_py's bracket
+  expect_identical(midp_bracket_scale, 10)
+  expect_identical(midp_bracket_threshold, -4.75)
+  expect_identical(midp_bracket_max, 1e12)
+  expect_identical(funnel_count_spread, 40)                        # K-149
+  expect_identical(funnel_count_margin, 50)
+  expect_identical(funnel_count_offset, 0.5)
+})
+
 test_that("the root-finder constants equal the defaults of uniroot()", {
   defaults <- formals(stats::uniroot)
   expect_identical(eval(defaults$tol), root_tolerance)
