@@ -3,7 +3,10 @@
 # brief §3.7's MUST by DEC-038's rule against the engine call plus the preparation of its inputs
 # (DEC-105), with the verdict against the engine call alone beside it (the C2 plan's comparator);
 # the fit against coxph() on the data frame (with one cluster per row for robust, DEC-098); and
-# the fits beside C1's baseline, its engine calls and pprof_py (the brief §3.7's SHOULD).
+# the fits beside C1's baseline, its engine calls and pprof_py (the brief §3.7's SHOULD). From Phase C3
+# (DEC-111), both sides include the measures (the fit's indirect standardization, the engine's plain-R
+# expected events), and the `profile` task's measures, tests with limits, and funnel are set beside
+# pprof_py's, with the brief's MUST that mid-p limits be substantially faster: at least ten times.
 #
 # Usage, from the repository root:
 #   Rscript dev/bench/cox/summarize_paired.R <report md> <C1 engines csv> <C1 pprof_py csv> <paired csv> [...]
@@ -69,8 +72,14 @@ size_of <- function(s) {
 
 machine <- machines[[1]]
 commits <- unique(vapply(machines, function(m) substr(m$commit, 1, 7), ""))
+profile <- paired[paired$task == "profile", , drop = FALSE]
+c3 <- nrow(profile) > 0L || "expected_s" %in% names(paired)
 lines <- c(
-  "# Paired benchmark of the stratified Cox fit against its engine calls", "",
+  if (c3) {
+    "# Paired benchmark of the stratified Cox fit with its measures against its engine calls"
+  } else {
+    "# Paired benchmark of the stratified Cox fit against its engine calls"
+  }, "",
   sprintf(paste("Run on %s at commit %s (`dev/bench/cox/run_paired.R`, %d round(s), package code %s from the",
                 "commit): %s, %d logical cores; %s with survival %s; pprof %s installed with `--preclean`. The R",
                 "engines are single-threaded."),
@@ -87,6 +96,12 @@ lines <- c(
         "engine's inputs from the data frame (`data_prepare()` and the adapter's inputs) is timed in the engine's",
         "process after its measurement: the median of three calls."),
   "",
+  if (c3) {
+    c(paste("From Phase C3 (DEC-111), each side includes the measures: the fit side calls `standardize_providers()`",
+            "on the fit, which computes each observation's expected events at the national baseline, and the engine",
+            "side computes the national expected events by provider in plain R at the fitter's coefficients (C1's",
+            "closed form): the brief's \"direct engine call it wraps plus the measures\"."), "")
+  },
   paste("Rule (the brief's §3.7 MUST, DEC-105): a fit is too slow when, in every round, its median and its fastest",
         "run are more than 10% above the engine call's plus the preparation of its inputs, and its median at least",
         "0.05 s above (DEC-038). The verdict against the engine call alone, the C2 plan's comparator, is given beside",
@@ -185,8 +200,45 @@ for (g in names(groups)) {
                             fmt(median_of(c1, p$scenario[1], c1_task[[p$task[1]]])), fmt(py_median),
                             ratio(fit_median / py_median)))
 }
+midp_verdicts <- character()
+if (nrow(profile)) {
+  lines <- c(lines, "", "## Measures and tests beside pprof_py's", "",
+             paste("The `profile` task fits once outside the timing, then times on that fit: the expected events' closed",
+                   "form (`cox_expected_events()`, which the fit itself runs), `standardize_providers()` with both",
+                   "standardizations, `test_providers()` with each test followed by `standardize_providers()` with",
+                   "that test's interval, and `funnel_limits()`. pprof_py's `calculate_standardized_measures()` and",
+                   "`test()` compute the expected events themselves, so its times are set beside the package's plus",
+                   "the expected events. Medians of the rounds' medians, in seconds; pprof_py's are C1's, from",
+                   "another session, so the ratios are indicative. The brief's §3.7 MUST: mid-p limits substantially",
+                   "faster than pprof_py's, read as at least ten times (DEC-111)."),
+             "",
+             paste("| Scenario | Providers | Expected events | Measures | pprof_py measures | Mid-p test and limits |",
+                   "pprof_py mid-p | pprof_py / package, mid-p | Exact test and limits | pprof_py exact |",
+                   "Funnel | Mid-p verdict |"),
+             "|---|---|---|---|---|---|---|---|---|---|---|---|")
+  for (s in unique(profile$scenario)) {
+    p <- profile[profile$scenario == s, , drop = FALSE]
+    of <- function(column) stats::median(p[[column]])
+    if (any(p$status != "ok")) {
+      midp_verdicts[[s]] <- "FAILED"
+      lines <- c(lines, sprintf("| %s | %s | - | - | - | - | - | - | - | - | - | FAILED |", s, format(p$providers[1])))
+      next
+    }
+    midp_ratio <- median_of(py, s, "test_midp") / (of("expected_s") + of("midp_s"))
+    midp_verdicts[[s]] <- if (is.na(midp_ratio)) "-" else if (midp_ratio >= 10) "ok" else "NOT 10 TIMES FASTER"
+    lines <- c(lines, sprintf("| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |", s,
+                              format(p$providers[1], big.mark = ","), fmt(of("expected_s")), fmt(of("measures_s")),
+                              fmt(median_of(py, s, "measures")), fmt(of("midp_s")), fmt(median_of(py, s, "test_midp")),
+                              if (is.na(midp_ratio)) "-" else sprintf("%.0f", midp_ratio), fmt(of("exact_s")),
+                              fmt(median_of(py, s, "test_exact")), fmt(of("funnel_s")), midp_verdicts[[s]]))
+  }
+}
 writeLines(lines, report)
 cat(sprintf("wrote %s: %d fits, %d too slow (DEC-105), %d against the engine call alone, %d failed or differing\n",
             report, length(verdicts), sum(prepared_verdicts == "TOO SLOW"), sum(verdicts == "TOO SLOW"),
             sum(verdicts %in% c("FAILED", "ESTIMATES DIFFER"))))
-if (any(prepared_verdicts != "ok")) quit(status = 1)
+if (length(midp_verdicts)) {
+  cat(sprintf("mid-p limits: %d scenarios, %d not ten times faster than pprof_py's or failed\n", length(midp_verdicts),
+              sum(midp_verdicts %in% c("NOT 10 TIMES FASTER", "FAILED"))))
+}
+if (any(prepared_verdicts != "ok") || any(midp_verdicts %in% c("NOT 10 TIMES FASTER", "FAILED"))) quit(status = 1)

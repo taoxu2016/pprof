@@ -12,6 +12,15 @@
 #   for robust (C1's comparator, DEC-098); reported, not a gate;
 # - fit: fit_cox_stratified() on the data frame, with robust = TRUE for robust.
 #
+# From Phase C3 (DEC-105, DEC-111), the brief's rule compares a fit plus its measures with the engine
+# call plus the measures: the fit side also standardizes the providers (indirect ratios, from the
+# expected events the fit computes), and the engine side also computes the national expected events by
+# provider in plain R at the fitter's coefficients (C1's closed form, run_engines.R). A fourth task,
+# `profile`, fits once outside the timing and times, on that fit, the expected events' closed form, the
+# indirect and direct measures, each test with its limits, and the funnel, which the report sets beside
+# pprof_py's measures and tests (the brief's SHOULD, and its MUST that mid-p limits be substantially
+# faster).
+#
 # The package is the working tree, installed with --preclean (dev/bench/harness.R) and placed first
 # on the library path, before the libraries that hold survival. Each process measures as
 # run_engines.R does: the first run's time, the process's peak memory before and after it, gc()'s
@@ -44,8 +53,9 @@ while (k <= length(args)) {
 }
 stopifnot(requireNamespace("callr", quietly = TRUE), requireNamespace("bench", quietly = TRUE), opts$rounds >= 1L)
 
-tasks <- c("breslow", "efron", "robust")
+tasks <- c("breslow", "efron", "robust", "profile")
 sides <- c("engine", "coxph", "fit")  # the order of every round
+task_sides <- function(task) if (identical(task, "profile")) "fit" else sides
 
 run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
   source(scenarios_file)
@@ -60,9 +70,74 @@ run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
   ties <- if (identical(task, "efron")) "efron" else "breslow"
   robust <- identical(task, "robust")
   control <- survival::coxph.control(timefix = FALSE)  # eps = 1e-9 and iter.max = 20, the fit's defaults
+  # A call's first run with the process's peak memory before and after it and gc()'s maximum of R's
+  # heap, then bench::mark() with at least 5 runs (3 when the first takes 10 s or more; 1 from 60 s).
+  measure <- function(call) {
+    invisible(gc(reset = TRUE))
+    before <- as.numeric(bench::bench_process_memory()[["max"]])
+    first <- system.time(value <- call())[["elapsed"]]
+    after <- as.numeric(bench::bench_process_memory()[["max"]])
+    heap <- gc()
+    iterations <- if (first >= 60) 1L else if (first >= 10) 3L else 5L
+    b <- bench::mark(call(), min_time = 1, min_iterations = iterations, max_iterations = max(iterations, 100L),
+                     check = FALSE, memory = FALSE, filter_gc = FALSE)
+    list(value = value, first = first, before = before, after = after, gc_max = sum(heap[, ncol(heap)]),
+         times = as.numeric(b$time[[1]]))
+  }
+  profile_columns <- c("expected_s", "measures_s", "midp_s", "exact_s", "funnel_s")
+  if (identical(task, "profile")) {
+    # The profiling functions on one fit, made outside the timing: the expected events' closed form
+    # (which the fit computes), the indirect and direct measures, each test with its limits (pprof_py's
+    # test() computes the measures, the test, and the limits), and the funnel.
+    fit <- fit_cox_stratified(formula, d, "provider", weights = "weight")
+    eta <- fit$linear_predictor + fit$offset
+    calls <- list(
+      expected_s = function() pprof:::cox_expected_events(eta, fit$start, fit$stop, fit$response),
+      measures_s = function() standardize_providers(fit, c("indirect", "direct")),
+      midp_s = function() list(test_providers(fit, test = "midp"), standardize_providers(fit, interval = "midp")),
+      exact_s = function() list(test_providers(fit, test = "exact"), standardize_providers(fit, interval = "exact")),
+      funnel_s = function() funnel_limits(fit)
+    )
+    timed <- lapply(calls, measure)
+    peak <- max(vapply(timed, `[[`, numeric(1), "after"))
+    return(c(list(first_s = NA_real_, median_s = NA_real_, min_s = NA_real_, max_s = NA_real_, runs = NA_integer_,
+                  peak_before_mb = NA_real_, peak_after_mb = peak / 2^20, gc_max_mb = NA_real_, prep_s = NA_real_),
+             lapply(timed, function(t) stats::median(t$times)),
+             list(coefficients = unname(fit$coefficients), variance = NULL)))
+  }
+  # The national Breslow expected events by provider in plain R (K-136, K-137; C1's closed form in
+  # run_engines.R), from the engine's inputs: the design, the offset, the Surv() response, the strata.
+  plain_expected <- function(inputs, beta) {
+    eta <- drop(inputs$x %*% beta) + inputs$offset
+    risk <- exp(eta - max(eta))
+    y <- unclass(inputs$y)
+    start <- if (ncol(y) == 3L) y[, 1] else rep(0, nrow(y))
+    stop <- y[, ncol(y) - 1L]
+    event <- y[, ncol(y)]
+    times <- sort(unique(stop[event == 1]))
+    k <- length(times)
+    deaths <- tabulate(match(stop[event == 1], times), k)
+    at_stop <- findInterval(stop, times)
+    at_start <- findInterval(start, times)
+    bin <- function(index) {
+      a <- numeric(k + 1)
+      s <- rowsum(risk, index)
+      a[as.integer(rownames(s)) + 1] <- s
+      a
+    }
+    suffix <- function(a) rev(cumsum(rev(a)))
+    risk_set <- suffix(bin(at_stop))[2:(k + 1)] - suffix(bin(at_start))[2:(k + 1)]
+    cumulative <- c(0, cumsum(deaths / risk_set))
+    rowsum(risk * (cumulative[at_stop + 1] - cumulative[at_start + 1]), inputs$strata)
+  }
   prepare <- NULL
   call <- switch(side,
-    fit = function() fit_cox_stratified(formula, d, "provider", weights = "weight", ties = ties, robust = robust),
+    # The fit and its indirect measures (DEC-105, DEC-111).
+    fit = function() {
+      fit <- fit_cox_stratified(formula, d, "provider", weights = "weight", ties = ties, robust = robust)
+      standardize_providers(fit)
+      fit
+    },
     coxph = {
       d$.row <- seq_len(nrow(d))
       f <- stats::as.formula(paste("Surv(start, stop, event) ~", paste(covariates, collapse = " + "),
@@ -88,9 +163,12 @@ run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
       terms <- built$terms
       rm(built)
       fitter <- if (inputs$counting) survival::agreg.fit else survival::coxph.fit
+      # The fitter and the measures at its coefficients (DEC-105, DEC-111).
       engine <- function() {
-        fitter(inputs$x, inputs$y, inputs$strata, inputs$offset, NULL, control, weights = inputs$weights,
-               method = ties, rownames = NULL, nocenter = c(-1, 0, 1))
+        fit <- fitter(inputs$x, inputs$y, inputs$strata, inputs$offset, NULL, control, weights = inputs$weights,
+                      method = ties, rownames = NULL, nocenter = c(-1, 0, 1))
+        fit$expected <- plain_expected(inputs, fit$coefficients)
+        fit
       }
       if (!robust) {
         engine
@@ -116,26 +194,20 @@ run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
     if (!robust) variance <- NULL else if (is.null(variance)) variance <- value$robust_var
     list(coefficients = unname(value$coefficients), variance = if (!is.null(variance)) unname(variance))
   }
-  invisible(gc(reset = TRUE))
-  before <- as.numeric(bench::bench_process_memory()[["max"]])
-  first <- system.time(value <- call())[["elapsed"]]
-  after <- as.numeric(bench::bench_process_memory()[["max"]])
-  heap <- gc()
-  gc_max <- sum(heap[, ncol(heap)])  # "max used" in MB since the reset, R's heap only
-  result <- estimates(value)
-  rm(value)
-  iterations <- if (first >= 60) 1L else if (first >= 10) 3L else 5L
-  b <- bench::mark(call(), min_time = 1, min_iterations = iterations, max_iterations = max(iterations, 100L),
-                   check = FALSE, memory = FALSE, filter_gc = FALSE)
-  times <- as.numeric(b$time[[1]])
+  timed <- measure(call)
+  result <- estimates(timed$value)
+  timed$value <- NULL
+  times <- timed$times
   # The engine's inputs' preparation: the median of three calls, after the measurement so that its
   # garbage does not burden the engine call, and after the first call, which pays one-off costs.
   prep_s <- NA_real_
   if (!is.null(prepare)) {
     prep_s <- stats::median(vapply(1:3, function(i) as.numeric(bench::bench_time(prepare())[["real"]]), numeric(1)))
   }
-  c(list(first_s = first, median_s = stats::median(times), min_s = min(times), max_s = max(times), runs = length(times),
-         peak_before_mb = before / 2^20, peak_after_mb = after / 2^20, gc_max_mb = gc_max, prep_s = prep_s), result)
+  c(list(first_s = timed$first, median_s = stats::median(times), min_s = min(times), max_s = max(times),
+         runs = length(times), peak_before_mb = timed$before / 2^20, peak_after_mb = timed$after / 2^20,
+         gc_max_mb = timed$gc_max, prep_s = prep_s),
+    stats::setNames(as.list(rep(NA_real_, length(profile_columns))), profile_columns), result)
 }
 
 # The largest relative difference of the estimates `a` from `b`, 0 when they are identical.
@@ -150,7 +222,8 @@ max_relative_difference <- function(a, b) {
 wt_lib <- bench_install_working_tree()
 scenarios_file <- file.path("dev", "bench", "cox", "scenarios.R")
 scenarios <- cox_bench_scenarios()
-measures <- c("first_s", "median_s", "min_s", "max_s", "runs", "peak_before_mb", "peak_after_mb", "gc_max_mb", "prep_s")
+measures <- c("first_s", "median_s", "min_s", "max_s", "runs", "peak_before_mb", "peak_after_mb", "gc_max_mb", "prep_s",
+              "expected_s", "measures_s", "midp_s", "exact_s", "funnel_s")
 rows <- list()
 mismatches <- 0L
 for (i in seq_len(nrow(scenarios))) {
@@ -160,7 +233,7 @@ for (i in seq_len(nrow(scenarios))) {
     dir <- cox_bench_write(sc, file.path(data_root, sc$id))
     for (round in seq_len(opts$rounds)) {
       results <- list()
-      for (side in sides) {
+      for (side in task_sides(task)) {
         results[[side]] <- tryCatch(
           callr::r(run_side, args = list(dir = dir, task = task, side = side, scenarios_file = scenarios_file,
                                          pprof_lib = wt_lib),
@@ -171,26 +244,34 @@ for (i in seq_len(nrow(scenarios))) {
         )
       }
       engine <- results[["engine"]]
-      for (side in sides) {
+      for (side in task_sides(task)) {
         res <- results[[side]]
         ok <- is.null(res$status) && is.null(engine$status)
         value <- function(name) if (is.null(res[[name]])) NA else res[[name]]
-        same <- if (side == "engine" || !ok) {
+        paired <- !identical(task, "profile")
+        same <- if (side == "engine" || !ok || !paired) {
           NA
         } else {
           identical(res$coefficients, engine$coefficients) && identical(res$variance, engine$variance)
         }
-        if (identical(side, "fit") && !isTRUE(same)) mismatches <- mismatches + 1L
+        if (identical(side, "fit") && paired && !isTRUE(same)) mismatches <- mismatches + 1L
+        if (identical(side, "fit") && !paired && !ok) mismatches <- mismatches + 1L
         rows[[length(rows) + 1L]] <- data.frame(
           scenario = sc$id, n = sc$n, providers = sc$m, covariates = sc$p, task = task, side = side, round = round,
           status = if (is.null(res$status)) "ok" else res$status,
           as.list(stats::setNames(lapply(measures, value), measures)),
           identical_to_engine = same,
-          max_rel_diff_engine = if (side == "engine" || !ok) NA else max_relative_difference(res, engine)
+          max_rel_diff_engine = if (side == "engine" || !ok || !paired) NA else max_relative_difference(res, engine)
         )
-        cat(sprintf("%-15s %-8s round %d %-7s %8.3f s (fastest %.3f)  peak %5.0f MB%s\n", sc$id, task, round, side,
-                    value("median_s"), value("min_s"), value("peak_after_mb"),
-                    if (identical(side, "fit") && isFALSE(same)) "  ESTIMATES DIFFER FROM THE ENGINE CALL'S" else ""))
+        if (paired) {
+          cat(sprintf("%-15s %-8s round %d %-7s %8.3f s (fastest %.3f)  peak %5.0f MB%s\n", sc$id, task, round, side,
+                      value("median_s"), value("min_s"), value("peak_after_mb"),
+                      if (identical(side, "fit") && isFALSE(same)) "  ESTIMATES DIFFER FROM THE ENGINE CALL'S" else ""))
+        } else {
+          cat(sprintf("%-15s %-8s round %d  expected %.3f, measures %.3f, mid-p %.3f, exact %.3f, funnel %.3f s%s\n",
+                      sc$id, task, round, value("expected_s"), value("measures_s"), value("midp_s"), value("exact_s"),
+                      value("funnel_s"), if (ok) "" else paste(" FAILED:", res$status)))
+        }
       }
       utils::write.csv(do.call(rbind, rows), out_file, row.names = FALSE)
     }
