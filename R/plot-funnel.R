@@ -45,7 +45,8 @@ plot_funnel <- function(x, point_size = 2, point_alpha = 0.8, line_width = 0.8) 
   if (is.null(funnel)) {
     abort_invalid_input("This profile has no funnel limits; its model does not support funnel plots.", arg = "x")
   }
-  points <- funnel$providers
+  shown <- plot_finite_rows(funnel$providers)
+  points <- shown$table
   points$flag <- plot_flag_factor(points$flag)
   limits <- funnel$table
   level <- factor(plot_level_text(limits$level), levels = plot_level_text(sort(unique(limits$level))))
@@ -54,7 +55,7 @@ plot_funnel <- function(x, point_size = 2, point_alpha = 0.8, line_width = 0.8) 
     data.frame(precision = limits$precision, value = limits$lower, level = level, side = "lower")
   )
   lines$group <- paste(lines$level, lines$side)
-  ggplot2::ggplot() +
+  plot <- ggplot2::ggplot() +
     ggplot2::geom_line(data = lines, ggplot2::aes(x = .data$precision, y = .data$value, group = .data$group,
                                                   linetype = .data$level), linewidth = line_width) +
     plot_reference_layer(funnel$target, vertical = TRUE, line_width = line_width, linetype = "longdash",
@@ -65,4 +66,5 @@ plot_funnel <- function(x, point_size = 2, point_alpha = 0.8, line_width = 0.8) 
     ggplot2::labs(x = "Precision", y = plot_measure_label(funnel$measure, "indirect"), linetype = "Control limit",
                   title = "Funnel plot", subtitle = plot_subtitle(plot_test_subtitle(funnel$test, limits$level[1]))) +
     plot_theme()
+  plot_add_caption(plot, shown$caption)
 }

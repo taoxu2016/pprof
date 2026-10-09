@@ -284,3 +284,20 @@ test_that("edge cases: no events, one-row providers, a large covariate mean (§6
   expect_true(all(is.finite(far$expected)))
   expect_true(all(abs(far$expected - measures$expected) <= tolerance$atol + tolerance$rtol * abs(measures$expected)))
 })
+
+test_that("the plots draw a Cox profile, leaving out a provider without expected events with a caption", {
+  fit <- cox_profile_fit()
+  profile <- without_zero_warning(profile_providers(fit, interval = "midp"))
+  plots <- list(funnel = plot_funnel(profile), caterpillar = plot_caterpillar(profile$measures, use_flag = TRUE),
+                flags = plot_flags(profile), volume = plot_volume(profile))
+  for (name in names(plots)) {
+    expect_s3_class(plots[[name]], "ggplot")
+    expect_no_warning(ggplot2::ggplot_build(plots[[name]]))
+  }
+  caption <- "1 provider without a finite estimate (no expected events) not shown"
+  for (name in c("funnel", "caterpillar", "volume")) expect_identical(plots[[name]]$labels$caption, caption)
+  expect_null(plots$flags$labels$caption)
+  expect_match(plots$funnel$labels$subtitle, "mid-p test at the 95% level")
+  expect_match(plots$caterpillar$labels$subtitle, "Mid-p intervals at the 95% level")
+  expect_identical(nrow(plots$funnel$layers[[3]]$data), nrow(fit$providers) - 1L)
+})

@@ -76,7 +76,7 @@ plot_alternative_text <- function(alternative) {
 
 # "flags: exact test at the 95% level, two-sided".
 plot_test_subtitle <- function(test, level, alternative = "two.sided", score_type = NULL) {
-  name <- switch(test, exact = "exact test", bootstrap = "bootstrap test", wald = "Wald test",
+  name <- switch(test, exact = "exact test", bootstrap = "bootstrap test", wald = "Wald test", midp = "mid-p test",
                  score = if (identical(score_type, "standard")) "standard score test" else "score test",
                  paste(test, "test"))
   sprintf("flags: %s at the %s level, %s", name, plot_level_text(level), plot_alternative_text(alternative))
@@ -84,8 +84,25 @@ plot_test_subtitle <- function(test, level, alternative = "two.sided", score_typ
 
 # "exact intervals at the 95% level, two-sided".
 plot_interval_subtitle <- function(interval, level, alternative = "two.sided") {
-  name <- switch(interval, wald = "Wald", interval)
+  name <- switch(interval, wald = "Wald", midp = "mid-p", interval)
   sprintf("%s intervals at the %s level, %s", name, plot_level_text(level), plot_alternative_text(alternative))
+}
+
+# The rows of a table whose estimate is finite, and a caption counting the providers left out, or
+# NULL when there are none: a Cox provider without expected events has an undefined ratio (K-147),
+# which a plot cannot place. No provider of the other families is left out.
+plot_finite_rows <- function(table) {
+  finite <- is.finite(table$estimate)
+  omitted <- sum(!finite)
+  if (omitted == 0L) return(list(table = table, caption = NULL))
+  caption <- sprintf("%d provider%s without a finite estimate (no expected events) not shown", omitted,
+                     if (omitted == 1L) "" else "s")
+  list(table = table[finite, , drop = FALSE], caption = caption)
+}
+
+# The plot with its caption, if any.
+plot_add_caption <- function(plot, caption) {
+  if (is.null(caption)) plot else plot + ggplot2::labs(caption = caption)
 }
 
 # The subtitle from its parts, joined by semicolons and starting with a capital; NULL without

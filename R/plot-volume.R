@@ -48,6 +48,8 @@ plot_volume <- function(x, standardization = NULL, measure = NULL, use_flag = TR
   }, numeric(1))
   table <- measures$table[measures$table$standardization %in% standardization & measures$table$measure %in% measure, ,
                           drop = FALSE]
+  shown <- plot_finite_rows(table)
+  table <- shown$table
   key <- paste(table$standardization, table$measure)
   table$panel <- factor(panels$label[match(key, paste(panels$standardization, panels$measure))], levels = panels$label)
   panels$panel <- factor(panels$label, levels = panels$label)
@@ -77,10 +79,11 @@ plot_volume <- function(x, standardization = NULL, measure = NULL, use_flag = TR
     if (flagged) plot_test_subtitle(tests$test, tests$level, tests$alternative, tests$score_type),
     if (intervals) plot_interval_subtitle(measures$interval, measures$level, measures$alternative)
   )
-  plot +
+  plot <- plot +
     ggplot2::facet_wrap(ggplot2::vars(.data$panel), scales = "free_y") +
     ggplot2::scale_x_log10() +
     ggplot2::labs(x = "Provider volume (observations, log scale)", y = "Standardized measure",
                   title = "Standardized measures by provider volume", subtitle = subtitle) +
     plot_theme()
+  plot_add_caption(plot, shown$caption)
 }

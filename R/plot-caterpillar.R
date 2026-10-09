@@ -48,7 +48,8 @@ plot_caterpillar <- function(x, standardization = NULL, measure = NULL, referenc
   }
   data <- plot_caterpillar_data(x, standardization, measure, reference)
   alternative <- if (is.null(x$alternative)) "two.sided" else x$alternative
-  table <- plot_interval_ends(data$table, alternative)
+  shown <- plot_finite_rows(data$table)
+  table <- plot_interval_ends(shown$table, alternative)
   has_reference <- !is.null(data$reference)
   if (has_reference) {
     table$flag <- plot_flag_factor(profile_interval_flags(table$lower, table$upper, data$reference, alternative))
@@ -84,11 +85,12 @@ plot_caterpillar <- function(x, standardization = NULL, measure = NULL, referenc
   } else {
     ggplot2::theme(axis.text.y = ggplot2::element_blank(), axis.ticks.y = ggplot2::element_blank())
   }
-  plot +
+  plot <- plot +
     ggplot2::labs(x = if (vertical) "Provider" else data$label, y = if (vertical) data$label else "Provider",
                   title = "Caterpillar plot", subtitle = subtitle) +
     plot_theme() +
     hidden
+  plot_add_caption(plot, shown$caption)
 }
 
 # The rows to plot, their axis label, and the reference value (NULL when there is none).
