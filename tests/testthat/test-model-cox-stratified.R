@@ -97,18 +97,13 @@ test_that("a cluster implies the robust variance, and robust = TRUE alone cluste
   expect_identical(coef(per_row), coef(clustered))
 })
 
-test_that("only coefficient inference is declared, and the profiling functions say so (DEC-102)", {
+test_that("the model has no provider effects, and says so (DEC-102)", {
+  # C3 adds the provider-level capabilities (test-profile-cox.R); the model still has no effects.
   fit <- fit_cox_stratified(Surv(time, status) ~ age + sex, lung(), "inst")
-  expect_identical(inference_capabilities(fit), "coef_wald")
   expect_null(provider_estimates(fit))
   unsupported <- function(expr) expect_error(expr, class = "pprof_error_unsupported_inference")
   unsupported(provider_effects(fit))
-  unsupported(test_providers(fit))
-  unsupported(standardize_providers(fit))
-  unsupported(funnel_limits(fit))
-  unsupported(profile_providers(fit))
   unsupported(test_coefficients(fit, "lr"))
-  unsupported(expected_outcome(fit, 0))
   spec <- profile_spec(fit)
   expect_true(all(c("family", "effect", "null_default", "null_options", "indirect_numerator", "measures") %in%
                     names(spec)))

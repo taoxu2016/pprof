@@ -30,9 +30,15 @@
 #'   model, so [baseline_hazard()] and the curves of [predict()] are not available for it.
 #'
 #' Rows with a missing value in the response, a covariate, an offset, the provider, the weights,
-#' or the cluster are dropped. No provider is screened out. The model has no provider effects:
-#' providers are compared through the standardized measures of their expected events, and
-#' [provider_effects()] raises a `pprof_error_unsupported_inference` condition.
+#' or the cluster are dropped. No provider is screened out. The model has no provider effects, so
+#' [provider_effects()] raises a `pprof_error_unsupported_inference` condition: providers are
+#' compared through their observed and expected events, He and Schaubel's two-stage measures as
+#' pprof_py computes them. Each observation's expected events at the national baseline, the
+#' Breslow estimator over all rows with the fitted linear predictor as offset, are computed with the
+#' fit; [test_providers()], [standardize_providers()], [funnel_limits()], and [profile_providers()]
+#' give the tests, standardized ratios, limits, and funnel built on them. These use the fitted
+#' coefficients only: every row counts once, rows with weight 0 included, and the baselines are
+#' Breslow's whatever the ties of the fit.
 #'
 #' @param formula `Surv(time, status) ~ terms` or `Surv(start, stop, status) ~ terms`, with
 #'   [survival::Surv()] and, optionally, `offset()` terms. The provider is not part of the formula,
@@ -60,8 +66,9 @@
 #'   and exit time), `weights` and `offset` (or `NULL`), `naive_vcov` (the model-based covariance
 #'   of a robust fit), `loglik` (the partial log-likelihoods at beta = 0 and at the estimates),
 #'   `n_events` (the events of the fitted rows), `n_zero_weight` (the rows left out for weight 0),
-#'   `martingale_residuals` (missing for those rows), and with `keep_data = TRUE`, `engine_fit`,
-#'   survival's `coxph()` object. The provider table has `n_events` and `person_time`.
+#'   `martingale_residuals` (missing for those rows), `expected_events` (each observation's expected
+#'   events at the national baseline), and with `keep_data = TRUE`, `engine_fit`, survival's
+#'   `coxph()` object. The provider table has `n_events` and `person_time`.
 #' @seealso [baseline_hazard()], [cox_stratified_methods], [test_coefficients()], [check_data()].
 #' @family fitting functions
 #' @examples
@@ -71,6 +78,8 @@
 #' summary(fit)
 #' # The robust variance, with each patient as a cluster.
 #' fit_cox_stratified(Surv(time, status) ~ age + sex, lung, provider = "inst", robust = TRUE)
+#' # Each institution's standardized ratio of deaths, with mid-p tests and limits.
+#' head(profile_providers(fit, interval = "midp")$table)
 #' @export
 fit_cox_stratified <- function(formula, data, provider, weights = NULL, cluster = NULL, ties = "breslow",
                                robust = FALSE, max_iter = 20, tol = 1e-9, keep_data = FALSE, verbose = FALSE) {
@@ -91,8 +100,13 @@ fit_cox_stratified <- function(formula, data, provider, weights = NULL, cluster 
                max_iter = max_iter, tol = tol, keep_data = keep_data)
   estimates <- survival_fit(prepared, ties, robust, max_iter, tol)
   cox_stratified_report(prepared, estimates, verbose)
+  # Each observation's expected events at the national baseline, which the measures and tests use
+  # (K-136, K-137; COXPH_DESIGN §F.1): from the fitted linear predictor and the offset of every row.
+  eta <- if (is.null(prepared$offset)) estimates$linear_predictor else estimates$linear_predictor + prepared$offset
+  expected_events <- cox_expected_events(eta, prepared$start, prepared$stop, prepared$response)
   engine_fit <- if (keep_data) survival_engine_fit(prepared, ties, max_iter, tol)
-  new_pprof_cox_stratified(prepared, estimates, spec, call = call, keep_data = keep_data, engine_fit = engine_fit)
+  new_pprof_cox_stratified(prepared, estimates, spec, expected_events, call = call, keep_data = keep_data,
+                           engine_fit = engine_fit)
 }
 
 # The fit's convergence warning (K-133: reaching max_iter warns) and, with `verbose`, its summary.
@@ -112,14 +126,16 @@ cox_stratified_report <- function(prepared, estimates, verbose) {
 }
 
 # The model object (COXPH_DESIGN §B.2): the shared fields and the Cox fields.
-new_pprof_cox_stratified <- function(data, estimates, spec, call = NULL, keep_data = FALSE, engine_fit = NULL) {
+new_pprof_cox_stratified <- function(data, estimates, spec, expected_events, call = NULL, keep_data = FALSE,
+                                     engine_fit = NULL) {
   model <- new_pprof_model(
     data, coefficients = estimates$coefficients, vcov = estimates$vcov, provider_effects = NULL,
     linear_predictor = estimates$linear_predictor, spec = spec,
     start = data$start, stop = data$stop, weights = data$weights, offset = data$offset,
     naive_vcov = estimates$naive_vcov, loglik = estimates$loglik, n_events = estimates$n_events,
     n_zero_weight = estimates$n_zero_weight, martingale_residuals = estimates$martingale_residuals,
-    convergence = estimates$convergence, call = call, keep_data = keep_data, class = "pprof_cox_stratified"
+    expected_events = expected_events, convergence = estimates$convergence, call = call, keep_data = keep_data,
+    class = "pprof_cox_stratified"
   )
   if (!is.null(engine_fit)) model$engine_fit <- engine_fit
   validate_pprof_cox_stratified(model)
@@ -147,6 +163,9 @@ validate_pprof_cox_stratified <- function(x) {
     fail("`loglik` must hold the log-likelihoods at 0 and at the estimates")
   }
   if (!per_observation(x$martingale_residuals)) fail("`martingale_residuals` must have one value per observation")
+  if (!per_observation(x$expected_events) || any(x$expected_events < 0, na.rm = TRUE)) {
+    fail("`expected_events` must have one value per observation, none negative")
+  }
   if (!is.null(x$naive_vcov) && !identical(dim(x$naive_vcov), dim(x$vcov))) fail("`naive_vcov` must be like `vcov`")
   if (!all(c("n_events", "person_time") %in% names(x$providers))) {
     fail("the provider table must have n_events and person_time")
@@ -159,21 +178,46 @@ validate_pprof_cox_stratified <- function(x) {
 
 #' @export
 inference_capabilities.pprof_cox_stratified <- function(model) {
-  # Coefficient inference only in Phase C2; the measures and Poisson tests come with C3.
-  "coef_wald"
+  # COXPH_DESIGN §D.1: coefficient inference, pprof_py's Poisson tests and their limits, both
+  # standardizations, and the funnel. No provider effects, so no Wald or score inference for providers.
+  c("coef_wald", "provider_exact", "provider_midp", "interval_exact", "interval_midp", "standardize_indirect",
+    "standardize_direct", "funnel")
 }
 
 #' @export
 profile_spec.pprof_cox_stratified <- function(model) {
-  # The fields every family has, and the covariate rule: pprof_py's two-sided p-value computed as an
-  # upper tail, 2 (1 - Phi(|z|)) evaluated as 2 pnorm(|z|, lower.tail = FALSE) (DEC-101, K-148),
-  # with the default interval beta -/+ qnorm(1 - alpha / 2) se. C3 completes COXPH_DESIGN §D.2.
+  # COXPH_DESIGN §D.2, with DEC-108's routing. The providers' counts are Poisson with their expected
+  # events at the national baseline as means, so the tests (the mid-p test by default), the limits of
+  # indirect ratios, and the funnel limits are pprof_py's Poisson ones (K-140 to K-142, K-149); the null
+  # variance of an expected count is the count itself. Direct standardization gives each provider's
+  # expected events in the whole population with its own baseline over the total events (K-138). The
+  # covariate rule is pprof_py's two-sided p-value computed as an upper tail, 2 (1 - Phi(|z|)) evaluated
+  # as 2 pnorm(|z|, lower.tail = FALSE) (DEC-101, K-148), with the interval beta -/+ qnorm(1 - alpha / 2) se.
   list(
     family = "cox_stratified", effect = "log ratio of the provider's hazard to the national baseline",
-    null_default = 0, null_options = character(), indirect_numerator = "observed", measures = "ratio",
+    null_default = 0, null_options = character(), test_default = "midp", indirect_numerator = "observed",
+    comparison = "ratio", measures = "ratio", count_distribution = "poisson",
+    variance_function = function(expected) expected, direct_by_provider = cox_direct_expected,
+    direct_reference = "observed", one_sided_extremes = FALSE,
     coefficient_wald = list(p_value = "two_sided_upper", p_value_distribution = "normal", interval = "critical",
-                            interval_distribution = "normal", df = NULL)
+                            interval_distribution = "normal", df = NULL),
+    funnel = list(measure = "ratio", target = 1, test = "midp", precision = function(expected, variance) expected),
+    wald_caution = FALSE
   )
+}
+
+#' @export
+expected_outcome.pprof_cox_stratified <- function(model, effect, ...) {
+  # Each observation's expected events at the national baseline, scaled by exp(effect) (K-137, M-40).
+  exp(model_observation_effects(model, effect)) * model$expected_events
+}
+
+#' @export
+null_effect.pprof_cox_stratified <- function(model, null = 0, ...) {
+  # M-40: a number, 0 by default, pprof_py's test of the ratio against 1; an integer is used as the
+  # equal double.
+  if (is.numeric(null) && length(null) == 1L && is.finite(null)) return(as.double(null))
+  abort_invalid_input("`null` must be a single finite number.", arg = "null")
 }
 
 # --- survival's coxph() object -------------------------------------------------------------------

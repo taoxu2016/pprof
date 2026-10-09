@@ -56,8 +56,9 @@ was requested) and \code{start} and \code{stop} (each observation's entry, 0 for
 and exit time), \code{weights} and \code{offset} (or \code{NULL}), \code{naive_vcov} (the model-based covariance
 of a robust fit), \code{loglik} (the partial log-likelihoods at beta = 0 and at the estimates),
 \code{n_events} (the events of the fitted rows), \code{n_zero_weight} (the rows left out for weight 0),
-\code{martingale_residuals} (missing for those rows), and with \code{keep_data = TRUE}, \code{engine_fit},
-survival's \code{coxph()} object. The provider table has \code{n_events} and \code{person_time}.
+\code{martingale_residuals} (missing for those rows), \code{expected_events} (each observation's expected
+events at the national baseline), and with \code{keep_data = TRUE}, \code{engine_fit}, survival's
+\code{coxph()} object. The provider table has \code{n_events} and \code{person_time}.
 }
 \description{
 Fits the Cox proportional hazards model with one baseline hazard per provider and coefficients
@@ -89,9 +90,15 @@ model, so \code{\link[=baseline_hazard]{baseline_hazard()}} and the curves of \c
 }
 
 Rows with a missing value in the response, a covariate, an offset, the provider, the weights,
-or the cluster are dropped. No provider is screened out. The model has no provider effects:
-providers are compared through the standardized measures of their expected events, and
-\code{\link[=provider_effects]{provider_effects()}} raises a \code{pprof_error_unsupported_inference} condition.
+or the cluster are dropped. No provider is screened out. The model has no provider effects, so
+\code{\link[=provider_effects]{provider_effects()}} raises a \code{pprof_error_unsupported_inference} condition: providers are
+compared through their observed and expected events, He and Schaubel's two-stage measures as
+pprof_py computes them. Each observation's expected events at the national baseline, the
+Breslow estimator over all rows with the fitted linear predictor as offset, are computed with the
+fit; \code{\link[=test_providers]{test_providers()}}, \code{\link[=standardize_providers]{standardize_providers()}}, \code{\link[=funnel_limits]{funnel_limits()}}, and \code{\link[=profile_providers]{profile_providers()}}
+give the tests, standardized ratios, limits, and funnel built on them. These use the fitted
+coefficients only: every row counts once, rows with weight 0 included, and the baselines are
+Breslow's whatever the ties of the fit.
 }
 \examples{
 lung <- survival::lung
@@ -100,6 +107,8 @@ fit
 summary(fit)
 # The robust variance, with each patient as a cluster.
 fit_cox_stratified(Surv(time, status) ~ age + sex, lung, provider = "inst", robust = TRUE)
+# Each institution's standardized ratio of deaths, with mid-p tests and limits.
+head(profile_providers(fit, interval = "midp")$table)
 }
 \seealso{
 \code{\link[=baseline_hazard]{baseline_hazard()}}, \link{cox_stratified_methods}, \code{\link[=test_coefficients]{test_coefficients()}}, \code{\link[=check_data]{check_data()}}.
