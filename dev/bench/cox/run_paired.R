@@ -5,8 +5,9 @@
 # - engine: for breslow and efron, survival's fitter as the adapter calls it (R/model-survival.R), on
 #   the inputs the adapter builds, prepared outside the timing; for robust, the same fitter call
 #   followed by coxph()'s robust step with one cluster per row (residuals.coxph(type = "dfbeta",
-#   collapse = row, weighted = TRUE), then crossprod(); DEC-099). The process also times, once, the
-#   preparation of those inputs from the data frame (data_prepare() and the adapter's inputs);
+#   collapse = row, weighted = TRUE), then crossprod(); DEC-099). The process also times the
+#   preparation of those inputs from the data frame (data_prepare() and the adapter's inputs): the
+#   median of three runs after a first, untimed one;
 # - coxph: survival's coxph() on the data frame, the call a user would make, with one cluster per row
 #   for robust (C1's comparator, DEC-098); reported, not a gate;
 # - fit: fit_cox_stratified() on the data frame, with robust = TRUE for robust.
@@ -75,14 +76,18 @@ run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
       }
     },
     engine = {
-      # The adapter's inputs (DEC-100), built outside the timing; their preparation is timed once.
-      prep_s <- system.time({
+      # The adapter's inputs (DEC-100), built outside the timing. Their preparation is timed apart: the
+      # first call in a fresh process also pays one-off costs, so the median of three later calls.
+      prepare <- function() {
         prepared <- pprof:::data_prepare(formula, d, "provider", event_counts = TRUE, response_type = "survival",
                                          weights = "weight", allow_offset = TRUE)
-        inputs <- pprof:::survival_inputs(prepared, pprof:::survival_fit_rows(prepared))
-      })[["elapsed"]]
-      terms <- prepared$terms
-      rm(prepared)
+        list(terms = prepared$terms, inputs = pprof:::survival_inputs(prepared, pprof:::survival_fit_rows(prepared)))
+      }
+      built <- prepare()
+      prep_s <- stats::median(vapply(1:3, function(i) as.numeric(bench::bench_time(prepare())[["real"]]), numeric(1)))
+      inputs <- built$inputs
+      terms <- built$terms
+      rm(built)
       fitter <- if (inputs$counting) survival::agreg.fit else survival::coxph.fit
       engine <- function() {
         fitter(inputs$x, inputs$y, inputs$strata, inputs$offset, NULL, control, weights = inputs$weights,

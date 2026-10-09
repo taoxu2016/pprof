@@ -1,21 +1,23 @@
 # The report of the paired Cox benchmark (dev/bench/cox/run_paired.R; COXPH_C2_PLAN §4.5): per
 # scenario, task, and round, the fit's median and fastest times against its engine call's, with
 # DEC-038's verdict (the brief §3.7's MUST); the fit against coxph() on the data frame (with one
-# cluster per row for robust, DEC-098); and the fits beside C1's pprof_py times (the brief §3.7's
-# SHOULD).
+# cluster per row for robust, DEC-098); and the fits beside C1's baseline, its engine calls and
+# pprof_py (the brief §3.7's SHOULD).
 #
 # Usage, from the repository root:
-#   Rscript dev/bench/cox/summarize_paired.R <report md> <pprof_py csv> <paired csv> [<paired csv> ...]
+#   Rscript dev/bench/cox/summarize_paired.R <report md> <C1 engines csv> <C1 pprof_py csv> <paired csv> [...]
 # Several paired CSVs are the runs of one session, for example one per group of scenarios. Exit
 # status is 1 when a fit is too slow by DEC-038's rule, fails, or differs from its engine call.
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 3L) {
-  stop("Usage: Rscript dev/bench/cox/summarize_paired.R <report md> <pprof_py csv> <paired csv> [...]", call. = FALSE)
+if (length(args) < 4L) {
+  stop(paste("Usage: Rscript dev/bench/cox/summarize_paired.R <report md> <C1 engines csv> <C1 pprof_py csv>",
+             "<paired csv> ..."), call. = FALSE)
 }
 report <- args[[1]]
-py <- utils::read.csv(args[[2]])
-py_machine <- jsonlite::read_json(sub("\\.csv$", ".json", args[[2]]))
-runs <- args[-(1:2)]
+c1 <- utils::read.csv(args[[2]])
+py <- utils::read.csv(args[[3]])
+py_machine <- jsonlite::read_json(sub("\\.csv$", ".json", args[[3]]))
+runs <- args[-(1:3)]
 paired <- do.call(rbind, lapply(runs, utils::read.csv))
 machines <- lapply(runs, function(f) jsonlite::read_json(sub("\\.csv$", ".json", f)))
 
@@ -78,7 +80,7 @@ lines <- c(
   "",
   "## The fit against its engine call", "",
   paste("| Scenario | Rows | Providers | Covariates | Task | Round | Engine median | Fit median | Ratio |",
-        "Engine fastest | Fit fastest | Ratio | Fit − engine, median | Inputs' preparation, one run |",
+        "Engine fastest | Fit fastest | Ratio | Fit − engine, median | Inputs' preparation, median of 3 |",
         "Peak MB, engine / fit | Estimates | Verdict |"),
   "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"
 )
@@ -112,27 +114,34 @@ if (nrow(user)) {
                               user$round[j], fmt(user$median_s_coxph[j]), fmt(user$median_s_fit[j]),
                               ratio(user$median_s_fit[j] / user$median_s_coxph[j]), fmt(user$peak_after_mb_coxph[j]),
                               fmt(user$peak_after_mb_fit[j]),
-                              formatC(user$max_rel_diff_engine_coxph[j], digits = 2, format = "g")))
+                              trimws(formatC(user$max_rel_diff_engine_coxph[j], digits = 2, format = "g"))))
   }
 }
 
+c1_task <- c(breslow = "survival_breslow", efron = "survival_efron", robust = "survival_robust_breslow")
 py_task <- c(breslow = "coxph_breslow", efron = "coxph_efron", robust = "coxph_robust_breslow")
-lines <- c(lines, "", "## The fits beside pprof_py (C1's times)", "",
-           sprintf(paste("pprof_py %s on Python %s with numba's default threads (%s), from C1's",
-                         "`%s` (another session, so the ratios are indicative only). The brief's §3.7 SHOULD (no",
-                         "slower than pprof_py) applies to the robust variance, not to the fits at large sizes",
-                         "(DEC-098). The fit's time is the median of its rounds' medians."),
-                   py_machine$packages$pprof_py, py_machine$python, paste(unique(py$numba_threads), collapse = ", "),
-                   basename(args[[2]])),
+median_of <- function(d, scenario, task) {
+  v <- d$median_s[d$scenario == scenario & d$task == task]
+  if (length(v)) v[1] else NA_real_
+}
+lines <- c(lines, "", "## The fits beside C1's baseline", "",
+           sprintf(paste("C1's engine calls (`%s`: `agreg.fit()` on the rows in the generator's order with the raw",
+                         "offset, and for robust `coxph(cluster = row)`, DEC-100) and pprof_py %s on Python %s with",
+                         "numba's default threads (%s, `%s`), measured in another session, so the ratios are",
+                         "indicative only. The brief's §3.7 SHOULD (no slower than pprof_py) applies to the robust",
+                         "variance, not to the fits at large sizes (DEC-098). The fit's time is the median of its",
+                         "rounds' medians."),
+                   basename(args[[2]]), py_machine$packages$pprof_py, py_machine$python,
+                   paste(unique(py$numba_threads), collapse = ", "), basename(args[[3]])),
            "",
-           "| Scenario | Task | Fit median | pprof_py median | Ratio, fit / pprof_py |",
-           "|---|---|---|---|---|")
+           "| Scenario | Task | Fit median | C1 engine median | pprof_py median | Ratio, fit / pprof_py |",
+           "|---|---|---|---|---|---|")
 for (g in names(groups)) {
   p <- groups[[g]]
   fit_median <- stats::median(p$median_s_fit)
-  py_median <- py$median_s[py$scenario == p$scenario[1] & py$task == py_task[[p$task[1]]]]
-  py_median <- if (length(py_median)) py_median[1] else NA_real_
-  lines <- c(lines, sprintf("| %s | %s | %s | %s | %s |", p$scenario[1], p$task[1], fmt(fit_median), fmt(py_median),
+  py_median <- median_of(py, p$scenario[1], py_task[[p$task[1]]])
+  lines <- c(lines, sprintf("| %s | %s | %s | %s | %s | %s |", p$scenario[1], p$task[1], fmt(fit_median),
+                            fmt(median_of(c1, p$scenario[1], c1_task[[p$task[1]]])), fmt(py_median),
                             ratio(fit_median / py_median)))
 }
 writeLines(lines, report)
