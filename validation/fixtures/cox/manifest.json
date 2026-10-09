@@ -4,7 +4,7 @@
    "events": 231,
    "file": "competing-truncated.rds",
    "kind": "competing",
-   "md5": "c77e10d8f3388b4eaafe1d3b727c72e9",
+   "md5": "28def75cdc203fc06b736876e67526d4",
    "provenance": {
     "commit": "9320766e35e5b385d596a2b75418192098a124c4",
     "license": "MIT",
@@ -14,25 +14,25 @@
    },
    "rows": 400,
    "seed": null,
-   "sha256": "3d3fd309c17cc591b4362ee4c40c3e4f7dae0281ae8a6136f9b09f6ef3bf76ab",
+   "sha256": "3ebb69483f24923071a4b5faa363f241f70e09eab4ccc75cc70e1cb9a445d8f7",
    "source": "pprof_py"
   },
   "large-mean": {
    "events": 223,
    "file": "large-mean.rds",
    "kind": "cox",
-   "md5": "a7b77bbfc0278db812cff1a8ff1e072a",
+   "md5": "e8228c21f48bd25d4b3dfcf0d815be99",
    "provenance": null,
    "rows": 300,
    "seed": 14,
-   "sha256": "829e67ab066c2817289129d19da65285bfa90a0b0b00de6029f20747fbbb9856",
+   "sha256": "b928712b2ef008b9a4de84e3a4005edf4668aa57aeb21bd1e8008104d1f2da62",
    "source": "synthetic"
   },
   "lt-weights-offset": {
    "events": 385,
    "file": "lt-weights-offset.rds",
    "kind": "cox",
-   "md5": "aa0ce446230d76a0052d3b0a63fbe33a",
+   "md5": "39034e56cbde7d01d1942c6aff38a2cd",
    "provenance": {
     "commit": "e917a68",
     "license": "MIT",
@@ -42,7 +42,7 @@
    },
    "rows": 600,
    "seed": null,
-   "sha256": "dabaccd9d3e04e3032ea146827bc9ff64e843d9b0f821cc8840f8ab0f0d723c3",
+   "sha256": "1d413ae85346cfd25d181d0bcb807887d92ca7dd1b1ab7f2019e627e445de0d6",
    "source": "pprof_spark"
   },
   "penalized-combined": {
@@ -134,18 +134,18 @@
    "events": 16892,
    "file": "provider-scale.rds",
    "kind": "cox",
-   "md5": "43f7e96be8694aefb01d9799026d5279",
+   "md5": "3ddfb5c1cbfe7615f7b132805f279104",
    "provenance": null,
    "rows": 20000,
    "seed": 16,
-   "sha256": "6b99075455b1ff7464913d2c3c0f74fb61ee2db4adc822fa63fd4e8b13536a60",
+   "sha256": "2f74ad777bc6b8f6d5704b3d5320109f5d404d12416515328b0c29c373569401",
    "source": "synthetic"
   },
   "rc-stratified-weights-offset": {
    "events": 434,
    "file": "rc-stratified-weights-offset.rds",
    "kind": "cox",
-   "md5": "79db4a17b1928908efd00381a8a62b20",
+   "md5": "f8002904aa1eb9ec760acaf84582931c",
    "provenance": {
     "commit": "e917a68",
     "license": "MIT",
@@ -155,14 +155,14 @@
    },
    "rows": 600,
    "seed": null,
-   "sha256": "29299480ffbfa4fd6fab98621fb8232d8c482f26b51fc00dcbeb92ca31d016ea",
+   "sha256": "6de3799a44c6e779c46aebc8be2e3b2cf57ba17dd8ee195a71e8a022a754125a",
    "source": "pprof_spark"
   },
   "rc-unstratified": {
    "events": 304,
    "file": "rc-unstratified.rds",
    "kind": "cox",
-   "md5": "f5072510c56585238bcb6a54a23d0939",
+   "md5": "a384f1e9cf884a33d8c602f87ec30002",
    "provenance": {
     "commit": "e917a68",
     "license": "MIT",
@@ -172,36 +172,36 @@
    },
    "rows": 400,
    "seed": null,
-   "sha256": "d17c2ab6b23bd6684ccd8a85562df0160d96caa18c630119974812784aabbd2b",
+   "sha256": "c3f773e835fb62a4526c3a3924f3bd837c178e1c92eac155bc816f98a8b23f14",
    "source": "pprof_spark"
   },
   "recurrent": {
    "events": 266,
    "file": "recurrent.rds",
    "kind": "cox",
-   "md5": "2dccad4d7e7d08b3a2151dfab0299d0c",
+   "md5": "14434e106805bdac3683aac86066f9a6",
    "provenance": null,
    "rows": 506,
    "seed": 11,
-   "sha256": "983a9fa6b0980ea0c3b4326d156c09cd4ae24288d5a57d455c0ca8c40166bd89",
+   "sha256": "7fffbd51630e7fea7e74ec8f5a458eb63930be68bfa97d4a151f22e5fcfc8e42",
    "source": "synthetic"
   },
   "zero-weights": {
    "events": 451,
    "file": "zero-weights.rds",
    "kind": "cox",
-   "md5": "6eade41301b0ff959d9741e699f29927",
+   "md5": "102d87aaa90ad013c8a5d3d71d8c1b19",
    "provenance": null,
    "rows": 600,
    "seed": 13,
-   "sha256": "88d0eaa86fa6b1139abbddf2e67fcea00de8cc1cef05bdd52187b82e79bbfc99",
+   "sha256": "3b88be4a76a08ad18f0d564851a7407f68f8831ab993d6187e1e60f812dcc6dd",
    "source": "synthetic"
   }
  },
  "format_version": 1,
  "generator": "dev/reference/cox/generate.py",
  "generator_clean": true,
- "generator_commit": "bcab1b8ab0389832ec173847b3b7abfe69f91d71",
+ "generator_commit": "7c0fe61bfa3ebfd680f9d0d86b8ea3dc82ce1290",
  "inputs_sources_sha256": "d0c87691242e803962b9b52f83b56592eecf52daf8a88db94e0f4b8ac5c0d761",
  "options": {
   "clusters": "the cluster column, or id mod 40",
@@ -213,6 +213,14 @@
    0.125,
    -0.25
   ],
+  "funnel": {
+   "curves": "full set only",
+   "levels": [
+    0.95,
+    0.998
+   ],
+   "test": "midp"
+  },
   "glmnet_control": "list(thresh = 1e-12, maxit = 1e5, fdev = 0, devmax = 1)",
   "ties": [
    "breslow",
