@@ -44,8 +44,14 @@ print.pprof_summary <- function(x, ...) {
 # A data check lists the problems it found, one line for each kind (check_data()).
 #' @export
 print.pprof_data_check <- function(x, ...) {
-  cat(sprintf("<pprof data check: %s observations, %s complete>\n", present_count(x$n_obs),
-              present_count(x$n_complete)))
+  survival <- x[["survival"]]
+  detail <- ""
+  if (!is.null(survival)) {
+    type <- if (identical(survival$type, "counting")) "counting process" else "right-censored"
+    detail <- sprintf("; survival data, %s, %s events", type, present_count(survival$n_events))
+  }
+  cat(sprintf("<pprof data check: %s observations, %s complete%s>\n", present_count(x$n_obs),
+              present_count(x$n_complete), detail))
   missing <- x$table[x$table$n_missing > 0L, , drop = FALSE]
   design <- x$design
   correlations <- x$correlations
@@ -66,10 +72,50 @@ print.pprof_data_check <- function(x, ...) {
     if (nrow(high_vif)) {
       sprintf("Variance inflation factor of %s or more: %s", format(x$vif_threshold),
               paste(sprintf("%s (%s)", high_vif$term, format(signif(high_vif$vif, 4))), collapse = ", "))
-    }
+    },
+    if (!is.null(survival)) present_survival_check(survival)
   )
   cat(if (length(lines)) lines else "No problems found.", sep = "\n")
   invisible(x)
+}
+
+# The lines of the survival checks of check_data() (DEC-104).
+present_survival_check <- function(survival) {
+  rows <- function(n) sprintf("%s row%s", present_count(n), if (n == 1) "" else "s")
+  providers <- function(ids) {
+    shown <- paste(utils::head(ids, 10L), collapse = ", ")
+    if (length(ids) > 10L) sprintf("%s, ... (%s providers)", shown, present_count(length(ids))) else shown
+  }
+  c(
+    if (survival$near_tied_rows > 0) {
+      sprintf("Near-tied times: %s with times that survival's aeqSurv() would merge; Cox fits compare times exactly",
+              rows(survival$near_tied_rows))
+    },
+    if (survival$zero_weights > 0) sprintf("Zero weights: %s, left out of Cox fits", rows(survival$zero_weights)),
+    if (survival$negative_weights > 0) {
+      sprintf("Negative or infinite weights: %s", rows(survival$negative_weights))
+    },
+    if (survival$invalid_status > 0) {
+      sprintf("Invalid status: %s with a status that is not 0/1, FALSE/TRUE, or 1/2", rows(survival$invalid_status))
+    },
+    if (survival$invalid_times > 0) {
+      sprintf("Invalid times: %s with an entry time not below the exit time, or a right-censored time of 0 or less",
+              rows(survival$invalid_times))
+    },
+    if (length(survival$providers_without_events)) {
+      sprintf("Providers without events: %s", providers(survival$providers_without_events))
+    },
+    if (length(survival$providers_without_person_time)) {
+      sprintf("Providers without person-time: %s", providers(survival$providers_without_person_time))
+    },
+    if (length(survival$aliased)) {
+      sprintf("Linearly dependent within providers: %s", paste(survival$aliased, collapse = ", "))
+    },
+    if (length(survival$large_mean)) {
+      sprintf("Mean above %s standard deviations: %s", format(survival$large_mean_ratio),
+              paste(survival$large_mean, collapse = ", "))
+    }
+  )
 }
 
 #' @export

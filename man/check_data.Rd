@@ -4,7 +4,7 @@
 \alias{check_data}
 \title{Check the data before fitting a model}
 \usage{
-check_data(formula, data, provider)
+check_data(formula, data, provider, weights = NULL, cluster = NULL)
 }
 \arguments{
 \item{formula}{A two-sided formula with the outcome on the left and the covariates on the
@@ -13,17 +13,26 @@ right, as the fitting functions take it.}
 \item{data}{A data frame with the variables of \code{formula} and the provider column.}
 
 \item{provider}{The name of the provider column of \code{data}.}
+
+\item{weights}{For survival data, the name of a column of case weights, or \code{NULL}.}
+
+\item{cluster}{For survival data, the name of a column of clusters, or \code{NULL}.}
 }
 \value{
 A \code{pprof_data_check} result: a list whose \code{table} has one row for each variable of
 \code{formula} and for the provider, with \code{variable}, \code{role} (\code{"outcome"}, \code{"covariate"}, or
-\code{"provider"}), \code{n_missing}, and \code{percent_missing}; \code{n_obs} and \code{n_complete}, the numbers of
+\code{"provider"}, and for survival data also \code{"offset"}, \code{"weights"}, and \code{"cluster"}),
+\code{n_missing}, and \code{percent_missing}; \code{n_obs} and \code{n_complete}, the numbers of
 observations and of complete observations; \code{design}, one row for each covariate column,
 with \code{term}, \code{frequency_ratio}, \code{percent_unique}, \code{zero_variance}, \code{near_zero_variance},
 and \code{vif} (missing for a column without variation); \code{correlations}, the pairs of columns
 correlated above the threshold, with \code{term_1}, \code{term_2}, and \code{correlation}; and the
 thresholds used (\code{frequency_ratio_cut}, \code{percent_unique_cut}, \code{correlation_threshold},
-\code{vif_threshold}). Printing it lists the problems found.
+\code{vif_threshold}). For survival data, \code{survival} holds the checks above: \code{type}
+(\code{"right"} or \code{"counting"}), \code{n_events}, \code{near_tied_rows}, \code{zero_weights},
+\code{negative_weights}, \code{invalid_status}, \code{invalid_times}, \code{providers_without_events},
+\code{providers_without_person_time}, \code{aliased}, \code{large_mean}, and \code{large_mean_ratio}. Printing
+it lists the problems found.
 }
 \description{
 \code{check_data()} checks the data of a model as \code{\link[=data_check]{data_check()}} of pprof 1.0.3 did, but reports
@@ -43,6 +52,24 @@ absolute value. The variance inflation factor of a column is 1 / (1 - R^2), with
 the linear regression of the column on the other columns, as \code{olsrr::ols_vif_tol()} computes
 it; a factor of 10 or more is commonly taken to indicate serious multicollinearity.
 Correlations and variance inflation factors are computed over the columns that vary.
+
+For survival data, a \code{Surv()} response as \code{\link[=fit_cox_stratified]{fit_cox_stratified()}} takes it, the result also
+reports, over the complete observations:
+\itemize{
+\item near-tied times: the rows whose times survival's \code{\link[survival:aeqSurv]{survival::aeqSurv()}} would merge, which
+\code{\link[survival:coxph]{survival::coxph()}} does by default (\code{timefix = TRUE}) and the Cox fits of pprof do not, since
+they compare times exactly; integer time units avoid such ties;
+\item zero and negative weights (Cox fits leave rows with weight 0 out, and reject negative ones);
+\item rows whose status \code{Surv()} cannot read (0/1, logical, and 1/2 codings are read), and rows
+with an entry time not below the exit time, or a right-censored time of 0 or less;
+\item providers with no events, and with no person-time;
+\item covariates linearly dependent on the others within providers, such as a covariate that is
+constant within every provider, whose coefficients a model stratified by provider cannot
+estimate;
+\item covariates whose mean exceeds 100 standard deviations in absolute value, such as a calendar
+year: survival centers covariates, so its fits are unaffected, but software that evaluates
+exp() of the uncentered linear predictor may overflow.
+}
 }
 \examples{
 data(ExampleDataBinary)
@@ -50,6 +77,9 @@ data <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,
                    ExampleDataBinary$Z)
 data$z1[c(5, 17)] <- NA
 check_data(y ~ z1 + z2 + z3 + z4 + z5, data, "hospital")
+
+# Survival data: the lung cancer data of the survival package, by institution.
+check_data(Surv(time, status) ~ age + sex, survival::lung, "inst")
 
 }
 \seealso{

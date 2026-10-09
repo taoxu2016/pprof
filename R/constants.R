@@ -72,3 +72,9 @@ near_zero_frequency_ratio <- 95 / 5
 near_zero_percent_unique <- 10
 correlation_threshold <- 0.9
 vif_threshold <- 10
+
+# DEC-104 (CoxPH Phase C2): for survival data, check_data() reports covariates whose mean exceeds
+# large_mean_ratio standard deviations in absolute value, such as a calendar year, which survival's
+# fits center and pprof_py's other outputs do not (D-64). A diagnostic of the package's own; no
+# result depends on it. No reference: pprof_py's preflight report has no such check.
+large_mean_ratio <- 100
