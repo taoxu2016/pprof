@@ -979,6 +979,9 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 | D-73 | Failures of pprof_py that cannot arise | A | verified; does not arise | Measures without events, mid-p limits under a large empirical-null mean, a single CV fold, a missing event code |
 | D-74 | Status coded 1/2 | A | verified; decided: accepted | pprof_py rejects the 1/2 status coding that `Surv()` accepts |
 | D-75 | Baselines and curves without covariates | B | verified; decided: unsupported, with a classed error | survival's `survfit()` cannot give them for a Cox fit without covariates, so the package raises a classed error where pprof_py reports them |
+| D-77 | Unknown provider IDs | Presentation | decided | pprof_py's `providers` filter ignores IDs it does not know; the package raises a classed error, as for every family |
+
+D-76 is not used: the CoxPH C3 plan reserved it for M-39's normal funnel limits, its decision 1(b), which was not adopted (DEC-107).
 
 ### D-56: Robust variance with Breslow ties on (start, stop] data
 
@@ -1019,8 +1022,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Options: (1) reproduce pprof_py; (2) leave zero-weight rows out of the Cox fit and keep them in the provider table and the measures, which do not use weights (M-29); (3) refuse zero weights, as `survival` does.
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-25).
-- Status: verified (2026-10-07); decided; implemented in C2 (2026-10-09): rows with weight 0 stay in the data and the provider table, and are left out of every survival call (`survival_fit_rows()` in `R/model-survival.R`); the object counts them in `n_zero_weight`, and their martingale residuals are `NA` (DEC-103). The C1 fixture `zero-weights` confirms it (2026-10-08): with Breslow ties, survival's fits on the positive-weight rows equal pprof_py's within the tiers; with Efron ties they differ (the tight coefficients by 2.8e5 times `cox_coefficient`).
-- Regression test: the full set's `zero-weights` in `tests/testthat/test-cox-reference.R`: Breslow fits, residuals, and baselines equal pprof_py's; Efron fits equal survival's on the positive-weight rows and differ from pprof_py's beyond `cox_coefficient`. Unit tests: "rows with weight 0 are left out of the fit and kept in the data" (`test-model-survival.R`) and "zero weights leave rows out of the fit and in the provider table" (`test-model-cox-stratified.R`). The measures follow in C3.
+- Status: verified (2026-10-07); decided; implemented in C2 (2026-10-09): rows with weight 0 stay in the data and the provider table, and are left out of every survival call (`survival_fit_rows()` in `R/model-survival.R`); the object counts them in `n_zero_weight`, and their martingale residuals are `NA` (DEC-103). The C1 fixture `zero-weights` confirms it (2026-10-08): with Breslow ties, survival's fits on the positive-weight rows equal pprof_py's within the tiers; with Efron ties they differ (the tight coefficients by 2.8e5 times `cox_coefficient`). In C3 (2026-10-09) the measures count every row, those with weight 0 included, unweighted (M-29), at the fit's coefficients; so on `zero-weights` with Efron ties they differ from pprof_py's as the coefficients do, and given pprof_py's coefficients they equal its measures (the calibration report).
+- Regression test: the full set's `zero-weights` in `tests/testthat/test-cox-reference.R`: Breslow fits, residuals, and baselines equal pprof_py's; Efron fits equal survival's on the positive-weight rows and differ from pprof_py's beyond `cox_coefficient`; "measures and flags of the package's fits, full Cox fixtures (D-58, M-29)": with Breslow ties the expected events, ratios, and flags equal pprof_py's, and with Efron ties the expected events differ beyond `cox_baseline`. Unit tests: "rows with weight 0 are left out of the fit and kept in the data" (`test-model-survival.R`), "zero weights leave rows out of the fit and in the provider table" (`test-model-cox-stratified.R`), "standardize_providers() gives the indirect and direct ratios (K-137 to K-139)" (`test-profile-cox.R`), where rows with weight 0 count in the measures, and "a provider whose rows all have weight 0 is out of the fit and in the measures (M-25, M-29, D-58)" (`test-profile-cox.R`).
 
 ### D-59: Aliased covariates and no events
 
@@ -1084,8 +1087,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Minimal reproducible example: `dev/design/coxph-facts/13_pprof_py_probes.txt`, B4: reordering three columns changed E_j by up to 44%.
 - Affected outputs: none in the package, whose measures come from the fitted model and its formula.
 - Decision owner: project lead (Class A). The defect cannot arise.
-- Status: verified (2026-10-07); does not arise. In C2 the fit takes its covariates from the formula, by name (2026-10-09).
-- Regression test: a metamorphic test (reordered data columns give the same measures). C2's part: "the formula, not the order of the data's columns, determines the fit" (`tests/testthat/test-model-cox-stratified.R`); the measures follow in C3.
+- Status: verified (2026-10-07); does not arise. In C2 the fit takes its covariates from the formula, by name (2026-10-09); in C3 the measures come from the fit's linear predictor (2026-10-09).
+- Regression test: a metamorphic test (reordered data columns give the same measures). C2's part: "the formula, not the order of the data's columns, determines the fit" (`tests/testthat/test-model-cox-stratified.R`); C3's: "the formula, not the order of the data's columns, determines the measures (D-63)" (`tests/testthat/test-profile-cox.R`).
 
 ### D-64: Large linear predictors
 
@@ -1154,7 +1157,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Component: the Cox measures and tests.
 - Class: Presentation
 - Description: pprof_py reports the ratio of a provider with E_j = 0 as infinite or undefined without comment; the package reports the same values and one `pprof_warning_zero_expected` warning that counts such providers, as pprof_spark does.
-- Status: decided; implemented in C3.
+- Status: decided; implemented in C3 (2026-10-09): `test_providers()`, `standardize_providers()`, and `funnel_limits()` each warn once per call, and `profile_providers()` once in all (`profile_warn_zero_expected()` in `R/profile-spec.R`); the plots leave such providers out, with a caption (DEC-112).
+- Regression test: "providers without expected events: pprof_py's values and one warning per call (D-70, K-147)" (`tests/testthat/test-profile-cox.R`); the `empty-providers` fixture, whose provider without expected events is compared with pprof_py's values in `test-cox-reference.R`.
 
 ### D-71: The exact test of an extreme provider
 
@@ -1164,8 +1168,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Minimal reproducible example: the C0 specification review (`CoxPH.test` with O = 1000 and E = 10 gives a missing flag).
 - Affected outputs: the exact test's z, p-value, and flag for such providers.
 - Decision owner: project lead (Class A). Decided: the package keeps the infinite z, reports p-value 0, and flags the provider in the direction of O − E.
-- Status: verified (2026-10-07); decided; implemented in C3.
-- Regression test: an exact test of O = 1000 against E = 10 flags the provider with +1.
+- Status: verified (2026-10-07); decided; implemented in C3 (2026-10-09; `infer_poisson_exact_statistic()` and `infer_poisson_flag()` in `R/inference-poisson.R`).
+- Regression test: an exact test of O = 1000 against E = 10 flags the provider with +1: "an exact p-value that underflows gives an infinite statistic, p-value 0, and a flag (D-71)" (`tests/testthat/test-inference-poisson.R`).
 
 ### D-72: Penalized coefficients at λ_max
 
@@ -1191,7 +1195,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
   - A missing value in `CauseSpecificCoxPH`'s event creates a spurious cause; the package deletes incomplete rows (D-62) and takes the event from `Surv()`.
 - Minimal reproducible example: the C0 specification review.
 - Decision owner: project lead (Class A). The failures cannot arise.
-- Status: verified (2026-10-07); does not arise.
+- Status: verified (2026-10-07); does not arise. In C3 (2026-10-09) the measures and tests have the theoretical null only, and a fit without events fails with `pprof_error_data`.
+- Regression test: "edge cases: no events, one-row providers, a large covariate mean (§6 F, D-64, D-73)" (`tests/testthat/test-profile-cox.R`).
 
 ### D-74: Status coded 1/2
 
@@ -1216,3 +1221,14 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Decision owner: project lead. Decided (1): the project lead, 2026-10-09, C2 gate, as recommended.
 - Status: verified (2026-10-09); decided; implemented in C2.
 - Regression test: "without covariates the fit holds the log-likelihood of the offsets alone" (`tests/testthat/test-model-cox-stratified.R`).
+
+### D-77: Unknown provider IDs in `providers`
+
+- Component: the `providers` argument of `test_providers()`, `standardize_providers()`, `funnel_limits()`, and `profile_providers()` on Cox fits (`profile_provider_rows()` in `R/profile-spec.R`); in pprof_py, `providers` of `CoxPH.calculate_standardized_measures()`, `test()`, and `funnel_limits()` (`pprof_py/measures/survival/coxph.py:167`, `pprof_py/inference/survival/provider_tests.py:138-139`).
+- Class: Presentation
+- Description: pprof_py reports the providers it knows among those given and ignores the others silently; the package raises `pprof_error_invalid_input`, naming the IDs the model does not include, as it does for every family. When every ID is known, the providers reported and every number are the same.
+- Minimal reproducible example: with providers p01 to p03, pprof_py v0.7.0's measures, `test()`, and `funnel_limits()` with `providers=["p01", "p99"]` each report p01 alone (run 2026-10-09); `test_providers(fit, providers = c("p01", "p99"))` raises.
+- Affected outputs: none when the IDs are known.
+- Decision owner: project lead. Decided: raise, as for every family (DEC-112; the project lead, 2026-10-09, with the C3 plan, its decision 7).
+- Status: decided; implemented in C3 (2026-10-09).
+- Regression test: "IDs in `providers` that the model does not have raise, where pprof_py ignores them (D-77)" (`tests/testthat/test-profile-cox.R`).

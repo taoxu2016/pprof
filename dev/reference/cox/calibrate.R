@@ -15,6 +15,9 @@
 # Default fits stop at different points (D-57) and are compared with the size of pprof_py's last
 # Newton step instead. Differences that a register entry explains (D-56, D-58, D-64) are reported
 # with it and are not counted as calibration failures. Nothing here changes a tier.
+# From Phase C3 (DEC-109), the measures, tests, limits, and funnel limits are scored the same way, with
+# a transcription of pprof_py's formulas in R (the c3_ functions) in place of survival, given pprof_py's
+# own coefficients or counts, and a section compares the flags at each side's coefficients.
 args <- commandArgs(trailingOnly = TRUE)
 report_file <- if (length(args) >= 1) args[[1]] else file.path("validation", "cox-calibration-report.md")
 dirs <- c(if (length(args) >= 2) args[[2]] else file.path("tests", "testthat", "fixtures", "cox"),

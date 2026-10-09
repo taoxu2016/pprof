@@ -223,7 +223,9 @@ the table, which is the behavior of logistic fixed-effect models, except for
 | `variance_function(mean)` | the null variance of indirect standardization, and the funnel precision | none (the variance is then missing) |
 | `mean_function(eta)` | intervals of the standardized measures; the expected outcome for a linear predictor `eta` | none |
 | `direct_expected(effects, linear_predictor, threads)` | direct standardization: given the effects of all the included providers (unnamed, in provider order), the linear predictor of all observations, and the thread count, it returns, for each effect, the total outcome expected in the whole population if every observation had that effect (a vector as long as `effects`) | none |
-| `funnel` | funnel limits: a list with `measure`, `target`, `floor`, `test`, `precision(expected, variance)` (or with a third argument `n_obs`), and `half_width(critical, precision)` | none |
+| `direct_by_provider(model, rows)` | direct standardization for a model without provider effects: the expected total of each provider in `rows` (rows of the provider table), in that order | none |
+| `count_distribution` | the null distribution of the providers' counts: `"poisson_binomial"` (binary outcomes), or `"poisson"`, which selects the Poisson exact and mid-p tests, the limits of indirect ratios, and the funnel limits of the test, all two-sided | `"poisson_binomial"` |
+| `funnel` | funnel limits: a list with `measure`, `target`, `floor`, `test`, `precision(expected, variance)` (or with a third argument `n_obs`), and `half_width(critical, precision)`; with Poisson counts the limits are the test's, without `floor` and `half_width` | none |
 | `test_default` | the test of `test_providers()` when `test` is not given | `"exact"` |
 | `comparison` | `"ratio"` (observed over expected) or `"difference"` (per observation) | `"ratio"` |
 | `direct_reference` | the total of direct standardization: `"observed"` or `"null_expected"` | `"observed"` |
@@ -239,14 +241,16 @@ the table, which is the behavior of logistic fixed-effect models, except for
 
 | Capability | What it enables | What the model provides |
 |---|---|---|
-| `provider_exact`, `provider_bootstrap` | the exact and bootstrap tests, for binary outcomes | `expected_outcome()`, `null_effect()` |
-| `provider_score` | the modified score test, for binary outcomes | the same |
+| `provider_exact`, `provider_bootstrap` | the exact and bootstrap tests, for binary outcomes; with Poisson counts, the exact Poisson test | `expected_outcome()`, `null_effect()` |
+| `provider_midp` | the mid-p test of Poisson counts | the same, and `count_distribution = "poisson"` |
+| `provider_score` | the modified score test, for binary outcomes | `expected_outcome()`, `null_effect()` |
 | `provider_score_standard` | the standard score test | `provider_test(model, "score_standard", ...)` |
 | `provider_wald` | Wald tests | `provider_estimate_se()`; `wald` in the specification for t |
-| `interval_exact`, `interval_score` | exact and score intervals of the effects and measures, for binary outcomes | `expected_outcome()`; `mean_function` for measures |
+| `interval_exact`, `interval_score` | exact and score intervals of the effects and measures, for binary outcomes; with Poisson counts, the exact limits of indirect ratios | `expected_outcome()`; `mean_function` for measures |
+| `interval_midp` | mid-p limits of indirect ratios, for Poisson counts | `expected_outcome()`, and `count_distribution = "poisson"` |
 | `interval_wald` | Wald intervals | `provider_estimate_se()`; `mean_function` for measures |
 | `standardize_indirect` | indirect standardization | `expected_outcome()`; `variance_function` for the variance |
-| `standardize_direct` | direct standardization | `direct_expected` |
+| `standardize_direct` | direct standardization | `direct_expected`, or `direct_by_provider` for a model without provider effects |
 | `funnel` | funnel limits and `plot_funnel()` | `funnel`, and the test it names |
 | `coef_wald` | `confint()`, `summary()`, and Wald coefficient tests | `coefficients` and `vcov` in the object; `coefficient_wald` if not normal |
 | `coef_lr`, `coef_score` | likelihood-ratio and score coefficient tests | `refit_without()` |

@@ -162,6 +162,12 @@ The package delegates all of this to `survival` (DEC-091), so it inherits `survi
 - +1 when p < α and z > 0, −1 when p < α and z < 0, and 0 otherwise. The inequality is strict, and the direction comes from the sign of the null-calibrated z.
 - The default level is 0.95.
 
+**Funnel limits** (`provider_tests.py:142-172`, `inference/funnel.py:poisson_funnel_limits`; K-149). Added in C3 (DEC-107): the C0 review missed `CoxPH.funnel_limits()`, and M-39 was decided for "Cox models, which pprof_py lacks".
+
+- **The call.** `funnel_limits(X, ..., provider_id, offset, providers, test_method = "midp", null_model = None, level = 0.95, levels = None)` runs `test()` at `level`, which gives the points (O_j/E_j, precision E_j) and the flags.
+- **The limits.** At an expected count E, a bisection over the counts 0, …, n finds the largest count the test flags low, o_lo, and the smallest it flags high, o_hi, under the test's own Poisson null; n = ⌈E + 40√E + 50⌉, with max(E, O_j) in place of the first E for a provider's own limits. The limits on the O/E scale are (o_lo + ½)/E and (o_hi − ½)/E, or −∞ and ∞ where no count is flagged, so a provider lies outside its limits exactly when it is flagged.
+- **The curves.** For each of `levels`, the same limits at 200 values of E, geometric from the smallest to the largest positive E_j.
+
 **Output.**
 - A table by sorted provider: `estimate` (O/E), `null_value` (1), `z_raw`, `null_mean`, `null_sd`, `z_adjusted`, `p_value`, `flag`, `ci_lower`, `ci_upper`, `observed`, `expected`, and `person_time`, among others.
 - The `providers` filter is applied after the null is fitted.
@@ -319,12 +325,14 @@ Methods of `pprof_cox_stratified`: `print()`, `summary()`, `coef()`, `vcov()`, `
 |---|---|
 | `test_providers(fit, test = "midp" or "exact", null = 0, level = 0.95)` | `provider_id`, `n_obs`, `statistic` (z), `p_value`, `flag`. Two-sided only, as pprof_py; `alternative = "greater"` or `"less"` raises `pprof_error_unsupported_inference` |
 | `standardize_providers(fit, standardization, measure = "ratio", interval = "none", "exact", or "midp")` | `provider_id`, `standardization`, `measure`, `n_obs`, `observed` (O_j, or the total O for direct standardization), `expected` (E_j, or E^(j)), `variance` (E_j, the Poisson null variance; missing for direct), `estimate`, and `lower` and `upper` for indirect standardization. pprof_py has no direct limits, so direct standardization with an interval raises `pprof_error_unsupported_inference` |
-| `funnel_limits(fit)` | precision E_j; limits 1 ∓ z/√E_j with a floor of 0; flags from the mid-p test (M-39) |
+| `funnel_limits(fit)` | precision E_j; limits 1 ∓ z/√E_j with a floor of 0; flags from the mid-p test (M-39). As built in C3 (DEC-107): pprof_py's limits (§A.4, K-149) at each distinct E_j > 0 and level, (o_lo + ½)/E and (o_hi − ½)/E, which agree with the mid-p flags; `target` must be 1 |
 | `profile_providers(fit)` | `effects` is `NULL`; tests, indirect measures, and funnel as for the other families |
 | `provider_table(fit)` | adds `n_events` and `person_time` |
-| `plot_funnel()`, `plot_caterpillar()`, `plot_flags()`, `plot_volume()` | unchanged: they read the results above |
+| `plot_funnel()`, `plot_caterpillar()`, `plot_flags()`, `plot_volume()` | unchanged: they read the results above. As built in C3 (DEC-112): points whose estimate is not finite (E_j = 0) are left out with a caption that counts them, and the subtitles name the "mid-p test" |
 
 The volume of a Cox provider in `plot_volume()` stays its number of rows; showing expected events or person-time is a presentation choice for C6.
+
+As built in C3 (DEC-112, D-77): IDs in `providers` that the model does not include raise `pprof_error_invalid_input`, as for every family, where pprof_py ignores them.
 
 ## C. The data layer
 
@@ -398,6 +406,8 @@ The covariate Wald rule is the default one (normal, two-sided).
 
 As built in C2 (DEC-101, DEC-102): the covariate rule is not the default one but `p_value = "two_sided_upper"` with the normal distribution and the critical interval, pprof_py's 2Φ̄(|z|) (K-148), because the default's 2(1 − Φ(|z|)) is 0 above |z| ≈ 8.3. C2's `profile_spec()` has the required fields and that rule; C3 adds the rest of this specification with the capabilities.
 
+As built in C3 (DEC-107, DEC-108): the specification has no `measure_limits`, since `count_distribution = "poisson"` selects the Poisson limits in the profiling layer, and its funnel has no `floor` or `half_width`, since its limits are the test's count boundaries: `funnel = list(measure = "ratio", target = 1, test = "midp", precision = function(expected, variance) expected)`. The other fields are as above, with C2's covariate rule and `wald_caution = FALSE`.
+
 ### D.3 Shared-layer changes
 
 Each default is the current behavior (DEC-092), proved as in §C.2.
@@ -417,6 +427,8 @@ Each default is the current behavior (DEC-092), proved as in §C.2.
    - With `direct_by_provider`, `profile_direct()` uses it instead of the provider estimates and `direct_expected`.
 6. **`R/model-capabilities.R`.** `capability_names` gains `provider_midp` and `interval_midp`.
 7. **The data layer**, as §C describes.
+
+As built in C3 (DEC-108): item 3 has no `measure_limits`, so `profile_spec_defaults` gains `count_distribution = "poisson_binomial"` and `direct_by_provider = NULL`. In item 5, with `count_distribution = "poisson"`, the limits of the indirect ratios are the Poisson limits of `R/inference-poisson.R` (Garwood's or Byar's, and the mid-p limits), `profile_effect_limits()` is not called, and direct standardization with an interval and one-sided intervals raise `pprof_error_unsupported_inference`; `direct_by_provider` is called as `direct_by_provider(model, rows)`. Also: `R/profile-funnel.R` takes the funnel limits of `R/inference-poisson.R` (K-149) with `"poisson"`, and requires `target` to be the family's; `R/conditions.R` adds `warn_zero_expected()`, which `test_providers()`, `standardize_providers()`, and `funnel_limits()` signal once per call when reported providers have E_j = 0, and `profile_providers()` once in all (D-70). The existing families set none of the new fields, and `devtools::test()`, the reference suite, and the `data_prepare()` snapshot were unchanged after each shared-layer commit.
 
 ### D.4 The penalized and Fine–Gray models
 
@@ -509,6 +521,7 @@ K-136, K-137.
   4. Λ0 is the cumulative sum of d(t) / RS(t).
   5. Each observation's expected events are r_i [Λ0(stop_i) − Λ0(start_i)].
 - Cost: O(n log n); 0.34 s at 1,000,000 rows in plain R (`07_cox_fit_timing_r.txt`), with Σ_j E_j = O exactly.
+- As built in C3: `cox_expected_events()` in `R/model-cox-measures.R`, which `fit_cox_stratified()` calls on every row, those with weight 0 included, whatever ties fitted β̂ (M-29); the suffix sums come from a radix sort of the exit times and one of the entry times, and `findInterval()` at the distinct event times.
 
 ### F.2 Direct standardization
 
@@ -516,6 +529,7 @@ K-138.
 
 - E^(j) is the sum over provider j's event times t of d_j(t) RS(t) / RS_j(t). RS_j(t) comes from the same suffix sums within provider j, and RS(t) from the national sums by binary search.
 - Cost: O(n log n).
+- As built in C3: `cox_direct_expected()` in `R/model-cox-measures.R`, the family's `direct_by_provider`. RS_j(t) comes from suffix sums within each provider's rows, keyed by provider and time, where pprof_py forms composite sums over all rows and subtracts; on the fixtures the two agree within `closed_form`, and on data much larger than the fixtures pprof_py's can drift (the C3 plan, §2.7).
 
 ### F.3 The exact test and its limits
 
@@ -528,6 +542,7 @@ K-141.
 - The test is a closed form, O(m).
 - The limits come from root finding per provider: `uniroot()` on pprof_py's equation, bracket, and split point, with its tolerances (§A.4). R's `uniroot()` and SciPy's `brentq` take different paths to a root within those tolerances, which the `root` tier allows (§G.2).
 - Target: under 1 s at 3,000 providers, against pprof_py's 50 s (`07_cox_fit_timing.txt`).
+- As built in C3 (DEC-110): on the Poisson-mean scale the limits depend on O alone, so `infer_poisson_midp_limits()` finds the two roots of each distinct O once, to rounding, by bisection over all the distinct counts at once (`infer_poisson_midp_roots()`): the split at the root of z(O, t), then a root on each side, each bisected until no double lies between its ends. It keeps pprof_py's decisions of 0 and ∞ where its equation is not negative at its bracket ends for each provider, and divides by E_j. The limits are within 0.25 of pprof_py's xtol of its limits, under the `cox_root` tier (§G.2). The plan's `uniroot()` per count found the same roots (`24_midp_bisection.txt`) but, at about 1.2 ms per count, made the mid-p limits only 8 times faster than pprof_py's at 100 providers in the C3 benchmarks; the bisection takes 0.03 s for 100 counts and 0.17 s for 1,000.
 
 ### F.5 Fits
 
@@ -581,9 +596,10 @@ Calibrated in C1 (DEC-097; `validation/cox-calibration-report.md`): pprof_py aga
 | `cox_variance` | standard errors and covariances against pprof_py | 1e-12, 1e-7 | inherit the coefficients' differences |
 | `cox_baseline` | baselines, and expected counts given each side's β̂ | 1e-12, 1e-8 | each at its own β̂ |
 | `cox_residual` | residuals | 1e-8, 0 | 2.8e-9 observed |
-| `cox_statistic` | test statistics; p-values compared on the statistic | 0, 1e-8 | calibrated in C3 |
+| `cox_statistic` | mid-p and exact statistics given the same O_j and E_j | 0, 1e-8 | calibrated in C3 (DEC-109): within 1.25e-3 of the tier, every negative control beyond 4.4e4 |
+| `cox_root` (C3) | mid-p limits given the same O_j and E_j | 1e-10, 1e-8 | pprof_py's xtol, 1e-10 max(E, 1) on the Poisson mean (DEC-109): within 6.3e-3, every negative control beyond 4.1e3 |
 | `penalized_path` | coefficient paths at the same λ values | 5e-6, 0 | pprof_py's defaults: 1.06e-6 observed |
-| `closed_form`, `probability`, `root` (existing) | measures given the same β̂; p-values; mid-p limits | as now | `tests/testthat/helper-tolerances.R`; `root` recalibrated in C3 |
+| `closed_form`, `probability`, `root` (existing) | measures given the same β̂, the direct expected counts, and the exact limits; p-values, compared directly (C3); `root` is not used for Cox models | as now | `tests/testthat/helper-tolerances.R`; `root` unchanged (DEC-109) |
 
 - **Fits at default settings, and tight fits whose last step pprof_py halved:** iteration counts must match exactly, and coefficients must agree within the longer of the two last Newton steps (D-57).
 - **Flags** match exactly, except for providers within tolerance of a threshold, which the equivalence report lists.
@@ -610,7 +626,7 @@ Calibrated in C1 (DEC-097; `validation/cox-calibration-report.md`): pprof_py aga
   - a constant shift of the offset, which leaves the measures unchanged;
   - duplicated rows against weight 2, with Breslow ties.
 - **F. Edge cases:** the brief's §6, F.
-- **G. Regression tests:** one per register entry, D-56 to D-74.
+- **G. Regression tests:** one per register entry, D-56 to D-74, and D-75 and D-77 added in C2 and C3.
 
 ### G.4 Simulation
 
@@ -646,11 +662,13 @@ In C6, the size and coverage of the exact and mid-p tests and limits under the n
   - pprof_py v0.7.0, in a separate process, reported.
 - **Peak memory** with `gc()`'s maximum used.
 
+As built in C3 (DEC-111; `dev/bench/results/cox-c3-paired-20261009-windows.md`): `dev/bench/cox/run_paired.R` times each fit followed by its indirect measures against the fitter call followed by the national expected events in plain R, with the preparation of the fitter's inputs added (DEC-105), and a `profile` task times the measures, each test with its limits, and the funnel on one fit. On every scenario but the corner, every fit's estimates equal its engine call's bitwise; 2 of 21 fits are too slow by DEC-105's rule (providers-7500 with Breslow ties, covariates-5 robust), which in one process sit at 1.11 and 1.09 times the comparator (`dev/design/coxph-facts/25_fit_measures_parts.txt`); the mid-p tests with their limits are 20 to 600 times faster than pprof_py's, after the change of root search that the first run called for (DEC-110). The corner scenario is measured at the C3 gate.
+
 ## J. Register entries
 
 | Register | Entries |
 |---|---|
-| `dev/CONVENTIONS.md`, "Cox models (pprof_py v0.7.0)" | K-131 to K-147 |
-| `dev/DISCREPANCIES.md`, "The CoxPH phase" | D-56 to D-74 |
-| `dev/OPEN_QUESTIONS.md`, "The CoxPH phase" | M-23 to M-41, decided under the project lead's delegation |
-| `dev/DECISIONS.md` | DEC-086 to DEC-093 |
+| `dev/CONVENTIONS.md`, "Cox models (pprof_py v0.7.0)" | K-131 to K-147; K-148 (C2) and K-149 (C3) |
+| `dev/DISCREPANCIES.md`, "The CoxPH phase" | D-56 to D-74; D-75 (C2) and D-77 (C3) |
+| `dev/OPEN_QUESTIONS.md`, "The CoxPH phase" | M-23 to M-41, decided under the project lead's delegation; M-39 re-decided in C3 (DEC-107) |
+| `dev/DECISIONS.md` | DEC-086 to DEC-093; DEC-094 to DEC-098 (C1), DEC-099 to DEC-106 (C2), DEC-107 to DEC-112 (C3) |

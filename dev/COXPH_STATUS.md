@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, has its plan (`dev/design/COXPH_C3_PLAN.md`), awaiting the project lead's approval.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is built on `coxph/phase-3` from its approved plan (`dev/design/COXPH_C3_PLAN.md`) and goes to its gate.
 
 ## 2026-10-07
 
@@ -152,3 +152,29 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
   - the mid-p limits on the Poisson-mean scale depend on the observed count alone, so computing them once per distinct count takes 0.43 s at 3,000 providers, where pprof_py took 62.6 s on the same data (decision 5);
   - a `measure_limits` function in the Cox model's specification could not call the inference layer's Poisson limits under the layer rules, so the plan routes the limits by `count_distribution` instead (decision 3).
 - Next step: the project lead's approval of the plan and its §6 decisions; then its §5 commits, starting with §4.1's runs of the unchanged code.
+
+## 2026-10-09: Phase C3 built
+
+- The project lead approved the plan with its seven decisions as recommended (DEC-107 to DEC-112), and the plan went to `origin/coxph/phase-3` at `c81603e`.
+- The commits, in the plan's §5 order:
+  - `0bf2a54`, `7c0fe61`, `4e7f246`: the generator records pprof_py's funnel limits for every Cox case and cause-specific record, and both fixture sets were regenerated (DEC-107); the diff reports (`dev/reference/diff-reports/20261009-cox-funnel-*.md`) show only the added element, and a second generation reproduced the first;
+  - `47d50a6`: the C3 calibration (DEC-109), `cox_statistic` as it stands and `cox_root` for the mid-p limits: the report passes 842 of 842 scored rows, and the 4,676 flags at each side's coefficients all agree;
+  - `ed6e373`: `R/inference-poisson.R`, the Poisson tests, limits, and funnel limits;
+  - `f277829`: the shared hooks, COXPH_DESIGN §D.3 items 3 to 6 as amended by DEC-108;
+  - `0aa85c7`: the model's expected events, direct expectations, capabilities, and specification;
+  - `21f40dd`: the plots (DEC-112); `1d4d2aa`: the comparisons with the fixtures;
+  - `d46e985`, `0962c3b`: the benchmark code and results; `929cd32`: the mid-p limits by bisection; `3ed22dd`: two more tests;
+  - the registers and documents (this commit).
+- Departures from the plan:
+  - the funnel curves are in the full fixture set only: in the core set they took the package tarball to 4,986,258 bytes, 14 KB under the 5 MB at which `R CMD check --as-cran` notes it (DEC-076). The providers' limits, which the tests compare, are in both sets;
+  - the plan's commits 6 and 7 are one (`0aa85c7`): the model file holds both, and the profiling tests need both;
+  - the mid-p limits' roots: the plan found them with `uniroot()` once per distinct count, which in the benchmarks' first run made the mid-p test with its limits only 8 times faster than pprof_py's at 100 providers, where nearly every provider has a count of its own (DEC-111 asks for ten). The package now bisects over all the distinct counts at once, the fallback the plan's §8 named: the same roots to rounding with the same decisions of 0 and ∞ (`dev/design/coxph-facts/24_midp_bisection.txt`), and 20 to 600 times faster than pprof_py in the second run (DEC-110);
+  - two tests the plan implied: unknown IDs in `providers` raise (D-77), and a provider whose rows all have weight 0 is out of the fit and in the measures (its §4.4 list).
+- The existing families stayed bitwise identical. `devtools::test()` and `validation/run-reference.R` ran in a clean worktree at the plan's commit and after each commit that touched shared code: at `c81603e` 1,192 tests (9,850 expectations), at `47d50a6` the same, at `ed6e373` 1,202 (9,945), at `f277829` 1,202 (9,947), and at `21f40dd` 1,220 (10,089), each with no failure, warning, or skip; each time the reference report differed from the committed one only in its date and commit lines, and the `data_prepare()` snapshot test passed.
+- The benchmarks (`dev/bench/results/cox-c3-paired-20261009-windows.md`; every scenario but the corner, two rounds, the machine paging throughout):
+  - every fit's estimates equal its engine call's bitwise;
+  - the 10% rule with the measures on both sides (DEC-105, DEC-111): 2 of 21 fits are too slow, providers-7500 with Breslow ties and covariates-5 robust, where C2's run had none. In one process they sit at 1.11 and 1.09 times the comparator, and the center at 0.91 and 0.98 (`dev/design/coxph-facts/25_fit_measures_parts.txt`): the measures cost the fit side 0.011 s more than the engine side at 1,000 providers and 0.044 s more at 7,500, where `standardize_providers()` builds a table of 7,500 providers;
+  - the measures beside pprof_py's (the SHOULD, DEC-098): faster at 1,000,000 rows (1.10 s against 1.32 s), about as fast at 100,000 rows with 100 or 1,000 providers, slower at 10,000 rows (0.031 s against 0.009 s) and with 7,500 providers (0.23 s against 0.13 s);
+  - the corner scenario remains for the gate (DEC-111).
+- Registers: DEC-107 to DEC-112; K-149 and where K-136 to K-147 are in the package; D-77, and the C3 status of D-58, D-63, D-70, D-71, and D-73; M-39 re-decided (DEC-107); NAMING §10, COXPH_DESIGN as built, ARCHITECTURE §E.3 and §E.6, the vignette "Adding a model to pprof", and NEWS.
+- Next step: the C3 gate (`/phase-gate C3`), with the corner scenario if at least 4 GB of memory is free.

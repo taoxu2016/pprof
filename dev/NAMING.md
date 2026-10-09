@@ -289,7 +289,7 @@ Classes:
 
 Fields (§5): `start` and `stop`, the entry (0 for right-censored data) and exit time of each observation; `weights` and `offset`, per observation or `NULL`; `naive_vcov`, the model-based covariance when `vcov` is robust; `expected_events`, each observation's expected number of events at the national baseline; `martingale_residuals`; `loglik`, the partial log-likelihoods at β = 0 and at the estimates; `n_events`; `engine_fit` with `keep_data = TRUE`; for penalized paths `lambda`, `coefficient_path`, `selected`, and `cross_validation`. The provider table of Cox models adds `person_time`. A model without provider-effect estimates has `provider_effects = NULL`.
 
-The family specification (§5) adds three optional fields: `count_distribution` (`"poisson_binomial"`, the default, or `"poisson"`), `measure_limits` (a function giving the limits of the measures), and `direct_by_provider` (a function giving the directly standardized expected outcome of each provider). Capability names add `provider_midp` and `interval_midp`.
+The family specification (§5) adds two optional fields: `count_distribution` (`"poisson_binomial"`, the default, or `"poisson"`, which selects the Poisson tests, the limits of the measures, and the funnel's limits), and `direct_by_provider` (a function giving the directly standardized expected outcome of each provider). Phase C0 also named `measure_limits`, a function giving the limits of the measures, which Phase C3 left out (DEC-108). Capability names add `provider_midp` and `interval_midp`.
 
 Conditions (§6) add `pprof_warning_zero_expected`: providers with no expected events, whose ratios are infinite or undefined (D-70); and `pprof_warning_degenerate_covariates`: covariates with no variation, left out of a penalized path (K-143).
 
@@ -302,3 +302,11 @@ Phase C2 added, with the stratified Cox model (`dev/design/COXPH_C2_PLAN.md`; DE
 - `glance()` of Cox fits adds `n_events`, `aic`, and `bic`; `augment()` gives `observed` (the status), `fitted` (the expected events, status minus martingale residual), and `residual` (the martingale residual).
 - The covariate rule of the family specification (`coefficient_wald`, DEC-046) takes `p_value = "two_sided_upper"`, 2F̄(\|z\|) computed as an upper tail (DEC-101, K-148).
 - The settings of `pprof_data` for survival data add `response_type = "survival"`, `weights`, `cluster`, and `allow_offset`, and `survival_type`, `"right"` or `"counting"`, the type of the `Surv()` response; the data add `start`, `stop`, `weights`, `cluster`, and `offset` where they apply.
+
+Phase C3 added, with the provider profiling of the stratified Cox model (`dev/design/COXPH_C3_PLAN.md`; DEC-107 to DEC-112):
+
+- `direct_by_provider` is called as `direct_by_provider(model, rows)`, with `rows` the provider-table rows reported, and returns their direct expectations in that order; the stratified Cox model's is `cox_direct_expected()`. Its expected events are computed by `cox_expected_events()`, both in `R/model-cox-measures.R`.
+- The Poisson tests and limits are `infer_poisson_*()` functions in `R/inference-poisson.R`, and their constants in `R/constants.R` are `midp_probability_floor`, `exact_poisson_cap`, `byar_expected_threshold`, `midp_bracket_low`, `midp_bracket_scale`, `midp_bracket_threshold`, `midp_bracket_max`, `funnel_count_spread`, `funnel_count_margin`, and `funnel_count_offset`.
+- `funnel_limits()` of a family with Poisson counts requires `target = 1`, and its `lower` and `upper` can be `-Inf` and `Inf` (K-149).
+- `pprof_warning_zero_expected` carries `providers`, the IDs of the providers without expected events.
+- The tolerance tier of the mid-p limits is `cox_root` (DEC-109).
