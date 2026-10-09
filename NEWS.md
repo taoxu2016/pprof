@@ -47,7 +47,7 @@ pprof 2.0.0 is a rewrite of the package's architecture that preserves its statis
 
 - pprof no longer depends on RcppParallel, Matrix, pROC, dplyr, magrittr, rlang, or tidyselect (Matrix is still installed with lme4, and magrittr and rlang with ggplot2 and tibble), and building it no longer needs GNU make. pROC and logistf are suggested packages, used by the tests.
 - pprof no longer depends on caret, olsrr, or globals: `check_data()` and `data_check()` compute the near-zero-variance rule of `caret::nearZeroVar()` and the variance inflation factors of `olsrr::ols_vif_tol()` themselves, with identical results. Attaching pprof no longer prints "Registered S3 method overwritten by 'car'". caret and olsrr are suggested packages, used by the tests that compare these results. pprof now depends, directly or through other packages, on 39 packages other than R's base packages, survival among them, instead of 130.
-- pprof imports survival (3.5-8 or later), whose fitters fit the Cox models.
+- pprof imports survival (3.8-11 or later), whose fitters fit the Cox models. R versions that come with an older survival, R 4.4.0's 3.5-8 among them, need survival updated.
 - pprof requires ggplot2 4.0.0 or later, under which its plots were compared with those of pprof 1.0.3.
 - pprof requires R 4.4.0 or later, where pprof 1.0.3 declared R 4.1.0. With the current versions of its dependencies, R 4.1 cannot install them, and on R 4.2 and 4.3 printing a model fitted with lme4 fails in the reformulas package, which calls a function that R added in version 4.4.0.
 

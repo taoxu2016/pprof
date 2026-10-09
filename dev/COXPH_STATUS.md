@@ -132,3 +132,11 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
   - the corner scenario is measured at the C3 gate, on a machine with enough free memory.
 - The project lead asked for the work to be pushed to the fork's `main` and every other branch deleted: `coxph/phase-0`, `coxph/phase-1`, and `coxph/phase-2` are fast-forwards of `main`, so `main` takes `coxph/phase-2` as it is.
 - Next step: Phase C3, provider profiling for the stratified Cox model (the brief's §4), in a new session and only when the project lead asks: its plan first, `dev/design/COXPH_C3_PLAN.md`, for approval, on a branch from `main`.
+
+## 2026-10-09: CI on `main` after the C2 gate
+
+- `main` at `e744e3f` was pushed to the fork, and the phase branches deleted there and locally, at the project lead's request. CI: reference, lint, and pkgdown passed; `rewrite-check` failed on every R but R-devel (Linux, macOS, Windows) and `rewrite-coverage` failed, on the same engine-identity tests (runs 37954936891 and 37954937202).
+- The cause: those Rs bundle older survival, whose `coxph()` differs from the 3.8-12 that the adapter follows (survival's sources on CRAN): up to 3.8-9 it coded a cluster column by sorted value rather than first appearance, up to 3.8-3 it formed the robust variance as `t(temp) %*% temp` rather than `crossprod(temp)` (the same under R's reference BLAS, not under Ubuntu's OpenBLAS), and before 3.7-3 it found `strata()` only from a formula's environment, so five direct `coxph()` calls in the tests errored on R 4.4.0 (survival 3.5-8). The variances differ by about 1e-16 relative.
+- Fixed at the project lead's request (DEC-106): DESCRIPTION requires survival 3.8-11 or later, the first version on CRAN with the behavior the adapter follows; no code changes. A first attempt, following each installed survival's cluster coding, was dropped for this: it would also have had to copy the older product and could not be checked here under OpenBLAS.
+- Checked here: with survival 3.5-8 (R 4.4.0's, in a scratch library) the failures reproduce, and loading the package now stops with "The package "survival" (>= 3.8-11) is required"; with 3.8-11 and 3.8-12 the Cox and survival test files pass (67 tests, 2,071 expectations each).
+- Next step: CI on the fix; then Phase C3 when the project lead asks.

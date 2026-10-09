@@ -558,7 +558,7 @@ R version: keep `R (>= 4.1.0)`, the current requirement, which the native pipe n
 
 As built in Phase 8: caret, olsrr, and globals left Imports (DEC-073); caret and olsrr are suggested, for the tests that compare `check_data()`'s computations with theirs, as pROC is for the AUC and logistf for the Firth fit. The packages installed with pprof (recursive Depends, Imports, and LinkingTo on CRAN, besides R's base packages) went from 130 to 38 (PHASE8_PLAN F2). DESCRIPTION requires `ggplot2 (>= 4.0.0)`, under which the plots were compared with pprof 1.0.3's (DEC-074), and `R (>= 4.4.0)`, the oldest version CI finds working with the current dependencies: R 4.1 cannot install them, and on R 4.2 and 4.3 printing an lme4 fit fails in reformulas, which calls base R's `%||%` (DEC-081).
 
-As built in CoxPH Phase C2: survival (>= 3.5-8), whose fitters fit the Cox models (DEC-086, DEC-091), moved from Suggests, where Phase C1 put it, to Imports, so 39 packages are installed with pprof; glmnet stays in Suggests (DEC-088).
+As built in CoxPH Phase C2: survival, whose fitters fit the Cox models (DEC-086, DEC-091), moved from Suggests, where Phase C1 put it, to Imports, so 39 packages are installed with pprof; glmnet stays in Suggests (DEC-088). After the C2 gate the required version rose from 3.5-8 to 3.8-11 (DEC-106).
 
 ---
 

@@ -465,7 +465,7 @@ Each default is the current behavior (DEC-092), proved as in §C.2.
 As built in C2 (DEC-099, DEC-100; `R/model-survival.R`):
 
 - The fitters are called as `coxph()` calls them: on the rows with positive weight in `data_prepare()`'s order, with integer strata codes in provider order, the offset minus its mean (zeros when there is none or it is 0 everywhere), `nocenter = c(-1, 0, 1)`, and `coxph.control(eps = tol, iter.max = max_iter, timefix = FALSE)`. The fits then equal `coxph(timefix = FALSE, robust = FALSE)`'s bitwise, for `coxph.fit()` and `agreg.fit()` alike. Offsets whose exp() is not finite are rejected, as `coxph()` rejects them, and so are data with no positive weight.
-- The robust variance is `coxph()`'s robust step on the fitter's result: the fitter's list with `x`, `y`, `weights`, `strata`, and `terms`, of class `coxph`, given to `residuals(type = "dfbeta", collapse = cluster, weighted = TRUE)` with clusters coded as `coxph()` codes them, then `crossprod()`. It equals `coxph(cluster = )`'s bitwise; on 1,000,000 rows the fitter and the robust step took 4.3 s and 2.0 s where `coxph(cluster = )` took 20.7 s (`dev/design/coxph-facts/17_robust_from_fitter.txt`). The `coxph()` object serves only use 2 above, without a cluster and with `robust = FALSE` (`coxph()` turns robust variance on for non-integer weights).
+- The robust variance is `coxph()`'s robust step on the fitter's result: the fitter's list with `x`, `y`, `weights`, `strata`, and `terms`, of class `coxph`, given to `residuals(type = "dfbeta", collapse = cluster, weighted = TRUE)` with clusters coded as `coxph()` codes them (a factor's codes, otherwise by first appearance), then `crossprod()`. Older survival coded clusters by sorted value and formed the product as `t(r) %*% r`, so the package requires survival 3.8-11 or later (DEC-106). It equals `coxph(cluster = )`'s bitwise; on 1,000,000 rows the fitter and the robust step took 4.3 s and 2.0 s where `coxph(cluster = )` took 20.7 s (`dev/design/coxph-facts/17_robust_from_fitter.txt`). The `coxph()` object serves only use 2 above, without a cluster and with `robust = FALSE` (`coxph()` turns robust variance on for non-integer weights).
 - survival's warning that the iteration limit was reached is muffled and the fit warns once; whether the fit converged comes from the fitter's result. The iterations reported are those run, at most `max_iter`, as pprof_py counts them.
 - A fit without covariates estimates nothing and reports one iteration, as pprof_py does; it has no baselines or curves, since survival's `survfit()` cannot give them at offset 0 (D-75).
 
@@ -624,7 +624,7 @@ In C6, the size and coverage of the exact and mid-p tests and limits under the n
 
 ## H. Dependencies
 
-- **`survival`:** Imports, version 3.5-8 or later. pprof_py was validated against 3.5-8, and 3.5-8 to 3.8-12 give the same results (`02_r_reference_drift.txt`).
+- **`survival`:** Imports, version 3.5-8 or later. pprof_py was validated against 3.5-8, and 3.5-8 to 3.8-12 give the same results (`02_r_reference_drift.txt`). As changed after the C2 gate (DEC-106): 3.8-11 or later, since `coxph()` before 3.8-11 coded cluster columns and formed the robust variance otherwise than the adapter does (the same results within the tolerances, but not bitwise), and the engine-identity tests hold the package to the installed survival bitwise.
 - **`glmnet`:** Suggests, version 5.0 or later (DEC-088).
 - **Nothing else.** Python appears only in the fixture generator.
 

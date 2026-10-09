@@ -9,6 +9,9 @@
 # - The methods that need a coxph object (baselines, cumulative hazards and survival curves, score
 #   and dfbeta residuals) get one from coxph() on the prepared data, with the fit's settings.
 # Rows with weight 0 are left out of every survival call and kept in the data (M-25).
+# The package requires survival 3.8-11 or later (DEC-106): earlier versions' coxph() coded cluster
+# columns by sorted value (to 3.8-9) and formed the robust variance as t(r) %*% r (to 3.8-3), which
+# change its last bits, and found strata() in a formula only from its environment (before 3.7-3).
 
 # coxph()'s default: columns whose values are all among these are not centered (survival 3.8-12).
 survival_nocenter <- c(-1, 0, 1)
@@ -89,8 +92,8 @@ survival_robust_vcov <- function(fit, inputs, cluster, terms) {
 }
 
 # The clusters of the robust variance for the fitted rows, coded as coxph() codes a cluster column
-# (DEC-100): a factor's codes, otherwise the order of first appearance; without a cluster column,
-# one cluster per row.
+# (DEC-100; survival 3.8-11 and later, DEC-106): a factor's codes, otherwise the order of first
+# appearance; without a cluster column, one cluster per row.
 survival_cluster_codes <- function(prepared, rows) {
   cluster <- prepared$cluster
   if (is.null(cluster)) return(seq_along(rows))

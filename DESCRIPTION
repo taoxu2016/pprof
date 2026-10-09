@@ -27,7 +27,7 @@ Imports:
     ggplot2 (>= 4.0.0),
     lme4,
     scales,
-    survival (>= 3.5-8),
+    survival (>= 3.8-11),
     tibble
 LinkingTo: Rcpp, RcppArmadillo
 Depends:
