@@ -6,9 +6,18 @@
 #
 # Usage, from the repository root:
 #   Rscript dev/bench/cox/summarize_paired.R <report md> <C1 engines csv> <C1 pprof_py csv> <paired csv> [...]
-# Several paired CSVs are the runs of one session, for example one per group of scenarios. Exit
-# status is 1 when a fit is too slow by DEC-038's rule, fails, or differs from its engine call.
+#     [--notes <md file>]
+# Several paired CSVs are the runs of one session, for example one per group of scenarios. A notes
+# file (Markdown) goes into the report after its summary, for what the measurements do not show,
+# such as the conditions of the run. Exit status is 1 when a fit is too slow by DEC-038's rule,
+# fails, or differs from its engine call.
 args <- commandArgs(trailingOnly = TRUE)
+notes <- character()
+at <- match("--notes", args)
+if (!is.na(at)) {
+  notes <- c(readLines(args[[at + 1L]], encoding = "UTF-8"), "")
+  args <- args[-c(at, at + 1L)]
+}
 if (length(args) < 4L) {
   stop(paste("Usage: Rscript dev/bench/cox/summarize_paired.R <report md> <C1 engines csv> <C1 pprof_py csv>",
              "<paired csv> ..."), call. = FALSE)
@@ -87,6 +96,7 @@ lines <- c(
   sprintf("- Too slow against the engine call plus the preparation of its inputs: %d.",
           sum(prepared_verdicts == "TOO SLOW")),
   "",
+  notes,
   "## The fit against its engine call", "",
   paste("| Scenario | Rows | Providers | Covariates | Task | Round | Engine median | Fit median | Ratio |",
         "Engine fastest | Fit fastest | Ratio | Fit − engine, median | Peak MB, engine / fit | Estimates |",

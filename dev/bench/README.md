@@ -39,7 +39,7 @@ There is no pprof 1.0.3 baseline for Cox models (CoxPH brief §3.7). The Cox bas
 Rscript dev/bench/cox/run_engines.R <data dir> dev/bench/results/cox-engines-<date>-<platform>.csv
 dev/reference/cox/venv/Scripts/python dev/bench/cox/run_pprof_py.py <data dir> dev/bench/results/cox-pprof_py-<date>-<platform>.csv
 Rscript dev/bench/cox/run_paired.R <data dir> <paired csv> [--only '<regex of "scenario task">'] [--rounds 2]
-Rscript dev/bench/cox/summarize_paired.R <report md> dev/bench/results/cox-engines-<date>-<platform>.csv dev/bench/results/cox-pprof_py-<date>-<platform>.csv <paired csv> [...]
+Rscript dev/bench/cox/summarize_paired.R <report md> dev/bench/results/cox-engines-<date>-<platform>.csv dev/bench/results/cox-pprof_py-<date>-<platform>.csv <paired csv> [...] [--notes <md file>]
 ```
 
 Each task runs in a fresh process. The R tasks follow `harness.R`'s measurements (the first run, `bench::mark()` with at least 5 runs, 3 from 10 s, 1 from 60 s, the process's peak memory, and `gc()`'s maximum of R's heap); the Python tasks warm up on 2,000 rows first, so that numba's compilation is not timed. Each CSV has a `.json` with the machine and the versions.
