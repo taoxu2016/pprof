@@ -81,18 +81,19 @@ lines <- c(
   "## The fit against its engine call", "",
   paste("| Scenario | Rows | Providers | Covariates | Task | Round | Engine median | Fit median | Ratio |",
         "Engine fastest | Fit fastest | Ratio | Fit − engine, median | Inputs' preparation, median of 3 |",
-        "Peak MB, engine / fit | Estimates | Verdict |"),
-  "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"
+        "Fit − engine − preparation | Peak MB, engine / fit | Estimates | Verdict |"),
+  "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"
 )
 for (g in names(groups)) {
   p <- groups[[g]]
   for (j in seq_len(nrow(p))) {
-    lines <- c(lines, sprintf("| %s | %s | %d | %s | %s | %s | %s | %s | %s | %s | %s | %s / %s | %s | %s |",
+    excess <- p$median_s_fit[j] - p$median_s_engine[j]
+    lines <- c(lines, sprintf("| %s | %s | %d | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s / %s | %s | %s |",
                               size_of(p$scenario[j]), p$task[j], p$round[j], fmt(p$median_s_engine[j]),
                               fmt(p$median_s_fit[j]), ratio(p$median_ratio[j]), fmt(p$min_s_engine[j]),
-                              fmt(p$min_s_fit[j]), ratio(p$min_ratio[j]),
-                              fmt(p$median_s_fit[j] - p$median_s_engine[j]), fmt(p$prep_s_engine[j]),
-                              fmt(p$peak_after_mb_engine[j]), fmt(p$peak_after_mb_fit[j]),
+                              fmt(p$min_s_fit[j]), ratio(p$min_ratio[j]), fmt(excess), fmt(p$prep_s_engine[j]),
+                              fmt(excess - p$prep_s_engine[j]), fmt(p$peak_after_mb_engine[j]),
+                              fmt(p$peak_after_mb_fit[j]),
                               if (isTRUE(p$identical_to_engine_fit[j])) "identical" else "DIFFER",
                               if (j == nrow(p)) verdicts[[g]] else ""))
   }

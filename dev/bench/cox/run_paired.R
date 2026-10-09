@@ -5,9 +5,9 @@
 # - engine: for breslow and efron, survival's fitter as the adapter calls it (R/model-survival.R), on
 #   the inputs the adapter builds, prepared outside the timing; for robust, the same fitter call
 #   followed by coxph()'s robust step with one cluster per row (residuals.coxph(type = "dfbeta",
-#   collapse = row, weighted = TRUE), then crossprod(); DEC-099). The process also times the
-#   preparation of those inputs from the data frame (data_prepare() and the adapter's inputs): the
-#   median of three runs after a first, untimed one;
+#   collapse = row, weighted = TRUE), then crossprod(); DEC-099). After its measurement, the process
+#   also times the preparation of those inputs from the data frame (data_prepare() and the
+#   adapter's inputs): the median of three calls, after the first one that built them;
 # - coxph: survival's coxph() on the data frame, the call a user would make, with one cluster per row
 #   for robust (C1's comparator, DEC-098); reported, not a gate;
 # - fit: fit_cox_stratified() on the data frame, with robust = TRUE for robust.
@@ -60,7 +60,7 @@ run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
   ties <- if (identical(task, "efron")) "efron" else "breslow"
   robust <- identical(task, "robust")
   control <- survival::coxph.control(timefix = FALSE)  # eps = 1e-9 and iter.max = 20, the fit's defaults
-  prep_s <- NA_real_
+  prepare <- NULL
   call <- switch(side,
     fit = function() fit_cox_stratified(formula, d, "provider", weights = "weight", ties = ties, robust = robust),
     coxph = {
@@ -76,15 +76,14 @@ run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
       }
     },
     engine = {
-      # The adapter's inputs (DEC-100), built outside the timing. Their preparation is timed apart: the
-      # first call in a fresh process also pays one-off costs, so the median of three later calls.
+      # The adapter's inputs (DEC-100), built outside the timing; their preparation is timed after the
+      # engine call's measurement (below).
       prepare <- function() {
         prepared <- pprof:::data_prepare(formula, d, "provider", event_counts = TRUE, response_type = "survival",
                                          weights = "weight", allow_offset = TRUE)
         list(terms = prepared$terms, inputs = pprof:::survival_inputs(prepared, pprof:::survival_fit_rows(prepared)))
       }
       built <- prepare()
-      prep_s <- stats::median(vapply(1:3, function(i) as.numeric(bench::bench_time(prepare())[["real"]]), numeric(1)))
       inputs <- built$inputs
       terms <- built$terms
       rm(built)
@@ -129,6 +128,12 @@ run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
   b <- bench::mark(call(), min_time = 1, min_iterations = iterations, max_iterations = max(iterations, 100L),
                    check = FALSE, memory = FALSE, filter_gc = FALSE)
   times <- as.numeric(b$time[[1]])
+  # The engine's inputs' preparation: the median of three calls, after the measurement so that its
+  # garbage does not burden the engine call, and after the first call, which pays one-off costs.
+  prep_s <- NA_real_
+  if (!is.null(prepare)) {
+    prep_s <- stats::median(vapply(1:3, function(i) as.numeric(bench::bench_time(prepare())[["real"]]), numeric(1)))
+  }
   c(list(first_s = first, median_s = stats::median(times), min_s = min(times), max_s = max(times), runs = length(times),
          peak_before_mb = before / 2^20, peak_after_mb = after / 2^20, gc_max_mb = gc_max, prep_s = prep_s), result)
 }
