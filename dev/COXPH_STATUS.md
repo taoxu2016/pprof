@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is built on `coxph/phase-3` from its approved plan (`dev/design/COXPH_C3_PLAN.md`) and goes to its gate.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is at its gate on `coxph/phase-3` (2026-10-09), built from its approved plan (`dev/design/COXPH_C3_PLAN.md`), awaiting the project lead's approval.
 
 ## 2026-10-07
 
@@ -178,3 +178,19 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
   - the corner scenario remains for the gate (DEC-111).
 - Registers: DEC-107 to DEC-112; K-149 and where K-136 to K-147 are in the package; D-77, and the C3 status of D-58, D-63, D-70, D-71, and D-73; M-39 re-decided (DEC-107); NAMING §10, COXPH_DESIGN as built, ARCHITECTURE §E.3 and §E.6, the vignette "Adding a model to pprof", and NEWS.
 - Next step: the C3 gate (`/phase-gate C3`), with the corner scenario if at least 4 GB of memory is free.
+
+## 2026-10-09: Phase C3 at its gate
+
+- Delivered on `coxph/phase-3` (brief §4, row C3), `c81603e` to `bcfb0ef`, as the entry above lists: expected counts at the national baseline in closed form, indirect and direct measures, the Poisson exact and mid-p tests with their limits and flags, funnels, plots, and `profile_providers()` for the stratified Cox model, with COXPH_DESIGN §D.3's items 3 to 6 and §D.2's capabilities.
+- Gate checks, at `bcfb0ef`:
+  - `devtools::document()` changed nothing;
+  - `devtools::test()`, in a clean worktree: 77 files, 1,227 tests, 10,878 expectations; none failed or skipped, no warnings or errors (645 s);
+  - `R CMD check --as-cran --no-manual`: 0 errors, 0 warnings, the 2 notes of the previous gates (798 s); the tarball is 4,921,651 bytes, under the 5 MB at which the check notes its size;
+  - `validation/run-reference.R`, in a clean worktree: 368 of 368 cases, none skipped, no provider within tolerance of a flag threshold; the report equals the committed one but for its date and commit (114 s);
+  - the Cox comparisons with the fixtures pass in `devtools::test()`, and `dev/reference/cox/calibrate.R` reproduces the committed calibration report byte for byte (842 of 842 scored rows; 4,676 flags, none differing);
+  - `covr::package_coverage()`: 96.52% of the package; of the R lines C3 added (against `main`), 263 of 268 relevant lines, 98.13%, the uncovered ones defensive branches (296 s);
+  - `lintr`: the 16 changed package files, the 12 changed test files, the benchmark scripts, and `compare.R` are clean; fact scripts 22 to 25 and C3's additions to `calibrate.R` keep the fact scripts' style (`<<-`, names such as `O` and `E`, a few long lines);
+  - the benchmarks: `dev/bench/results/cox-c3-paired-20261009-windows.md`, as the entry above sums it up.
+- The corner scenario could not be measured: at the gate 1.5 GB of the machine's 7.4 GB was free, with 18 GB committed by the open applications, against the 4 GB that DEC-111 asks for.
+- Open for the project lead: the corner scenario, by one of DEC-111's ways; the two fits too slow by DEC-105's rule, at its line; the measures slower than pprof_py's at 10,000 rows and with 7,500 providers (a SHOULD); the push of the branch.
+- Next step: the project lead's review of the C3 gate.
