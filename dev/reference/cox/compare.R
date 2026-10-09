@@ -22,6 +22,22 @@ object_diff <- function(a, b, path = "") {
                                                                     paste(class(b), collapse = "/"))))
   }
   out <- NULL
+  if (is.list(a) && !is.null(names(a)) && !is.null(names(b)) && !identical(names(a), names(b))) {
+    # Named lists with different elements: the elements added and removed, by name, and the common ones
+    # compared, so that an added output (the funnel limits of Phase C3) does not hide a change elsewhere.
+    added <- setdiff(names(b), names(a))
+    removed <- setdiff(names(a), names(b))
+    common <- intersect(names(a), names(b))
+    if (length(added)) out <- data.frame(path = here, kind = "added", detail = paste(added, collapse = ", "))
+    if (length(removed)) {
+      out <- rbind(out, data.frame(path = here, kind = "removed", detail = paste(removed, collapse = ", ")))
+    }
+    if (!identical(common, intersect(names(b), names(a)))) {
+      out <- rbind(out, data.frame(path = here, kind = "order", detail = "the common elements are in another order"))
+    }
+    for (k in common) out <- rbind(out, object_diff(a[[k]], b[[k]], paste0(path, if (nzchar(path)) "$" else "", k)))
+    return(out)
+  }
   if (!identical(names(a), names(b))) out <- data.frame(path = here, kind = "names", detail = "names differ")
   if (is.list(a)) {
     if (length(a) != length(b)) {
@@ -102,5 +118,11 @@ if (length(changed)) {
 }
 if (is.null(report_file)) cat(lines, sep = "\n") else writeLines(lines, report_file)
 identical_all <- !length(changed) && !length(added) && !length(removed)
-cat(if (identical_all) "Fixtures identical.\n" else "Fixtures differ.\n")
+only_additions <- length(changed) && !length(added) && !length(removed) &&
+  all(vapply(changed, function(d) all(d$kind == "added"), logical(1)))
+cat(if (identical_all) "Fixtures identical.\n" else if (only_additions) {
+  "Fixtures differ only by added outputs.\n"
+} else {
+  "Fixtures differ.\n"
+})
 quit(status = if (identical_all) 0L else 1L)

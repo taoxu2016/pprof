@@ -55,6 +55,7 @@ PPROF_PY_COMMIT = "9320766e35e5b385d596a2b75418192098a124c4"
 TIES = ("breslow", "efron")
 FIXED_BETA = (0.375, -0.1875, 0.0625, 0.125, -0.25)
 TIGHT = {"max_iter": 100, "eps": 1e-11}
+FUNNEL_LEVELS = (0.95, 0.998)  # the flags' level, then the other curve's
 PROFILES = ((0.0, 0.0, 0.0, 0.0, 0.0), (0.5, -0.25, 0.125, 0.25, -0.5), (-1.0, 0.75, 0.5, -0.25, 0.125))
 PROFILE_OFFSETS = (0.0, 0.25, -0.5)
 CLUSTERS = 40  # without a cluster column, robust variances are clustered by id mod 40, as pprof_spark's
@@ -284,6 +285,31 @@ def pprof_tests(df, case, ties):
     return out
 
 
+def pprof_funnel(df, case, ties):
+    """pprof_py's funnel limits for the Cox model, CoxPH.funnel_limits() (inference/funnel.py:
+    poisson_funnel_limits; the CoxPH C3 plan's decisions 1 and 2): with the mid-p test at the first of
+    FUNNEL_LEVELS, each provider's limits and flag, and the curves at every level. The limits are count
+    boundaries at half-integers on the O/E scale, -inf and inf where no count is flagged."""
+    X = x_of(df, case)
+    model, _ = quiet(lambda: CoxPH(ties=ties, **TIGHT).fit(X, **fit_arguments(df, case)))
+    limits, caught = quiet(lambda: model.funnel_limits(X, provider_id=providers_of(df, case), test_method="midp",
+                                                       level=FUNNEL_LEVELS[0], levels=list(FUNNEL_LEVELS),
+                                                       **measure_arguments(df, case)))
+    providers = limits.providers
+    curves = limits.curves
+    flag = providers["flag"].to_numpy(dtype=float, na_value=np.nan)
+    return {
+        "provider": [label(v) for v in providers.index],
+        "observed": hexes(providers["observed"]), "expected": hexes(providers["expected"]),
+        "estimate": hexes(providers["estimate"]), "precision": hexes(providers["precision"]),
+        "lower": hexes(providers["lower"]), "upper": hexes(providers["upper"]),
+        "flag": [None if np.isnan(f) else int(f) for f in flag],
+        "curves": {"level": hexes(curves["level"]), "precision": hexes(curves["precision"]),
+                   "lower": hexes(curves["lower"]), "upper": hexes(curves["upper"])},
+        "warnings": caught,
+    }
+
+
 def shifted_tie(df):
     """Moves one of two or more tied events a day later: a real defect a tolerance must catch."""
     events = df[df["event"] == 1]
@@ -320,6 +346,7 @@ def cox_outputs(df, case):
             "baseline": pprof_baseline(df, case, ties),
             "measures": pprof_measures(df, case, ties),
             "tests": pprof_tests(df, case, ties),
+            "funnel": pprof_funnel(df, case, ties),
             "negative_controls": controls,
         }
         if case.get("residuals", True):
@@ -342,6 +369,7 @@ def competing_outputs(df, case):
             cause_specific[str(cause)] = {
                 "default": pprof_fit(recoded, cox_case, ties), "tight": pprof_fit(recoded, cox_case, ties, **TIGHT),
                 "measures": pprof_measures(recoded, cox_case, ties), "tests": pprof_tests(recoded, cox_case, ties),
+                "funnel": pprof_funnel(recoded, cox_case, ties),
             }
         fine_gray = {}
         for cause in causes:
@@ -636,7 +664,8 @@ def write_manifests(staging, out_dirs, ran):
                         "timefix": False, "clusters": "the cluster column, or id mod 40",
                         "zero_weights": "left out of survival's fits; kept in the measures (M-25)",
                         "glmnet_control": "list(thresh = 1e-12, maxit = 1e5, fdev = 0, devmax = 1)",
-                        "cv_deviance": "coxnet.deviance(std.weights = FALSE), normalized by the held-out event weight"},
+                        "cv_deviance": "coxnet.deviance(std.weights = FALSE), normalized by the held-out event weight",
+                        "funnel": {"test": "midp", "levels": list(FUNNEL_LEVELS)}},
             "cases": entries,
         })
         python_environment = json.load(open(os.path.join(staging, "environment.json"), encoding="utf-8"))
