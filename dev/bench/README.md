@@ -24,7 +24,7 @@ The baseline comes from one machine (recorded in the `.json`). Later phases comp
 
 ## The Cox baseline (`cox/`)
 
-There is no pprof 1.0.3 baseline for Cox models (CoxPH brief §3.7). The Cox baseline times instead what the package will wrap, and pprof_py v0.7.0 for reference; from Phase C2 on, each Cox function is measured against the engine call it wraps, in the same session, and must be at most 10% slower (DEC-038's pairing).
+There is no pprof 1.0.3 baseline for Cox models (CoxPH brief §3.7). The Cox baseline times instead what the package will wrap, and pprof_py v0.7.0 for reference; from Phase C2 on, each Cox function is measured against the engine call it wraps, in the same session, and must be at most 10% slower than that call plus the preparation of its inputs from the data (DEC-038's pairing, DEC-105).
 
 | File | Purpose |
 |---|---|
@@ -33,7 +33,7 @@ There is no pprof 1.0.3 baseline for Cox models (CoxPH brief §3.7). The Cox bas
 | `cox/run_pprof_py.py` | pprof_py's `CoxPH` fits, standardized measures, mid-p and exact tests, and penalized path and cross-validation, with the Cox generator's Python |
 | `cox/summarize.R` | The baseline's report: the engines' and pprof_py's medians side by side (`results/cox-baseline-<date>-<platform>.md`) |
 | `cox/run_paired.R` | From Phase C2: each Cox fit against the engine call it makes, on the same data, in fresh processes that alternate the engine call, `coxph()` on the data frame, and the fit, for two or more rounds (DEC-038, DEC-100); the working tree installed with `--preclean`; the fit's estimates checked bitwise against the engine call's |
-| `cox/summarize_paired.R` | The paired runs' report: ratios and DEC-038's verdicts against the engine call, the fit against `coxph()`, and C1's engine and pprof_py times beside the fits (`results/cox-c2-paired-<date>-<platform>.md`) |
+| `cox/summarize_paired.R` | The paired runs' report: ratios, the brief's 10% rule by DEC-038's test against the engine call plus the preparation of its inputs (DEC-105) with the verdict against the engine call alone beside it, where the fit's time goes, the fit against `coxph()`, and C1's engine and pprof_py times beside the fits (`results/cox-c2-paired-<date>-<platform>.md`) |
 
 ```sh
 Rscript dev/bench/cox/run_engines.R <data dir> dev/bench/results/cox-engines-<date>-<platform>.csv

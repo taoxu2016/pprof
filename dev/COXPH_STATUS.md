@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is at its gate on `coxph/phase-2` (plan `dev/design/COXPH_C2_PLAN.md`, approved 2026-10-08), awaiting the project lead's review; DEC-105 (the benchmark rule) and D-75 await decisions.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is next and not started.
 
 ## 2026-10-07
 
@@ -122,3 +122,13 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
   - `lintr`: the 30 changed package, test, and benchmark files are clean (the plan's fact scripts 17 to 20 keep `<<-` and long lines).
 - Open for the project lead: DEC-105; D-75; the D-38 message; measuring the corner scenario on a machine with more memory.
 - Next step: the project lead's review of the C2 gate.
+
+## 2026-10-09: the C2 gate closed
+
+- The project lead approved closing the C2 gate and asked for the gate report's recommendation on each open question:
+  - DEC-105 is accepted: the 10% rule compares a fit with its engine call plus the preparation of the engine's inputs, under which no C2 fit is too slow; `dev/bench/cox/summarize_paired.R` gives that verdict as the rule's, and the report was regenerated from the same measurements;
+  - D-75 is decided as option (1): no baselines or curves for a fit without covariates, with `pprof_error_unsupported_inference`;
+  - D-38's message is fixed (`54572a9`): at within-provider rank 0 the warning names every covariate, with a regression test that fails without the fix; the logistic tests pass and the reference suite is unchanged (368 of 368);
+  - the corner scenario is measured at the C3 gate, on a machine with enough free memory.
+- The project lead asked for the work to be pushed to the fork's `main` and every other branch deleted: `coxph/phase-0`, `coxph/phase-1`, and `coxph/phase-2` are fast-forwards of `main`, so `main` takes `coxph/phase-2` as it is.
+- Next step: Phase C3, provider profiling for the stratified Cox model (the brief's §4), in a new session and only when the project lead asks: its plan first, `dev/design/COXPH_C3_PLAN.md`, for approval, on a branch from `main`.

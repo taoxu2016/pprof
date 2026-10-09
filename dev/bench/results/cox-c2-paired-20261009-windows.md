@@ -4,10 +4,10 @@ Run on 2026-10-09 at commit `2b856ec` (`dev/bench/cox/run_paired.R`, 2 round(s),
 
 Each round runs the engine call, `coxph()`, and the fit, each in a fresh process, one after the other, on the same data (`dev/bench/cox/scenarios.R`, C1's grid). The engine call is survival's fitter as the adapter calls it, on the inputs the adapter builds, prepared outside the timing (DEC-100); for the robust fit, the fitter followed by coxph()'s robust step with one cluster per row (DEC-099). The fit is `fit_cox_stratified()` on the data frame, with weights and an offset, from the formula to the model object. The preparation of the engine's inputs from the data frame (`data_prepare()` and the adapter's inputs) is timed in the engine's process after its measurement: the median of three calls.
 
-Rule (DEC-038, the brief's §3.7 MUST): a fit is too slow when, in every round, its median and its fastest run are more than 10% above the engine call's and its median at least 0.05 s above. The fit's estimates must equal the engine call's bitwise (coefficients, and the robust variance). Times in seconds; peak memory of the process after the first run, in MB (recorded, DEC-004).
+Rule (the brief's §3.7 MUST, DEC-105): a fit is too slow when, in every round, its median and its fastest run are more than 10% above the engine call's plus the preparation of its inputs, and its median at least 0.05 s above (DEC-038). The verdict against the engine call alone, the C2 plan's comparator, is given beside it. The fit's estimates must equal the engine call's bitwise (coefficients, and the robust variance). Times in seconds; peak memory of the process after the first run, in MB (recorded, DEC-004).
 
-- Fits: 21; too slow against the engine call: 17; failed or differing from the engine call: 0.
-- Too slow against the engine call plus the preparation of its inputs: 0.
+- Fits: 21; too slow against the engine call plus the preparation of its inputs (DEC-105): 0.
+- Too slow against the engine call alone: 17; failed or differing from the engine call: 0.
 
 ## Notes on this run
 
@@ -18,7 +18,7 @@ Rule (DEC-038, the brief's §3.7 MUST): a fit is too slow when, in every round, 
 
 ## The fit against its engine call
 
-| Scenario | Rows | Providers | Covariates | Task | Round | Engine median | Fit median | Ratio | Engine fastest | Fit fastest | Ratio | Fit − engine, median | Peak MB, engine / fit | Estimates | Verdict |
+| Scenario | Rows | Providers | Covariates | Task | Round | Engine median | Fit median | Ratio | Engine fastest | Fit fastest | Ratio | Fit − engine, median | Peak MB, engine / fit | Estimates | Verdict against the engine call alone |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | center | 100,000 | 1,000 | 20 | breslow | 1 | 0.505 | 1.19 | 2.346 | 0.438 | 0.746 | 1.703 | 0.68 | 349 / 343 | identical |  |
 | center | 100,000 | 1,000 | 20 | breslow | 2 | 0.501 | 0.707 | 1.412 | 0.421 | 0.587 | 1.392 | 0.206 | 344 / 355 | identical | TOO SLOW |
@@ -65,9 +65,9 @@ Rule (DEC-038, the brief's §3.7 MUST): a fit is too slow when, in every round, 
 
 ## Where the fit's time goes
 
-The fit's time beyond the engine call, the preparation of the engine's inputs from the data frame, and what is left: the adapter's own steps, the model object, and noise. The last column applies DEC-038's rule to the engine call plus the preparation (medians, and fastest runs plus the preparation).
+The fit's time beyond the engine call, the preparation of the engine's inputs from the data frame, and what is left: the adapter's own steps, the model object, and noise. The last column is the MUST's verdict (DEC-105): DEC-038's rule against the engine call plus the preparation (medians, and fastest runs plus the preparation).
 
-| Scenario | Task | Round | Fit − engine, median | Inputs' preparation, median of 3 | Fit − engine − preparation | Ratio, fit / (engine + preparation), medians | Fastest | Verdict against engine plus preparation |
+| Scenario | Task | Round | Fit − engine, median | Inputs' preparation, median of 3 | Fit − engine − preparation | Ratio, fit / (engine + preparation), medians | Fastest | Verdict (DEC-105) |
 |---|---|---|---|---|---|---|---|---|
 | center | breslow | 1 | 0.68 | 0.32 | 0.36 | 1.436 | 0.984 |  |
 | center | breslow | 2 | 0.206 | 0.265 | -0.0584 | 0.924 | 0.855 | ok |

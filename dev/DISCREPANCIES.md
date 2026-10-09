@@ -978,7 +978,7 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 | D-72 | Penalized coefficients at λ_max | B | verified; decided (delegation): exact zeros | With unpenalized columns, pprof_py's first path point carries penalized coefficients of order 1e-11, which count as nonzero |
 | D-73 | Failures of pprof_py that cannot arise | A | verified; does not arise | Measures without events, mid-p limits under a large empirical-null mean, a single CV fold, a missing event code |
 | D-74 | Status coded 1/2 | A | verified; decided: accepted | pprof_py rejects the 1/2 status coding that `Surv()` accepts |
-| D-75 | Baselines and curves without covariates | B | verified; awaiting decision | survival's `survfit()` cannot give them for a Cox fit without covariates, so the package raises a classed error where pprof_py reports them |
+| D-75 | Baselines and curves without covariates | B | verified; decided: unsupported, with a classed error | survival's `survfit()` cannot give them for a Cox fit without covariates, so the package raises a classed error where pprof_py reports them |
 
 ### D-56: Robust variance with Breslow ties on (start, stop] data
 
@@ -1213,6 +1213,6 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 - Statistical impact: none on the outputs the package gives.
 - Options: (1) keep these outputs unsupported, with the classed error; (2) without an offset, survival's `survfit()` of the fit without new data, which then is the baseline at x = 0, and (1) with an offset; (3) the baseline computed by the package, contrary to the CoxPH brief's §1.
 - Recommendation: (1), or (2) if the project lead wants the outputs for unadjusted fits.
-- Decision owner: project lead.
-- Status: verified (2026-10-09); awaiting the project lead's decision at the C2 gate; option (1) is implemented in C2.
+- Decision owner: project lead. Decided (1): the project lead, 2026-10-09, C2 gate, as recommended.
+- Status: verified (2026-10-09); decided; implemented in C2.
 - Regression test: "without covariates the fit holds the log-likelihood of the offsets alone" (`tests/testthat/test-model-cox-stratified.R`).

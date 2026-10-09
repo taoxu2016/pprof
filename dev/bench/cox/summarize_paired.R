@@ -1,15 +1,16 @@
 # The report of the paired Cox benchmark (dev/bench/cox/run_paired.R; COXPH_C2_PLAN §4.5): per
-# scenario, task, and round, the fit's median and fastest times against its engine call's, with
-# DEC-038's verdict (the brief §3.7's MUST); the fit against coxph() on the data frame (with one
-# cluster per row for robust, DEC-098); and the fits beside C1's baseline, its engine calls and
-# pprof_py (the brief §3.7's SHOULD).
+# scenario, task, and round, the fit's median and fastest times against its engine call's; the
+# brief §3.7's MUST by DEC-038's rule against the engine call plus the preparation of its inputs
+# (DEC-105), with the verdict against the engine call alone beside it (the C2 plan's comparator);
+# the fit against coxph() on the data frame (with one cluster per row for robust, DEC-098); and
+# the fits beside C1's baseline, its engine calls and pprof_py (the brief §3.7's SHOULD).
 #
 # Usage, from the repository root:
 #   Rscript dev/bench/cox/summarize_paired.R <report md> <C1 engines csv> <C1 pprof_py csv> <paired csv> [...]
 #     [--notes <md file>]
 # Several paired CSVs are the runs of one session, for example one per group of scenarios. A notes
 # file (Markdown) goes into the report after its summary, for what the measurements do not show,
-# such as the conditions of the run. Exit status is 1 when a fit is too slow by DEC-038's rule,
+# such as the conditions of the run. Exit status is 1 when a fit is too slow by DEC-105's rule,
 # fails, or differs from its engine call.
 args <- commandArgs(trailingOnly = TRUE)
 notes <- character()
@@ -86,21 +87,22 @@ lines <- c(
         "engine's inputs from the data frame (`data_prepare()` and the adapter's inputs) is timed in the engine's",
         "process after its measurement: the median of three calls."),
   "",
-  paste("Rule (DEC-038, the brief's §3.7 MUST): a fit is too slow when, in every round, its median and its fastest",
-        "run are more than 10% above the engine call's and its median at least 0.05 s above. The fit's estimates must",
-        "equal the engine call's bitwise (coefficients, and the robust variance). Times in seconds; peak memory of the",
-        "process after the first run, in MB (recorded, DEC-004)."),
+  paste("Rule (the brief's §3.7 MUST, DEC-105): a fit is too slow when, in every round, its median and its fastest",
+        "run are more than 10% above the engine call's plus the preparation of its inputs, and its median at least",
+        "0.05 s above (DEC-038). The verdict against the engine call alone, the C2 plan's comparator, is given beside",
+        "it. The fit's estimates must equal the engine call's bitwise (coefficients, and the robust variance). Times",
+        "in seconds; peak memory of the process after the first run, in MB (recorded, DEC-004)."),
   "",
-  sprintf("- Fits: %d; too slow against the engine call: %d; failed or differing from the engine call: %d.",
-          length(verdicts), sum(verdicts == "TOO SLOW"), sum(verdicts %in% c("FAILED", "ESTIMATES DIFFER"))),
-  sprintf("- Too slow against the engine call plus the preparation of its inputs: %d.",
-          sum(prepared_verdicts == "TOO SLOW")),
+  sprintf("- Fits: %d; too slow against the engine call plus the preparation of its inputs (DEC-105): %d.",
+          length(verdicts), sum(prepared_verdicts == "TOO SLOW")),
+  sprintf("- Too slow against the engine call alone: %d; failed or differing from the engine call: %d.",
+          sum(verdicts == "TOO SLOW"), sum(verdicts %in% c("FAILED", "ESTIMATES DIFFER"))),
   "",
   notes,
   "## The fit against its engine call", "",
   paste("| Scenario | Rows | Providers | Covariates | Task | Round | Engine median | Fit median | Ratio |",
         "Engine fastest | Fit fastest | Ratio | Fit − engine, median | Peak MB, engine / fit | Estimates |",
-        "Verdict |"),
+        "Verdict against the engine call alone |"),
   "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"
 )
 for (g in names(groups)) {
@@ -118,13 +120,13 @@ for (g in names(groups)) {
 }
 lines <- c(lines, "", "## Where the fit's time goes", "",
            paste("The fit's time beyond the engine call, the preparation of the engine's inputs from the data frame,",
-                 "and what is left: the adapter's own steps, the model object, and noise. The last column applies",
-                 "DEC-038's rule to the engine call plus the preparation (medians, and fastest runs plus the",
-                 "preparation)."),
+                 "and what is left: the adapter's own steps, the model object, and noise. The last column is the",
+                 "MUST's verdict (DEC-105): DEC-038's rule against the engine call plus the preparation (medians,",
+                 "and fastest runs plus the preparation)."),
            "",
            paste("| Scenario | Task | Round | Fit − engine, median | Inputs' preparation, median of 3 |",
                  "Fit − engine − preparation | Ratio, fit / (engine + preparation), medians | Fastest |",
-                 "Verdict against engine plus preparation |"),
+                 "Verdict (DEC-105) |"),
            "|---|---|---|---|---|---|---|---|---|")
 for (g in names(groups)) {
   p <- groups[[g]]
@@ -184,6 +186,7 @@ for (g in names(groups)) {
                             ratio(fit_median / py_median)))
 }
 writeLines(lines, report)
-cat(sprintf("wrote %s: %d fits, %d too slow, %d failed or differing\n", report, length(verdicts),
-            sum(verdicts == "TOO SLOW"), sum(verdicts %in% c("FAILED", "ESTIMATES DIFFER"))))
-if (any(verdicts != "ok")) quit(status = 1)
+cat(sprintf("wrote %s: %d fits, %d too slow (DEC-105), %d against the engine call alone, %d failed or differing\n",
+            report, length(verdicts), sum(prepared_verdicts == "TOO SLOW"), sum(verdicts == "TOO SLOW"),
+            sum(verdicts %in% c("FAILED", "ESTIMATES DIFFER"))))
+if (any(prepared_verdicts != "ok")) quit(status = 1)
