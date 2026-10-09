@@ -94,13 +94,14 @@ infer_poisson_exact_limits <- function(observed, expected, level) {
 # to the root of z(O, t), and falls on the other side, so the limits are the two roots of
 # 2 Phi-bar(|z(O, t)|) = alpha. They depend on O alone: pprof_py's bracket and Brent tolerances only
 # set how precisely it finds them (within 1e-10 max(E, 1)). They are found once per distinct O, to
-# rounding, then divided by E; pprof_py's decisions of 0 for the lower limit and Inf for the upper,
-# where its equation is not negative at the ends of its bracket for that provider, are kept. With
-# E = 0 the limits are NaN and Inf (K-147). A matrix with columns lower and upper.
+# rounding, by bisection over all the distinct counts at once, then divided by E; pprof_py's
+# decisions of 0 for the lower limit and Inf for the upper, where its equation is not negative at the
+# ends of its bracket for that provider, are kept. With E = 0 the limits are NaN and Inf (K-147). A
+# matrix with columns lower and upper.
 infer_poisson_midp_limits <- function(observed, expected, level) {
   alpha <- 1 - level
   counts <- sort(unique(observed))
-  roots <- vapply(counts, infer_poisson_midp_roots, numeric(2), alpha = alpha)
+  roots <- infer_poisson_midp_roots(counts, alpha)
   at <- match(observed, counts)
   lower <- roots[1L, at]
   upper <- roots[2L, at]
@@ -127,21 +128,54 @@ infer_poisson_midp_bracket_high <- function(observed, expected) {
   }
 }
 
-# The two roots in the Poisson mean of the mid-p limits' equation for one observed count, to rounding:
-# the lower one between the smallest positive mean and the root of the statistic, the upper one beyond
-# it. A side with no sign change has the lower limit 0 (O = 0) or the upper Inf (when alpha is at most
-# the p-value floor's 2e-6).
-infer_poisson_midp_roots <- function(observed, alpha) {
-  statistic <- function(mean) infer_poisson_midp_statistic(observed, mean)
-  excess <- function(mean) infer_poisson_midp_excess(observed, mean, alpha)
-  low <- .Machine$double.xmin
-  high <- infer_poisson_midp_bracket_high(observed, 0)
-  root <- function(f, lower, upper) {
-    stats::uniroot(f, c(lower, upper), tol = midp_root_tolerance, maxiter = midp_root_max_iter)$root
+# The two roots in the Poisson mean of the mid-p limits' equation for each count in `counts`, to
+# rounding (DEC-110): as the mean grows, the statistic falls from 4.75 to -4.75, so the equation rises
+# to 1 - alpha at the statistic's root and falls beyond it. Bisection over all the counts at once
+# finds the statistic's root between the smallest positive mean and the end of pprof_py's bracket,
+# then the lower root of the equation below it and the upper root above it. A side with no sign
+# change has the lower limit 0 (O = 0) or the upper Inf (when alpha is at most the p-value floor's
+# 2e-6). A matrix with rows lower and upper and a column per count.
+infer_poisson_midp_roots <- function(counts, alpha) {
+  k <- length(counts)
+  low <- rep(.Machine$double.xmin, k)
+  high <- infer_poisson_midp_bracket_high(counts, numeric(k))
+  statistic <- function(i, mean) infer_poisson_midp_statistic(counts[i], mean)
+  excess <- function(i, mean) infer_poisson_midp_excess(counts[i], mean, alpha)
+  middle <- low
+  split <- which(statistic(seq_len(k), low) > 0)
+  middle[split] <- infer_poisson_bisect(function(i, mean) statistic(split[i], mean), low[split], high[split])
+  lower <- numeric(k)
+  upper <- rep(Inf, k)
+  left <- which(excess(seq_len(k), low) < 0)
+  lower[left] <- infer_poisson_bisect(function(i, mean) excess(left[i], mean), low[left], middle[left])
+  right <- which(excess(seq_len(k), high) < 0)
+  upper[right] <- infer_poisson_bisect(function(i, mean) excess(right[i], mean), middle[right], high[right])
+  rbind(lower = lower, upper = upper)
+}
+
+# For each i, a root of f(i, x) between lower[i] and upper[i], where f has opposite signs or is 0 at an
+# end; f(i, x) evaluates the functions numbered i at the points x, both vectors. Bisection until no
+# double lies strictly between the ends, then the end where |f| is smaller (the lower one on a tie).
+infer_poisson_bisect <- function(f, lower, upper) {
+  if (length(lower) == 0L) return(numeric())
+  sign_lower <- sign(f(seq_along(lower), lower))
+  active <- which(sign_lower != 0 & sign(f(seq_along(upper), upper)) != 0)
+  upper[sign_lower == 0] <- lower[sign_lower == 0]
+  while (length(active)) {
+    middle <- lower[active] + (upper[active] - lower[active]) / 2
+    open <- middle > lower[active] & middle < upper[active]
+    active <- active[open]
+    middle <- middle[open]
+    if (length(active) == 0L) break
+    side <- sign(f(active, middle))
+    # The root is above the middle where f keeps its sign at the lower end, below it otherwise, and at
+    # it where f is 0.
+    same <- side == sign_lower[active]
+    lower[active[same | side == 0]] <- middle[same | side == 0]
+    upper[active[!same]] <- middle[!same]
+    active <- active[side != 0]
   }
-  middle <- if (statistic(low) <= 0) low else root(statistic, low, high)
-  c(if (excess(low) >= 0) 0 else root(excess, low, middle),
-    if (excess(high) >= 0) Inf else root(excess, middle, high))
+  ifelse(abs(f(seq_along(lower), lower)) <= abs(f(seq_along(upper), upper)), lower, upper)
 }
 
 # K-149: the funnel limits at each expected count E > 0 in `expected`, for one level: the largest

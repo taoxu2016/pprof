@@ -104,11 +104,6 @@ midp_bracket_scale <- 10
 midp_bracket_threshold <- -4.75
 midp_bracket_max <- 1e12
 
-# K-141, DEC-110: the package finds the mid-p limits to rounding, with uniroot() at this tolerance and
-# iteration limit (pprof_py stops within 1e-10 max(E, 1)). No reference value: the package's own.
-midp_root_tolerance <- 1e-300
-midp_root_max_iter <- 2000L
-
 # K-149: the funnel limits of a Poisson count search the counts 0 to
 # ceiling(E + funnel_count_spread * sqrt(E) + funnel_count_margin) and lie funnel_count_offset from
 # the boundary counts, (o_lo + 1/2) / E and (o_hi - 1/2) / E.

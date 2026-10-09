@@ -1,0 +1,16 @@
+R version 4.4.0 (2024-04-24 ucrt)
+
+A. Bisection over the counts against uniroot() per count, counts 0 to 3,000 and 3,500, 5,000, 1e4, 5e4, 2e5
+level       identical roots   largest rel.     in ulp  0/Inf agree  max |equation| at roots
+0.5            4463 of  6012       1.75e-15        7.9         TRUE                 1.67e-14
+0.8            4416 of  6012       1.31e-15        5.9         TRUE                 9.02e-15
+0.95           4317 of  6012       3.88e-15       17.5         TRUE                 2.99e-15
+0.99           3414 of  6012       1.82e-14       81.9         TRUE                 9.11e-16
+0.998          3088 of  6012       4.10e-14      184.8         TRUE                 2.06e-16
+0.99999        2643 of  6012       1.83e-11    82378.4         TRUE                 1.11e-16
+0.999999       6012 of  6012       0.00e+00        0.0         TRUE                 0.00e+00
+
+B. Time at level 0.95, median of 5 runs (seconds)
+  100 distinct counts (51 to 150): uniroot() per count 0.120, bisection over the counts 0.030
+ 1000 distinct counts (51 to 1050): uniroot() per count 1.170, bisection over the counts 0.170
+ 3000 distinct counts (51 to 3050): uniroot() per count 3.670, bisection over the counts 0.530

@@ -113,6 +113,15 @@ test_that("the mid-p limits solve their equation, on each side of the statistic'
   expect_identical(test$flag != 0L, limits[, "lower"] > 1 | limits[, "upper"] < 1)
 })
 
+test_that("the mid-p roots of several counts are those of each count alone (DEC-110)", {
+  counts <- c(0, 1, 4, 25, 380, 2500)
+  together <- infer_poisson_midp_roots(counts, 0.05)
+  alone <- vapply(counts, function(count) infer_poisson_midp_roots(count, 0.05)[, 1], numeric(2))
+  expect_identical(unname(together), unname(alone))
+  # O = 0 has the lower limit 0.
+  expect_identical(unname(together["lower", 1]), 0)
+})
+
 test_that("the mid-p limits of a provider without expected events are NaN and Inf (K-147)", {
   limits <- infer_poisson_midp_limits(c(0, 2), c(0, 1.5), 0.95)
   expect_identical(unname(limits[1, ]), c(NaN, Inf))
