@@ -27,6 +27,7 @@ Imports:
     ggplot2 (>= 4.0.0),
     lme4,
     scales,
+    survival (>= 3.5-8),
     tibble
 LinkingTo: Rcpp, RcppArmadillo
 Depends:
@@ -40,7 +41,6 @@ Suggests:
     olsrr,
     pROC,
     rmarkdown,
-    survival (>= 3.5-8),
     testthat (>= 3.0.0),
     withr
 URL: https://github.com/UM-KevinHe/pprof, https://um-kevinhe.github.io/pprof/

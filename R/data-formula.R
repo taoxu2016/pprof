@@ -9,10 +9,18 @@
 # fixed-effect case, where provider effects absorb the intercept: the formula must keep its
 # intercept so that factors are coded with a reference level, as in the reference
 # (`model.matrix(reformulate(Z.char), data)[, -1]`, K-04), and the data layer then drops the
-# intercept column.
-data_parse_formula <- function(formula, data, provider, intercept) {
+# intercept column. With `response_type = "survival"` the response must be a Surv() call and the
+# formula has none of survival's special terms (R/data-survival.R); the baseline hazards absorb
+# the intercept. With `allow_offset`, offset() terms are allowed and their variables are among the
+# variables returned.
+data_parse_formula <- function(formula, data, provider, intercept, response_type = "default", allow_offset = FALSE) {
+  survival <- identical(response_type, "survival")
   terms <- tryCatch(
-    stats::terms(formula, data = data),
+    if (survival) {
+      stats::terms(formula, specials = data_survival_specials, data = data)
+    } else {
+      stats::terms(formula, data = data)
+    },
     error = function(e) {
       abort_invalid_input(sprintf("`formula` cannot be used with `data`: %s", conditionMessage(e)), arg = "formula")
     }
@@ -20,19 +28,25 @@ data_parse_formula <- function(formula, data, provider, intercept) {
   if (attr(terms, "response") != 1L) {
     abort_invalid_input("`formula` must have a response on its left-hand side.", arg = "formula")
   }
-  if (!is.null(attr(terms, "offset"))) {
+  if (!allow_offset && !is.null(attr(terms, "offset"))) {
     abort_invalid_input("`formula` must not contain offset() terms.", arg = "formula")
   }
+  if (survival) data_check_survival_terms(terms)
   if (!intercept && attr(terms, "intercept") == 0L) {
     abort_invalid_input(
-      "Provider effects absorb the intercept in fixed-effect models: remove `- 1` or `+ 0` from `formula`.",
+      if (survival) {
+        "The baseline hazards of a Cox model absorb the intercept: remove `- 1` or `+ 0` from `formula`."
+      } else {
+        "Provider effects absorb the intercept in fixed-effect models: remove `- 1` or `+ 0` from `formula`."
+      },
       arg = "formula"
     )
   }
   response <- as.list(attr(terms, "variables"))[[2L]]
   response_variables <- all.vars(response)
   covariate_variables <- unique(unlist(lapply(attr(terms, "term.labels"), function(label) all.vars(str2lang(label)))))
-  variables <- unique(c(response_variables, covariate_variables))
+  offset_variables <- if (allow_offset) data_offset_variables(terms) else character()
+  variables <- unique(c(response_variables, covariate_variables, offset_variables))
   missing <- setdiff(variables, names(data))
   if (length(missing) > 0L) {
     abort_invalid_input(

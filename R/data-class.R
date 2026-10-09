@@ -3,14 +3,21 @@
 
 new_pprof_data <- function(formula, terms, xlevels, response_name, provider_name, within_between,
                            response, design, providers, provider_index, row_index, settings,
-                           n_input, n_incomplete, n_excluded_obs) {
+                           n_input, n_incomplete, n_excluded_obs, start = NULL, stop = NULL, weights = NULL,
+                           cluster = NULL, offset = NULL) {
+  # The elements of survival data, weights, clusters, and offsets are present only where they
+  # apply, so that the existing families' objects are unchanged (COXPH_DESIGN §C.2).
+  optional <- list(start = start, stop = stop, weights = weights, cluster = cluster, offset = offset)
   x <- structure(
-    list(
-      formula = formula, terms = terms, xlevels = xlevels, response_name = response_name,
-      provider_name = provider_name, within_between = within_between, response = response,
-      design = design, providers = providers, provider_index = provider_index,
-      row_index = row_index, settings = settings, n_input = as.integer(n_input),
-      n_incomplete = as.integer(n_incomplete), n_excluded_obs = as.integer(n_excluded_obs)
+    c(
+      list(
+        formula = formula, terms = terms, xlevels = xlevels, response_name = response_name,
+        provider_name = provider_name, within_between = within_between, response = response,
+        design = design, providers = providers, provider_index = provider_index,
+        row_index = row_index, settings = settings, n_input = as.integer(n_input),
+        n_incomplete = as.integer(n_incomplete), n_excluded_obs = as.integer(n_excluded_obs)
+      ),
+      optional[!vapply(optional, is.null, logical(1))]
     ),
     class = "pprof_data"
   )
@@ -62,6 +69,38 @@ validate_pprof_data <- function(x) {
   }
   if (x$n_input != n + x$n_excluded_obs + x$n_incomplete) {
     fail("`n_input` must equal the observations kept, excluded by screening, and incomplete")
+  }
+  validate_pprof_data_survival(x, n)
+  invisible(x)
+}
+
+# The elements of survival data, weights, clusters, and offsets, where present (COXPH_DESIGN §C.1).
+validate_pprof_data_survival <- function(x, n) {
+  fail <- function(what) abort_invalid_input(sprintf("Invalid `pprof_data` object: %s.", what), arg = "x")
+  per_observation <- function(value) is.double(value) && is.null(dim(value)) && length(value) == n
+  if (identical(x[["settings"]][["response_type"]], "survival")) {
+    if (!per_observation(x[["start"]]) || !per_observation(x[["stop"]])) {
+      fail("survival data must have `start` and `stop` times for every observation")
+    }
+    if (!all(is.finite(x[["start"]]) & is.finite(x[["stop"]]) & x[["start"]] < x[["stop"]])) {
+      fail("every `start` time must be finite and below its finite `stop` time")
+    }
+    if (!is.numeric(x[["response"]]) || !all(x[["response"]] %in% c(0, 1))) fail("the status must be 0 or 1")
+    if (isTRUE(x[["settings"]][["event_counts"]]) && !"person_time" %in% names(x[["providers"]])) {
+      fail("the provider table of survival data must have `person_time`")
+    }
+  }
+  weights <- x[["weights"]]
+  if (!is.null(weights) && (!per_observation(weights) || !all(is.finite(weights) & weights >= 0))) {
+    fail("`weights` must be finite numbers of at least 0, one per observation")
+  }
+  cluster <- x[["cluster"]]
+  if (!is.null(cluster) && (!(is.integer(cluster) || is.factor(cluster)) || length(cluster) != n || anyNA(cluster))) {
+    fail("`cluster` must give an integer code or factor level for every observation")
+  }
+  offset <- x[["offset"]]
+  if (!is.null(offset) && (!per_observation(offset) || !all(is.finite(offset)))) {
+    fail("`offset` must be a finite number for every observation")
   }
   invisible(x)
 }

@@ -16,10 +16,12 @@ data_complete_rows <- function(data, columns) {
 # were behind the fit's memory peak at the Phase 3 gate): data[rows, ] when every row is
 # complete, and na.omit(), which subsets the frame even when it omits nothing, when no value
 # of the frame is missing; only the storage of the frame's row names differs, which the
-# response and design do not keep.
-data_model_frame <- function(terms, data, rows) {
+# response and design do not keep. `inspect`, when given, sees the frame before any row is
+# omitted: survival data check there that no Surv() response is missing (R/data-survival.R).
+data_model_frame <- function(terms, data, rows, inspect = NULL) {
   subset <- if (length(rows) == nrow(data)) data else data[rows, , drop = FALSE]
   frame <- stats::model.frame(terms, data = subset, na.action = stats::na.pass, drop.unused.levels = FALSE)
+  if (!is.null(inspect)) inspect(frame)
   if (anyNA(frame)) {
     frame <- stats::model.frame(terms, data = subset, na.action = stats::na.omit, drop.unused.levels = FALSE)
   }

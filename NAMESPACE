@@ -101,6 +101,7 @@ S3method(tidy,pprof_model)
 S3method(tidy,pprof_result)
 S3method(vcov,pprof_model)
 export(SM_output)
+export(Surv)
 export(augment)
 export(bar_plot)
 export(caterpillar_plot)
@@ -223,4 +224,5 @@ importFrom(stats,
   terms,
   vcov
 )
+importFrom(survival,Surv)
 useDynLib(pprof, .registration = TRUE)

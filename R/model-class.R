@@ -13,11 +13,16 @@ model_shared_fields <- c(
 # and provider names, the decomposed covariates, the factor levels and contrasts of the
 # design, and the data layer's settings.
 model_data_spec <- function(data) {
-  list(
+  spec <- list(
     response_name = data$response_name, provider_name = data$provider_name, within_between = data$within_between,
     xlevels = data$xlevels, contrasts = attr(data$design, "contrasts"), intercept = data$settings$intercept,
     min_provider_size = data$settings$min_provider_size, event_counts = data$settings$event_counts
   )
+  # The settings of survival data, weights, clusters, and offsets, only where the data have them,
+  # so that the existing families' objects are unchanged (COXPH_DESIGN §C.2).
+  extended <- c("response_type", "weights", "cluster", "allow_offset")
+  if (!is.null(data$settings[["response_type"]])) spec <- c(spec, data$settings[extended])
+  spec
 }
 
 # One value per observation from one value per included provider, or a single value as
@@ -45,9 +50,13 @@ model_prepared_data <- function(model, data = NULL) {
     )
   }
   spec <- model$data_spec
+  response_type <- spec[["response_type"]]
   prepared <- data_prepare(model$formula, data, spec$provider_name, within_between = spec$within_between,
                            min_provider_size = spec$min_provider_size, intercept = spec$intercept,
-                           event_counts = spec$event_counts)
+                           event_counts = spec$event_counts,
+                           response_type = if (is.null(response_type)) "default" else response_type,
+                           weights = spec[["weights"]], cluster = spec[["cluster"]],
+                           allow_offset = isTRUE(spec[["allow_offset"]]))
   rebuilt <- drop(prepared$design %*% model$coefficients)
   stored <- model$linear_predictor
   matches <- identical(prepared$row_index, model$row_index) &&
