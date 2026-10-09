@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is at its gate on `coxph/phase-3` (2026-10-09), built from its approved plan (`dev/design/COXPH_C3_PLAN.md`), awaiting the project lead's approval.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`; its corner scenario waits for the `cox-bench` job, which the project lead dispatches.
 
 ## 2026-10-07
 
@@ -194,3 +194,12 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
 - The corner scenario could not be measured: at the gate 1.5 GB of the machine's 7.4 GB was free, with 18 GB committed by the open applications, against the 4 GB that DEC-111 asks for.
 - Open for the project lead: the corner scenario, by one of DEC-111's ways; the two fits too slow by DEC-105's rule, at its line; the measures slower than pprof_py's at 10,000 rows and with 7,500 providers (a SHOULD); the push of the branch.
 - Next step: the project lead's review of the C3 gate.
+
+## 2026-10-09: the C3 gate closed
+
+- The project lead approved closing the C3 gate, and on the open items:
+  - the two fits too slow by DEC-105's rule, at its line, are accepted for C3 and measured again alongside the corner scenario (DEC-111);
+  - the corner scenario is measured on a GitHub-hosted runner with 16 GB of memory: `.github/workflows/cox-bench.yaml`, dispatched by hand, runs `dev/bench/cox/run_paired.R` on the corner and those two fits (by default; its `only` input selects others) and uploads the CSV, the report, and the log; `dev/bench/cox/summarize_paired.R --notices` repeats the verdicts as notices, which `dev/tools/ci_runs.R` reads without signing in;
+  - `coxph/phase-3` goes to the fork, and the fork's `main` takes it as a fast-forward.
+- The job is on `coxph/phase-3` before the push, so that it reaches `main` with the merge: GitHub dispatches a manual workflow only from the default branch.
+- Next step: the project lead dispatches `cox-bench` from the fork's Actions page; its results go to `dev/bench/results/` and this document. Phase C4, penalized Cox models, when the project lead asks.
