@@ -190,7 +190,7 @@ if (length(rows) == 0L) stop("No task matches --only.", call. = FALSE)
 git <- function(...) system2("git", c(...), stdout = TRUE)
 jsonlite::write_json(list(
   date = format(Sys.Date()), commit = git("rev-parse", "HEAD"),
-  working_tree_clean = length(git("status", "--porcelain", "--untracked-files=no")) == 0L,
+  package_code_clean = length(git("status", "--porcelain", "--", "R", "src", "DESCRIPTION", "NAMESPACE")) == 0L,
   r = R.version.string, platform = R.version$platform, os = utils::osVersion,
   cpu = Sys.getenv("PROCESSOR_IDENTIFIER", "unknown"), logical_cores = parallel::detectCores(),
   blas = sessionInfo()$BLAS, lapack = La_version(), rounds = opts$rounds,

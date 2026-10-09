@@ -53,11 +53,12 @@ machine <- machines[[1]]
 commits <- unique(vapply(machines, function(m) substr(m$commit, 1, 7), ""))
 lines <- c(
   "# Paired benchmark of the stratified Cox fit against its engine calls", "",
-  sprintf(paste("Run on %s at commit %s (`dev/bench/cox/run_paired.R`, %d round(s), tracked files %s): %s, %d logical",
-                "cores; %s with survival %s; pprof %s installed with `--preclean`. The R engines are single-threaded."),
+  sprintf(paste("Run on %s at commit %s (`dev/bench/cox/run_paired.R`, %d round(s), package code %s from the",
+                "commit): %s, %d logical cores; %s with survival %s; pprof %s installed with `--preclean`. The R",
+                "engines are single-threaded."),
           paste(unique(vapply(machines, `[[`, "", "date")), collapse = " and "),
           paste0("`", commits, "`", collapse = " and "), machine$rounds,
-          if (all(vapply(machines, function(m) isTRUE(m$working_tree_clean), TRUE))) "unchanged" else "changed",
+          if (all(vapply(machines, function(m) isTRUE(m$package_code_clean), TRUE))) "unchanged" else "changed",
           machine$cpu, machine$logical_cores, machine$r, machine$packages$survival, machine$packages$pprof),
   "",
   paste("Each round runs the engine call, `coxph()`, and the fit, each in a fresh process, one after the other, on the",
@@ -99,9 +100,9 @@ user <- arrange(merge(side("coxph"), side("fit"), by = key, suffixes = c("_coxph
 if (nrow(user)) {
   lines <- c(lines, "", "## The fit against coxph() on the data frame", "",
              paste("The call a user would make: `coxph()` with the provider as strata, the offset, and the weights,",
-                   "and for robust one cluster per row (C1's comparator, DEC-098; the package called it before DEC-099).",
-                   "Reported, not a gate. Its estimates come from rows in the generator's order, so they can differ",
-                   "from the engine call's in the last bits."),
+                   "and for robust one cluster per row (C1's comparator, DEC-098; the package called it before",
+                   "DEC-099). Reported, not a gate. Its estimates come from rows in the generator's order, so they",
+                   "can differ from the engine call's in the last bits."),
              "",
              paste("| Scenario | Task | Round | coxph() median | Fit median | Ratio, fit / coxph() |",
                    "Peak MB, coxph() / fit | coxph()'s largest relative difference from the engine call |"),
