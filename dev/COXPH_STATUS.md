@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is at its gate on `coxph/phase-4` (2026-10-14), awaiting the project lead's review.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is next, its plan first.
 
 ## 2026-10-07
 
@@ -276,3 +276,10 @@ Recorded on 2026-10-14, for the next session.
   - the benchmarks: `dev/bench/results/cox-c4-paired-20261014-windows.md`, as the entry above sums it up.
 - Open for the project lead: D-78, decided with the plan, awaits a methodology owner's confirmation (M-16), as the delegated C0 decisions do; `cox-bench.yaml` runs the penalized tasks on a GitHub runner when dispatched from `main`, so after the merge; the push of the branch.
 - Next step: the project lead's review of the C4 gate.
+
+## 2026-10-14: the C4 gate closed
+
+- The project lead approved closing the C4 gate and asked for the work in `main`: `coxph/phase-4` goes to the fork, and the fork's `main` takes it as a fast-forward from `38dad40`.
+- With the merge, `cox-bench.yaml` in `main` runs the penalized tasks by default when the project lead dispatches it (DEC-118); its corner run takes `only` = "^corner |^providers-7500 breslow$|^covariates-5 robust$".
+- Open, as at the gate: D-78 awaits a methodology owner's confirmation (M-16), with the decisions taken under delegation in C0; outside C4, the fits' overhead at 7,500 providers, the measures' time at 10,000 rows and 7,500 providers, and `rewrite-bench.yaml`'s setup. `CLAUDE.md`'s "Current phase" section still names Phase C4 as next; it changes with the project lead's approval.
+- Next step: Phase C5, competing risks (the brief's §4, row C5), when the project lead asks: its plan first, `dev/design/COXPH_C5_PLAN.md`, for approval, on `coxph/phase-5` from `main`.
