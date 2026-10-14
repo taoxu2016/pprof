@@ -31,6 +31,19 @@ def _synthetic(case_id, seed, p, truncated=False, weighted=False, offset=False, 
             "stratified": True, "weighted": weighted, "offset": offset, "truncated": truncated, **extra}
 
 
+# The settings of the penalized-settings case (Phase C4; dev/design/coxph-facts/26): each fits pprof_py's
+# PenalizedCoxPH with these arguments, on the case's covariates (x0, constant, and x1 to x3) or those named.
+PENALIZED_SETTINGS = (
+    {"label": "constant-column", "penalty_factor": [1.0, 0.0, 1.0, 1.0]},
+    {"label": "ridge", "features": ["x1", "x2", "x3"], "alpha": 0.0},
+    {"label": "unstandardized", "features": ["x1", "x2", "x3"], "alpha": 0.5, "standardize": False},
+    {"label": "given-grid", "features": ["x1", "x2", "x3"], "lambda_path": [0.01, 0.1, 0.05]},
+    {"label": "short-grid", "features": ["x1", "x2", "x3"], "n_lambda": 20, "lambda_min_ratio": 0.05},
+    {"label": "unequal-factors", "features": ["x1", "x2", "x3"], "penalty_factor": [2.0, 1.0, 0.5]},
+    {"label": "one-covariate", "features": ["x2"]},
+)
+
+
 CASES = (
     # pprof_spark's six cases (its ADR-0005), inputs vendored unchanged.
     _imported("tiny-ties", 1, False, False, False, set_="core"),
@@ -62,6 +75,12 @@ CASES = (
      "file": "left_truncation.csv", "alphas": [1.0], "cv": False},
     {"id": "penalized-combined", "kind": "penalized", "set": "full", "source": "pprof_py", "file": "combined.csv",
      "alphas": [1.0, 0.5], "cv": True, "fold_seed": 21, "penalty_factor": [0.0, 1.0, 1.0]},
+    # Phase C4 (the C4 plan's decision 5): settings the penalized cases above lack, on combined.csv with a
+    # constant column; and few events per covariate (D-78), the first 15 rows of penalized_wide.csv.
+    {"id": "penalized-settings", "kind": "penalized", "set": "full", "source": "pprof_py", "file": "combined.csv",
+     "constant_column": "x0", "cv": False, "settings": PENALIZED_SETTINGS},
+    {"id": "penalized-few-events", "kind": "penalized", "set": "full", "source": "pprof_py",
+     "file": "penalized_wide.csv", "first_rows": 15, "cv": False, "settings": ({"label": "default"},)},
 )
 
 
@@ -180,6 +199,10 @@ def _empty_providers(case):
 def load(case):
     if case["source"] in ("pprof_spark", "pprof_py"):
         df = _read_vendored(case)
+        if "first_rows" in case:
+            df = df.iloc[:case["first_rows"]].reset_index(drop=True)
+        if "constant_column" in case:
+            df.insert(0, case["constant_column"], 1.0)
     elif case["id"] == "recurrent":
         df = _recurrent(case)
     elif case["id"] == "near-ties":

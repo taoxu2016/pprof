@@ -458,7 +458,34 @@ def path_record(model):
     }
 
 
+PENALIZED_ARGUMENTS = ("alpha", "n_lambda", "lambda_min_ratio", "lambda_path", "penalty_factor", "standardize")
+
+
+def penalized_settings_outputs(df, case):
+    """The Phase C4 cases (cases.py's PENALIZED_SETTINGS): for each setting, pprof_py's path with the setting's
+    arguments, and the other tie method's path on the same grid as the negative control."""
+    arguments = penalized_arguments(df)
+    reference = {}
+    for ties in TIES:
+        entry = {}
+        for setting in case["settings"]:
+            X = df[setting.get("features", case_table.features(case, df))].to_numpy(dtype=float)
+            options = {k: setting[k] for k in PENALIZED_ARGUMENTS if k in setting}
+            model, caught = quiet(lambda: PenalizedCoxPH(ties=ties, **options).fit(X, **arguments))
+            control = {**options, "lambda_path": model.lambda_path_}
+            other, _ = quiet(lambda: PenalizedCoxPH(ties="efron" if ties == "breslow" else "breslow",
+                                                    **control).fit(X, **arguments))
+            entry[setting["label"]] = {
+                "path": {**path_record(model), "warnings": caught},
+                "negative_controls": {"other_ties": {"coef_path": [hexes(r) for r in np.asarray(other.coef_path_)]}},
+            }
+        reference[ties] = entry
+    return reference
+
+
 def penalized_outputs(df, case):
+    if "settings" in case:
+        return penalized_settings_outputs(df, case)
     X = df[case_table.features(case, df)].to_numpy(dtype=float)
     arguments = penalized_arguments(df)
     factor = np.asarray(case["penalty_factor"], dtype=float) if "penalty_factor" in case else None
@@ -668,7 +695,13 @@ def write_manifests(staging, out_dirs, ran):
                         "timefix": False, "clusters": "the cluster column, or id mod 40",
                         "zero_weights": "left out of survival's fits; kept in the measures (M-25)",
                         "glmnet_control": "list(thresh = 1e-12, maxit = 1e5, fdev = 0, devmax = 1)",
-                        "cv_deviance": "coxnet.deviance(std.weights = FALSE), normalized by the held-out event weight",
+                        "glmnet_settings_cases": "as the package's adapter calls glmnet: columns of weighted "
+                                                 "variance below 10 eps left out, a column of zeros beside a single "
+                                                 "covariate, penalty factors rescaled over the kept columns, the path "
+                                                 "ended at glmnet's last point or before a deviance above the null "
+                                                 "deviance (COXPH_C4_PLAN §3.1)",
+                        "cv_deviance": "pprof_py's (K-144): survival's partial likelihood with the Breslow saturated "
+                                       "term, normalized by the held-out event weight",
                         "funnel": {"test": "midp", "levels": list(FUNNEL_LEVELS), "curves": "full set only"}},
             "cases": entries,
         })

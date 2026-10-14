@@ -41,7 +41,9 @@ read_case <- function(case_dir) {
     if (identical(input$types[[name]], "double")) as.numeric(v) else as.integer(v)
   })
   names(columns) <- unlist(input$names)
-  list(definition = definition, data = as.data.frame(columns, optional = TRUE),
+  # The Phase C4 cases' settings, one list each (their fields differ, so not a data frame).
+  settings <- read_json(file.path(case_dir, "case.json"), simplifyVector = TRUE, simplifyDataFrame = FALSE)$settings
+  list(definition = definition, settings = settings, data = as.data.frame(columns, optional = TRUE),
        pprof_py = read_json(file.path(case_dir, "pprof_py.json"), simplifyVector = TRUE))
 }
 control_of <- function(label, timefix = FALSE) {
@@ -218,6 +220,7 @@ case_profiles <- function(p) {
 # Penalized cases ------------------------------------------------------------------------------
 
 penalized_outputs <- function(case) {
+  if (!is.null(case$settings)) return(penalized_settings_outputs(case))
   def <- case$definition
   d <- case$data
   x <- as.matrix(d[, def$features, drop = FALSE])
@@ -256,6 +259,65 @@ glmnet_path <- function(x, y, w, o, pf, alpha, grid, ties) {
 path_rows <- function(fit) {
   b <- as.matrix(fit$beta)
   lapply(seq_len(ncol(b)), function(j) hexes(b[, j]))
+}
+
+# The Phase C4 cases (the C4 plan's decision 5): for each setting, glmnet on pprof_py's grid, called as the
+# package's adapter calls it (the C4 plan, §3.1): columns whose weighted population variance is below 10 eps
+# are left out (coefficient 0); a single remaining covariate gets a column of zeros beside it with its
+# penalty factor, since glmnet refuses one column; the penalty factors are rescaled over the kept columns;
+# and the path ends at glmnet's last grid point, or before the first point whose coefficients are not
+# finite or whose deviance exceeds the null deviance (deviance ratio below -sqrt(eps)), which no solution
+# of the penalized problem has.
+penalized_settings_outputs <- function(case) {
+  def <- case$definition
+  d <- case$data
+  surv <- if ("start" %in% names(d)) Surv(d$start, d$stop, d$event) else Surv(d$stop, d$event)
+  y <- if ("provider" %in% names(d)) stratifySurv(surv, d$provider) else surv
+  w <- if ("weight" %in% names(d)) d$weight else rep(1, nrow(d))
+  offset_name <- intersect(c("offset1", "log_exposure"), names(d))
+  o <- if (length(offset_name)) d[[offset_name]] else rep(0, nrow(d))
+  out <- list()
+  for (ties in ties_methods) {
+    entry <- list()
+    for (setting in case$settings) {
+      features <- if (is.null(setting$features)) def$features else unlist(setting$features)
+      x <- as.matrix(d[, features, drop = FALSE])
+      pf <- if (is.null(setting$penalty_factor)) rep(1, ncol(x)) else as.numeric(unlist(setting$penalty_factor))
+      grid <- as.numeric(case$pprof_py[[ties]][[setting$label]]$path$lambda)
+      wn <- w / sum(w)
+      variance <- colSums(sweep(x, 2, colSums(x * wn))^2 * wn)
+      keep <- !(variance < 10 * .Machine$double.eps)
+      kept <- x[, keep, drop = FALSE]
+      factors <- pf[keep] * (sum(keep) / sum(pf[keep]))
+      if (ncol(kept) == 1L) {
+        kept <- cbind(kept, 0)
+        factors <- c(factors, factors)
+      }
+      stopped <- ""
+      fit <- withCallingHandlers(
+        glmnet(kept, y, family = "cox", weights = w, offset = o, alpha = if (is.null(setting$alpha)) 1 else setting$alpha,
+               lambda = grid, penalty.factor = factors, standardize = !isFALSE(setting$standardize), cox.ties = ties,
+               control = list(thresh = 1e-12, maxit = 1e5, fdev = 0, devmax = 1)),
+        warning = function(cnd) {
+          stopped <<- conditionMessage(cnd)
+          invokeRestart("muffleWarning")
+        }
+      )
+      b <- as.matrix(fit$beta)[seq_len(sum(keep)), , drop = FALSE]
+      failed <- which(fit$dev.ratio < -sqrt(.Machine$double.eps) | colSums(!is.finite(b)) > 0)
+      reached <- if (length(failed)) failed[1] - 1L else length(fit$lambda)
+      path <- matrix(0, ncol(x), reached)
+      path[keep, ] <- b[, seq_len(reached)]
+      entry[[setting$label]] <- list(path = list(
+        lambda = hexes(fit$lambda[seq_len(reached)]), coef_path = lapply(seq_len(reached), function(j) hexes(path[, j])),
+        deviance_ratio_path = hexes(fit$dev.ratio[seq_len(reached)]), nulldev = hexes(fit$nulldev),
+        df = fit$df[seq_len(reached)], passes = fit$npasses, reached = reached, grid_points = length(grid),
+        stopped = stopped, failed_at = if (length(failed)) failed[1] else 0L, degenerate = features[!keep]
+      ))
+    }
+    out[[ties]] <- entry
+  }
+  out
 }
 
 # pprof_py's deviance (its utils/deviance.py): 2 (lsat - loglik), with the saturated term in the
