@@ -27,24 +27,47 @@ survival_fit_rows <- function(prepared) {
 # order, the offset minus its mean (zeros when there is none or it is 0 everywhere), and the weights
 # or NULL. coxph() rejects offsets whose exp() is not finite, and so does the adapter.
 survival_inputs <- function(prepared, rows) {
+  # The design itself when every row is fitted, without a copy (data_subset_design()).
+  c(list(x = data_subset_design(prepared$design, rows)), survival_row_inputs(prepared, rows))
+}
+
+# The inputs of survival_inputs() other than the design: the response, the strata codes, the offset
+# (or `eta` in its place, a linear predictor of the rows), the weights, and the response's type.
+survival_row_inputs <- function(prepared, rows, eta = NULL) {
   counting <- identical(prepared$settings$survival_type, "counting")
   response <- if (counting) {
     survival::Surv(prepared$start[rows], prepared$stop[rows], prepared$response[rows])
   } else {
     survival::Surv(prepared$stop[rows], prepared$response[rows])
   }
-  offset <- if (is.null(prepared$offset)) rep(0, length(rows)) else prepared$offset[rows]
+  offset <- if (!is.null(eta)) eta else if (is.null(prepared$offset)) rep(0, length(rows)) else prepared$offset[rows]
   if (!all(is.finite(exp(offset)))) {
     abort_invalid_input("The offsets must be small enough that their exp() is finite, as survival's coxph() needs.",
                         arg = "formula")
   }
   offset <- if (all(offset == 0)) rep(0, length(rows)) else offset - mean(offset)
-  # The design itself when every row is fitted, without a copy (data_subset_design()).
   list(
-    x = data_subset_design(prepared$design, rows), y = response,
-    strata = as.integer(factor(prepared$provider_index[rows])), offset = offset,
+    y = response, strata = as.integer(factor(prepared$provider_index[rows])), offset = offset,
     weights = if (is.null(prepared$weights)) NULL else prepared$weights[rows], counting = counting
   )
+}
+
+# survival's fit of the columns `x` (one row per row of `rows`) with the strata, offset, and weights of
+# those rows, called as coxph() calls its fitters (DEC-100), at `tol` and `max_iter`: the unpenalized
+# coefficients of a penalized path's null point (K-143), whose NA coefficients mark aliased columns.
+survival_fit_columns <- function(prepared, rows, x, ties, tol, max_iter) {
+  inputs <- c(list(x = x), survival_row_inputs(prepared, rows))
+  engine <- survival_run_fitter(inputs, ties, survival::coxph.control(eps = tol, iter.max = max_iter, timefix = FALSE))
+  list(coefficients = unname(engine$fit$coefficients), converged = engine$converged, iterations = engine$iterations)
+}
+
+# The partial log-likelihood of the linear predictors `eta` of the rows `rows`, from survival's fitter
+# without covariates and with `eta` as the offset, called as coxph() calls it: the log-likelihood that
+# coxph(Surv(...) ~ offset(eta) + strata(provider), weights) reports for those rows. The cross-validation
+# of penalized paths takes pprof_py's saturated term from it (K-144, DEC-114).
+survival_partial_loglik <- function(prepared, rows, eta, ties) {
+  inputs <- c(list(x = matrix(0, length(rows), 0L)), survival_row_inputs(prepared, rows, eta))
+  survival_run_fitter(inputs, ties, survival::coxph.control(timefix = FALSE))$fit$loglik
 }
 
 # An error of survival becomes pprof_error_convergence with survival's message, as lme4's do.

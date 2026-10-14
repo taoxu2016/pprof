@@ -111,3 +111,38 @@ midp_bracket_max <- 1e12
 funnel_count_spread <- 40
 funnel_count_margin <- 50
 funnel_count_offset <- 0.5
+
+# The elastic-net Cox model (CoxPH Phase C4; R/model-cox-penalized.R, R/model-glmnet.R). Reference:
+# pprof_py v0.7.0, commit 9320766.
+
+# K-143: a column whose weighted population variance (the weights normalized to sum to 1) is below
+# penalized_degenerate_variance, in the column's units, is degenerate: left out of the penalized path,
+# with coefficient 0. The value is pprof_py's 10 machine epsilons, which follows glmnet's safeguard.
+# Reference: pprof_py/algorithms/survival/penalty.py:112 (weighted_column_scale()).
+penalized_degenerate_variance <- 10 * .Machine$double.eps
+
+# K-143: lambda_max is divided by max(alpha, penalized_alpha_floor), so that a ridge path (alpha = 0)
+# starts at a finite lambda, as glmnet's own grid does.
+# Reference: pprof_py/algorithms/survival/coordinate_descent.py:397 (compute_lambda_max()).
+penalized_alpha_floor <- 1e-3
+
+# K-143: without lambda_min_ratio, the grid ends at lambda_max times penalized_ratio_wide when there are
+# fewer observations than kept covariates, and times penalized_ratio_long otherwise.
+# Reference: pprof_py/models/survival/penalized_coxph.py:105 (_resolve_lambda_path()).
+penalized_ratio_wide <- 1e-2
+penalized_ratio_long <- 1e-4
+
+# K-143: the unpenalized coefficients of the null point (penalty factor 0) are fitted with
+# penalized_null_tol and penalized_null_max_iter, pprof_py's outer_tol and max_outer_iter, which its
+# CoxPH fit of those columns uses as eps and max_iter; lambda_max depends on where that fit stops
+# (dev/design/coxph-facts/26: 1e-15 from pprof_py's at these settings, 1.5e-11 at eps 1e-12).
+# Reference: pprof_py/models/survival/penalized_coxph.py:328-340 (_compute_null_point()).
+penalized_null_tol <- 1e-9
+penalized_null_max_iter <- 100L
+
+# DEC-115, D-78: a grid point whose glmnet deviance ratio is below penalized_deviance_ratio_floor has a
+# deviance above the null deviance, which no solution of the penalized problem has (the null point is
+# feasible), so glmnet's path ends before it. The floor is rounding level below 0; glmnet's paths reach
+# a deviance ratio of exactly 0 at their first point. A check of the package's own; no reference:
+# pprof_py's solver converges where glmnet 5.1 diverges (dev/design/coxph-facts/26, part C).
+penalized_deviance_ratio_floor <- -sqrt(.Machine$double.eps)

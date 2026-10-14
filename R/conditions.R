@@ -78,6 +78,11 @@ warn_zero_expected <- function(message, ..., call = NULL) {
   warn_pprof("pprof_warning_zero_expected", message, ..., call = call)
 }
 
+# Covariates with no variation are left out of a penalized path, with coefficient 0 (K-143).
+warn_degenerate_covariates <- function(message, ..., call = NULL) {
+  warn_pprof("pprof_warning_degenerate_covariates", message, ..., call = call)
+}
+
 # Wald tests or intervals were computed for providers with no events or only events, whose
 # maximum likelihood estimates are infinite: their fitted effects move toward the effect
 # bound with every iteration, so they depend on when the fit stopped (K-67, D-50).
