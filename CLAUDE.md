@@ -14,11 +14,12 @@ Version 2.0.0 is the completed rewrite of pprof 1.0.3 (CRAN, commit `5260838`): 
 
 ## Current phase
 
-The CoxPH phase adds Cox proportional hazards models, following `pprof_py` v0.7.0, with estimation delegated to `survival` and `glmnet` (DEC-086). Phases C0 to C6, one branch each (`coxph/phase-<n>`); Phase C0 (design and decisions) is next.
+The CoxPH phase adds Cox proportional hazards models, following `pprof_py` v0.7.0, with estimation delegated to `survival` and `glmnet` (DEC-086). Phases C0 to C6, one branch each (`coxph/phase-<n>`); Phase C4 (the elastic-net Cox model) is next, its plan first.
 
 - The brief, `dev/coxph_brief.md` (approved 2026-10-07): requirements, the equivalence contract, phases and gates, and the questions for the methodology owners.
 - The status document, `dev/COXPH_STATUS.md`: the dated log of the phase, naming the next step.
-- The evidence behind the brief: `dev/design/coxph-facts/`.
+- The design, `dev/design/COXPH_DESIGN.md` (Phase C0, kept as built), and each phase's plan, `dev/design/COXPH_C<n>_PLAN.md`.
+- The evidence behind the brief and the plans: `dev/design/coxph-facts/`.
 
 ## Source documents
 
