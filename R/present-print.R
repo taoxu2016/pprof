@@ -55,6 +55,36 @@ print.pprof_cox_stratified <- function(x, ...) {
   invisible(x)
 }
 
+# The elastic-net Cox model (fit_cox_penalized()): its penalty, ties, data, path, the end of glmnet's
+# path, the covariates left out, the selection, and the nonzero coefficients (DEC-120).
+#' @export
+print.pprof_cox_penalized <- function(x, ...) {
+  ties <- if (identical(x$spec$ties, "efron")) "Efron" else "Breslow"
+  cat(sprintf("<pprof model: cox_penalized (alpha %s, %s ties)>\n", format(x$spec$alpha), ties))
+  cat(sprintf("%s observations of %s providers, %s events", present_count(x$n_obs), present_count(x$n_providers),
+              present_count(x$n_events)))
+  if (x$n_zero_weight > 0L) {
+    cat(sprintf("; %s observations with weight 0 left out of the fit", present_count(x$n_zero_weight)))
+  }
+  cat("\n")
+  lambda <- x$lambda
+  cat(sprintf("Path: %d values of lambda from %s to %s", length(lambda), format(signif(lambda[1L], 4)),
+              format(signif(lambda[length(lambda)], 4))))
+  if (!isTRUE(x$convergence$converged)) cat(" (glmnet's path ended early)")
+  cat("\n")
+  if (length(x$degenerate) > 0L) cat(sprintf("Left out, without variation: %s\n", paste(x$degenerate, collapse = ", ")))
+  if (is.null(x$selected)) {
+    cat(sprintf("No lambda selected (select_lambda()); coefficients at lambda = %s:\n",
+                format(signif(lambda[length(lambda)], 4))))
+  } else {
+    cat(sprintf("Selected lambda = %s (rule \"%s\", %d-fold cross-validation); coefficients there:\n",
+                format(signif(x$selected$lambda, 4)), x$selected$rule, nrow(x$cross_validation$fold_deviance)))
+  }
+  nonzero <- x$coefficients[x$coefficients != 0]
+  if (length(nonzero) > 0L) print(signif(nonzero, 4)) else cat("all 0\n")
+  invisible(x)
+}
+
 #' @export
 print.pprof_summary <- function(x, ...) {
   cat(sprintf("<pprof summary: %s%s>\n", x$family, if (is.null(x$method)) "" else sprintf(" (%s)", x$method)))

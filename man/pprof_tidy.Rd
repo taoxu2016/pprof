@@ -7,6 +7,9 @@
 \alias{glance.pprof_model}
 \alias{glance.pprof_cox_stratified}
 \alias{augment.pprof_cox_stratified}
+\alias{tidy.pprof_cox_penalized}
+\alias{glance.pprof_cox_penalized}
+\alias{augment.pprof_cox_penalized}
 \alias{augment.pprof_model}
 \title{Tidy outputs of models and results}
 \usage{
@@ -19,6 +22,12 @@
 \method{glance}{pprof_cox_stratified}(x, ...)
 
 \method{augment}{pprof_cox_stratified}(x, ...)
+
+\method{tidy}{pprof_cox_penalized}(x, ...)
+
+\method{glance}{pprof_cox_penalized}(x, ...)
+
+\method{augment}{pprof_cox_penalized}(x, ...)
 
 \method{augment}{pprof_model}(x, ...)
 }
@@ -49,6 +58,13 @@ For Cox models from \code{\link[=fit_cox_stratified]{fit_cox_stratified()}}, \co
 the number of events as the number of observations); \code{augment()}'s \code{observed} is the status,
 \code{fitted} each observation's expected number of events under the fitted model, and \code{residual}
 the martingale residual, observed minus fitted, missing for observations with weight 0.
+
+For elastic-net Cox models from \code{\link[=fit_cox_penalized]{fit_cox_penalized()}}, which offer no inference, \code{tidy()} gives
+each coefficient (\code{term}) and its \code{estimate} at the selected \eqn{\lambda} (before a selection, the
+last of the path); \code{glance()} the dimensions, \code{n_events}, \code{alpha}, the number of values of
+\eqn{\lambda} (\code{n_lambda}), the selected \code{lambda} and \code{rule} (missing before a selection), glmnet's
+passes over the data (\code{iterations}), and whether its path reached every value (\code{converged}); and
+\code{augment()} raises a \code{pprof_error_unsupported_inference} condition.
 }
 \examples{
 data(ExampleDataBinary)
@@ -62,6 +78,7 @@ tidy(test_providers(fit))
 }
 \seealso{
 Other model methods:
+\code{\link{cox_penalized_methods}},
 \code{\link{cox_stratified_methods}},
 \code{\link{linear_fe_methods}},
 \code{\link{logistic_fe_methods}},

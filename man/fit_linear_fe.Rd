@@ -73,6 +73,7 @@ fit$sigma
 }
 \seealso{
 Other fitting functions:
+\code{\link[=fit_cox_penalized]{fit_cox_penalized()}},
 \code{\link[=fit_cox_stratified]{fit_cox_stratified()}},
 \code{\link[=fit_linear_cre]{fit_linear_cre()}},
 \code{\link[=fit_linear_re]{fit_linear_re()}},

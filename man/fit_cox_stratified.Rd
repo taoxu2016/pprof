@@ -114,6 +114,7 @@ head(profile_providers(fit, interval = "midp")$table)
 \code{\link[=baseline_hazard]{baseline_hazard()}}, \link{cox_stratified_methods}, \code{\link[=test_coefficients]{test_coefficients()}}, \code{\link[=check_data]{check_data()}}.
 
 Other fitting functions:
+\code{\link[=fit_cox_penalized]{fit_cox_penalized()}},
 \code{\link[=fit_linear_cre]{fit_linear_cre()}},
 \code{\link[=fit_linear_fe]{fit_linear_fe()}},
 \code{\link[=fit_linear_re]{fit_linear_re()}},

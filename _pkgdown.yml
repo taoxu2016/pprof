@@ -58,6 +58,8 @@ reference:
   - fit_linear_re
   - fit_linear_cre
   - fit_cox_stratified
+  - fit_cox_penalized
+  - select_lambda
 - title: Profiling providers
   contents:
   - test_providers
@@ -84,6 +86,7 @@ reference:
   - mixed_methods
   - cox_stratified_methods
   - baseline_hazard
+  - cox_penalized_methods
   - pprof_tidy
 - title: Example data
   contents:

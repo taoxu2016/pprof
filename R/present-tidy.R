@@ -28,6 +28,13 @@ generics::augment
 #' `fitted` each observation's expected number of events under the fitted model, and `residual`
 #' the martingale residual, observed minus fitted, missing for observations with weight 0.
 #'
+#' For elastic-net Cox models from [fit_cox_penalized()], which offer no inference, `tidy()` gives
+#' each coefficient (`term`) and its `estimate` at the selected \eqn{\lambda} (before a selection, the
+#' last of the path); `glance()` the dimensions, `n_events`, `alpha`, the number of values of
+#' \eqn{\lambda} (`n_lambda`), the selected `lambda` and `rule` (missing before a selection), glmnet's
+#' passes over the data (`iterations`), and whether its path reached every value (`converged`); and
+#' `augment()` raises a `pprof_error_unsupported_inference` condition.
+#'
 #' @param x A model object, or a result object of the profiling functions.
 #' @param level The confidence level of the coefficient intervals.
 #' @param ... Not used.
@@ -99,6 +106,32 @@ augment.pprof_cox_stratified <- function(x, ...) {
     row = x$row_index[order], provider_id = provider_table(x)$provider_id[provider_index(x)][order],
     observed = observed, fitted = observed - residual, residual = residual
   )
+}
+
+#' @rdname pprof_tidy
+#' @export
+tidy.pprof_cox_penalized <- function(x, ...) {
+  # No standard errors, tests, or intervals for a penalized fit (DEC-120).
+  tibble::tibble(term = names(x$coefficients), estimate = unname(x$coefficients))
+}
+
+#' @rdname pprof_tidy
+#' @export
+glance.pprof_cox_penalized <- function(x, ...) {
+  selected <- x$selected
+  tibble::tibble(
+    n_obs = x$n_obs, n_providers = x$n_providers, n_excluded_providers = x$n_excluded_providers,
+    n_events = x$n_events, alpha = x$spec$alpha, n_lambda = length(x$lambda),
+    lambda = if (is.null(selected)) NA_real_ else selected$lambda,
+    rule = if (is.null(selected)) NA_character_ else selected$rule,
+    iterations = as.integer(x$convergence$iterations), converged = x$convergence$converged
+  )
+}
+
+#' @rdname pprof_tidy
+#' @export
+augment.pprof_cox_penalized <- function(x, ...) {
+  abort_unsupported_inference(x, "augment()")
 }
 
 #' @rdname pprof_tidy
