@@ -41,7 +41,8 @@ test_that("the weighted population variance of each column (K-143)", {
   }, numeric(1))
   expect_null(reference_compare(unname(glmnet_column_variance(x, w)), by_hand, reference_tolerance("closed_form")))
   unweighted <- unname(apply(x, 2, function(v) mean((v - mean(v))^2)))
-  expect_null(reference_compare(unname(glmnet_column_variance(x, NULL)), unweighted, reference_tolerance("closed_form")))
+  expect_null(reference_compare(unname(glmnet_column_variance(x, NULL)), unweighted,
+                                reference_tolerance("closed_form")))
   # Rows with weight 0 do not count.
   expect_null(reference_compare(glmnet_column_variance(x, w), glmnet_column_variance(x[w > 0, ], w[w > 0]),
                                 reference_tolerance("closed_form")))
