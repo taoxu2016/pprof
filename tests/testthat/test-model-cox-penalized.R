@@ -145,6 +145,54 @@ test_that("a single covariate, and an unpenalized covariate aliased with another
                class = "pprof_error_data")
 })
 
+test_that("covariates that are not finite, and data without a positive weight, are errors", {
+  d <- cox_penalized_data()
+  infinite <- d
+  infinite$x1[3] <- Inf
+  expect_error(penalized_fit(infinite, n_lambda = 5), class = "pprof_error_invalid_input")
+  unweighted <- d
+  unweighted$w <- 0
+  expect_error(penalized_fit(unweighted, n_lambda = 5), class = "pprof_error_data")
+})
+
+test_that("a path that glmnet ends early warns once and keeps the points reached (DEC-115, D-78)", {
+  d <- cox_penalized_data()
+  real <- glmnet::glmnet
+  # A solution with a deviance above the null deviance at the 5th point: the path ends at the 4th.
+  local_mocked_bindings(glmnet = function(...) {
+    fit <- real(...)
+    fit$dev.ratio[5] <- -1e35
+    fit
+  }, .package = "glmnet")
+  condition <- tryCatch(penalized_fit(d, n_lambda = 8), warning = function(w) w)
+  expect_s3_class(condition, "pprof_warning_not_converged")
+  fit <- suppressWarnings(penalized_fit(d, n_lambda = 8))
+  expect_identical(dim(fit$coefficient_path), c(5L, 4L))
+  expect_identical(fit$lambda, exp(seq(log(fit$lambda_max), log(fit$lambda_max * 1e-4), length.out = 8))[1:4])
+  expect_identical(fit$convergence[c("converged", "grid_points")], list(converged = FALSE, grid_points = 4L))
+  expect_output(print(fit), "ended early")
+  # glmnet's own early stop (its iteration limit at the 6th point): the fit's warning replaces glmnet's.
+  local_mocked_bindings(glmnet = function(...) {
+    fit <- real(...)
+    warning("from glmnet C++ code (error code -6); Convergence for 6th lambda value not reached after maxit=100000 ",
+            "iterations; solutions for larger lambdas returned")
+    fit$beta <- fit$beta[, 1:5]
+    fit$lambda <- fit$lambda[1:5]
+    fit$dev.ratio <- fit$dev.ratio[1:5]
+    fit
+  }, .package = "glmnet")
+  condition <- tryCatch(penalized_fit(d, n_lambda = 8), warning = function(w) w)
+  expect_s3_class(condition, "pprof_warning_not_converged")
+  expect_identical(length(suppressWarnings(penalized_fit(d, n_lambda = 8))$lambda), 5L)
+  # No solution at the first point: a classed error.
+  local_mocked_bindings(glmnet = function(...) {
+    fit <- real(...)
+    fit$dev.ratio[1] <- -1e35
+    fit
+  }, .package = "glmnet")
+  expect_error(penalized_fit(d, n_lambda = 8), class = "pprof_error_convergence")
+})
+
 test_that("the object: its fields, its validator, and no capability (M-34)", {
   d <- cox_penalized_data()
   fit <- penalized_fit(d, n_lambda = 12, keep_data = TRUE)
@@ -166,12 +214,31 @@ test_that("the object: its fields, its validator, and no capability (M-34)", {
                     quote(summary(fit)), quote(stats::confint(fit)), quote(augment(fit)))) {
     expect_error(eval(call), class = "pprof_error_unsupported_inference", label = deparse(call))
   }
-  broken <- fit
-  broken$coefficients[1] <- 99
-  expect_error(validate_pprof_cox_penalized(broken), class = "pprof_error_invalid_input")
-  broken <- fit
-  broken$lambda <- rev(broken$lambda)
-  expect_error(validate_pprof_cox_penalized(broken), class = "pprof_error_invalid_input")
+  set_field <- function(field, value) {
+    broken <- fit
+    broken[[field]] <- value
+    broken
+  }
+  spec <- fit$spec
+  spec$family <- "cox_stratified"
+  broken <- list(
+    coefficients = set_field("coefficients", replace(fit$coefficients, 1, 99)),
+    lambda = set_field("lambda", rev(fit$lambda)),
+    class = structure(unclass(fit), class = c("pprof_cox_stratified", "pprof_model")),
+    family = set_field("spec", spec),
+    interval = set_field("stop", fit$start),
+    response = set_field("response", replace(fit$response, 1, 2)),
+    weights = set_field("weights", fit$weights[-1]),
+    path = set_field("coefficient_path", fit$coefficient_path[, -1]),
+    vcov = set_field("vcov", replace(fit$vcov, 1, 0)),
+    penalty_factor = set_field("penalty_factor", unname(fit$penalty_factor)),
+    column_scale = set_field("column_scale", replace(fit$column_scale, 1, 0)),
+    selected = set_field("selected", list(lambda = 1, index = 99L, rule = "min")),
+    engine_fit = set_field("engine_fit", list())
+  )
+  for (what in names(broken)) {
+    expect_error(validate_pprof_cox_penalized(broken[[what]]), class = "pprof_error_invalid_input", label = what)
+  }
 })
 
 test_that("coef(), predict(), nobs(), print(), tidy(), and glance() (D-79)", {
@@ -195,6 +262,9 @@ test_that("coef(), predict(), nobs(), print(), tidy(), and glance() (D-79)", {
   expect_identical(nobs(fit), as.integer(sum(d$status[d$w > 0])))
   expect_output(print(fit), "cox_penalized")
   expect_output(print(fit), "No lambda selected")
+  expect_output(print(penalized_fit(d, lambda = 10 * fit$lambda_max)), "all 0")
+  d$constant <- 1
+  expect_output(print(suppressWarnings(penalized_fit(d, c("x1", "constant"), n_lambda = 3))), "without variation")
   expect_identical(tidy(fit), tibble::tibble(term = names(fit$coefficients), estimate = unname(fit$coefficients)))
   expect_identical(names(glance(fit)), c("n_obs", "n_providers", "n_excluded_providers", "n_events", "alpha",
                                          "n_lambda", "lambda", "rule", "iterations", "converged"))

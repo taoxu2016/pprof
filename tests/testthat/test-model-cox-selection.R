@@ -198,6 +198,16 @@ test_that("a lambda that a fold's path did not reach, or whose deviance is not f
   expect_true(all(is.na(cv$cvm[10:12])))
   expect_identical(cv$n_folds_used, c(rep(3L, 9), rep(2L, 3)))
   expect_lte(selected$selected$index, 9L)
+  # Paths without a single solution leave no lambda to select: a classed error.
+  local_mocked_bindings(glmnet_fit_path = function(...) {
+    path <- real(...)
+    path$path <- path$path[, 0L, drop = FALSE]
+    path$lambda <- numeric()
+    path$end <- "failed"
+    path$end_point <- 1L
+    path
+  })
+  expect_error(suppressWarnings(select_lambda(fit, folds = folds)), class = "pprof_error_data")
 })
 
 test_that("select_lambda() offers no bootstrap standard error (D-67), and needs two values of lambda", {
