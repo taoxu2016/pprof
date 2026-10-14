@@ -38,7 +38,7 @@ py_machine <- jsonlite::read_json(sub("\\.csv$", ".json", args[[3]]))
 runs <- args[-(1:3)]
 paired <- do.call(rbind, lapply(seq_along(runs), function(r) cbind(utils::read.csv(runs[[r]]), run = r)))
 machines <- lapply(runs, function(f) jsonlite::read_json(sub("\\.csv$", ".json", f)))
-last_run <- stats::ave(paired$run, paired$scenario, paired$task, FUN = max)
+last_run <- stats::ave(paired$run, interaction(paired$scenario, paired$task, drop = TRUE), FUN = max)
 superseded <- unique(paste(paired$scenario, paired$task)[paired$run < last_run])
 paired <- paired[paired$run == last_run, , drop = FALSE]
 
@@ -115,20 +115,22 @@ lines <- c(
             "object. The preparation of the engine's inputs from the data frame (`data_prepare()` and the adapter's",
             "inputs) is timed in the engine's process after its measurement: the median of three calls."), "")
   },
-  if (c3) {
+  if (c3 && stratified) {
     c(paste("From Phase C3 (DEC-111), each side includes the measures: the fit side calls `standardize_providers()`",
             "on the fit, which computes each observation's expected events at the national baseline, and the engine",
             "side computes the national expected events by provider in plain R at the fitter's coefficients (C1's",
             "closed form): the brief's \"direct engine call it wraps plus the measures\"."), "")
   },
-  if (any(startsWith(paired$task, "penalized"))) {
-    c(paste("From Phase C4 (DEC-118), the elastic-net Cox model: `penalized_path` times `fit_cox_penalized()` on the",
-            "data frame against `glmnet()` on the adapter's inputs, whose preparation includes pprof_py's grid",
-            "(glmnet's `coxgrad()` at the null point); `penalized_cv` times `select_lambda()` with 10 given folds on a",
-            "fit made outside the timing against each fold's `glmnet()` path over the fit's grid, the fold deviances",
-            "of every lambda from `coxnet.deviance()`, the saturated term's shift from survival's partial likelihood,",
-            "and the summaries, written out in plain R as the package computes them. Their results (the path; the",
-            "fold deviances, cvm, and cvsd) must be the engine side's bitwise."), "")
+  if (penalized) {
+    c(paste("From Phase C4 (DEC-118), the elastic-net Cox model: each round runs the engine side and the fit, each in",
+            "a fresh process, one after the other, on the same data (C1's grid), and the engine's process then times",
+            "the preparation of its inputs from the data frame: the median of three calls. `penalized_path` times",
+            "`fit_cox_penalized()` on the data frame against `glmnet()` on the adapter's inputs, whose preparation",
+            "includes pprof_py's grid (glmnet's `coxgrad()` at the null point); `penalized_cv` times `select_lambda()`",
+            "with 10 given folds on a fit made outside the timing against each fold's `glmnet()` path over the fit's",
+            "grid, the fold deviances of every lambda from `coxnet.deviance()`, the saturated term's shift from",
+            "survival's partial likelihood, and the summaries, written out in plain R as the package computes them.",
+            "Their results (the path; the fold deviances, cvm, and cvsd) must be the engine side's bitwise."), "")
   },
   paste("Rule (the brief's §3.7 MUST, DEC-105): a fit is too slow when, in every round, its median and its fastest",
         "run are more than 10% above the engine call's plus the preparation of its inputs, and its median at least",

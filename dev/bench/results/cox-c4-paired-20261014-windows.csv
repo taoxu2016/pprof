@@ -1,0 +1,13 @@
+"scenario","n","providers","covariates","task","side","round","status","first_s","median_s","min_s","max_s","runs","peak_before_mb","peak_after_mb","gc_max_mb","prep_s","expected_s","measures_s","midp_s","exact_s","funnel_s","identical_to_engine","max_rel_diff_engine"
+"rows-1e4",10000,1000,20,"penalized_path","engine",1,"ok",1.33,1.7630551,1.1980237,2.3833248,5,255.66015625,255.66015625,174.7,0.0523673000025155,NA,NA,NA,NA,NA,NA,NA
+"rows-1e4",10000,1000,20,"penalized_path","fit",1,"ok",1.16,1.4986117,1.1865772,2.1553051,5,247.0859375,271.578125,199.8,NA,NA,NA,NA,NA,NA,TRUE,0
+"rows-1e4",10000,1000,20,"penalized_path","engine",2,"ok",1.41,1.6342576,1.2534743,2.1457205,5,255.671875,255.671875,174.7,0.0759085999998206,NA,NA,NA,NA,NA,NA,NA
+"rows-1e4",10000,1000,20,"penalized_path","fit",2,"ok",1.13,1.3538638,1.1497048,1.9712884,5,247.06640625,272.25,199.8,NA,NA,NA,NA,NA,NA,TRUE,0
+"covariates-50",1e+05,1000,50,"penalized_path","engine",1,"ok",19.28,18.0828247,15.6467107,18.7770119,3,451.1953125,472.7734375,324.8,0.653673699998762,NA,NA,NA,NA,NA,NA,NA
+"covariates-50",1e+05,1000,50,"penalized_path","fit",1,"ok",20.01,21.3336076,16.0518708,21.7305584,3,280.15234375,515.28515625,379.3,NA,NA,NA,NA,NA,NA,TRUE,0
+"covariates-50",1e+05,1000,50,"penalized_path","engine",2,"ok",16.67,15.550263,15.0343195,16.97993,3,452.40625,472.05859375,324.8,0.625574800000322,NA,NA,NA,NA,NA,NA,NA
+"covariates-50",1e+05,1000,50,"penalized_path","fit",2,"ok",20.48,18.4035403,17.5363132,24.1156346,3,283.33203125,489.83984375,379.3,NA,NA,NA,NA,NA,NA,TRUE,0
+"covariates-50",1e+05,1000,50,"penalized_cv","engine",1,"ok",213.47,183.247987,183.247987,183.247987,1,602.98046875,719.859375,603.5,0.334399900002609,NA,NA,NA,NA,NA,NA,NA
+"covariates-50",1e+05,1000,50,"penalized_cv","fit",1,"ok",195.25,156.3642659,156.3642659,156.3642659,1,497.421875,746.6640625,654.3,NA,NA,NA,NA,NA,NA,TRUE,0
+"covariates-50",1e+05,1000,50,"penalized_cv","engine",2,"ok",190.94,152.0571788,152.0571788,152.0571788,1,607.09375,688.6953125,603.5,0.312279199999466,NA,NA,NA,NA,NA,NA,NA
+"covariates-50",1e+05,1000,50,"penalized_cv","fit",2,"ok",194.63,174.5971401,174.5971401,174.5971401,1,498.2578125,761.734375,654.3,NA,NA,NA,NA,NA,NA,TRUE,0

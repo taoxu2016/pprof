@@ -1,0 +1,14 @@
+R version 4.4.0 (2024-04-24 ucrt); survival 3.8.12; glmnet 5.1; Intel64 Family 6 Model 140 Stepping 1, GenuineIntel
+
+A. The path: medians of interleaved runs (seconds); the ratio is DEC-105's, the fit over the engine call plus
+   the preparation
+scenario         runs   engine  adapter  preparation      fit    ratio  identical
+covariates-50       5   12.054   11.696        0.426   12.053    0.966       TRUE
+                fastest: engine 11.165, adapter 11.031, preparation 0.407, fit 11.494
+rows-1e4            9    0.889    0.883        0.034    0.950    1.030       TRUE
+                fastest: engine 0.851, adapter 0.872, preparation 0.030, fit 0.881
+
+B. The cross-validation on covariates-50: medians of 3 interleaved runs (seconds); the ratio is DEC-105's,
+   select_lambda() over the plain-R cross-validation plus the preparation of its inputs
+engine 157.7, preparation 0.353, select_lambda() 170.0; ratio 1.075; fastest: engine 145.9, select_lambda() 169.9;
+each run (engine, select_lambda()): 161.1 and 190.9; 157.7 and 169.9; 145.9 and 170.0; identical: TRUE

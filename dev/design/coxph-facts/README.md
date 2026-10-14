@@ -34,6 +34,8 @@ Each numbered script writes the output file of the same name (`.txt`). Where an 
 | `26_penalized_grid.py`, `.R` | pprof_py's λ grid written in plain R from engine calls (`glmnet`'s `coxgrad()` for the score at the null point, survival's fitter for unpenalized columns), and `glmnet`'s paths on it, against pprof_py's grids and paths on the penalized fixtures and on settings they lack (a constant column, ridge, no standardization, given and short grids, unequal penalty factors, one covariate); `glmnet` stopping early, or diverging with Efron ties, on data with few events per covariate (C4 plan) | K-143, D-72, `dev/design/COXPH_C4_PLAN.md` §2 |
 | `27_penalized_cv.R` | pprof_py's cross-validation from `glmnet`'s fold paths on the two penalized fixtures that hold it, with the partial likelihood from survival's fitter, `coxph()`, or `coxnet.deviance()` one grid point at a time or all at once (with the saturated term moved to pprof_py's), against the generator's R side and pprof_py (C4 plan) | K-144, M-30, `dev/design/COXPH_C4_PLAN.md` §2 |
 | `28_penalized_cost.R` | the cost of a penalized path and of the parts of a cross-validation on the benchmark's `covariates-50` scenario, and the estimated time of a 10-fold cross-validation with each source of the partial likelihood (C4 plan) | the brief's §3.7, `dev/design/COXPH_C4_PLAN.md` §2 |
+| `29_penalized_fit_parts.R` | `fit_cox_penalized()` and `select_lambda()` against their `glmnet` calls and their inputs' preparation, interleaved in one process, with the adapter's call beside `glmnet`'s own: where the C4 paired run's results on `covariates-50` stand against DEC-105's line (C4 benchmarks) | DEC-105, DEC-118, `dev/bench/results/cox-c4-paired-20261014-windows.md` |
+| `30_penalized_cv_parts.R` | the parts of `select_lambda()`'s loop against those of the plain-R cross-validation, timed apart and interleaved fold by fold on `covariates-50`, with their results checked identical (C4 benchmarks) | DEC-105, DEC-118 |
 
 ## Running them
 
@@ -74,6 +76,8 @@ Rscript $f/25_fit_measures_parts.R $f/25_fit_measures_parts.txt <data dir>
 python $f/26_penalized_grid.py && Rscript $f/26_penalized_grid.R $f/26_penalized_grid.txt
 Rscript $f/27_penalized_cv.R $f/27_penalized_cv.txt
 Rscript $f/28_penalized_cost.R $f/28_penalized_cost.txt
+Rscript $f/29_penalized_fit_parts.R $f/29_penalized_fit_parts.txt <data dir>
+Rscript $f/30_penalized_cv_parts.R $f/30_penalized_cv_parts.txt <data dir>
 ```
 
 R needs `survival`, `glmnet` and `data.table`, for 15 `Rcpp`, `RcppEigen` and a C++ toolchain, and for 16 the package's dependencies and a C++ toolchain (Rtools on Windows, which 15 and 16 alone need on the PATH; 16 builds lme4 twice and runs the reference suite twice, about 20 minutes); Python needs pprof_py's dependencies (NumPy, SciPy, pandas, numba, fast_poibin) and pytest.
