@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`; its corner scenario waits for the `cox-bench` job, which the project lead dispatches.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is next.
 
 ## 2026-10-07
 
@@ -203,3 +203,16 @@ The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after eac
   - `coxph/phase-3` goes to the fork, and the fork's `main` takes it as a fast-forward.
 - The job is on `coxph/phase-3` before the push, so that it reaches `main` with the merge: GitHub dispatches a manual workflow only from the default branch.
 - Next step: the project lead dispatches `cox-bench` from the fork's Actions page; its results go to `dev/bench/results/` and this document. Phase C4, penalized Cox models, when the project lead asks.
+
+## 2026-10-09: the corner scenario on a GitHub runner
+
+Recorded on 2026-10-14, for the next session.
+
+- The first dispatch of `cox-bench` (run 38003811342) failed while installing its dependencies ("cannot open the connection"), with the CRAN snapshot in `~/.Rprofile`, a setup copied from `rewrite-bench.yaml`, which has never run. At the project lead's request `main` took the fix as a fast-forward (`54488ae`): the job installs current binaries and the package's hard dependencies, as `rewrite-check.yaml`'s job with R 4.4.0 on the same image does, and reports a failed installation or measurement in annotations. `rewrite-bench.yaml` keeps the old setup.
+- CI on `171b1b4` (`coxph/phase-3` and `main`) and on `54488ae` (`main`): every workflow passed.
+- The second dispatch (run 38004882689; 28 minutes on an AMD EPYC 9V74 runner with 4 processors; R 4.4.0, survival 3.8-12), read from its notices:
+  - no fit too slow by DEC-105's rule, and every fit's estimates equal its engine call's: the corner's Breslow, Efron, and robust fits at 1.02 to 1.05 times the engine call plus the preparation (medians and fastest runs, both rounds); covariates-5 robust at 1.01 to 1.04; providers-7500 with Breslow ties at medians of 1.45 and 1.46 but fastest runs of 1.11 and 1.09, so it passes by one round's fastest run and stays at the line;
+  - the corner's mid-p test with its limits took 0.236 s, and the expected events 0.217 s, against pprof_py's 116 s in C1 on the project lead's machine: 256 times faster;
+  - the run's CSV, report, and log are its artifact `cox-bench-results`, which needs signing in to download; they are not in `dev/bench/results/`.
+- Open, outside the next phase unless the project lead says otherwise: the fits' overhead at 7,500 providers (DEC-105's alternative 3) and the measures' time at 10,000 rows and 7,500 providers (a SHOULD of the brief's §3.7); `rewrite-bench.yaml`'s setup; committing the corner run's artifact; the "Current phase" section of `CLAUDE.md`, which still names Phase C0.
+- Next step: Phase C4, the elastic-net Cox model (the brief's §4, row C4), when the project lead asks: its plan first, `dev/design/COXPH_C4_PLAN.md`, for approval, on `coxph/phase-4` from `main`.
