@@ -232,6 +232,11 @@ The package delegates all of this to `survival` (DEC-091), so it inherits `survi
   - The selected coefficients are the full-data path's at that grid point.
 - **Bootstrap standard error.** The bootstrap option is not carried over (B10, D-67).
 
+As built in C4 (DEC-113, DEC-115; `R/model-cox-penalized.R`, `R/model-glmnet.R`): the scaling, the penalty factors, λ_max, and the grid are pprof_py's, computed in the package from `glmnet`'s `coxgrad()` and survival's fitter, and the solver is `glmnet`'s (§E.2). Two of `glmnet`'s limits show:
+
+- It refuses a design of one column, so a single covariate gets a column of zeros beside it with its penalty factor, which `glmnet` leaves out as constant (`dev/design/coxph-facts/26`, part B).
+- Its iteration limit (`maxit`, the package's `max_iter`) counts its passes over all grid points together, where pprof_py's limits are per point. On data with few events per covariate it stops before the end of the grid with Breslow ties, and with Efron ties it can diverge without a warning, where pprof_py converges at every point. The path then ends at its last solution, with a warning (D-78).
+
 ### A.6 Competing risks (`models/survival/competing_risks.py`, `algorithms/survival/finegray.py`)
 
 **`CauseSpecificCoxPH`** (K-146).
@@ -278,6 +283,8 @@ The names are those of `dev/NAMING.md` §10 (DEC-090).
 - `predict(type = "linear_predictor")`.
 - Returns `c("pprof_cox_penalized", "pprof_model")`.
 
+As built in C4 (DEC-120, D-79): `coef(model)` gives the path, one column per λ reached, and `coef(model, lambda)` one of its columns; a λ off the grid raises `pprof_error_invalid_input`. `predict(newdata = NULL, type = c("linear_predictor", "risk"), lambda = NULL)` uses the selected coefficients (before selection, the last point's), or those of `lambda`, and needs `newdata` or kept data for a `lambda`. `select_lambda()` is a generic whose default raises; `folds` holds one value per row of the data (rows dropped for missing values are ignored), and `data` is the data the model was fit to, when it was fit without `keep_data = TRUE`. `penalty_factor` is named by coefficient and may be partial (others 1). The methods are `print()`, `coef()`, `predict()`, `nobs()` (the events), `tidy()`, and `glance()`; `summary()`, `confint()`, `augment()`, `test_coefficients()`, and the profiling functions raise `pprof_error_unsupported_inference`.
+
 `fit_fine_gray(formula, data, provider, cause, id = NULL, weights = NULL, ties = "breslow", max_iter = 20, tol = 1e-9, keep_data = FALSE, verbose = FALSE)`
 
 - **`formula`.** `Surv(time, status) ~ terms` or `Surv(start, stop, status) ~ terms`, the status a factor (or integer codes) with 0 for censoring.
@@ -313,6 +320,7 @@ Methods of `pprof_cox_stratified`: `print()`, `summary()`, `coef()`, `vcov()`, `
 
 - Shared fields: `coefficients` at the selected λ (before selection, at the last λ); `vcov` a matrix of NA, since no information-based inference is offered; `provider_effects = NULL`.
 - Own fields: `lambda`, `coefficient_path`, `selected`, `cross_validation` (the λ values, `cvm`, `cvsd`, the folds, `rule`, `lambda_min`, `lambda_1se`), `alpha`, `penalty_factor`, `standardize`, `ties`, and the survival vectors that cross-validation needs.
+- As built in C4 (DEC-120): `alpha`, `ties`, and `standardize` are in `spec`, with the fit's other settings, as the stratified model's are. The own fields are `start`, `stop`, `weights`, `offset`, `lambda`, `lambda_max`, `lambda_min_ratio`, `coefficient_path`, `penalty_factor` (as given), `column_scale`, `degenerate`, `n_events`, `n_zero_weight`, `selected` (`lambda`, `index`, `rule`), `cross_validation` (adding `fold_deviance`, `held_out_weight`, and `n_folds_used`; `folds` per data row), and `engine_fit`, `glmnet`'s object, with `keep_data = TRUE`. The convergence record has `iterations` (`glmnet`'s passes over the data), `converged`, `grid_points`, `stop_rule = "relative_objective"`, `tol`, and `max_iter`. As for the stratified model, there is no design matrix unless `keep_data = TRUE` (DEC-004); the path adds p doubles per λ.
 
 **`pprof_fine_gray`**
 
@@ -435,6 +443,7 @@ As built in C3 (DEC-108): item 3 has no `measure_limits`, so `profile_spec_defau
 - **`pprof_cox_penalized`.**
   - It declares no capability: there is no provider profiling in this phase (M-34), so the profiling functions raise `pprof_error_unsupported_inference`.
   - It offers `coef()`, `predict()`, `select_lambda()`, `print()`, and `tidy()`.
+  - As built in C4 (DEC-120): `inference_capabilities()` gives `character()`, and the model also offers `nobs()` and `glance()`. Its family specification has `family = "cox_penalized"` and the fit's settings, and none of the profiling hooks, which no function reaches.
 - **`pprof_fine_gray`.**
   - It declares `coef_wald`, with the robust variance.
   - `predict(type = "cumulative_incidence", newdata)` comes from `survival::survfit()` of the engine fit.
@@ -498,6 +507,14 @@ As built in C2 (DEC-099, DEC-100; `R/model-survival.R`):
   - `cvm`, `cvsd`, `lambda_min`, and `lambda_1se` by pprof_py's formulas.
   - Not `cv.glmnet()`, whose normalization changed in 5.0 (04).
 - **The difference from pprof_py's proximal-Newton solver** is absorbed by the `penalized_path` tier: 2.2e-7 was measured at `thresh = 1e-12` (`09_penalized_glmnet.txt`).
+
+As built in C4 (DEC-113 to DEC-115; `R/model-glmnet.R`, `R/model-cox-penalized.R`, `R/model-cox-selection.R`):
+
+- **The fit's call** is the one above, on the rows with positive weight in `data_prepare()`'s order, the strata integer codes in provider order, and the columns kept. A single covariate gets a column of zeros beside it (§A.5). The path equals `glmnet()`'s called directly with the same inputs, bitwise, in every configuration tested (`tests/testthat/test-model-glmnet.R`).
+- **λ_max** (DEC-113): the score at the null point is `glmnet::coxgrad()`, the gradient in the linear predictor with the weights normalized, times the scaled design; the unpenalized columns are fitted by survival's fitter, called as `coxph()` calls it (`survival_fit_columns()`), at pprof_py's eps 1e-9 and 100 iterations. It is within 9e-15 of pprof_py's on every penalized fixture case and setting.
+- **The path's end** (DEC-115, D-78): `glmnet`'s warning that it stopped early is muffled; the path ends at its last point, and before the first point whose coefficients are not finite or whose deviance ratio is below −√ε. The fit warns once with `pprof_warning_not_converged`.
+- **The fold deviances** (DEC-114): for each set of rows (all rows, and each fold's training rows), one `glmnet::coxnet.deviance()` call takes every grid point's linear predictor at once, offsets included, and its result is moved to pprof_py's Breslow saturated term by subtracting its value at the offsets less 2(lsat − ℓ(offset)), with lsat summed in the package (`cox_saturated_loglik()`) and ℓ survival's partial log-likelihood of the offsets (`survival_partial_loglik()`). This replaces the split by tie method above: one code path for both, within 3.2e-13 of survival's partial likelihood per evaluation.
+- **Folds whose path ended early** leave the later points' deviances missing, so those λ get no cvm or cvsd and are not selected, with one warning naming the folds.
 
 ### E.3 Fine–Gray
 
@@ -584,6 +601,8 @@ As §B.2.
 - Sets: a core set of 7 cases ships with the tests (396 KB); the other 13 are in `validation/fixtures/cox/`.
 - Tests never need Python.
 
+As built in C4 (DEC-117; `dev/reference/diff-reports/20261014-cox-penalized-*.md`): the full set adds two penalized cases, `penalized-settings` (pprof_py's `combined.csv` with a constant column `x0`; one path per setting, both tie methods: a constant column with an unpenalized covariate, ridge, no standardization, a given grid, a short grid with its own ratio, unequal penalty factors, and one covariate) and `penalized-few-events` (the first 15 rows of `penalized_wide.csv`: 8 events, 20 covariates; D-78). Their R side calls `glmnet` as the adapter does. Every existing fixture file stayed byte-identical; the full set grew by 149 KB, and the core set did not change.
+
 ### G.2 Tolerance tiers
 
 Calibrated in C1 (DEC-097; `validation/cox-calibration-report.md`): pprof_py against `survival` or `glmnet` within 1 unit, every negative control beyond 10, under the package's elementwise rule.
@@ -603,6 +622,8 @@ Calibrated in C1 (DEC-097; `validation/cox-calibration-report.md`): pprof_py aga
 
 - **Fits at default settings, and tight fits whose last step pprof_py halved:** iteration counts must match exactly, and coefficients must agree within the longer of the two last Newton steps (D-57).
 - **Flags** match exactly, except for providers within tolerance of a threshold, which the equivalence report lists.
+
+As applied in C4 (DEC-116; no tier changes): `closed_form` for the grid, λ_max, and the column scales against pprof_py, with calibration rows (the other tie method's grid and a dropped weight as negative controls; a given grid and the scales without standardization exactly); `closed_form` for the fold deviances, cvm, and cvsd against the generator's R side; `penalized_path` for the paths, cvm, cvsd, and the selected coefficients against pprof_py; `exact` for λ_min, λ_1se, the folds, and the degenerate covariates; `cox_engine` for the adapter against direct `glmnet` calls; active sets exactly, except within `penalized_path` of 0 (D-72). The calibration report passes 954 of 954 scored rows, the grid rows within 2.1e-5 of the tier and their controls beyond 5e8. The paths lie within 0.213 units of `penalized_path` of pprof_py's, cvm within 0.128 and cvsd within 0.018, with the same λ_min and λ_1se; on the few-events case they agree to the 30th point (D-78).
 
 ### G.3 Test layers (brief §6)
 
@@ -626,7 +647,7 @@ Calibrated in C1 (DEC-097; `validation/cox-calibration-report.md`): pprof_py aga
   - a constant shift of the offset, which leaves the measures unchanged;
   - duplicated rows against weight 2, with Breslow ties.
 - **F. Edge cases:** the brief's §6, F.
-- **G. Regression tests:** one per register entry, D-56 to D-74, and D-75 and D-77 added in C2 and C3.
+- **G. Regression tests:** one per register entry, D-56 to D-74, and D-75, D-77, and D-78 and D-79 added in C2, C3, and C4.
 
 ### G.4 Simulation
 
@@ -664,11 +685,13 @@ In C6, the size and coverage of the exact and mid-p tests and limits under the n
 
 As built in C3 (DEC-111; `dev/bench/results/cox-c3-paired-20261009-windows.md`): `dev/bench/cox/run_paired.R` times each fit followed by its indirect measures against the fitter call followed by the national expected events in plain R, with the preparation of the fitter's inputs added (DEC-105), and a `profile` task times the measures, each test with its limits, and the funnel on one fit. On every scenario but the corner, every fit's estimates equal its engine call's bitwise; 2 of 21 fits are too slow by DEC-105's rule (providers-7500 with Breslow ties, covariates-5 robust), which in one process sit at 1.11 and 1.09 times the comparator (`dev/design/coxph-facts/25_fit_measures_parts.txt`); the mid-p tests with their limits are 20 to 600 times faster than pprof_py's, after the change of root search that the first run called for (DEC-110). The corner scenario is measured at the C3 gate.
 
+As built in C4 (DEC-118; `dev/bench/results/cox-c4-paired-20261014-windows.md`): `run_paired.R` times `fit_cox_penalized()` against `glmnet()` on the adapter's inputs, with pprof_py's grid in the preparation, on covariates-50 and rows-1e4, and `select_lambda()` with 10 given folds against the fold paths, the `coxnet.deviance()` calls, the shift's survival evaluations, and the summaries in plain R, on covariates-50; `cox-bench.yaml` runs these tasks by default. Every result equals its engine side's bitwise, and no fit is too slow by DEC-105's rule. In one process the path takes 0.97 times its comparator on covariates-50 and 1.03 on rows-1e4, and `select_lambda()`'s loop 0.998 times the plain-R loop's (`dev/design/coxph-facts/29_penalized_fit_parts.txt`, `30_penalized_cv_parts.txt`). Beside C1's pprof_py times, the path is 4.5 times faster and the path with its cross-validation 9.3 times faster.
+
 ## J. Register entries
 
 | Register | Entries |
 |---|---|
 | `dev/CONVENTIONS.md`, "Cox models (pprof_py v0.7.0)" | K-131 to K-147; K-148 (C2) and K-149 (C3) |
-| `dev/DISCREPANCIES.md`, "The CoxPH phase" | D-56 to D-74; D-75 (C2) and D-77 (C3) |
-| `dev/OPEN_QUESTIONS.md`, "The CoxPH phase" | M-23 to M-41, decided under the project lead's delegation; M-39 re-decided in C3 (DEC-107) |
-| `dev/DECISIONS.md` | DEC-086 to DEC-093; DEC-094 to DEC-098 (C1), DEC-099 to DEC-106 (C2), DEC-107 to DEC-112 (C3) |
+| `dev/DISCREPANCIES.md`, "The CoxPH phase" | D-56 to D-74; D-75 (C2), D-77 (C3), and D-78 and D-79 (C4) |
+| `dev/OPEN_QUESTIONS.md`, "The CoxPH phase" | M-23 to M-41, decided under the project lead's delegation; M-39 re-decided in C3 (DEC-107); M-30, M-34, and M-37 implemented in C4 |
+| `dev/DECISIONS.md` | DEC-086 to DEC-093; DEC-094 to DEC-098 (C1), DEC-099 to DEC-106 (C2), DEC-107 to DEC-112 (C3), DEC-113 to DEC-120 (C4) |

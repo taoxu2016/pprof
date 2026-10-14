@@ -1,6 +1,6 @@
 # CoxPH Phase C4 plan: the elastic-net Cox model
 
-> **Status: proposed on 2026-10-14, for the project lead's approval with the eight decisions of §6.** It implements the brief's §4 row C4 (`dev/coxph_brief.md`; also §2.1 item 3, §2.4, §3.2's penalized Cox, §3.3 rows 10, 11, and 13, §3.5, §3.6, §3.7, §5.4, §6, §7, and §10's Q8, Q12, and Q15) and COXPH_DESIGN §A.5, §B.1, §B.2, §D.4, §E.2, §G, and §I, under DEC-086 to DEC-112.
+> **Status: approved by the project lead on 2026-10-14, with the eight decisions of §6 as recommended** (DEC-113 to DEC-120). It implements the brief's §4 row C4 (`dev/coxph_brief.md`; also §2.1 item 3, §2.4, §3.2's penalized Cox, §3.3 rows 10, 11, and 13, §3.5, §3.6, §3.7, §5.4, §6, §7, and §10's Q8, Q12, and Q15) and COXPH_DESIGN §A.5, §B.1, §B.2, §D.4, §E.2, §G, and §I, under DEC-086 to DEC-112.
 
 C4 adds `fit_cox_penalized()`, pprof_py's elastic-net Cox path fitted by `glmnet` on pprof_py's λ grid, and `select_lambda()`, pprof_py's cross-validation computed in the package from `glmnet`'s fold paths. The model declares no inference (M-34). `glmnet` stays in Suggests (DEC-088). The existing families and the stratified Cox model stay bitwise identical.
 

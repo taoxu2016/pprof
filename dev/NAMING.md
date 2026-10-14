@@ -33,6 +33,8 @@ Only these abbreviations may appear in names. Anything else is spelled out.
 | `aic`, `bic`, `auc` | information criteria, area under the ROC curve | `fit$aic` |
 | `lr` | likelihood ratio, in test-type values only | `test = "lr"` |
 | `lme4` | the package, in adapter names only | `lme4_fit_glmer()` |
+| `glmnet` | the package, in adapter names only (§10) | `glmnet_fit_path()` |
+| `cvm`, `cvsd` | cross-validated mean deviance and its standard error, as `glmnet` and pprof_py name them, in the `cross_validation` element only (§10) | `fit$cross_validation$cvm` |
 
 Not carried over: `logis`, `SM`, `stdz`, `Y.char`, `Z.char`, `ProvID`, `ProvID.char`, `wb.char`, `other.char`, `char_list`, `Loglkd`, `parm` (except as the `stats::confint()` argument), `prov`, `obs` as a field name.
 
@@ -310,3 +312,17 @@ Phase C3 added, with the provider profiling of the stratified Cox model (`dev/de
 - `funnel_limits()` of a family with Poisson counts requires `target = 1`, and its `lower` and `upper` can be `-Inf` and `Inf` (K-149).
 - `pprof_warning_zero_expected` carries `providers`, the IDs of the providers without expected events.
 - The tolerance tier of the mid-p limits is `cox_root` (DEC-109).
+
+Phase C4 added, with the elastic-net Cox model (`dev/design/COXPH_C4_PLAN.md`; DEC-113 to DEC-120):
+
+- `select_lambda()` is a generic: its default method raises `pprof_error_invalid_input`, and the method for `pprof_cox_penalized` takes `folds`, `n_folds`, `rule`, and `data` (the data the model was fit to, when it was fit without `keep_data = TRUE`), and returns the model with `selected` and `cross_validation` filled and `coefficients` at the selected λ.
+- `folds` holds the fold of each row of the data the model was fit to, not of each observation: rows dropped for missing values are ignored, and the labels are 1 to K or 0 to K − 1, with K ≥ 2. Drawn folds need `n_folds` ≥ 3.
+- `penalty_factor` is named by coefficient (the columns of the design matrix) and may be partial: the coefficients it does not name get 1.
+- `coef()` and `predict()` of the penalized model take `lambda`, one of the path's values: `coef()` without it gives the whole path, and `predict()` the coefficients of `coefficients`. A value off the path raises `pprof_error_invalid_input` (D-79). `predict()` takes `type = "linear_predictor"` (the default) or `"risk"`.
+- The object adds `lambda_max`; `lambda_min_ratio`, the ratio of the default grid; `penalty_factor`, the factors as given (named, all coefficients); `column_scale`, each column's weighted standard deviation with `standardize = TRUE` and 1 otherwise; `degenerate`, the names of the covariates left out; and `n_zero_weight`. `coefficient_path` has one column per λ reached, and `coefficients` is its last column until `select_lambda()` sets the selected one.
+- `selected` holds `lambda`, `index` (its column of the path), and `rule`; `cross_validation` holds `lambda`, `cvm`, `cvsd`, `fold_deviance` (one row per fold), `held_out_weight` (each fold's summed event weights), `folds` (per data row, `NA` for rows not in the model), `n_folds_used`, `lambda_min`, `lambda_1se`, and `rule`.
+- The family specification has `family = "cox_penalized"` and holds the fit's settings: `alpha`, `ties`, `standardize`, `n_lambda`, `lambda_min_ratio`, `lambda`, `weights`, `max_iter`, `tol`, and `keep_data`. The convergence record has `iterations` (glmnet's passes over the data), `converged`, `grid_points` (the points reached), `stop_rule = "relative_objective"`, `tol`, and `max_iter`.
+- `tidy()` of the penalized model gives `term` and `estimate`; `glance()` gives `n_obs`, `n_providers`, `n_excluded_providers`, `n_events`, `alpha`, `n_lambda`, `lambda` and `rule` (the selection's, `NA` before one), `iterations`, and `converged`.
+- `pprof_warning_degenerate_covariates` carries `covariates`, the names of the covariates left out; the `pprof_warning_not_converged` of a cross-validation carries `folds`, the folds whose path ended early.
+- The constants in `R/constants.R` are `penalized_degenerate_variance`, `penalized_alpha_floor`, `penalized_ratio_wide`, `penalized_ratio_long`, `penalized_null_tol`, `penalized_null_max_iter`, and `penalized_deviance_ratio_floor`.
+- The glmnet adapter's functions are `glmnet_*()` in `R/model-glmnet.R`; survival's fitter is also called through `survival_fit_columns()` and `survival_partial_loglik()` in `R/model-survival.R`.

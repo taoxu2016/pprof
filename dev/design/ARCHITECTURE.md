@@ -360,18 +360,18 @@ Logistic models share one implementation of `expected_outcome()` (plogis of effe
 
 Capability names: `coef_wald`, `coef_lr`, `coef_score`, `provider_exact`, `provider_bootstrap`, `provider_score`, `provider_score_standard`, `provider_wald`, `interval_exact`, `interval_score`, `interval_wald`, `standardize_indirect`, `standardize_direct`, `funnel`, and, from CoxPH Phase C3, `provider_midp` and `interval_midp`. Every entry point calls `require_capability(model, name)` first; a model that does not declare the capability gets `pprof_error_unsupported_inference`, naming the model class and the capability. A model never receives a request it has not declared, so a penalized model cannot return a Wald number by accident.
 
-| Capability | Logistic FE | Firth | Linear FE | Logistic RE/CRE | Linear RE/CRE | Cox stratified (as of CoxPH C3) |
-|---|---|---|---|---|---|---|
-| coef_wald | yes | yes | yes | yes | yes | yes (K-148) |
-| coef_lr, coef_score | yes | yes (D-12, M-2) | no | no | no | no |
-| provider_exact, provider_bootstrap, provider_score, provider_score_standard | yes | yes | no | no | no | provider_exact (Poisson, K-140); the others no |
-| provider_midp | no | no | no | no | no | yes (K-141) |
-| provider_wald | yes | yes | yes | yes | yes | no |
-| interval_exact, interval_score | yes | yes | no | no | no | interval_exact (Garwood's or Byar's, K-140); interval_score no |
-| interval_midp | no | no | no | no | no | yes (K-141, DEC-110) |
-| interval_wald | yes | yes | yes | yes | yes | no |
-| standardize_indirect, standardize_direct | yes | yes | yes | yes | yes | yes (K-137, K-138) |
-| funnel | yes (score-test limits, K-110; exact limits unsupported, D-07) | yes | yes (normal limits, K-111) | no | no | yes (the mid-p test's count boundaries, K-149, DEC-107) |
+| Capability | Logistic FE | Firth | Linear FE | Logistic RE/CRE | Linear RE/CRE | Cox stratified (as of CoxPH C3) | Cox penalized (CoxPH C4) |
+|---|---|---|---|---|---|---|---|
+| coef_wald | yes | yes | yes | yes | yes | yes (K-148) | no |
+| coef_lr, coef_score | yes | yes (D-12, M-2) | no | no | no | no | no |
+| provider_exact, provider_bootstrap, provider_score, provider_score_standard | yes | yes | no | no | no | provider_exact (Poisson, K-140); the others no | no |
+| provider_midp | no | no | no | no | no | yes (K-141) | no |
+| provider_wald | yes | yes | yes | yes | yes | no | no |
+| interval_exact, interval_score | yes | yes | no | no | no | interval_exact (Garwood's or Byar's, K-140); interval_score no | no |
+| interval_midp | no | no | no | no | no | yes (K-141, DEC-110) | no |
+| interval_wald | yes | yes | yes | yes | yes | no | no |
+| standardize_indirect, standardize_direct | yes | yes | yes | yes | yes | yes (K-137, K-138) | no (M-34) |
+| funnel | yes (score-test limits, K-110; exact limits unsupported, D-07) | yes | yes (normal limits, K-111) | no | no | yes (the mid-p test's count boundaries, K-149, DEC-107) | no (M-34) |
 
 The table mirrors exactly what the reference offers per class; it adds no inference.
 
@@ -382,6 +382,8 @@ As built in Phase 5 (step 2): linear FE models declare `coef_wald`, `provider_wa
 As built in CoxPH Phase C2 (DEC-101, DEC-102): the provider-stratified Cox model, whose reference is pprof_py v0.7.0 rather than pprof 1.0.3, declares `coef_wald` only, with the covariate rule `p_value = "two_sided_upper"`; every other entry point raises `pprof_error_unsupported_inference` for it, and `provider_effects()` does so for any model without provider-effect estimates. Phase C3 adds the column's provider-level capabilities (COXPH_DESIGN §D.2, §D.3).
 
 As built in CoxPH Phase C3 (DEC-107 to DEC-110): the Cox column as the table shows. The two new capabilities are declared by no other family, so `test = "midp"` and `interval = "midp"` raise `pprof_error_unsupported_inference` for them; the tests and intervals of the Cox model are two-sided, and direct standardization has no intervals, as in pprof_py.
+
+As built in CoxPH Phase C4 (DEC-120, M-34): the elastic-net Cox model declares no capability, as §E.5's step 9 anticipated for a penalized model, and there is no provider profiling at a selected λ in this phase. `summary()`, `confint()`, `augment()`, `test_coefficients()`, and every profiling function raise `pprof_error_unsupported_inference` for it; its `vcov` is a matrix of `NA`, and `tidy()` gives estimates without standard errors.
 
 ### E.4 Registration and the extension proof
 
@@ -421,6 +423,8 @@ As designed in CoxPH Phase C0 (DEC-090, DEC-092; `dev/design/COXPH_DESIGN.md`): 
 As built in CoxPH Phase C2 (DEC-099 to DEC-104): `data_prepare()` takes a `Surv()` response (`response_type = "survival"`) and keeps the status as `response`, with `start`, `stop`, the response's type in `settings$survival_type`, and the weights, clusters, and offsets of each observation; the provider table adds events and person-time, and screening stays by size. The existing families' data are unchanged, which a snapshot of `data_prepare()` on the reference cases proves (`validation/fixtures/data-prepare-snapshot.rds`, COXPH_DESIGN §C.2). `fit_cox_stratified()` is `R/model-cox-stratified.R` on the survival adapter `R/model-survival.R`, which calls survival's fitters as `coxph()` does; its object has `provider_effects = NULL`. Besides the data layer, the shared code changed only by COXPH_DESIGN §D.3's items 1 and 2, the covariate rule's `two_sided_upper` (DEC-101), and `check_data()`'s survival checks (DEC-104), each with today's behavior as its default.
 
 As built in CoxPH Phase C3 (DEC-107 to DEC-112): the profiling layer serves the stratified Cox model as the sketch said it would, by summing observed and expected values by provider. The fit computes each observation's expected events at the national baseline once (`cox_expected_events()`, `R/model-cox-measures.R`), and `expected_outcome()` scales them by exp(effect). The family specification's `count_distribution = "poisson"` routes the tests, the limits of the measures, and the funnel's limits to the Poisson functions of the inference layer (`R/inference-poisson.R`), and its `direct_by_provider(model, rows)` gives the direct expectations, since the model has no provider effects to put in a direct sum. The family specification has no `measure_limits` field, which COXPH_DESIGN §D.2 had proposed: a function in a model file (layer 2) could not call the inference layer's limits (layer 3), and `test-architecture.R` checks calls inside closures too (DEC-108). Besides those, the shared code changed by the `midp` choices of tests and intervals, the capability names, a classed warning for providers without expected events (D-70), and the plots' handling of estimates that are not finite (DEC-112), each with today's behavior as its default.
+
+As built in CoxPH Phase C4 (DEC-113 to DEC-120): the elastic-net Cox model is a module as §E.4 describes one. `fit_cox_penalized()` (`R/model-cox-penalized.R`) and `select_lambda()` (`R/model-cox-selection.R`) sit on a second engine adapter, `R/model-glmnet.R`, beside the survival adapter, to which they add two functions (`survival_fit_columns()` and `survival_partial_loglik()`); glmnet stays a suggested package, required at the call (DEC-088). Its paths follow §E.5's rules (`coef()` gives the path or a grid point's solution; no interpolation; `select_lambda()` sets `selected`), with pprof_py's cross-validation in place of §E.5's fold design. The data, inference, and profiling layers are unchanged. Besides the model's methods in the presentation files and its constants, the shared code changed only by a classed warning for covariates without variation, and the survival adapter's input builder was split so that the new functions share it; the existing families and the stratified Cox model stayed bitwise identical (the `data_prepare()` snapshot, `devtools::test()`, and `validation/run-reference.R` at each commit that touched shared code).
 
 ---
 

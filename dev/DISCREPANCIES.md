@@ -980,6 +980,8 @@ The Cox models follow pprof_py v0.7.0 (commit `9320766`; DEC-086), not pprof 1.0
 | D-74 | Status coded 1/2 | A | verified; decided: accepted | pprof_py rejects the 1/2 status coding that `Surv()` accepts |
 | D-75 | Baselines and curves without covariates | B | verified; decided: unsupported, with a classed error | survival's `survfit()` cannot give them for a Cox fit without covariates, so the package raises a classed error where pprof_py reports them |
 | D-77 | Unknown provider IDs | Presentation | decided | pprof_py's `providers` filter ignores IDs it does not know; the package raises a classed error, as for every family |
+| D-78 | Penalized paths with few events per covariate | B | verified; decided, awaiting a methodology owner (M-16): the path ends where glmnet's solutions end | glmnet 5.1 stops at its iteration limit (Breslow ties) or diverges silently (Efron ties) where pprof_py converges; the package ends the path there, with a warning |
+| D-79 | Penalized paths' other outputs | B | verified; decided: not given in C4 | pprof_py reports each lambda's log-likelihood and deviance ratio, coefficients between grid points, and per-lambda convergence; the package gives glmnet's solutions at the grid's points |
 
 D-76 is not used: the CoxPH C3 plan reserved it for M-39's normal funnel limits, its decision 1(b), which was not adopted (DEC-107).
 
@@ -1022,8 +1024,8 @@ D-76 is not used: the CoxPH C3 plan reserved it for M-39's normal funnel limits,
 - Options: (1) reproduce pprof_py; (2) leave zero-weight rows out of the Cox fit and keep them in the provider table and the measures, which do not use weights (M-29); (3) refuse zero weights, as `survival` does.
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-25).
-- Status: verified (2026-10-07); decided; implemented in C2 (2026-10-09): rows with weight 0 stay in the data and the provider table, and are left out of every survival call (`survival_fit_rows()` in `R/model-survival.R`); the object counts them in `n_zero_weight`, and their martingale residuals are `NA` (DEC-103). The C1 fixture `zero-weights` confirms it (2026-10-08): with Breslow ties, survival's fits on the positive-weight rows equal pprof_py's within the tiers; with Efron ties they differ (the tight coefficients by 2.8e5 times `cox_coefficient`). In C3 (2026-10-09) the measures count every row, those with weight 0 included, unweighted (M-29), at the fit's coefficients; so on `zero-weights` with Efron ties they differ from pprof_py's as the coefficients do, and given pprof_py's coefficients they equal its measures (the calibration report).
-- Regression test: the full set's `zero-weights` in `tests/testthat/test-cox-reference.R`: Breslow fits, residuals, and baselines equal pprof_py's; Efron fits equal survival's on the positive-weight rows and differ from pprof_py's beyond `cox_coefficient`; "measures and flags of the package's fits, full Cox fixtures (D-58, M-29)": with Breslow ties the expected events, ratios, and flags equal pprof_py's, and with Efron ties the expected events differ beyond `cox_baseline`. Unit tests: "rows with weight 0 are left out of the fit and kept in the data" (`test-model-survival.R`), "zero weights leave rows out of the fit and in the provider table" (`test-model-cox-stratified.R`), "standardize_providers() gives the indirect and direct ratios (K-137 to K-139)" (`test-profile-cox.R`), where rows with weight 0 count in the measures, and "a provider whose rows all have weight 0 is out of the fit and in the measures (M-25, M-29, D-58)" (`test-profile-cox.R`).
+- Status: verified (2026-10-07); decided; implemented in C2 (2026-10-09): rows with weight 0 stay in the data and the provider table, and are left out of every survival call (`survival_fit_rows()` in `R/model-survival.R`); the object counts them in `n_zero_weight`, and their martingale residuals are `NA` (DEC-103). The C1 fixture `zero-weights` confirms it (2026-10-08): with Breslow ties, survival's fits on the positive-weight rows equal pprof_py's within the tiers; with Efron ties they differ (the tight coefficients by 2.8e5 times `cox_coefficient`). In C3 (2026-10-09) the measures count every row, those with weight 0 included, unweighted (M-29), at the fit's coefficients; so on `zero-weights` with Efron ties they differ from pprof_py's as the coefficients do, and given pprof_py's coefficients they equal its measures (the calibration report). In C4 (2026-10-14) rows with weight 0 are left out of the penalized paths and of the cross-validation's fold paths and deviances, and keep their fold, contributing nothing to its event weight (DEC-120); pprof_py's penalized models keep them, with Efron's miscount of tied deaths, and count them in the grid's n < p rule, as the package does too.
+- Regression test: the full set's `zero-weights` in `tests/testthat/test-cox-reference.R`: Breslow fits, residuals, and baselines equal pprof_py's; Efron fits equal survival's on the positive-weight rows and differ from pprof_py's beyond `cox_coefficient`; "measures and flags of the package's fits, full Cox fixtures (D-58, M-29)": with Breslow ties the expected events, ratios, and flags equal pprof_py's, and with Efron ties the expected events differ beyond `cox_baseline`. Unit tests: "rows with weight 0 are left out of the fit and kept in the data" (`test-model-survival.R`), "zero weights leave rows out of the fit and in the provider table" (`test-model-cox-stratified.R`), "standardize_providers() gives the indirect and direct ratios (K-137 to K-139)" (`test-profile-cox.R`), where rows with weight 0 count in the measures, and "a provider whose rows all have weight 0 is out of the fit and in the measures (M-25, M-29, D-58)" (`test-profile-cox.R`); in C4, "rows with weight 0 are left out of the fit and kept in the data (M-25, D-58)" (`test-model-cox-penalized.R`) and "rows with weight 0 have a fold and are out of the fits and the deviances (M-25, D-58)" (`test-model-cox-selection.R`).
 
 ### D-59: Aliased covariates and no events
 
@@ -1064,8 +1066,8 @@ D-76 is not used: the CoxPH C3 plan reserved it for M-39's normal funnel limits,
 - Options: (1) reimplement NumPy's generator; (2) R's generator, with fold IDs passed in fixtures and a distributional check of the scheme.
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (M-30).
-- Status: verified (2026-10-07); decided; implemented in C4.
-- Regression test: cross-validation with fixed fold IDs against pprof_py; fold sizes and event balance of the drawn folds.
+- Status: verified (2026-10-07); decided; implemented in C4 (2026-10-14): `select_lambda()` without `folds` gives the observations with an event, then those without, each in the order of the data, a permutation of the labels 1..K repeated to their number, drawn with `sample.int()` (`cox_penalized_draw_folds()` in `R/model-cox-selection.R`); with pprof_py's fold IDs its cvm and cvsd agree with pprof_py's within `penalized_path` (0.128 and 0.018 units) and select the same lambdas.
+- Regression test: "penalized paths and cross-validation of the full Cox fixtures match pprof_py's and glmnet's" (`tests/testthat/test-cox-penalized-reference.R`), with pprof_py's fold IDs; "drawn folds: event-stratified, balanced, reproducible with a seed (D-61)" (`test-model-cox-selection.R`).
 
 ### D-62: Missing values
 
@@ -1132,7 +1134,8 @@ D-76 is not used: the CoxPH C3 plan reserved it for M-39's normal funnel limits,
 - Minimal reproducible example: `dev/design/coxph-facts/13_pprof_py_probes.txt`, B10: 17 log-likelihood units off on a tied example, exact without ties.
 - Affected outputs: none: `select_lambda()` offers the default standard error only.
 - Decision owner: project lead. Decided: not carried over.
-- Status: verified (2026-10-07); not carried over.
+- Status: verified (2026-10-07); not carried over. C4 (2026-10-14): `select_lambda()` has no bootstrap option.
+- Regression test: "select_lambda() offers no bootstrap standard error (D-67), and needs two values of lambda" (`tests/testthat/test-model-cox-selection.R`).
 
 ### D-68: `tmerge`
 
@@ -1182,7 +1185,8 @@ D-76 is not used: the CoxPH C3 plan reserved it for M-39's normal funnel limits,
 - Options: (1) reproduce pprof_py's values; (2) `glmnet`'s exact zeros, compared with pprof_py's path under the `penalized_path` tier, and counts of nonzero coefficients compared after setting values below 1e-10 to 0.
 - Recommendation: (2).
 - Decision owner: methodology owners. Decided (2): delegation, 2026-10-07 (DEC-087).
-- Status: verified (2026-10-07); decided; implemented in C4.
+- Status: verified (2026-10-07); decided; implemented in C4 (2026-10-14): on `penalized-combined`, glmnet's first point has exact zeros where pprof_py's has 3.3e-12 and 4.8e-12 (Breslow ties). Where lambda_max is the exact boundary and no column is unpenalized, glmnet itself can leave one penalized coefficient of rounding size at the first point (up to 6e-16 on 6 of the 16 fixture paths), as pprof_py does once (-5.2e-17 on `penalized-offset`; `dev/design/coxph-facts/26`), so the active sets are compared except where a coefficient lies within `penalized_path`'s atol of 0 on either side (DEC-116).
+- Regression test: "glmnet's first point has exact zeros where pprof_py's has 1e-12 (D-72)" and the active sets of every penalized case (`tests/testthat/test-cox-penalized-reference.R`).
 
 ### D-73: Failures of pprof_py that cannot arise in the package
 
@@ -1232,3 +1236,30 @@ D-76 is not used: the CoxPH C3 plan reserved it for M-39's normal funnel limits,
 - Decision owner: project lead. Decided: raise, as for every family (DEC-112; the project lead, 2026-10-09, with the C3 plan, its decision 7).
 - Status: decided; implemented in C3 (2026-10-09).
 - Regression test: "IDs in `providers` that the model does not have raise, where pprof_py ignores them (D-77)" (`tests/testthat/test-profile-cox.R`).
+
+### D-78: Penalized paths with few events per covariate
+
+- Component: the glmnet adapter (`glmnet_fit_path()` in `R/model-glmnet.R`); pprof_py's `PenalizedCoxPH` (its proximal Newton solver, `pprof_py/algorithms/survival/coordinate_descent.py`).
+- Class: B (pprof_py gives a converged solution at every grid point; the package's path ends earlier)
+- Description: On data with few events per covariate, glmnet 5.1 stops before the end of the grid with Breslow ties, its iteration limit (`maxit`, the package's `max_iter`) counting its passes over the data at all grid points together, and with Efron ties it diverges without a warning, to coefficients near 1e36 with a deviance far above the null deviance, which no solution of the penalized problem has. pprof_py's solver, whose limits are per grid point, converges at every point. The package ends the path at glmnet's last grid point, and before the first point whose coefficients are not finite or whose deviance ratio is below -sqrt(eps), and warns once (`pprof_warning_not_converged`); in cross-validation the lambdas a fold's path did not reach are not selected.
+- Minimal reproducible example: `dev/design/coxph-facts/26`, part C, and the full set's fixture `penalized-few-events` (the first 15 rows of pprof_py's `penalized_wide.csv`: 8 events, 20 covariates). pprof_py converges at all 100 grid points, its largest coefficient 3.2 to 3.3. glmnet with Breslow ties stops at the 73rd point (with `maxit` 1e6 it reaches every point and pprof_py's largest coefficient, 3.22); with Efron ties it follows pprof_py to the 54th point (largest coefficient 1.12 on both sides) and diverges at the 55th (coefficients near 9.9e35, deviance ratio -1.7e35), with 1e6 passes and on its own grid too. On 19 and 25 such rows glmnet's own grid stops early with both tie methods; from 40 rows it does not.
+- Affected outputs: the path of such data (fewer grid points), and the lambdas cross-validation can select.
+- Statistical impact: where both sides have solutions, the paths agree within `penalized_path` to the 30th point (Efron) and the 34th (Breslow); beyond, on these ill-conditioned data, they part by up to 1.3e-3. Where glmnet has no solution the package gives none rather than a wrong one.
+- Options: (1) end the path at glmnet's last point and before a solution that is not one, with a warning; (2) glmnet's own early stop only, so the Efron divergence passes through silently; (3) refuse data with fewer events than covariates, which pprof_py fits.
+- Recommendation: (1).
+- Decision owner: methodology owners; decided (1) by the project lead (2026-10-14, the C4 plan's decision 3, DEC-115), awaiting a methodology owner's confirmation (M-16).
+- Status: verified (2026-10-14); decided; implemented in C4.
+- Regression test: "a path ends where glmnet stops, or before a solution that is not one (DEC-115, D-78)" (`tests/testthat/test-model-glmnet.R`); `penalized-few-events` in "penalized paths and cross-validation of the full Cox fixtures match pprof_py's and glmnet's" (`test-cox-penalized-reference.R`): the path ends at the 72nd point (Breslow) or the 54th (Efron), with the warning, and agrees with pprof_py's to the 30th; "a lambda that a fold's path did not reach, or whose deviance is not finite, is not selected" (`test-model-cox-selection.R`).
+
+### D-79: Penalized paths' other outputs
+
+- Component: pprof_py's `PenalizedCoxPH` (`pprof_py/models/survival/penalized_coxph.py:358-475`): `log_likelihood_path_`, `deviance_ratio_path_`, `log_likelihood_null_`, `coef_at()`, `converged_path_`, and `n_iter_path_`.
+- Class: B (outputs pprof_py gives that the package does not, as D-75; no number changes)
+- Description: pprof_py reports each lambda's partial log-likelihood and deviance ratio, the null log-likelihood, coefficients between grid points (`coef_at()`, linear in log lambda between the two nearest points, the end points beyond the grid), and convergence flags and iteration counts per lambda. The package's path holds glmnet's solutions at the grid's points, with the column scales and penalty factors, and its convergence record glmnet's passes over the data and the points reached; `coef()` at a lambda off the grid raises `pprof_error_invalid_input`, so that every coefficient reported is a solution (COXPH_DESIGN §B.1, ARCHITECTURE §E.5).
+- Minimal reproducible example: `coef(fit, lambda = mean(fit$lambda[3:4]))` raises, where pprof_py's `coef_at()` interpolates.
+- Affected outputs: none of the package's numbers.
+- Options: (1) leave them out in C4, as the approved design does; (2) add the log-likelihood and deviance ratio (glmnet's deviances anchored at survival's null log-likelihood, with calibration rows) and pprof_py's interpolation.
+- Recommendation: (1).
+- Decision owner: project lead; decided (1) (2026-10-14, the C4 plan's decision 7, DEC-119).
+- Status: verified (2026-10-14); decided; implemented in C4.
+- Regression test: "coef(), predict(), nobs(), print(), tidy(), and glance() (D-79)" (`tests/testthat/test-model-cox-penalized.R`): a lambda off the grid raises.

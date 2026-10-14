@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, has its plan (2026-10-14), which awaits the project lead's approval.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is built on `coxph/phase-4` (2026-10-14), and its gate is next.
 
 ## 2026-10-07
 
@@ -228,3 +228,35 @@ Recorded on 2026-10-14, for the next session.
   - the cross-validation computed from survival's fitter reproduces the generator's R side bitwise. One `coxnet.deviance()` call per fold over every grid point, moved to pprof_py's saturated term, agrees with it within 3.2e-13 and makes a 10-fold cross-validation on `covariates-50` about 1.6 times faster: 211 s estimated, against pprof_py's 1,717 s in C1;
   - `cox-bench.yaml` installs only the package's hard dependencies, so the penalized tasks need `glmnet` added to the job.
 - Next step: the project lead's approval of the plan and its §6 decisions; then its §5 commits, starting with §4.1's runs of the unchanged code.
+
+## 2026-10-14: Phase C4 built
+
+- The project lead approved the plan with its eight decisions as recommended (DEC-113 to DEC-120).
+- The commits, in the plan's §5 order:
+  - `496367b`: the plan, with fact scripts 26 to 28 and their outputs;
+  - `9932fed`, `087d5f8`: the generator's two penalized cases, `penalized-settings` and `penalized-few-events`, and both fixture sets regenerated (DEC-117); the diff reports (`dev/reference/diff-reports/20261014-cox-penalized-*.md`) show the core set's 7 cases identical and the full set's 13 identical with the 2 added, and a second generation reproduced every file;
+  - `ee4d672`: the C4 calibration rows (DEC-116): the report passes 954 of 954 scored rows, 60 explained, the grid rows within 2.1e-5 of `closed_form` and their negative controls beyond 5e8;
+  - `250247c`: the glmnet adapter (`R/model-glmnet.R`), survival's partial log-likelihood of given linear predictors and fit of given columns (`R/model-survival.R`), the constants, and the warning for degenerate covariates;
+  - `4abced4`: `fit_cox_penalized()`, `select_lambda()`, the object, and its methods;
+  - `f336a20`: the comparisons with the fixtures;
+  - `ff79b18`, `0bbca18`: the benchmark code, and its results with facts 29 and 30;
+  - the registers and documents (this commit).
+- Departures from the plan:
+  - the plan's commits 5 and 6 are one (`4abced4`): the object's validator and methods cover the selection that `select_lambda()` fills, and the tests of each use the other;
+  - `R/model-survival.R` gained `survival_fit_columns()` besides `survival_partial_loglik()`, the fit of the unpenalized columns at the start of the path (decision 1), and its input builder was split so that the three share it;
+  - a test helper, `tests/testthat/helper-cox-penalized.R`, holds the data, formulas, and direct `glmnet` calls that the adapter, model, and selection tests share;
+  - the metamorphic test of duplicated rows against weight 2 compares under `penalized_path`, not `closed_form`: `glmnet` converges differently on the two data, by 1.5e-6 (DEC-116), as for covariate order;
+  - `alpha`, `ties`, and `standardize` are in the model's `spec`, where COXPH_DESIGN §B.2 listed them as fields, and `cvm` and `cvsd` keep glmnet's and pprof_py's names (DEC-120, NAMING §2);
+  - the benchmark's code and results are two commits, as in C3.
+- The existing families and the stratified Cox model stayed bitwise identical. `devtools::test()` and `validation/run-reference.R` ran in a clean worktree at `38dad40` and after each commit that touched shared code: at `38dad40` 77 files, 1,227 tests (10,878 expectations); at `250247c` 78 files, 1,235 tests (10,978); at `4abced4` 80 files, 1,254 tests (11,133); each with no failure, warning, or skip. Each time the reference report differed from the committed one only in its date and commit lines (368 of 368 cases), and the `data_prepare()` snapshot test passed.
+- Against pprof_py and glmnet:
+  - the adapter's paths equal `glmnet()`'s called directly with the same inputs, bitwise, in 12 configurations: both tie methods, each with (start, stop] data with weights and an offset, right-censored data without them, the elastic net with unequal and zero penalty factors, ridge without standardization, a column left out, and one covariate;
+  - λ_max is within 9e-15 of pprof_py's on every penalized case and setting, and the paths within 0.213 units of `penalized_path`;
+  - with pprof_py's fold IDs, cvm is within 0.128 units and cvsd within 0.018, λ_min and λ_1se are the same, and the fold deviances are within 3.2e-13 of the generator's R side;
+  - on the few-events case (D-78) the path ends at the 72nd grid point (Breslow) or the 54th (Efron), with the warning, and agrees with pprof_py's to the 30th.
+- The benchmarks (`dev/bench/results/cox-c4-paired-20261014-windows.md`; two rounds, the machine paging throughout):
+  - every result equals its engine side's bitwise, and no fit is too slow by DEC-105's rule;
+  - on covariates-50 the path's medians sat at 1.14 times the comparator in both rounds (fastest runs 0.99 and 1.12) and the cross-validation's at 0.85 and 1.15, one run a round. In one process the path takes 0.97 times its comparator (1.03 on rows-1e4) and `select_lambda()` 1.075 (fact 29), and its loop, part by part and fold by fold, 0.998 times the plain-R loop's: the folds' column scales cost 4.2 s in all, about 2% of the cross-validation, and identical glmnet fold paths vary by up to 2.2 s from run to run (fact 30);
+  - beside C1's pprof_py times, the path is 4.5 times faster (19.9 s against 89.9 s), and the path with its cross-validation 9.3 times faster (about 185 s against 1,717 s).
+- Registers: DEC-113 to DEC-120, with DEC-088's and DEC-097's status; where K-143 and K-144 are in the package; D-78 and D-79, and the C4 status of D-58, D-61, D-67, and D-72; M-30, M-34, and M-37 implemented; NAMING §2 and §10, COXPH_DESIGN as built, ARCHITECTURE §E.3 and §E.6, and NEWS.
+- Next step: the C4 gate (`/phase-gate C4`).
