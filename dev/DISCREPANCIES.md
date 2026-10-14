@@ -1249,7 +1249,7 @@ D-76 is not used: the CoxPH C3 plan reserved it for M-39's normal funnel limits,
 - Recommendation: (1).
 - Decision owner: methodology owners; decided (1) by the project lead (2026-10-14, the C4 plan's decision 3, DEC-115), awaiting a methodology owner's confirmation (M-16).
 - Status: verified (2026-10-14); decided; implemented in C4.
-- Regression test: "a path ends where glmnet stops, or before a solution that is not one (DEC-115, D-78)" (`tests/testthat/test-model-glmnet.R`); `penalized-few-events` in "penalized paths and cross-validation of the full Cox fixtures match pprof_py's and glmnet's" (`test-cox-penalized-reference.R`): the path ends at the 72nd point (Breslow) or the 54th (Efron), with the warning, and agrees with pprof_py's to the 30th; "a lambda that a fold's path did not reach, or whose deviance is not finite, is not selected" (`test-model-cox-selection.R`).
+- Regression test: "a path ends where glmnet stops, or before a solution that is not one (DEC-115, D-78)" (`tests/testthat/test-model-glmnet.R`); "a path that glmnet ends early warns once and keeps the points reached (DEC-115, D-78)" (`test-model-cox-penalized.R`), with glmnet mocked, so that it runs on CRAN too; `penalized-few-events` in "penalized paths and cross-validation of the full Cox fixtures match pprof_py's and glmnet's" (`test-cox-penalized-reference.R`): the path ends at the 72nd point (Breslow) or the 54th (Efron), with the warning, and agrees with pprof_py's to the 30th; "a lambda that a fold's path did not reach, or whose deviance is not finite, is not selected" (`test-model-cox-selection.R`).
 
 ### D-79: Penalized paths' other outputs
 

@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is built on `coxph/phase-4` (2026-10-14), and its gate is next.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is at its gate on `coxph/phase-4` (2026-10-14), awaiting the project lead's review.
 
 ## 2026-10-07
 
@@ -260,3 +260,19 @@ Recorded on 2026-10-14, for the next session.
   - beside C1's pprof_py times, the path is 4.5 times faster (19.9 s against 89.9 s), and the path with its cross-validation 9.3 times faster (about 185 s against 1,717 s).
 - Registers: DEC-113 to DEC-120, with DEC-088's and DEC-097's status; where K-143 and K-144 are in the package; D-78 and D-79, and the C4 status of D-58, D-61, D-67, and D-72; M-30, M-34, and M-37 implemented; NAMING §2 and §10, COXPH_DESIGN as built, ARCHITECTURE §E.3 and §E.6, and NEWS.
 - Next step: the C4 gate (`/phase-gate C4`).
+
+## 2026-10-14: Phase C4 at its gate
+
+- Delivered on `coxph/phase-4` (brief §4, row C4), `496367b` to `0da9ac3`, as the entry above lists: the glmnet adapter, the elastic-net Cox path on pprof_py's λ grid, its cross-validation and the selection of λ, and the model's capabilities, none, since there is no provider profiling at a selected λ (M-34).
+- Since the entry above: `4d42427` wraps a long line of the adapter's tests, and `0da9ac3` adds tests of the fit's early end (DEC-115, D-78) with glmnet mocked, which until then ran only in the full fixture set's tests that CRAN and covr skip, and of the input errors, the validator's checks, and the printed path. D-78's regression tests name the new one.
+- Gate checks:
+  - `devtools::document()` changed nothing;
+  - `devtools::test()`, in a clean worktree: at `0da9ac3` 81 files, 1,259 tests, 11,521 expectations, none failed or skipped, no warnings or errors (2,052 s, beside the coverage run); at `2ce196d` 1,257 tests (11,497 expectations), likewise;
+  - `R CMD check --as-cran --no-manual` at `0da9ac3`, run alone: 0 errors, 0 warnings, the 2 notes of the previous gates (966 s); the tarball is 4,953,987 bytes, under the 5 MB at which the check notes its size. At `2ce196d`, run beside the test suite, it added a third note, the `caterpillar_plot()` example's 5.14 s elapsed against a 5 s limit, an example C4 did not touch, which the same check's second run of the examples timed at 2.36 s and the run alone at 2.49 s;
+  - `validation/run-reference.R`, in a clean worktree at `2ce196d` and at `0da9ac3`: 368 of 368 cases, none skipped, no provider within tolerance of a flag threshold; the report equals the committed one but for its date and commit;
+  - the Cox comparisons with the fixtures pass in `devtools::test()`, and `dev/reference/cox/calibrate.R` reproduces the committed calibration report byte for byte (954 of 954 scored rows, 60 explained; 4,676 flags, none differing; 29 s);
+  - `covr::package_coverage()` at `0da9ac3`: 96.67% of the package; of the R lines C4 added (against `main`), 395 of 401 relevant lines, 98.50%. The uncovered ones are defensive: the warning when the unpenalized fit at the start of the path does not converge in 100 iterations, the grid of a λ_max of exactly 0, the validator's check for provider effects, and the saturated term of rows without events. At `2ce196d` the added lines were at 92.02%, the fit's early end among the uncovered, which `0da9ac3`'s tests cover;
+  - `lintr`: the 8 changed package files, the 6 changed test files, and the benchmark scripts are clean; fact scripts 26 to 30 and C4's additions to the generator's `survival.R` and to `calibrate.R` keep their style (`<<-`, a few long lines), as at the C3 gate;
+  - the benchmarks: `dev/bench/results/cox-c4-paired-20261014-windows.md`, as the entry above sums it up.
+- Open for the project lead: D-78, decided with the plan, awaits a methodology owner's confirmation (M-16), as the delegated C0 decisions do; `cox-bench.yaml` runs the penalized tasks on a GitHub runner when dispatched from `main`, so after the merge; the push of the branch.
+- Next step: the project lead's review of the C4 gate.
