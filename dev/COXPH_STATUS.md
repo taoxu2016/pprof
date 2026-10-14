@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is next, its plan first.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, has its plan with the project lead (`dev/design/COXPH_C5_PLAN.md`).
 
 ## 2026-10-07
 
@@ -285,3 +285,14 @@ Recorded on 2026-10-14, for the next session.
 - At the project lead's request, the branches that `main` contains, `coxph/phase-3`, `coxph/phase-4`, and the local `coxph/cox-bench`, were deleted, locally and on the fork.
 - Open, as at the gate: D-78 awaits a methodology owner's confirmation (M-16), with the decisions taken under delegation in C0; outside C4, the fits' overhead at 7,500 providers, the measures' time at 10,000 rows and 7,500 providers, and `rewrite-bench.yaml`'s setup. `CLAUDE.md`'s "Current phase" section, which still named Phase C4, now names Phase C5 (the project lead, 2026-10-14).
 - Next step: Phase C5, competing risks (the brief's §4, row C5), when the project lead asks: its plan first, `dev/design/COXPH_C5_PLAN.md`, for approval, on `coxph/phase-5` from `main`.
+
+## 2026-10-14: the C5 plan
+
+- The project lead asked for Phase C5. Branch `coxph/phase-5`, from `main` at `4c7b028`.
+- The plan, `dev/design/COXPH_C5_PLAN.md`, for the project lead's approval, with the evidence behind it in `dev/design/coxph-facts/31` to `35`. Found while planning:
+  - survival 3.8-12's `finegray()` applies case weights to the wrong rows in every stratum after the first (`user.weights[split$row]`, where `split$row` counts the stratum's rows): the plan multiplies the weights after the call, as K-145 and pprof_py define them;
+  - `finegray()`'s time grows with rows times providers, in survival's per-stratum steps: on 100,000 rows it takes 24 s with 1,000 providers, where pprof_py's whole fit takes 5.3 s, and 110 to 180 s with 7,500. Calls on chunks of 50 providers, each deciding delayed entry as all rows do, give its output bitwise in 3 to 14 times less time; calls on single providers can differ, since `finegray()` decides delayed entry over all rows;
+  - with delayed entry and small providers the Fine–Gray weights can be undefined: survival gives NaN or infinite weights where pprof_py raises, and pprof_py also raises where survival's weights are all finite (the plan's D-80);
+  - survival's fitter and the robust step on the expansion give `coxph(cluster = id)`'s fit bitwise in all 16 fixture configurations and reproduce the fixtures' survival records exactly; against pprof_py the differences are D-56's and D-57's;
+  - a status with several event types must be a factor, and pprof_py rejects a repeated `id` on right-censored data and a subject that changes provider, which survival accepts.
+- Next step: the project lead's approval of the plan and its §6 decisions; then its §5 commits, starting with §4.1's runs of the unchanged code.

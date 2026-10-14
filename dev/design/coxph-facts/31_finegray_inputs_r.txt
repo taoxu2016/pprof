@@ -1,0 +1,68 @@
+R version 4.4.0 (2024-04-24 ucrt), survival 3.8.12
+A. Surv() and a status with several event types (time 5, 3, 4, 6, 2, 1):
+  numeric 0/1/2:                      type right; status NA,0,1,NA,1,0; warning: Invalid status value, converted to NA
+  numeric 0/1/2, type = "mstate":     type mright, states 1,2; status 0,1,2,0,2,1; warning: type= 'mstate' is deprecated, use a factor variable as status
+  factor(0/1/2):                      type mright, states 1,2; status 0,1,2,0,2,1
+  factor(0/1/2, levels = 0:2) with no 0s (1, 2, 2, 1, 1, 2): type mright, states 1,2; status 1,2,2,1,1,2
+  factor without its censoring level (1, 2, 2, 1, 1, 2): type mright, states 2; status 0,1,1,0,0,1
+  labelled factor (none, relapse, death): type mright, states relapse,death; status 0,1,2,0,2,1
+  factor with a missing value:        type mright, states 1,2; status 0,1,NA,0,2,1
+  (start, stop] with a factor:        type mcounting, states 1,2; status 0,1,2,0,2,1
+  factor with one event level, factor(0/1): type mright, states 1; status 0,1,1,0,1,1
+B. finegray() on 60 rows in 3 providers of 20, cause 1 (timefix = FALSE unless stated):
+  case weights (1 to 4, 10 to 40, and 100 to 400 by provider, three of provider 2's 0): 78 expanded rows, with the rows and times of the call without weights: TRUE (the censoring curve is unweighted, so case weights can only multiply the output weights)
+    provider 1: finegray(weights = w) equals the transform's weights times each row's own case weight: TRUE; the case weights it applied: 1,2,3,4
+    provider 2: finegray(weights = w) equals the transform's weights times each row's own case weight: FALSE; the case weights it applied: 1,2,3,4
+    provider 3: finegray(weights = w) equals the transform's weights times each row's own case weight: FALSE; the case weights it applied: 1,2,3,4
+    (survival 3.8-12's finegray() multiplies by user.weights[split$row], where split$row counts the rows of the stratum, so every stratum after the first gets the case weights of the data's first rows)
+  the weighted fit's coefficient (rows of weight 0 left out): with finegray(weights = w) 0.2202083657, with the weights multiplied after the call -0.1442000058
+  rows of case weight 0: 4 pieces of weight 0, and coxph() of them: error: Invalid weights, must be >0
+  provider 3 without events of cause 1: providers in the output 1,2 (its rows are left out)
+  etype = 1, a number: 159 rows; etype = "0", the censoring level: error: etype argument has a state that is not in the data
+  right-censored data: the same output with and without id: TRUE
+  right-censored data with a repeated id: accepted, 78 rows (finegray() reads id only for (start, stop] data)
+  one event level, factor(0/1): error: survival time has only a single state
+  one event level with an unused second level, factor(0/1, levels = 0:2): 60 rows, all of weight 1: TRUE
+  near-tied times (0.1 + 0.2 and 0.3): timefix = FALSE gives 7 rows, weights 1.0000,0.6667,1.0000,1.0000,1.0000,1.0000,1.0000; timefix = TRUE gives 8 rows, weights 1.0000,0.8000,0.5333,1.0000,1.0000,1.0000,1.0000,1.0000
+
+C. One call stratified by provider against one call per provider (provider 1's own data have no delayed
+   entry, and one of its entry times, 10, equals a competing event time; provider 2's make the whole data's
+   entry delayed):
+  delayed entry over all rows: TRUE; within provider 1: FALSE
+  provider 1 in the stratified call:
+    row 1 (0, 10] status 0 weight 1
+    row 1 (10, 25] status 0 weight 1.25
+    row 1 (30, 40] status 0 weight 0.625
+    row 2 (10, 30] status 0 weight 1
+    row 3 (5, 20] status 1 weight 1
+    row 4 (0, 25] status 0 weight 1
+    row 5 (0, 40] status 1 weight 1
+    row 6 (2, 40] status 0 weight 1
+  provider 1 alone:
+    row 1 (0, 25] status 0 weight 1
+    row 1 (30, 40] status 0 weight 0.5
+    row 2 (10, 30] status 0 weight 1
+    row 3 (5, 20] status 1 weight 1
+    row 4 (0, 25] status 0 weight 1
+    row 5 (0, 40] status 1 weight 1
+    row 6 (2, 40] status 0 weight 1
+D. Weights that are not finite (delayed entry, small providers):
+  rows-1e4 (10,000 rows, 1,000 providers): 16279 expanded rows, 33 whose weight is not finite (Inf, NaN), all extension pieces (status 0), in 22 providers
+  provider 43 of rows-1e4 alone:
+    row 909 (0, 65] status 0 weight 1
+    row 3072 (0, 65] status 0 weight 1
+    row 3072 (192, 352] status 0 weight NaN
+    row 3478 (0, 286] status 1 weight 1
+    row 5394 (192, 352] status 0 weight 1
+    row 5811 (352, 385] status 0 weight 1
+    row 6390 (0, 162] status 0 weight 1
+    row 6390 (192, 352] status 0 weight NaN
+    row 8822 (0, 162] status 0 weight 1
+  the same with its cause-1 event at 30 alone:
+    row 909 (0, 65] status 0 weight 1
+    row 3072 (0, 65] status 0 weight 1
+    row 3478 (0, 30] status 1 weight 1
+    row 5394 (192, 352] status 0 weight 1
+    row 5811 (352, 385] status 0 weight 1
+    row 6390 (0, 162] status 0 weight 1
+    row 8822 (0, 162] status 0 weight 1
