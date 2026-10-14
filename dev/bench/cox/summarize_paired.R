@@ -43,7 +43,7 @@ superseded <- unique(paste(paired$scenario, paired$task)[paired$run < last_run])
 paired <- paired[paired$run == last_run, , drop = FALSE]
 
 scenario_order <- unique(paired$scenario)
-task_order <- c("breslow", "efron", "robust")
+task_order <- c("breslow", "efron", "robust", "penalized_path", "penalized_cv")
 key <- c("scenario", "task", "round")
 columns <- c(key, "status", "median_s", "min_s", "peak_after_mb", "prep_s", "identical_to_engine",
              "max_rel_diff_engine")
@@ -82,8 +82,14 @@ machine <- machines[[1]]
 commits <- unique(vapply(machines, function(m) substr(m$commit, 1, 7), ""))
 profile <- paired[paired$task == "profile", , drop = FALSE]
 c3 <- nrow(profile) > 0L || "expected_s" %in% names(paired)
+penalized <- any(startsWith(paired$task, "penalized"))
+stratified <- any(paired$task %in% c("breslow", "efron", "robust", "profile"))
 lines <- c(
-  if (c3) {
+  if (penalized && !stratified) {
+    "# Paired benchmark of the elastic-net Cox model against its engine calls"
+  } else if (penalized) {
+    "# Paired benchmark of the Cox fits against their engine calls"
+  } else if (c3) {
     "# Paired benchmark of the stratified Cox fit with its measures against its engine calls"
   } else {
     "# Paired benchmark of the stratified Cox fit against its engine calls"
@@ -100,19 +106,29 @@ lines <- c(
                   paste(superseded, collapse = ", ")))
   },
   "",
-  paste("Each round runs the engine call, `coxph()`, and the fit, each in a fresh process, one after the other, on the",
-        "same data (`dev/bench/cox/scenarios.R`, C1's grid). The engine call is survival's fitter as the adapter calls",
-        "it, on the inputs the adapter builds, prepared outside the timing (DEC-100); for the robust fit, the fitter",
-        "followed by coxph()'s robust step with one cluster per row (DEC-099). The fit is `fit_cox_stratified()` on",
-        "the data frame, with weights and an offset, from the formula to the model object. The preparation of the",
-        "engine's inputs from the data frame (`data_prepare()` and the adapter's inputs) is timed in the engine's",
-        "process after its measurement: the median of three calls."),
-  "",
+  if (stratified) {
+    c(paste("Each round runs the engine call, `coxph()`, and the fit, each in a fresh process, one after the other, on",
+            "the same data (`dev/bench/cox/scenarios.R`, C1's grid). The engine call is survival's fitter as the",
+            "adapter calls it, on the inputs the adapter builds, prepared outside the timing (DEC-100); for the robust",
+            "fit, the fitter followed by coxph()'s robust step with one cluster per row (DEC-099). The fit is",
+            "`fit_cox_stratified()` on the data frame, with weights and an offset, from the formula to the model",
+            "object. The preparation of the engine's inputs from the data frame (`data_prepare()` and the adapter's",
+            "inputs) is timed in the engine's process after its measurement: the median of three calls."), "")
+  },
   if (c3) {
     c(paste("From Phase C3 (DEC-111), each side includes the measures: the fit side calls `standardize_providers()`",
             "on the fit, which computes each observation's expected events at the national baseline, and the engine",
             "side computes the national expected events by provider in plain R at the fitter's coefficients (C1's",
             "closed form): the brief's \"direct engine call it wraps plus the measures\"."), "")
+  },
+  if (any(startsWith(paired$task, "penalized"))) {
+    c(paste("From Phase C4 (DEC-118), the elastic-net Cox model: `penalized_path` times `fit_cox_penalized()` on the",
+            "data frame against `glmnet()` on the adapter's inputs, whose preparation includes pprof_py's grid",
+            "(glmnet's `coxgrad()` at the null point); `penalized_cv` times `select_lambda()` with 10 given folds on a",
+            "fit made outside the timing against each fold's `glmnet()` path over the fit's grid, the fold deviances",
+            "of every lambda from `coxnet.deviance()`, the saturated term's shift from survival's partial likelihood,",
+            "and the summaries, written out in plain R as the package computes them. Their results (the path; the",
+            "fold deviances, cvm, and cvsd) must be the engine side's bitwise."), "")
   },
   paste("Rule (the brief's §3.7 MUST, DEC-105): a fit is too slow when, in every round, its median and its fastest",
         "run are more than 10% above the engine call's plus the preparation of its inputs, and its median at least",
@@ -186,8 +202,10 @@ if (nrow(user)) {
   }
 }
 
-c1_task <- c(breslow = "survival_breslow", efron = "survival_efron", robust = "survival_robust_breslow")
-py_task <- c(breslow = "coxph_breslow", efron = "coxph_efron", robust = "coxph_robust_breslow")
+c1_task <- c(breslow = "survival_breslow", efron = "survival_efron", robust = "survival_robust_breslow",
+             penalized_path = "glmnet_path", penalized_cv = "glmnet_cv")
+py_task <- c(breslow = "coxph_breslow", efron = "coxph_efron", robust = "coxph_robust_breslow",
+             penalized_path = "penalized_path", penalized_cv = "penalized_cv")
 median_of <- function(d, scenario, task) {
   v <- d$median_s[d$scenario == scenario & d$task == task]
   if (length(v)) v[1] else NA_real_
@@ -198,7 +216,9 @@ lines <- c(lines, "", "## The fits beside C1's baseline", "",
                          "numba's default threads (%s, `%s`), measured in another session, so the ratios are",
                          "indicative only. The brief's §3.7 SHOULD (no slower than pprof_py) applies to the robust",
                          "variance, not to the fits at large sizes (DEC-098). The fit's time is the median of its",
-                         "rounds' medians."),
+                         "rounds' medians. For the penalized tasks, C1's glmnet path used glmnet's own grid, and its",
+                         "10-fold cross-validation fitted 11 paths and evaluated `coxnet.deviance()` on all rows",
+                         "only."),
                    basename(args[[2]]), py_machine$packages$pprof_py, py_machine$python,
                    paste(unique(py$numba_threads), collapse = ", "), basename(args[[3]])),
            "",

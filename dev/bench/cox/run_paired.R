@@ -21,6 +21,17 @@
 # pprof_py's measures and tests (the brief's SHOULD, and its MUST that mid-p limits be substantially
 # faster).
 #
+# From Phase C4 (DEC-118), two tasks time the elastic-net Cox model, each fit side against the engine calls
+# it makes, which must give its results bitwise, with the preparation of the engine's inputs timed apart:
+# - penalized_path: fit_cox_penalized() on the data frame, against glmnet() on the adapter's inputs; the
+#   preparation is data_prepare(), the inputs, the columns' scales, and pprof_py's grid (glmnet's
+#   coxgrad() at the null point);
+# - penalized_cv: select_lambda() with 10 given folds, on a fit made outside the timing, against each
+#   fold's glmnet() path over the fit's grid, the fold deviances of every lambda from coxnet.deviance(),
+#   the saturated term's shift (survival's partial likelihood of the offsets), and the summaries, written
+#   out in plain R as the package computes them; the preparation is data_prepare() and the inputs.
+# They run on covariates-50 (C1's penalized scenario), and the path also on rows-1e4.
+#
 # The package is the working tree, installed with --preclean (dev/bench/harness.R) and placed first
 # on the library path, before the libraries that hold survival. Each process measures as
 # run_engines.R does: the first run's time, the process's peak memory before and after it, gc()'s
@@ -53,9 +64,16 @@ while (k <= length(args)) {
 }
 stopifnot(requireNamespace("callr", quietly = TRUE), requireNamespace("bench", quietly = TRUE), opts$rounds >= 1L)
 
-tasks <- c("breslow", "efron", "robust", "profile")
+tasks <- c("breslow", "efron", "robust", "profile", "penalized_path", "penalized_cv")
 sides <- c("engine", "coxph", "fit")  # the order of every round
-task_sides <- function(task) if (identical(task, "profile")) "fit" else sides
+task_sides <- function(task) {
+  if (identical(task, "profile")) "fit" else if (startsWith(task, "penalized")) c("engine", "fit") else sides
+}
+# The scenarios of the penalized tasks (DEC-118).
+task_applies <- function(task, scenario) {
+  switch(task, penalized_path = scenario %in% c("covariates-50", "rows-1e4"),
+         penalized_cv = scenario == "covariates-50", TRUE)
+}
 
 run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
   source(scenarios_file)
@@ -85,6 +103,127 @@ run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
          times = as.numeric(b$time[[1]]))
   }
   profile_columns <- c("expected_s", "measures_s", "midp_s", "exact_s", "funnel_s")
+  if (startsWith(task, "penalized")) {
+    # The elastic-net Cox model (DEC-118). The folds are C1's (run_engines.R's glmnet_cv: event-stratified,
+    # seed 1), given to both sides.
+    set.seed(1)  # a development script: package code never calls set.seed()
+    folds <- integer(nrow(d))
+    for (group in list(which(d$event == 1), which(d$event == 0))) folds[group] <- sample(rep_len(1:10, length(group)))
+    control <- list(thresh = 1e-12, maxit = 1e5, fdev = 0, devmax = 1)
+    prepare <- function() {
+      prepared <- pprof:::data_prepare(formula, d, "provider", event_counts = TRUE, response_type = "survival",
+                                       weights = "weight", allow_offset = TRUE)
+      rows <- pprof:::survival_fit_rows(prepared)
+      inputs <- pprof:::glmnet_inputs(prepared, rows)
+      out <- list(prepared = prepared, rows = rows, inputs = inputs)
+      if (identical(task, "penalized_path")) {
+        # pprof_py's grid (K-143): the columns' weighted standard deviations, and lambda_max from glmnet's
+        # score at the null point (no unpenalized columns here).
+        variance <- pprof:::glmnet_column_variance(inputs$x, inputs$weights)
+        scale <- sqrt(variance)
+        score <- pprof:::glmnet_scaled_score(inputs, rep(TRUE, ncol(inputs$x)), scale, inputs$offset, "breslow")
+        lambda_max <- max(abs(score))
+        out$grid <- exp(seq(log(lambda_max), log(lambda_max * 1e-4), length.out = 100))
+      }
+      out
+    }
+    if (identical(side, "fit")) {
+      call <- if (identical(task, "penalized_path")) {
+        function() fit_cox_penalized(formula, d, "provider", weights = "weight")
+      } else {
+        model <- fit_cox_penalized(formula, d, "provider", weights = "weight")
+        function() select_lambda(model, folds = folds, data = d)
+      }
+      estimates <- function(value) {
+        if (identical(task, "penalized_path")) {
+          list(coefficients = as.vector(value$coefficient_path), variance = NULL)
+        } else {
+          cv <- value$cross_validation
+          list(coefficients = c(as.vector(cv$fold_deviance), cv$cvm, cv$cvsd), variance = NULL)
+        }
+      }
+      prep_s <- NA_real_
+    } else {
+      built <- prepare()
+      inputs <- built$inputs
+      p <- ncol(inputs$x)
+      if (identical(task, "penalized_path")) {
+        grid <- built$grid
+        call <- function() {
+          glmnet::glmnet(inputs$x, inputs$y, family = "cox", weights = inputs$weights, offset = inputs$offset,
+                         alpha = 1, lambda = grid, penalty.factor = rep(1, p), standardize = TRUE,
+                         cox.ties = "breslow", control = control)
+        }
+        estimates <- function(value) list(coefficients = as.vector(as.matrix(value$beta)), variance = NULL)
+      } else {
+        grid <- fit_cox_penalized(formula, d, "provider", weights = "weight")$lambda
+        prepared <- built$prepared
+        rows <- built$rows
+        call <- function() {
+          # pprof_py's cross-validation (K-144) from the engines, as R/model-cox-selection.R computes it.
+          event_weight <- prepared$response * prepared$weights
+          held <- vapply(1:10, function(k) sum(event_weight[folds[prepared$row_index] == k]), numeric(1))
+          fold <- folds[prepared$row_index]
+          shift <- function(rows, y, weights, offset) {
+            glmnet_deviance <- glmnet::coxnet.deviance(pred = matrix(offset, ncol = 1L), y = y, weights = weights,
+                                                       std.weights = FALSE, cox.ties = "breslow")
+            events <- rows[prepared$response[rows] == 1]
+            times <- prepared$stop[events]
+            distinct <- sort(unique(times))
+            sums <- rowsum(prepared$weights[events], (prepared$provider_index[events] - 1) * length(distinct) +
+                             match(times, distinct))
+            sums <- sums[sums > 0]
+            loglik <- survival::agreg.fit(matrix(0, length(rows), 0L),
+                                          survival::Surv(prepared$start[rows], prepared$stop[rows],
+                                                         prepared$response[rows]),
+                                          as.integer(factor(prepared$provider_index[rows])), offset - mean(offset),
+                                          NULL, survival::coxph.control(timefix = FALSE), weights = weights,
+                                          method = "breslow", rownames = NULL, nocenter = c(-1, 0, 1))$loglik
+            glmnet_deviance - 2 * (-sum(sums * log(sums)) - loglik)
+          }
+          all_shift <- shift(rows, inputs$y, inputs$weights, inputs$offset)
+          deviance <- matrix(NA_real_, 10, length(grid))
+          for (k in 1:10) {
+            train <- rows[fold[rows] != k]
+            x <- prepared$design[train, , drop = FALSE]
+            y <- glmnet::stratifySurv(survival::Surv(prepared$start[train], prepared$stop[train],
+                                                     prepared$response[train]),
+                                      as.integer(factor(prepared$provider_index[train])))
+            path <- glmnet::glmnet(x, y, family = "cox", weights = prepared$weights[train],
+                                   offset = prepared$offset[train], alpha = 1, lambda = grid,
+                                   penalty.factor = rep(1, p), standardize = TRUE, cox.ties = "breslow",
+                                   control = control)
+            eta <- inputs$x %*% as.matrix(path$beta) + inputs$offset
+            training <- match(train, rows)
+            all_deviance <- glmnet::coxnet.deviance(pred = eta, y = inputs$y, weights = inputs$weights,
+                                                    std.weights = FALSE, cox.ties = "breslow") - all_shift
+            train_deviance <- glmnet::coxnet.deviance(pred = eta[training, , drop = FALSE], y = y,
+                                                      weights = prepared$weights[train], std.weights = FALSE,
+                                                      cox.ties = "breslow") -
+              shift(train, y, prepared$weights[train], prepared$offset[train])
+            deviance[k, ] <- (all_deviance - train_deviance) / held[k]
+          }
+          cvm <- colSums(held * deviance) / sum(held)
+          cvsd <- sqrt(colSums(held * sweep(deviance, 2L, cvm)^2) / sum(held) / 9)
+          list(deviance = deviance, cvm = cvm, cvsd = cvsd)
+        }
+        estimates <- function(value) {
+          list(coefficients = c(as.vector(value$deviance), value$cvm, value$cvsd), variance = NULL)
+        }
+      }
+      rm(built)
+    }
+    timed <- measure(call)
+    result <- estimates(timed$value)
+    times <- timed$times
+    if (identical(side, "engine")) {
+      prep_s <- stats::median(vapply(1:3, function(i) as.numeric(bench::bench_time(prepare())[["real"]]), numeric(1)))
+    }
+    return(c(list(first_s = timed$first, median_s = stats::median(times), min_s = min(times), max_s = max(times),
+                  runs = length(times), peak_before_mb = timed$before / 2^20, peak_after_mb = timed$after / 2^20,
+                  gc_max_mb = timed$gc_max, prep_s = prep_s),
+             stats::setNames(as.list(rep(NA_real_, length(profile_columns))), profile_columns), result))
+  }
   if (identical(task, "profile")) {
     # The profiling functions on one fit, made outside the timing: the expected events' closed form
     # (which the fit computes), the indirect and direct measures, each test with its limits (pprof_py's
@@ -229,6 +368,7 @@ mismatches <- 0L
 for (i in seq_len(nrow(scenarios))) {
   sc <- scenarios[i, ]
   for (task in tasks) {
+    if (!task_applies(task, sc$id)) next
     if (!is.null(opts$only) && !grepl(opts$only, paste(sc$id, task))) next
     dir <- cox_bench_write(sc, file.path(data_root, sc$id))
     for (round in seq_len(opts$rounds)) {
@@ -287,7 +427,8 @@ jsonlite::write_json(list(
   blas = sessionInfo()$BLAS, lapack = La_version(), rounds = opts$rounds,
   only = if (is.null(opts$only)) "" else opts$only,
   packages = c(list(pprof = as.character(read.dcf("DESCRIPTION", fields = "Version"))),
-               lapply(stats::setNames(nm = c("survival", "Matrix", "bench", "callr")),
+               lapply(stats::setNames(nm = c("survival", "Matrix", "bench", "callr",
+                                             if (requireNamespace("glmnet", quietly = TRUE)) "glmnet")),
                       function(p) as.character(utils::packageVersion(p)))),
   threads = "OMP_THREAD_LIMIT = 1, OMP_NUM_THREADS = 1; survival is single-threaded"
 ), sub("\\.csv$", ".json", out_file), auto_unbox = TRUE, pretty = TRUE)

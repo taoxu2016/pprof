@@ -3,10 +3,12 @@
 # The project lead's machine (7.4 GB of memory, most of it committed by other applications) cannot hold
 # the corner scenario of the Cox grid (1,000,000 rows, 7,500 providers, 50 covariates), whose processes
 # need about 2 GB each. This job runs dev/bench/cox/run_paired.R on a standard GitHub-hosted Ubuntu
-# runner, which has 16 GB of memory and 4 processors for a public repository: by default on the corner,
-# and on the two fits that the C3 run found at DEC-105's line, measured again alongside it
-# (providers-7500 with Breslow ties and covariates-5 robust; the project lead, C3 gate). As on the
-# gate's machine, the sides alternate in fresh single-threaded processes on the same data.
+# runner, which has 16 GB of memory and 4 processors for a public repository. The C3 gate ran it on the
+# corner and on the two fits that the C3 run found at DEC-105's line ("^corner |^providers-7500
+# breslow$|^covariates-5 robust$"; run 38004882689). From Phase C4 (DEC-118) it runs by default the
+# elastic-net Cox model's tasks: its path on covariates-50 and rows-1e4, and its 10-fold cross-validation
+# on covariates-50, which takes about 15 minutes a round; glmnet, a suggested package, is installed for
+# them. As on the gate's machine, the sides alternate in fresh single-threaded processes on the same data.
 #
 # The 10% rule compares the sides on the runner. The report sets the package's mid-p times beside
 # pprof_py's from C1, which ran on the project lead's machine, so those ratios are indicative. The job
@@ -19,9 +21,11 @@ on:
   workflow_dispatch:
     inputs:
       only:
-        description: 'Regular expression selecting "<scenario> <task>" (tasks: breslow, efron, robust, profile)'
+        description: >-
+          Regular expression selecting "<scenario> <task>" (tasks: breslow, efron, robust, profile,
+          penalized_path, penalized_cv)
         required: false
-        default: "^corner |^providers-7500 breslow$|^covariates-5 robust$"
+        default: " penalized"
       rounds:
         description: "Rounds of the paired measurement"
         required: false
@@ -53,7 +57,7 @@ jobs:
         id: dependencies
         continue-on-error: true
         with:
-          extra-packages: any::bench, any::callr, any::jsonlite, any::ps
+          extra-packages: any::bench, any::callr, any::jsonlite, any::ps, any::glmnet
           dependencies: '"hard"'
 
       # The action's own log is not readable without signing in.
@@ -61,7 +65,7 @@ jobs:
         if: steps.dependencies.outcome == 'failure'
         run: |
           Rscript .github/scripts/ci-annotate.R dependencies hard FALSE deps::. any::sessioninfo any::bench any::callr \
-            any::jsonlite any::ps
+            any::jsonlite any::ps any::glmnet
           exit 1
 
       - name: Describe the runner
