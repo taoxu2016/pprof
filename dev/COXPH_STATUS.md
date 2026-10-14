@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is next.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, has its plan (2026-10-14), which awaits the project lead's approval.
 
 ## 2026-10-07
 
@@ -217,3 +217,14 @@ Recorded on 2026-10-14, for the next session.
 - `CLAUDE.md`'s "Current phase" section, which still named Phase C0, now names Phase C4 (the project lead, 2026-10-14).
 - Open, outside the next phase unless the project lead says otherwise: the fits' overhead at 7,500 providers (DEC-105's alternative 3) and the measures' time at 10,000 rows and 7,500 providers (a SHOULD of the brief's §3.7); `rewrite-bench.yaml`'s setup.
 - Next step: Phase C4, the elastic-net Cox model (the brief's §4, row C4), when the project lead asks: its plan first, `dev/design/COXPH_C4_PLAN.md`, for approval, on `coxph/phase-4` from `main`.
+
+## 2026-10-14: the C4 plan
+
+- The project lead asked for Phase C4. Branch `coxph/phase-4`, from `main` at `38dad40`.
+- The plan, `dev/design/COXPH_C4_PLAN.md`, for the project lead's approval, with the evidence behind it in `dev/design/coxph-facts/26` to `28`. Found while planning:
+  - pprof_py's λ grid comes from engine calls: `glmnet`'s exported `coxgrad()` gives the score at the null point, and survival's fitter the unpenalized coefficients at pprof_py's settings. They reproduce pprof_py's λ_max within 9e-15 on every penalized fixture case and on eight settings the fixtures lack, and `glmnet`'s paths on that grid agree with pprof_py's within 0.213 units of `penalized_path`;
+  - `glmnet` refuses a single covariate, and a column of zeros beside it reproduces pprof_py's path. A constant column must be left out before the call: passed through, `glmnet`'s rescaling of the penalty factors puts the path 1e4 units off;
+  - on 15 rows with 8 events and 20 covariates, `glmnet` stops at its iteration limit with Breslow ties, and with Efron ties it diverges at the 55th grid point without a warning (coefficients near 1e36), where pprof_py converges at every point. The plan proposes D-78;
+  - the cross-validation computed from survival's fitter reproduces the generator's R side bitwise. One `coxnet.deviance()` call per fold over every grid point, moved to pprof_py's saturated term, agrees with it within 3.2e-13 and makes a 10-fold cross-validation on `covariates-50` about 1.6 times faster: 211 s estimated, against pprof_py's 1,717 s in C1;
+  - `cox-bench.yaml` installs only the package's hard dependencies, so the penalized tasks need `glmnet` added to the job.
+- Next step: the project lead's approval of the plan and its §6 decisions; then its §5 commits, starting with §4.1's runs of the unchanged code.

@@ -1,0 +1,88 @@
+R 4.4.0; survival 3.8.12; glmnet 5.1
+
+A. Penalized fixture cases: the R grid against pprof_py's (relative differences), glmnet on it against
+   pprof_py's path (penalized_path units) and against glmnet on pprof_py's grid (max |difference|)
+case                   ties    alpha   lam_max      grid     scale    path_u     vs_fx first-point penalized nonzero: pprof_py / glmnet
+penalized-strata       breslow 1       1.2e-15   1.9e-15   1.1e-16     0.037     5e-16 0 / 1
+penalized-strata       efron   1       4.9e-16     1e-15   1.1e-16     0.039   3.1e-16 0 / 0
+penalized-combined     breslow 0.5     6.3e-16   1.8e-15   5.6e-16     0.060   2.6e-16 1 / 0
+penalized-combined     breslow 1       6.3e-16   1.9e-15   5.6e-16     0.059     4e-16 1 / 0
+penalized-combined     efron   0.5     9.6e-16   3.5e-15   5.6e-16     0.068   3.3e-16 1 / 0
+penalized-combined     efron   1       9.6e-16   3.5e-15   5.6e-16     0.067   6.8e-16 1 / 0
+penalized-offset       breslow 1       1.5e-15   3.6e-15   4.3e-16     0.047   8.6e-16 1 / 1
+penalized-offset       efron   1       6.6e-16   1.9e-15   4.3e-16     0.060   3.3e-16 0 / 0
+penalized-truncation   breslow 1       1.2e-15   1.9e-15         0     0.034   6.7e-16 0 / 1
+penalized-truncation   efron   1       1.4e-15   1.9e-15         0     0.038     1e-15 0 / 1
+penalized-weights      breslow 1         9e-15   9.1e-15   2.1e-16     0.046   3.6e-15 0 / 0
+penalized-weights      efron   1       8.4e-15   1.1e-14   2.1e-16     0.051   3.5e-15 0 / 0
+penalized-wide         breslow 0.5     3.4e-16   1.9e-15   2.2e-16     0.210   1.4e-15 0 / 0
+penalized-wide         breslow 1       3.4e-16   1.8e-15   2.2e-16     0.208   1.2e-15 0 / 0
+penalized-wide         efron   0.5           0   1.5e-16   2.2e-16     0.209   4.4e-16 0 / 1
+penalized-wide         efron   1             0   1.4e-16   2.2e-16     0.213   5.6e-16 0 / 1
+
+The score at beta = 0: glmnet's coxgrad() times the design against survival's score residuals (relative):
+penalized-strata       breslow   1.1e-15
+penalized-strata       efron     1.4e-15
+penalized-offset       breslow   3.5e-16
+penalized-offset       efron     1.2e-14
+penalized-truncation   breslow   3.4e-15
+penalized-truncation   efron     3.1e-15
+penalized-weights      breslow   1.2e-15
+penalized-weights      efron     5.2e-15
+penalized-wide         breslow   3.7e-14
+penalized-wide         efron     2.4e-14
+
+glmnet's path with the rows sorted by provider against the input order (max |difference|):
+penalized-strata       breslow   1.7e-16
+penalized-strata       efron     2.2e-16
+penalized-combined     breslow   2.8e-16
+penalized-combined     efron     2.2e-16
+
+penalized-combined (x1 unpenalized): lambda_max with the unpenalized fit at eps 1e-9 against eps 1e-12
+  breslow eps 1e-9: 6.27e-16; eps 1e-12: 1.08e-11 (relative to pprof_py's)
+  efron   eps 1e-9: 9.62e-16; eps 1e-12: 1.46e-11 (relative to pprof_py's)
+
+B. Settings the fixtures do not cover, against pprof_py 0.7.0 (3.12.3, NumPy 2.5.3)
+setting             ties     n_l   lam_max      grid     scale    path_u  pprof_py's warnings
+constant-column     breslow  100     1e-15   3.6e-15   2.2e-16     0.059  DegenerateFeatureWarning: 1 feature(s) have ~zero weighted v
+  breslow: constant column passed to glmnet: its coefficient is 0 throughout: TRUE; path against pprof_py 9.92e+03 units
+constant-column     efron    100   5.8e-16   1.8e-15   2.2e-16     0.067  DegenerateFeatureWarning: 1 feature(s) have ~zero weighted v
+  efron: constant column passed to glmnet: its coefficient is 0 throughout: TRUE; path against pprof_py 1.1e+04 units
+ridge               breslow  100   1.4e-15   2.8e-15   5.6e-16     0.027  none
+ridge               efron    100   1.1e-15   2.8e-15   5.6e-16     0.031  none
+unstandardized      breslow  100   1.2e-15   3.6e-15         0     0.061  none
+unstandardized      efron    100   4.2e-16   1.8e-15         0     0.067  none
+given-grid          breslow    3   1.4e-15         0   5.6e-16     0.021  none
+given-grid          efron      3   1.1e-15         0   5.6e-16     0.054  none
+short-grid          breslow   20   1.4e-15   2.7e-15   5.6e-16     0.056  none
+short-grid          efron     20   1.1e-15   1.8e-15   5.6e-16     0.049  none
+unequal-factors     breslow  100   1.3e-15   1.8e-15   5.6e-16     0.061  none
+unequal-factors     efron    100   1.1e-15   1.8e-15   5.6e-16     0.064  none
+rows-below-columns  breslow  100   2.6e-16   1.8e-15   1.4e-16   292.412  none
+  breslow: ratio 0.01 (pprof_py's 0.01); 15 rows, 8 events; units by lambda: first above 1 at grid point 35 of 100
+rows-below-columns  efron    100   3.6e-16   9.1e-16   1.4e-16 198000000000000010128822464680020008086648.000  none
+  efron: ratio 0.01 (pprof_py's 0.01); 15 rows, 8 events; units by lambda: first above 1 at grid point 31 of 100
+one-covariate       breslow  100   6.4e-16   1.9e-15         0     0.004  none
+one-covariate       efron    100   1.2e-15   1.9e-15         0     0.008  none
+
+glmnet stopped before the end of the grid:
+  rows-below-columns breslow: 72 of 100 grid points (100001 passes); glmnet: from glmnet C++ code (error code -73); Convergence for 73th lambda value not reached after maxit=100000 iterations; solutions for larger lambdas returned
+
+C. glmnet with few events per covariate (penalized_wide.csv, 20 covariates): grid points reached, the largest
+   |coefficient| at the last one, glmnet's deviance ratio (1 - deviance / null deviance), and its warning
+  15 rows, breslow maxit 100000:  72 of 100 points; largest |coef| 2.01 (pprof_py's 3.22, converged at all 100); dev.ratio 0.000 to 0.895; Convergence for 73th lambda value not reached
+    first point with a deviance above the null's or a coefficient not finite: none; at point 72 the largest |coef| 2.01 (pprof_py's 2.01)
+  15 rows, breslow maxit 1e+06: 100 of 100 points; largest |coef| 3.22 (pprof_py's 3.22, converged at all 100); dev.ratio 0.000 to 0.971; no warning
+    first point with a deviance above the null's or a coefficient not finite: none; at point 100 the largest |coef| 3.22 (pprof_py's 3.22)
+  15 rows, efron   maxit 100000: 100 of 100 points; largest |coef| 9.9e+35 (pprof_py's 3.32, converged at all 100); dev.ratio -1.74e+35 to  7.83e-01; no warning
+    first point with a deviance above the null's or a coefficient not finite: 55; at point 54 the largest |coef| 1.12 (pprof_py's 1.12)
+  15 rows, efron   maxit 1e+06: 100 of 100 points; largest |coef| 9.9e+35 (pprof_py's 3.32, converged at all 100); dev.ratio -1.74e+35 to  7.83e-01; no warning
+    first point with a deviance above the null's or a coefficient not finite: 55; at point 54 the largest |coef| 1.12 (pprof_py's 1.12)
+  19 rows (12 events), breslow glmnet's grid:  66 of 100 points; largest |coef| 2.75; least dev.ratio 0; Convergence for 67th lambda value not reached
+  19 rows (12 events), efron   glmnet's grid:  54 of 100 points; largest |coef| 2.11; least dev.ratio 0; Convergence for 55th lambda value not reached
+  25 rows (14 events), breslow glmnet's grid:  85 of 100 points; largest |coef| 4.84; least dev.ratio 0; Convergence for 86th lambda value not reached
+  25 rows (14 events), efron   glmnet's grid:  60 of 100 points; largest |coef| 2.55; least dev.ratio 0; Convergence for 61th lambda value not reached
+  40 rows (22 events), breslow glmnet's grid: 100 of 100 points; largest |coef| 1.23; least dev.ratio 0; no warning
+  40 rows (22 events), efron   glmnet's grid: 100 of 100 points; largest |coef| 1.4; least dev.ratio 0; no warning
+  80 rows (42 events), breslow glmnet's grid: 100 of 100 points; largest |coef| 0.839; least dev.ratio 0; no warning
+  80 rows (42 events), efron   glmnet's grid: 100 of 100 points; largest |coef| 1.01; least dev.ratio 0; no warning
