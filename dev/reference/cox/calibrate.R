@@ -18,6 +18,10 @@
 # From Phase C3 (DEC-109), the measures, tests, limits, and funnel limits are scored the same way, with
 # a transcription of pprof_py's formulas in R (the c3_ functions) in place of survival, given pprof_py's
 # own coefficients or counts, and a section compares the flags at each side's coefficients.
+# From Phase C4 (the C4 plan's decision 4), the penalized cases add pprof_py's lambda_max, lambda grid,
+# and column scales against their construction in R from survival's score at the null point (the c4_
+# functions), and the paths of the two cases with settings; on the few-events case glmnet's path ends
+# early, and its points beyond the 30th are reported with D-78.
 args <- commandArgs(trailingOnly = TRUE)
 report_file <- if (length(args) >= 1) args[[1]] else file.path("validation", "cox-calibration-report.md")
 dirs <- c(if (length(args) >= 2) args[[2]] else file.path("tests", "testthat", "fixtures", "cox"),
@@ -227,14 +231,100 @@ calibrate_competing <- function(id, fx) {
   }
 }
 
+# Phase C4: pprof_py's lambda grid (K-143) built in R from survival alone. The scales are the columns'
+# weighted population standard deviations (1 without standardization; columns of variance below 10 eps
+# left out); the penalty factors are rescaled over the kept columns; the unpenalized columns are fitted
+# by coxph() at pprof_py's eps 1e-9 and 100 iterations; and the score at that null point comes from
+# survival's score residuals, weighted and summed, over the weights' sum.
+c4_grid <- function(fx, key, ties, drop_weight = FALSE) {
+  d <- fx$input
+  setting <- if (is.null(fx$case$settings)) list(alpha = as.numeric(sub("^alpha_", "", key))) else
+    Filter(function(s) identical(s$label, key), fx$case$settings)[[1]]
+  features <- if (is.null(setting$features)) unlist(fx$case$features) else unlist(setting$features)
+  x <- as.matrix(d[, features, drop = FALSE])
+  surv <- if ("start" %in% names(d)) survival::Surv(d$start, d$stop, d$event) else survival::Surv(d$stop, d$event)
+  codes <- if ("provider" %in% names(d)) d$provider else rep(0L, nrow(d))
+  w <- if ("weight" %in% names(d)) d$weight else rep(1, nrow(d))
+  if (drop_weight) w[1] <- 0
+  offset_name <- intersect(c("offset1", "log_exposure"), names(d))
+  o <- if (length(offset_name)) d[[offset_name]] else rep(0, nrow(d))
+  pf <- unlist(if (!is.null(setting$penalty_factor)) setting$penalty_factor else fx$case$penalty_factor)
+  if (is.null(pf)) pf <- rep(1, ncol(x))
+  alpha <- if (is.null(setting$alpha)) 1 else setting$alpha
+  wn <- w / sum(w)
+  variance <- colSums(sweep(x, 2, colSums(x * wn))^2 * wn)
+  keep <- !(variance < 10 * .Machine$double.eps)
+  scale <- if (isFALSE(setting$standardize)) rep(1, ncol(x)) else sqrt(ifelse(keep, variance, 0))
+  scale[!keep] <- 1
+  if (drop_weight) return(list(scale = scale))  # the scales' negative control; survival refuses a weight of 0
+  pf <- pf[keep] * (sum(keep) / sum(pf[keep]))
+  z <- sweep(x[, keep, drop = FALSE], 2, scale[keep], "/")
+  free <- pf == 0
+  beta <- rep(0, ncol(z))
+  # coxph() recognizes strata() by name, so the formulas keep the bare name, bound to survival's function.
+  env <- list2env(list(strata = survival::strata), parent = environment())
+  if (any(free) && !all(free)) {
+    zf <- z[, free, drop = FALSE]
+    beta[free] <- stats::coef(survival::coxph(stats::as.formula("surv ~ zf + strata(codes) + offset(o)", env = env),
+                                              weights = w, ties = ties,
+                                              control = survival::coxph.control(eps = 1e-9, iter.max = 100, timefix = FALSE)))
+  }
+  null <- suppressWarnings(survival::coxph(stats::as.formula("surv ~ z + strata(codes) + offset(o)", env = env),
+                                           weights = w, ties = ties, init = beta,
+                                           control = survival::coxph.control(iter.max = 0, timefix = FALSE)))
+  score <- colSums(as.matrix(stats::residuals(null, type = "score")) * w) / sum(w)
+  lambda_max <- max(abs(score)[pf > 0] / pf[pf > 0]) / max(alpha, 1e-3)
+  n_lambda <- if (is.null(setting$n_lambda)) 100 else setting$n_lambda
+  r <- if (!is.null(setting$lambda_min_ratio)) setting$lambda_min_ratio else if (nrow(x) < sum(keep)) 1e-2 else 1e-4
+  grid <- if (!is.null(setting$lambda_path)) sort(unlist(setting$lambda_path), decreasing = TRUE) else
+    if (n_lambda == 1) lambda_max else exp(seq(log(lambda_max), log(lambda_max * r), length.out = n_lambda))
+  list(lambda_max = lambda_max, grid = grid, scale = scale, given = !is.null(setting$lambda_path),
+       standardized = !isFALSE(setting$standardize))
+}
+
+# On the few-events case (D-78) glmnet's path ends before the grid's: its points up to the 30th, where the
+# paths agree within the tier (dev/design/coxph-facts/26), are scored, and the others reported with D-78.
+few_events_scored <- 30L
+
 calibrate_penalized <- function(id, fx) {
   for (ties in c("breslow", "efron")) {
     for (key in names(fx$survival[[ties]])) {
       a <- fx$pprof_py[[ties]][[key]]
       b <- fx$survival[[ties]][[key]]
-      add(id, ties, sprintf("%s: coefficient path", key), "penalized_path",
-          ratio(a$path$coef_path, b$path$coef_path, "penalized_path"),
-          list(other_ties = ratio(a$negative_controls$other_ties$coef_path, a$path$coef_path, "penalized_path")))
+      reached <- length(b$path$coef_path)
+      if (reached == length(a$path$coef_path)) {
+        add(id, ties, sprintf("%s: coefficient path", key), "penalized_path",
+            ratio(a$path$coef_path, b$path$coef_path, "penalized_path"),
+            list(other_ties = ratio(a$negative_controls$other_ties$coef_path, a$path$coef_path, "penalized_path")))
+      } else {
+        first <- seq_len(min(few_events_scored, reached))
+        add(id, ties, sprintf("%s: coefficient path, points 1 to %d", key, length(first)), "penalized_path",
+            ratio(a$path$coef_path[first], b$path$coef_path[first], "penalized_path"),
+            list(other_ties = ratio(a$negative_controls$other_ties$coef_path[first], a$path$coef_path[first],
+                                    "penalized_path")))
+        rest <- setdiff(seq_len(reached), first)
+        add(id, ties, sprintf("%s: coefficient path, points %d to %d of %d (glmnet %s)", key, min(rest), reached,
+                              length(a$path$coef_path), if (nzchar(b$path$stopped)) "stopped" else "failed"),
+            "penalized_path", ratio(a$path$coef_path[rest], b$path$coef_path[rest], "penalized_path"), note = "D-78")
+      }
+      r_grid <- c4_grid(fx, key, ties)
+      add(id, ties, sprintf("%s: lambda_max", key), "closed_form", ratio(r_grid$lambda_max, a$path$lambda_max, "closed_form"),
+          list(other_ties = ratio(fx$pprof_py[[other(ties)]][[key]]$path$lambda_max, a$path$lambda_max, "closed_form")))
+      if (r_grid$given) {
+        add(id, ties, sprintf("%s: lambda grid (given, sorted)", key), "exact", ratio(r_grid$grid, a$path$lambda, "exact"))
+      } else {
+        add(id, ties, sprintf("%s: lambda grid", key), "closed_form", ratio(r_grid$grid, a$path$lambda, "closed_form"),
+            list(other_ties = ratio(fx$pprof_py[[other(ties)]][[key]]$path$lambda, a$path$lambda, "closed_form")))
+      }
+      if (r_grid$standardized) {
+        add(id, ties, sprintf("%s: column scales", key), "closed_form", ratio(r_grid$scale, a$path$column_scale, "closed_form"),
+            list(dropped_weight = ratio(c4_grid(fx, key, ties, drop_weight = TRUE)$scale, a$path$column_scale,
+                                        "closed_form")))
+      } else {
+        # Without standardization every scale is 1 by definition, whatever the weights.
+        add(id, ties, sprintf("%s: column scales (1 without standardization)", key), "exact",
+            ratio(r_grid$scale, a$path$column_scale, "exact"))
+      }
       if (!is.null(b$cv)) {
         add(id, ties, sprintf("%s: cross-validation mean deviance", key), "penalized_path",
             ratio(a$cv$cvm, b$cv$cvm, "penalized_path"))
