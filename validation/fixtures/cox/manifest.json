@@ -62,6 +62,23 @@
    "sha256": "e46fb301654a4a142545312bf1f0011ee082a09b29da06450e1729378abc6250",
    "source": "pprof_py"
   },
+  "penalized-few-events": {
+   "events": 8,
+   "file": "penalized-few-events.rds",
+   "kind": "penalized",
+   "md5": "b15b0563797309ccaeb931e15dcab0e5",
+   "provenance": {
+    "commit": "9320766e35e5b385d596a2b75418192098a124c4",
+    "license": "MIT",
+    "path": "pprof_py/r_reference/data/penalized_wide.csv",
+    "repository": "https://github.com/UM-KevinHe/pprof_py",
+    "sha256": "c8f73e472d6cfbd806f2cce901b22bb201c483f5aeef1eaefe503b70ecf00382"
+   },
+   "rows": 15,
+   "seed": null,
+   "sha256": "3f25b9e53621b63dc06e5ef38e7b50a90eaca59d4b22ff30d841c57036620979",
+   "source": "pprof_py"
+  },
   "penalized-offset": {
    "events": 207,
    "file": "penalized-offset.rds",
@@ -77,6 +94,23 @@
    "rows": 400,
    "seed": null,
    "sha256": "c1cd99794d162e4d5c0bed59902d34e755a46e0abfad8a43d6a6ee7eb63292b0",
+   "source": "pprof_py"
+  },
+  "penalized-settings": {
+   "events": 434,
+   "file": "penalized-settings.rds",
+   "kind": "penalized",
+   "md5": "6e8abe7f83508fdcc263ee7ba53690d1",
+   "provenance": {
+    "commit": "9320766e35e5b385d596a2b75418192098a124c4",
+    "license": "MIT",
+    "path": "pprof_py/r_reference/data/combined.csv",
+    "repository": "https://github.com/UM-KevinHe/pprof_py",
+    "sha256": "6d0ea60c88debbd4dd838adb85144b2c282fd5ea80f37085d0147110660e19a5"
+   },
+   "rows": 900,
+   "seed": null,
+   "sha256": "c81d3769d41f26a7b9f21f60c874af2432229e845b974c4ab46e333836bf887e",
    "source": "pprof_py"
   },
   "penalized-truncation": {
@@ -201,11 +235,11 @@
  "format_version": 1,
  "generator": "dev/reference/cox/generate.py",
  "generator_clean": true,
- "generator_commit": "7c0fe61bfa3ebfd680f9d0d86b8ea3dc82ce1290",
+ "generator_commit": "9932fed227a7444a108d76e2ede0db8813595fde",
  "inputs_sources_sha256": "d0c87691242e803962b9b52f83b56592eecf52daf8a88db94e0f4b8ac5c0d761",
  "options": {
   "clusters": "the cluster column, or id mod 40",
-  "cv_deviance": "coxnet.deviance(std.weights = FALSE), normalized by the held-out event weight",
+  "cv_deviance": "pprof_py's (K-144): survival's partial likelihood with the Breslow saturated term, normalized by the held-out event weight",
   "fixed_beta": [
    0.375,
    -0.1875,
@@ -222,6 +256,7 @@
    "test": "midp"
   },
   "glmnet_control": "list(thresh = 1e-12, maxit = 1e5, fdev = 0, devmax = 1)",
+  "glmnet_settings_cases": "as the package's adapter calls glmnet: columns of weighted variance below 10 eps left out, a column of zeros beside a single covariate, penalty factors rescaled over the kept columns, the path ended at glmnet's last point or before a deviance above the null deviance (COXPH_C4_PLAN \u00a73.1)",
   "ties": [
    "breslow",
    "efron"

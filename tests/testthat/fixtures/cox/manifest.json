@@ -111,11 +111,11 @@
  "format_version": 1,
  "generator": "dev/reference/cox/generate.py",
  "generator_clean": true,
- "generator_commit": "7c0fe61bfa3ebfd680f9d0d86b8ea3dc82ce1290",
+ "generator_commit": "9932fed227a7444a108d76e2ede0db8813595fde",
  "inputs_sources_sha256": "d0c87691242e803962b9b52f83b56592eecf52daf8a88db94e0f4b8ac5c0d761",
  "options": {
   "clusters": "the cluster column, or id mod 40",
-  "cv_deviance": "coxnet.deviance(std.weights = FALSE), normalized by the held-out event weight",
+  "cv_deviance": "pprof_py's (K-144): survival's partial likelihood with the Breslow saturated term, normalized by the held-out event weight",
   "fixed_beta": [
    0.375,
    -0.1875,
@@ -132,6 +132,7 @@
    "test": "midp"
   },
   "glmnet_control": "list(thresh = 1e-12, maxit = 1e5, fdev = 0, devmax = 1)",
+  "glmnet_settings_cases": "as the package's adapter calls glmnet: columns of weighted variance below 10 eps left out, a column of zeros beside a single covariate, penalty factors rescaled over the kept columns, the path ended at glmnet's last point or before a deviance above the null deviance (COXPH_C4_PLAN \u00a73.1)",
   "ties": [
    "breslow",
    "efron"
