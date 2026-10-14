@@ -159,3 +159,52 @@ cox_funnel_parts <- function(funnel) {
   }
   parts
 }
+
+# --- The penalized cases (Phase C4) ---------------------------------------------------------------
+
+# A penalized case's input with the provider column of the package's fits: the provider, or one provider
+# for the unstratified cases, whose fits are then pprof_py's unstratified fits.
+cox_penalized_case_data <- function(fx) {
+  d <- fx$input
+  d$.provider <- if ("provider" %in% names(d)) d$provider else 0L
+  d
+}
+
+# The formula of a penalized case with the covariates `features`, its response's type, and its offset.
+cox_penalized_case_formula <- function(fx, features = unlist(fx$case$features)) {
+  d <- fx$input
+  lhs <- if ("start" %in% names(d)) "Surv(start, stop, event)" else "Surv(stop, event)"
+  offset <- intersect(c("offset1", "log_exposure"), names(d))
+  rhs <- paste(c(features, if (length(offset)) sprintf("offset(%s)", offset)), collapse = " + ")
+  stats::as.formula(paste(lhs, "~", rhs), env = list2env(list(Surv = survival::Surv), parent = globalenv()))
+}
+
+# The package's fit of a penalized case: an alpha key ("alpha_1") or a setting of the Phase C4 cases
+# (dev/reference/cox/cases.py's PENALIZED_SETTINGS), with the generator's control (thresh 1e-12, maxit 1e5).
+cox_penalized_case_fit <- function(fx, ties, key, ...) {
+  setting <- if (startsWith(key, "alpha_")) {
+    list(alpha = as.numeric(sub("^alpha_", "", key)))
+  } else {
+    Filter(function(s) identical(s$label, key), fx$case$settings)[[1]]
+  }
+  features <- if (is.null(setting$features)) unlist(fx$case$features) else unlist(setting$features)
+  d <- cox_penalized_case_data(fx)
+  factors <- if (!is.null(setting$penalty_factor)) setting$penalty_factor else fx$case$penalty_factor
+  args <- list(cox_penalized_case_formula(fx, features), d, provider = ".provider", ties = ties,
+               alpha = if (is.null(setting$alpha)) 1 else setting$alpha, max_iter = 1e5, tol = 1e-12, ...)
+  if ("weight" %in% names(d)) args$weights <- "weight"
+  if (!is.null(factors)) args$penalty_factor <- stats::setNames(as.numeric(unlist(factors)), features)
+  if (!is.null(setting$standardize)) args$standardize <- setting$standardize
+  if (!is.null(setting$n_lambda)) args$n_lambda <- setting$n_lambda
+  if (!is.null(setting$lambda_min_ratio)) args$lambda_min_ratio <- setting$lambda_min_ratio
+  if (!is.null(setting$lambda_path) && is.null(args$lambda)) args$lambda <- as.numeric(unlist(setting$lambda_path))
+  do.call(fit_cox_penalized, args)
+}
+
+# A fixture's coefficient path, one column per lambda.
+cox_penalized_path <- function(rows) do.call(cbind, lapply(rows, function(r) as.numeric(unlist(r))))
+
+# D-72: the coefficients nonzero on one side and zero on the other, beyond penalized_path's atol of 0.
+cox_active_set_differences <- function(a, b) {
+  sum(xor(a != 0, b != 0) & pmax(abs(a), abs(b)) > reference_tolerance("penalized_path")$atol)
+}
