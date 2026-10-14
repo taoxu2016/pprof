@@ -281,5 +281,7 @@ Recorded on 2026-10-14, for the next session.
 
 - The project lead approved closing the C4 gate and asked for the work in `main`: `coxph/phase-4` goes to the fork, and the fork's `main` takes it as a fast-forward from `38dad40`.
 - With the merge, `cox-bench.yaml` in `main` runs the penalized tasks by default when the project lead dispatches it (DEC-118); its corner run takes `only` = "^corner |^providers-7500 breslow$|^covariates-5 robust$".
+- CI on `d2b6567`, on `main` and on `coxph/phase-4`: every workflow passed (`rewrite-check`, `rewrite-reference`, `rewrite-coverage`, `rewrite-lint`, and `rewrite-pkgdown`; `main`'s runs 38615447409 to 38615447785).
+- At the project lead's request, the branches that `main` contains, `coxph/phase-3`, `coxph/phase-4`, and the local `coxph/cox-bench`, were deleted, locally and on the fork.
 - Open, as at the gate: D-78 awaits a methodology owner's confirmation (M-16), with the decisions taken under delegation in C0; outside C4, the fits' overhead at 7,500 providers, the measures' time at 10,000 rows and 7,500 providers, and `rewrite-bench.yaml`'s setup. `CLAUDE.md`'s "Current phase" section, which still named Phase C4, now names Phase C5 (the project lead, 2026-10-14).
 - Next step: Phase C5, competing risks (the brief's §4, row C5), when the project lead asks: its plan first, `dev/design/COXPH_C5_PLAN.md`, for approval, on `coxph/phase-5` from `main`.
