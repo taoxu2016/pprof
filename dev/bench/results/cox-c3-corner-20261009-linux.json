@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-09",
+  "commit": "54488aec2b451e5830fd3d76e64800c3e9a41abe",
+  "package_code_clean": true,
+  "r": "R version 4.4.0 (2024-04-24)",
+  "platform": "x86_64-pc-linux-gnu",
+  "os": "Ubuntu 24.04.5 LTS",
+  "cpu": "AMD EPYC 9V74 80-Core Processor",
+  "logical_cores": 4,
+  "blas": "/usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3",
+  "lapack": "3.12.0",
+  "rounds": 2,
+  "only": "^corner |^providers-7500 breslow$|^covariates-5 robust$",
+  "packages": {
+    "pprof": "2.0.0",
+    "survival": "3.8.12",
+    "Matrix": "1.7.0",
+    "bench": "1.1.4",
+    "callr": "3.8.0"
+  },
+  "threads": "OMP_THREAD_LIMIT = 1, OMP_NUM_THREADS = 1; survival is single-threaded"
+}
