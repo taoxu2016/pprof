@@ -227,16 +227,17 @@ for (g in names(groups)) {
 user <- arrange(merge(side("coxph"), side("fit"), by = key, suffixes = c("_coxph", "_fit")))
 if (nrow(user)) {
   lines <- c(lines, "", "## The fit against coxph() on the data frame", "",
-             paste("The call a user would make: `coxph()` with the provider as strata, the offset, and the weights,",
-                   "and for robust one cluster per row (C1's comparator, DEC-098; the package called it before",
-                   "DEC-099). Reported, not a gate. Its estimates come from rows in the generator's order, so they",
-                   "can differ from the engine call's in the last bits.",
-                   if (fine_gray) {
-                     paste("For the Fine-Gray tasks, the user's calls are `finegray()` once, with the provider as",
-                           "strata, the case weights multiplied in after it (its own `weights` argument misapplies",
-                           "them after the first stratum, DEC-123), and `coxph(cluster = subject)` on the rows of",
-                           "positive weight.")
-                   }),
+             paste(c(if (stratified) {
+               paste("The call a user would make: `coxph()` with the provider as strata, the offset, and the weights,",
+                     "and for robust one cluster per row (C1's comparator, DEC-098; the package called it before",
+                     "DEC-099). Reported, not a gate. Its estimates come from rows in the generator's order, so they",
+                     "can differ from the engine call's in the last bits.")
+             }, if (fine_gray) {
+               paste("For the Fine-Gray tasks, the calls a user would make: `finegray()` once, with the provider as",
+                     "strata, the case weights multiplied in after it (its own `weights` argument misapplies them",
+                     "after the first stratum, DEC-123), and `coxph(cluster = subject)` on the rows of positive",
+                     "weight. Reported, not a gate.")
+             }), collapse = " "),
              "",
              paste("| Scenario | Task | Round | coxph() median | Fit median | Ratio, fit / coxph() |",
                    "Peak MB, coxph() / fit | coxph()'s largest relative difference from the engine call |"),
