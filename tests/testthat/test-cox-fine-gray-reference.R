@@ -29,10 +29,12 @@ expect_fine_gray_differ <- function(a, b, tier, label) {
 # cox-calibration-report.md). D-57: pprof_py halved the last Newton step of these tight fits, so they are
 # compared with survival's records and with pprof_py's within the last step. D-58: in the weighted case,
 # pprof_py counts zero-weight events among Efron's tied deaths; those fits are survival's on the rows of
-# positive weight, and differ from pprof_py's where such events tie (here cause 1).
+# positive weight, and differ from pprof_py's where such events tie (cause 1, and cause 2 without strata)
+# and equal them elsewhere.
 fine_gray_d57 <- c("competing-simple efron 2", "competing-simple efron 2_unstratified",
                    "competing-weights breslow 1_unstratified")
 fine_gray_d58 <- function(fx, ties) isTRUE(fx$case$weighted) && identical(ties, "efron")
+fine_gray_d58_tied <- c("1", "1_unstratified", "2_unstratified")
 
 for (set in c("core", "full")) {
   local({
@@ -64,8 +66,10 @@ for (set in c("core", "full")) {
             expect_fine_gray_match(tight$loglik, c(r$tight$loglik_null, r$tight$loglik), "cox_function",
                                    paste(label, "log-likelihoods, survival"))
             if (d58) {
-              if (startsWith(key, "1")) {
+              if (key %in% fine_gray_d58_tied) {
                 expect_fine_gray_differ(coef(tight), py$tight$coef, "cox_coefficient", paste(label, "pprof_py (D-58)"))
+              } else {
+                expect_fine_gray_match(coef(tight), py$tight$coef, "cox_coefficient", paste(label, "coefficients"))
               }
               next
             }
