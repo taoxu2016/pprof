@@ -17,6 +17,17 @@
    "sha256": "3ebb69483f24923071a4b5faa363f241f70e09eab4ccc75cc70e1cb9a445d8f7",
    "source": "pprof_py"
   },
+  "competing-weights": {
+   "events": 239,
+   "file": "competing-weights.rds",
+   "kind": "competing",
+   "md5": "7e362d04b9e6d93f6bf04ddb2b0f258c",
+   "provenance": null,
+   "rows": 517,
+   "seed": 17,
+   "sha256": "12bf375602034ac575876007d34deef2eaa89638e305a61a96750996b7d1a409",
+   "source": "synthetic"
+  },
   "large-mean": {
    "events": 223,
    "file": "large-mean.rds",
@@ -235,11 +246,12 @@
  "format_version": 1,
  "generator": "dev/reference/cox/generate.py",
  "generator_clean": true,
- "generator_commit": "9932fed227a7444a108d76e2ede0db8813595fde",
+ "generator_commit": "76fabac3b6c7b00a5f655e2e907dea2d3238e565",
  "inputs_sources_sha256": "d0c87691242e803962b9b52f83b56592eecf52daf8a88db94e0f4b8ac5c0d761",
  "options": {
   "clusters": "the cluster column, or id mod 40",
   "cv_deviance": "pprof_py's (K-144): survival's partial likelihood with the Breslow saturated term, normalized by the held-out event weight",
+  "fine_gray_weights": "case weights multiply finegray()'s output weights after the call, which survival 3.8-12's weights argument misapplies after the first stratum; pieces of weight 0 stay in the expansion and out of the fits",
   "fixed_beta": [
    0.375,
    -0.1875,
