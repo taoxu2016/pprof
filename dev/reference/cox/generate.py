@@ -362,14 +362,15 @@ def cox_outputs(df, case):
 
 def competing_outputs(df, case):
     """Cause-specific fits, measures, and tests (each cause, other causes censored, stratified by
-    provider; M-35), and Fine-Gray fits for each cause, stratified by provider (M-41) and not."""
+    provider; M-35), and Fine-Gray fits for each cause, stratified by provider (M-41) and not. A weighted
+    case's fits take its case weights (Phase C5); its measures, as every case's, do not (M-29)."""
     reference = {}
     causes = sorted(int(c) for c in np.unique(df["event"]) if c != 0)
     for ties in TIES:
         cause_specific = {}
         for cause in causes:
             recoded = df.assign(event=(df["event"].to_numpy() == cause).astype(np.int64))
-            cox_case = {**case, "stratified": True, "weighted": False, "offset": False}
+            cox_case = {**case, "stratified": True, "weighted": bool(case.get("weighted")), "offset": False}
             cause_specific[str(cause)] = {
                 "default": pprof_fit(recoded, cox_case, ties), "tight": pprof_fit(recoded, cox_case, ties, **TIGHT),
                 "measures": pprof_measures(recoded, cox_case, ties), "tests": pprof_tests(recoded, cox_case, ties),
@@ -389,6 +390,9 @@ def pprof_fine_gray(df, case, ties, cause, stratified):
     stop = df["time"].to_numpy(dtype=float)
     start = df["entry"].to_numpy(dtype=float) if case["truncated"] else np.zeros(len(df))
     times = {"start": start, "stop": stop} if case["truncated"] else {"duration": stop}
+    if case.get("weighted"):
+        # Case weights multiply the transform's weights only (K-145); rows of weight 0 keep weight 0.
+        times["sample_weight"] = df["weight"].to_numpy(dtype=float)
     strata = df["stratum"].to_numpy() if stratified else None
     fits = {}
     for setting, control in (("default", {}), ("tight", TIGHT)):
@@ -411,7 +415,7 @@ def pprof_fine_gray(df, case, ties, cause, stratified):
     fits["iterates"] = iterates
     model = tight_model
     fg = finegray_transform(start=start, stop=stop, event=df["event"].to_numpy(), failcode=cause,
-                            id=df["id"].to_numpy(), strata=strata)
+                            id=df["id"].to_numpy(), strata=strata, sample_weight=times.get("sample_weight"))
     x = np.array([profile[:case["p"]] for profile in PROFILES], dtype=float)
     incidence = []
     for stratum in ([s for s in np.unique(df["stratum"])][:2] if stratified else [None]):
@@ -694,6 +698,9 @@ def write_manifests(staging, out_dirs, ran):
             "options": {"ties": list(TIES), "tight": TIGHT, "fixed_beta": list(FIXED_BETA),
                         "timefix": False, "clusters": "the cluster column, or id mod 40",
                         "zero_weights": "left out of survival's fits; kept in the measures (M-25)",
+                        "fine_gray_weights": "case weights multiply finegray()'s output weights after the call, "
+                                             "which survival 3.8-12's weights argument misapplies after the first "
+                                             "stratum; pieces of weight 0 stay in the expansion and out of the fits",
                         "glmnet_control": "list(thresh = 1e-12, maxit = 1e5, fdev = 0, devmax = 1)",
                         "glmnet_settings_cases": "as the package's adapter calls glmnet: columns of weighted "
                                                  "variance below 10 eps left out, a column of zeros beside a single "

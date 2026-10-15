@@ -63,6 +63,9 @@ CASES = (
      "file": "competing_risks_simple.csv", "p": 2, "truncated": False, "providers": 5},
     {"id": "competing-truncated", "kind": "competing", "set": "full", "source": "pprof_py",
      "file": "competing_risks_truncated.csv", "p": 2, "truncated": True, "providers": 5},
+    # Phase C5 (the C5 plan's decision 6): case weights with zeros, and several rows per subject.
+    {"id": "competing-weights", "kind": "competing", "set": "full", "source": "synthetic", "seed": 17, "p": 2,
+     "truncated": True, "weighted": True},
     {"id": "penalized-wide", "kind": "penalized", "set": "full", "source": "pprof_py", "file": "penalized_wide.csv",
      "folds": "penalized_wide_foldid.csv", "alphas": [1.0, 0.5], "cv": True},
     {"id": "penalized-strata", "kind": "penalized", "set": "core", "source": "pprof_py", "file": "strata.csv",
@@ -183,6 +186,45 @@ def _zero_weights(case):
     return df
 
 
+def _competing_weights(case):
+    """Competing risks with case weights and several rows per subject (the CoxPH C5 plan, decision 6): 360
+    subjects in 6 providers of 60, in weeks; about a quarter enter late; about a third have two or three
+    contiguous (start, stop] rows, between which x2 changes; causes 1 and 2 on a subject's last row only;
+    case weights on a 1/2 grid, the same on every row of a subject, 0 for about 5% of the subjects and for
+    one subject whose event of cause 1 is tied with another in its provider, where pprof_py's Efron count
+    includes it (B7, M-25)."""
+    rng = np.random.Generator(np.random.PCG64(case["seed"]))
+    subjects, providers = 360, 6
+    rows = []
+    for subject in range(subjects):
+        x1 = rng.integers(-64, 65) / 32
+        entry = int(rng.integers(1, 9)) if rng.random() < 0.25 else 0
+        rate1, rate2 = 0.03 * np.exp(0.5 * x1), 0.015 * np.exp(-0.25 * x1)
+        t_event = int(np.ceil(-np.log(rng.random()) / (rate1 + rate2)))
+        cause = 1 if rng.random() < rate1 / (rate1 + rate2) else 2
+        t_censor = int(rng.integers(4, 61))
+        duration = max(min(t_event, t_censor), 1)
+        status = cause if t_event <= t_censor else 0
+        end = entry + duration
+        pieces = int(rng.integers(2, 4)) if duration >= 3 and rng.random() < 1 / 3 else 1
+        cuts = sorted(int(c) for c in rng.choice(np.arange(entry + 1, end), size=min(pieces, duration) - 1,
+                                                 replace=False))
+        bounds = [entry, *cuts, end]
+        weight = rng.integers(1, 5) / 2
+        for k in range(len(bounds) - 1):
+            last = k == len(bounds) - 2
+            rows.append([subject, subject % providers, bounds[k], bounds[k + 1], status if last else 0, weight, x1,
+                         rng.integers(-64, 65) / 32])
+    df = pd.DataFrame(rows, columns=["id", "stratum", "entry", "time", "event", "weight", "x1", "x2"])
+    df.loc[df["id"] % 20 == 7, "weight"] = 0.0
+    events = df[(df["event"] == 1) & (df["weight"] > 0)]
+    counts = events.groupby(["stratum", "time"]).size()
+    stratum, time = counts[counts >= 2].index[0]
+    tied = events[(events["stratum"] == stratum) & (events["time"] == time)]
+    df.loc[df["id"] == tied["id"].iloc[0], "weight"] = 0.0
+    return df
+
+
 def _empty_providers(case):
     """Provider 0 without events, provider 1 whose rows all leave before the first event time
     (expected events 0), and provider 2 with a single row."""
@@ -216,9 +258,11 @@ def load(case):
         df = _empty_providers(case)
     elif case["id"] == "provider-scale":
         df, _ = _standard(case, 20000, 1000, 365, [0.5, -0.25, 0.125, 0.25, -0.125], ties_rate=8.0)
+    elif case["id"] == "competing-weights":
+        df = _competing_weights(case)
     else:
         raise ValueError(case["id"])
-    if case["kind"] == "competing":
+    if case["kind"] == "competing" and case["source"] == "pprof_py":
         # The Cox cases' column names, and a provider for the stratified fits (M-35, M-41).
         df = df.rename(columns={"start": "entry", "stop": "time"})
         df.insert(0, "stratum", (df["id"].to_numpy() - 1) % case["providers"])

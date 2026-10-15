@@ -160,7 +160,14 @@ competing_outputs <- function(case) {
       response <- sprintf(template, cause)
       f <- as.formula(paste(response, "~", x_terms, "+ strata(stratum)"))
       cause_specific[[as.character(cause)]] <- lapply(c(default = "default", tight = "tight"), function(label) {
-        fit_record(coxph(f, data = d, ties = ties, control = control_of(label)))
+        if (isTRUE(def$weighted)) {
+          # Rows with zero weight are left out of the fits (M-25), as survival refuses them; robust = FALSE,
+          # since coxph() turns the robust variance on for weights that are not integers (K-134).
+          fit_record(coxph(f, data = d[d$weight > 0, ], weights = weight, ties = ties, robust = FALSE,
+                           control = control_of(label)))
+        } else {
+          fit_record(coxph(f, data = d, ties = ties, control = control_of(label)))
+        }
       })
     }
     fine_gray <- list()
@@ -183,9 +190,17 @@ fine_gray_record <- function(def, d, ties, cause, stratified, x_terms) {
   rhs <- paste(x_terms, "+ .row + id + stratum", if (stratified) "+ strata(stratum)" else "")
   fg <- finegray(as.formula(paste(response, "~", rhs)), data = d, etype = as.character(cause), id = id,
                  timefix = FALSE)
+  if (isTRUE(def$weighted)) {
+    # Case weights multiply the transform's weights only (K-145), as the package's adapter applies them:
+    # after the call, since survival 3.8-12's finegray(weights =) gives every stratum after the first the
+    # case weights of the data's first rows (dev/design/coxph-facts/31). The expansion keeps the pieces of
+    # weight 0, as pprof_py's does; the fits leave them out (M-25), as survival refuses them.
+    fg$fgwt <- fg$fgwt * d$weight[fg$.row + 1L]
+  }
+  fit_data <- if (isTRUE(def$weighted)) fg[fg$fgwt > 0, ] else fg
   f <- as.formula(paste("Surv(fgstart, fgstop, fgstatus) ~", x_terms, if (stratified) "+ strata(stratum)" else ""))
   fits <- lapply(c(default = "default", tight = "tight"), function(label) {
-    coxph(f, data = fg, weights = fgwt, cluster = id, ties = ties, control = control_of(label))
+    coxph(f, data = fit_data, weights = fgwt, cluster = id, ties = ties, control = control_of(label))
   })
   fit <- fits$tight
   profiles <- lapply(case_profiles(length(def$features)), function(v) v)
