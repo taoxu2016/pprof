@@ -327,3 +327,25 @@ test_that("the plots draw a Cox profile, leaving out a provider without expected
   expect_match(plots$caterpillar$labels$subtitle, "Mid-p intervals at the 95% level")
   expect_identical(nrow(plots$funnel$layers[[3]]$data), nrow(fit$providers) - 1L)
 })
+
+test_that("cause-specific models profile each cause, with the competing events censored (M-35, K-146)", {
+  d <- fine_gray_data()
+  # The cause-specific model of cause 1 is the stratified model of its events, the other causes censored
+  # at their times: the fit and the profile of the recoded status.
+  fit <- fit_cox_stratified(Surv(start, stop, cause == "1") ~ x1 + x2, d, "provider", weights = "w")
+  d$first <- as.integer(d$cause == "1")
+  recoded <- fit_cox_stratified(Surv(start, stop, first) ~ x1 + x2, d, "provider", weights = "w")
+  expect_identical(fit$coefficients, recoded$coefficients)
+  expect_identical(fit$expected_events, recoded$expected_events)
+  profile <- profile_providers(fit, interval = "midp")
+  expect_identical(profile$table, profile_providers(recoded, interval = "midp")$table)
+  # The profile is its parts.
+  expect_identical(profile$tests, test_providers(fit))
+  expect_identical(profile$measures, standardize_providers(fit, "indirect", interval = "midp"))
+  expect_identical(profile$funnel, funnel_limits(fit))
+  # Each cause's model counts its own events, every row's, whatever its weight.
+  second <- fit_cox_stratified(Surv(start, stop, cause == "2") ~ x1 + x2, d, "provider", weights = "w")
+  expect_identical(second$providers$n_events, as.numeric(tapply(d$cause == "2", d$provider, sum)))
+  expect_identical(fit$providers$n_events + second$providers$n_events,
+                   as.numeric(tapply(d$cause != "0", d$provider, sum)))
+})

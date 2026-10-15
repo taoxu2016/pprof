@@ -390,3 +390,76 @@ test_that("the package's fits of the core Cox cases are survival's, bitwise (cox
     }
   }
 })
+
+# Phase C5: the cause-specific models of both fixture sets (the C5 plan, §3.4 and §4.4): the default and
+# tight fits' iterations as pprof_py's, the fits survival's coxph() of Surv(time, event == k), bitwise, and
+# pprof_py's tight fits, except where the weighted case's zero-weight events tie (D-58).
+for (set in c("core", "full")) {
+  local({
+    set_name <- set
+    test_that(sprintf("cause-specific fits of the %s competing-risk cases (M-35, K-146, D-58)", set_name), {
+      ids <- cox_reference_ids(set_name, kind = "competing")
+      if (!length(ids)) skip(sprintf("no %s competing-risk fixtures here", set_name))
+      if (identical(set_name, "full")) skip_on_cran()
+      for (id in ids) {
+        fx <- cox_fixture(id, set_name)
+        d <- fx$input
+        weighted <- isTRUE(fx$case$weighted)
+        lhs <- if (isTRUE(fx$case$truncated)) "Surv(entry, time, event == %d)" else "Surv(time, event == %d)"
+        rhs <- paste(unlist(fx$case$features), collapse = " + ")
+        env <- list2env(list(Surv = survival::Surv, strata = survival::strata), parent = globalenv())
+        # survival's coxph() on the rows the fit uses, in data_prepare()'s order.
+        rows <- d[order(d$stratum, method = "radix"), , drop = FALSE]
+        if (weighted) rows <- rows[rows$weight > 0, , drop = FALSE]
+        for (ties in c("breslow", "efron")) {
+          for (cause in names(fx$pprof_py[[ties]]$cause_specific)) {
+            label <- sprintf("%s %s cause %s", id, ties, cause)
+            f <- stats::as.formula(paste(sprintf(lhs, as.integer(cause)), "~", rhs), env = env)
+            py <- fx$pprof_py[[ties]]$cause_specific[[cause]]
+            for (tight in c(FALSE, TRUE)) {
+              control <- survival::coxph.control(eps = if (tight) 1e-11 else 1e-9, iter.max = if (tight) 100 else 20,
+                                                 timefix = FALSE)
+              fit <- fit_cox_stratified(f, d, provider = "stratum", weights = if (weighted) "weight", ties = ties,
+                                        max_iter = control$iter.max, tol = control$eps)
+              direct_formula <- stats::as.formula(paste(sprintf(lhs, as.integer(cause)), "~", rhs,
+                                                        "+ strata(stratum)"), env = env)
+              direct <- if (weighted) {
+                survival::coxph(direct_formula, data = rows, weights = weight, ties = ties, robust = FALSE,
+                                control = control)
+              } else {
+                survival::coxph(direct_formula, data = rows, ties = ties, control = control)
+              }
+              setting <- if (tight) "tight" else "default"
+              expect_identical(fit$coefficients, coef(direct), label = paste(label, setting, "coefficients"))
+              expect_identical(unname(fit$vcov), unname(direct$var), label = paste(label, setting, "covariance"))
+              expect_identical(fit$convergence$iterations, as.integer(py[[setting]]$iterations),
+                               label = paste(label, setting, "iterations"))
+            }
+            if (weighted && identical(ties, "efron") && identical(cause, "1")) {
+              expect_cox_differ(coef(fit), py$tight$coef, "cox_coefficient", paste(label, "pprof_py (D-58)"))
+            } else {
+              expect_cox_match(coef(fit), py$tight$coef, "cox_coefficient", paste(label, "coefficients"))
+              expect_cox_match(cox_packed_upper(vcov(fit)), py$tight$covariance, "cox_variance",
+                               paste(label, "covariance"))
+            }
+          }
+        }
+      }
+    })
+  })
+}
+
+test_that("a factor status: Surv(time, status == level) is the cause-specific model (M-35)", {
+  ids <- cox_reference_ids("core", kind = "competing")
+  if (!length(ids)) skip("no core competing-risk fixtures here")
+  d <- cox_fixture(ids[1])$input
+  d$status <- factor(c("none", "relapse", "death")[d$event + 1L], levels = c("none", "relapse", "death"))
+  by_level <- fit_cox_stratified(Surv(time, status == "relapse") ~ x1 + x2, d, "stratum")
+  by_code <- fit_cox_stratified(Surv(time, event == 1) ~ x1 + x2, d, "stratum")
+  expect_identical(by_level$coefficients, by_code$coefficients)
+  expect_identical(by_level$expected_events, by_code$expected_events)
+  # The factor itself is several event types, which the stratified model does not take; its error names
+  # both models.
+  expect_error(fit_cox_stratified(Surv(time, status) ~ x1 + x2, d, "stratum"), "fit_fine_gray",
+               class = "pprof_error_invalid_input")
+})
