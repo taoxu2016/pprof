@@ -6,15 +6,20 @@
 # the fits beside C1's baseline, its engine calls and pprof_py (the brief §3.7's SHOULD). From Phase C3
 # (DEC-111), both sides include the measures (the fit's indirect standardization, the engine's plain-R
 # expected events), and the `profile` task's measures, tests with limits, and funnel are set beside
-# pprof_py's, with the brief's MUST that mid-p limits be substantially faster: at least ten times.
+# pprof_py's, with the brief's MUST that mid-p limits be substantially faster: at least ten times. From
+# Phase C5 (DEC-127), the Fine-Gray tasks: the fit against the survival calls it makes, one stratified
+# finegray() call followed by coxph(cluster = subject) beside it, pprof_py's FineGrayPH from a later
+# pprof_py run (--pprof-py), and the expansion's and the object's sizes.
 #
 # Usage, from the repository root:
 #   Rscript dev/bench/cox/summarize_paired.R <report md> <C1 engines csv> <C1 pprof_py csv> <paired csv> [...]
-#     [--notes <md file>] [--notices]
+#     [--pprof-py <later pprof_py csv>] [--notes <md file>] [--notices]
 # Several paired CSVs are the runs of one session, for example one per group of scenarios. A later run
 # that repeats a scenario and task replaces the earlier runs' rows of it, for example a task run again
 # after a change to the code it times; the report names them. A notes file (Markdown) goes into the
 # report after its summary, for what the measurements do not show, such as the conditions of the run.
+# A later pprof_py run (dev/bench/cox/run_pprof_py.py), such as C5's Fine-Gray tasks, adds its rows to C1's,
+# replacing C1's rows of the same scenario and task.
 # With --notices, the verdicts are also printed as GitHub Actions notices, which the public API returns
 # without signing in (dev/tools/ci_runs.R), as .github/workflows/cox-bench.yaml uses them.
 # Exit status is 1 when a fit is too slow by DEC-105's rule, fails, or differs from its engine call.
@@ -23,6 +28,12 @@ notes <- character()
 at <- match("--notes", args)
 if (!is.na(at)) {
   notes <- c(readLines(args[[at + 1L]], encoding = "UTF-8"), "")
+  args <- args[-c(at, at + 1L)]
+}
+later_py <- NULL
+at <- match("--pprof-py", args)
+if (!is.na(at)) {
+  later_py <- args[[at + 1L]]
   args <- args[-c(at, at + 1L)]
 }
 notices <- "--notices" %in% args
@@ -35,18 +46,31 @@ report <- args[[1]]
 c1 <- utils::read.csv(args[[2]])
 py <- utils::read.csv(args[[3]])
 py_machine <- jsonlite::read_json(sub("\\.csv$", ".json", args[[3]]))
+later_py_machine <- NULL
+if (!is.null(later_py)) {
+  later <- utils::read.csv(later_py)
+  py <- rbind(py[!paste(py$scenario, py$task) %in% paste(later$scenario, later$task), , drop = FALSE], later[names(py)])
+  later_py_machine <- jsonlite::read_json(sub("\\.csv$", ".json", later_py))
+}
 runs <- args[-(1:3)]
-paired <- do.call(rbind, lapply(seq_along(runs), function(r) cbind(utils::read.csv(runs[[r]]), run = r)))
+# Runs of earlier phases lack the later columns, which are then missing.
+tables <- lapply(seq_along(runs), function(r) cbind(utils::read.csv(runs[[r]]), run = r))
+all_columns <- unique(unlist(lapply(tables, names)))
+paired <- do.call(rbind, lapply(tables, function(t) {
+  t[setdiff(all_columns, names(t))] <- NA
+  t[all_columns]
+}))
 machines <- lapply(runs, function(f) jsonlite::read_json(sub("\\.csv$", ".json", f)))
 last_run <- stats::ave(paired$run, interaction(paired$scenario, paired$task, drop = TRUE), FUN = max)
 superseded <- unique(paste(paired$scenario, paired$task)[paired$run < last_run])
 paired <- paired[paired$run == last_run, , drop = FALSE]
 
 scenario_order <- unique(paired$scenario)
-task_order <- c("breslow", "efron", "robust", "penalized_path", "penalized_cv")
+task_order <- c("breslow", "efron", "robust", "penalized_path", "penalized_cv", "fine_gray", "fine_gray_right")
 key <- c("scenario", "task", "round")
 columns <- c(key, "status", "median_s", "min_s", "peak_after_mb", "prep_s", "identical_to_engine",
-             "max_rel_diff_engine")
+             "max_rel_diff_engine", "object_mb", "expanded_rows")
+paired[setdiff(columns, names(paired))] <- NA  # the columns that runs of earlier phases lack
 side <- function(name) paired[paired$side == name, columns]
 arrange <- function(p) p[order(match(p$scenario, scenario_order), match(p$task, task_order), p$round), ]
 pairs <- arrange(merge(side("engine"), side("fit"), by = key, suffixes = c("_engine", "_fit")))
@@ -84,10 +108,13 @@ profile <- paired[paired$task == "profile", , drop = FALSE]
 c3 <- nrow(profile) > 0L || "expected_s" %in% names(paired)
 penalized <- any(startsWith(paired$task, "penalized"))
 stratified <- any(paired$task %in% c("breslow", "efron", "robust", "profile"))
+fine_gray <- any(startsWith(paired$task, "fine_gray"))
 lines <- c(
-  if (penalized && !stratified) {
+  if (fine_gray && !penalized && !stratified) {
+    "# Paired benchmark of the Fine-Gray model against its survival calls"
+  } else if (penalized && !stratified && !fine_gray) {
     "# Paired benchmark of the elastic-net Cox model against its engine calls"
-  } else if (penalized) {
+  } else if (penalized || fine_gray) {
     "# Paired benchmark of the Cox fits against their engine calls"
   } else if (c3) {
     "# Paired benchmark of the stratified Cox fit with its measures against its engine calls"
@@ -131,6 +158,19 @@ lines <- c(
             "grid, the fold deviances of every lambda from `coxnet.deviance()`, the saturated term's shift from",
             "survival's partial likelihood, and the summaries, written out in plain R as the package computes them.",
             "Their results (the path; the fold deviances, cvm, and cvsd) must be the engine side's bitwise."), "")
+  },
+  if (fine_gray) {
+    c(paste("From Phase C5 (DEC-127), the Fine-Gray model, on the scenario's data with a second cause derived",
+            "without random numbers (every third event row), cause 1, Breslow ties, the case weights, and one subject",
+            "per row: `fine_gray` on `Surv(start, stop, cause)` with the subjects as `id`, `fine_gray_right` on",
+            "`Surv(stop, cause)`, every entry at 0. Each round runs the engine side, the user's calls, and the fit,",
+            "each in a fresh process, one after the other. The engine side is the survival calls the fit makes,",
+            "written out: `finegray()` on each chunk of 50 providers (DEC-122), the case weights multiplied in",
+            "(DEC-123), the fitter's inputs from the expansion's rows of positive weight, survival's fitter as",
+            "`coxph()` calls it, and `coxph()`'s robust step clustered by subject (DEC-121); its process then times",
+            "the preparation of its inputs, `data_prepare()` and the chunks' data frames (the median of three",
+            "calls). The fit is `fit_fine_gray()` on the data frame, whose coefficients and robust variance must",
+            "be the engine side's bitwise."), "")
   },
   paste("Rule (the brief's §3.7 MUST, DEC-105): a fit is too slow when, in every round, its median and its fastest",
         "run are more than 10% above the engine call's plus the preparation of its inputs, and its median at least",
@@ -190,7 +230,13 @@ if (nrow(user)) {
              paste("The call a user would make: `coxph()` with the provider as strata, the offset, and the weights,",
                    "and for robust one cluster per row (C1's comparator, DEC-098; the package called it before",
                    "DEC-099). Reported, not a gate. Its estimates come from rows in the generator's order, so they",
-                   "can differ from the engine call's in the last bits."),
+                   "can differ from the engine call's in the last bits.",
+                   if (fine_gray) {
+                     paste("For the Fine-Gray tasks, the user's calls are `finegray()` once, with the provider as",
+                           "strata, the case weights multiplied in after it (its own `weights` argument misapplies",
+                           "them after the first stratum, DEC-123), and `coxph(cluster = subject)` on the rows of",
+                           "positive weight.")
+                   }),
              "",
              paste("| Scenario | Task | Round | coxph() median | Fit median | Ratio, fit / coxph() |",
                    "Peak MB, coxph() / fit | coxph()'s largest relative difference from the engine call |"),
@@ -205,12 +251,19 @@ if (nrow(user)) {
 }
 
 c1_task <- c(breslow = "survival_breslow", efron = "survival_efron", robust = "survival_robust_breslow",
-             penalized_path = "glmnet_path", penalized_cv = "glmnet_cv")
+             penalized_path = "glmnet_path", penalized_cv = "glmnet_cv", fine_gray = NA, fine_gray_right = NA)
 py_task <- c(breslow = "coxph_breslow", efron = "coxph_efron", robust = "coxph_robust_breslow",
-             penalized_path = "penalized_path", penalized_cv = "penalized_cv")
+             penalized_path = "penalized_path", penalized_cv = "penalized_cv", fine_gray = "fine_gray",
+             fine_gray_right = "fine_gray_right")
 median_of <- function(d, scenario, task) {
-  v <- d$median_s[d$scenario == scenario & d$task == task]
+  v <- d$median_s[!is.na(task) & d$scenario == scenario & d$task == task]
   if (length(v)) v[1] else NA_real_
+}
+# A pprof_py time, or that its run raised (its status, for example a FloatingPointError, D-80).
+py_time <- function(scenario, task) {
+  status <- py$status[!is.na(task) & py$scenario == scenario & py$task == task]
+  if (length(status) && !identical(status[1], "ok")) return("raises")
+  fmt(median_of(py, scenario, task))
 }
 lines <- c(lines, "", "## The fits beside C1's baseline", "",
            sprintf(paste("C1's engine calls (`%s`: `agreg.fit()` on the rows in the generator's order with the raw",
@@ -222,7 +275,14 @@ lines <- c(lines, "", "## The fits beside C1's baseline", "",
                          "10-fold cross-validation fitted 11 paths and evaluated `coxnet.deviance()` on all rows",
                          "only."),
                    basename(args[[2]]), py_machine$packages$pprof_py, py_machine$python,
-                   paste(unique(py$numba_threads), collapse = ", "), basename(args[[3]])),
+                   paste(unique(py$numba_threads[!is.na(py$numba_threads)]), collapse = ", "), basename(args[[3]])),
+           if (!is.null(later_py_machine)) {
+             c("", sprintf(paste("pprof_py's times of the tasks it ran again come from `%s`, run on %s with numba's",
+                                 "default threads (%s); \"raises\" marks a task whose pprof_py run raised an error,",
+                                 "such as the `FloatingPointError` of D-80 where survival's weights are not finite."),
+                           basename(later_py), later_py_machine$date,
+                           paste(unique(later$numba_threads[!is.na(later$numba_threads)]), collapse = ", ")))
+           },
            "",
            "| Scenario | Task | Fit median | C1 engine median | pprof_py median | Ratio, fit / pprof_py |",
            "|---|---|---|---|---|---|")
@@ -231,8 +291,30 @@ for (g in names(groups)) {
   fit_median <- stats::median(p$median_s_fit)
   py_median <- median_of(py, p$scenario[1], py_task[[p$task[1]]])
   lines <- c(lines, sprintf("| %s | %s | %s | %s | %s | %s |", p$scenario[1], p$task[1], fmt(fit_median),
-                            fmt(median_of(c1, p$scenario[1], c1_task[[p$task[1]]])), fmt(py_median),
-                            ratio(fit_median / py_median)))
+                            fmt(median_of(c1, p$scenario[1], c1_task[[p$task[1]]])),
+                            py_time(p$scenario[1], py_task[[p$task[1]]]), ratio(fit_median / py_median)))
+}
+if (fine_gray) {
+  fits <- arrange(side("fit"))
+  fits <- fits[startsWith(fits$task, "fine_gray"), , drop = FALSE]
+  engine_rows <- side("engine")
+  lines <- c(lines, "", "## The Fine-Gray fits' expansions and objects", "",
+             paste("Recorded, not a gate (DEC-127): the expanded rows that the fit gives survival's fitter (those of",
+                   "positive weight; the engine side's must be the same), the size of the fit's object",
+                   "(`object.size()`, without the data, `keep_data = FALSE`), and the peak memory of each side's",
+                   "process after its first run, in MB."),
+             "",
+             "| Scenario | Task | Round | Expanded rows, fit / engine | Object MB | Peak MB, engine / fit |",
+             "|---|---|---|---|---|---|")
+  rows_of <- function(x) if (length(x) && !is.na(x[1])) format(x[1], big.mark = ",", scientific = FALSE) else "-"
+  for (j in seq_len(nrow(fits))) {
+    e <- engine_rows[engine_rows$scenario == fits$scenario[j] & engine_rows$task == fits$task[j] &
+                       engine_rows$round == fits$round[j], , drop = FALSE]
+    lines <- c(lines, sprintf("| %s | %s | %d | %s / %s | %s | %s / %s |", fits$scenario[j], fits$task[j],
+                              fits$round[j], rows_of(fits$expanded_rows[j]), rows_of(e$expanded_rows),
+                              fmt(fits$object_mb[j]), fmt(if (nrow(e)) e$peak_after_mb[1] else NA),
+                              fmt(fits$peak_after_mb[j])))
+  }
 }
 midp_verdicts <- character()
 midp_notes <- character()

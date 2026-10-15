@@ -10,6 +10,13 @@ Usage, from the repository root, with the Cox generator's Python (dev/reference/
 Each task runs in a fresh process: a warm-up on 2,000 rows (numba compiles or loads its cache), then
 the first run's time, the process's peak memory before and after it, and repeated runs (5 when the
 first takes under 10 s, 3 under 60 s, else 1). numba uses its default threads, which the CSV records.
+
+From Phase C5 (DEC-127), FineGrayPH on the data of run_paired.R's Fine-Gray tasks: the status of
+scenarios.R's cox_bench_cause() (every third event row, by row number, of a second cause), cause 1, Breslow
+ties, the case weights, each row its own subject, stratified by provider; fine_gray with the entry times as
+they are (center, covariates-5, providers-100), fine_gray_right with every entry at 0 (center,
+providers-7500). Where survival's weights are not finite, pprof_py raises (D-80), and the CSV records the
+error. run_paired.R writes the data and scenarios.json first.
 """
 import csv
 import json
@@ -21,8 +28,11 @@ import sys
 import time
 
 TASKS = ("coxph_breslow", "coxph_efron", "coxph_robust_breslow", "measures", "test_midp", "test_exact",
-         "penalized_path", "penalized_cv")
+         "penalized_path", "penalized_cv", "fine_gray", "fine_gray_right")
 PENALIZED_ONLY = {"penalized_path", "penalized_cv"}
+# The scenarios of the Fine-Gray tasks, as in run_paired.R (DEC-127).
+FINE_GRAY_SCENARIOS = {"fine_gray": {"center", "covariates-5", "providers-100"},
+                       "fine_gray_right": {"center", "providers-7500"}}
 
 
 def peak_mb():
@@ -56,6 +66,7 @@ def child(directory, task):
 
     import numba
     import numpy as np
+    from pprof_py import FineGrayPH
     from pprof_py.models.survival.coxph import CoxPH
     from pprof_py.models.survival.penalized_coxph import PenalizedCoxPH, PenalizedCoxPHCV
 
@@ -91,6 +102,22 @@ def child(directory, task):
         "penalized_cv": lambda: PenalizedCoxPHCV(alpha=1.0, n_lambda=100, lambda_min_ratio=1e-4, n_folds=10,
                                                  random_state=1, ties="breslow").fit(X, **fit_args),
     }
+    if task.startswith("fine_gray"):
+        n = X.shape[0]
+        cause = np.where(times["event"] == 1, np.where(np.arange(1, n + 1) % 3 == 0, 2, 1), 0)
+        entry = np.zeros(n) if task == "fine_gray_right" else times["start"]
+        calls[task] = lambda: FineGrayPH(ties="breslow").fit(X, event=cause, failcode=1, start=entry,
+                                                             stop=times["stop"], id=np.arange(n), strata=provider,
+                                                             sample_weight=col["weight"])
+        # numba compiles what the warm-up reaches, with entries at 0 and as the task has them; with late
+        # entries a warm-up may raise as the task does (D-80), after compiling.
+        for start in (np.zeros(warm), entry[:warm]):
+            try:
+                FineGrayPH(ties="breslow").fit(X[:warm], event=cause[:warm], failcode=1, start=start,
+                                               stop=times["stop"][:warm], id=np.arange(warm),
+                                               sample_weight=col["weight"][:warm])
+            except FloatingPointError:
+                pass
     if task.startswith("penalized"):
         PenalizedCoxPH(alpha=1.0, n_lambda=3, ties="breslow").fit(X[:warm], **subset(warm))
     if task.startswith("test"):
@@ -126,8 +153,13 @@ def main():
         for task in TASKS:
             if task in PENALIZED_ONLY and not sc["penalized"]:
                 continue
+            if task in FINE_GRAY_SCENARIOS and sc["id"] not in FINE_GRAY_SCENARIOS[task]:
+                continue
             label = f"{sc['id']} {task}"
             if only and not only.search(label):
+                continue
+            if not os.path.exists(os.path.join(data_root, sc["id"], "columns.json")):
+                print(f"{label}: no data in {data_root}; skipped", flush=True)
                 continue
             print(label, flush=True)
             proc = subprocess.run([sys.executable, __file__, "--child", os.path.join(data_root, sc["id"]), task],

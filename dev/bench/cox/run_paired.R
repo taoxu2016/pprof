@@ -32,6 +32,22 @@
 #   out in plain R as the package computes them; the preparation is data_prepare() and the inputs.
 # They run on covariates-50 (C1's penalized scenario), and the path also on rows-1e4.
 #
+# From Phase C5 (DEC-127), two tasks time the Fine-Gray model on the scenario's data with a second cause
+# derived without random numbers (scenarios.R's cox_bench_cause()), cause 1, Breslow ties, the case weights,
+# and one subject per row: fine_gray on the data as they are, Surv(start, stop, cause) with the subjects as
+# `id`, on center, covariates-5, and providers-100; fine_gray_right on Surv(stop, cause), every entry at 0,
+# on center and providers-7500. Their sides:
+# - engine: the survival calls the fit makes (R/model-survival.R), written out: finegray() on each chunk of
+#   providers, the case weights multiplied in, the fitter's inputs from the expansion's rows of positive
+#   weight, survival's fitter as coxph() calls it, and coxph()'s robust step clustered by subject. The
+#   preparation timed after it is data_prepare() and the chunks' data frames (the fitter's inputs come
+#   from the expansion, so they are built within the engine call);
+# - coxph: the calls a user would make, finegray() once with the provider as strata, the case weights
+#   multiplied in after it (its own weights argument misapplies them, DEC-123), and coxph(cluster =
+#   subject) on the rows of positive weight; reported, not a gate;
+# - fit: fit_fine_gray() on the data frame, which must give the engine side's coefficients and robust
+#   variance bitwise; the size of its object and the expanded rows it fits are recorded.
+#
 # The package is the working tree, installed with --preclean (dev/bench/harness.R) and placed first
 # on the library path, before the libraries that hold survival. Each process measures as
 # run_engines.R does: the first run's time, the process's peak memory before and after it, gc()'s
@@ -64,15 +80,17 @@ while (k <= length(args)) {
 }
 stopifnot(requireNamespace("callr", quietly = TRUE), requireNamespace("bench", quietly = TRUE), opts$rounds >= 1L)
 
-tasks <- c("breslow", "efron", "robust", "profile", "penalized_path", "penalized_cv")
+tasks <- c("breslow", "efron", "robust", "profile", "penalized_path", "penalized_cv", "fine_gray", "fine_gray_right")
 sides <- c("engine", "coxph", "fit")  # the order of every round
 task_sides <- function(task) {
   if (identical(task, "profile")) "fit" else if (startsWith(task, "penalized")) c("engine", "fit") else sides
 }
-# The scenarios of the penalized tasks (DEC-118).
+# The scenarios of the penalized tasks (DEC-118) and of the Fine-Gray tasks (DEC-127).
 task_applies <- function(task, scenario) {
   switch(task, penalized_path = scenario %in% c("covariates-50", "rows-1e4"),
-         penalized_cv = scenario == "covariates-50", TRUE)
+         penalized_cv = scenario == "covariates-50",
+         fine_gray = scenario %in% c("center", "covariates-5", "providers-100"),
+         fine_gray_right = scenario %in% c("center", "providers-7500"), TRUE)
 }
 
 run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
@@ -224,6 +242,119 @@ run_side <- function(dir, task, side, scenarios_file, pprof_lib) {
                   gc_max_mb = timed$gc_max, prep_s = prep_s),
              stats::setNames(as.list(rep(NA_real_, length(profile_columns))), profile_columns), result))
   }
+  if (startsWith(task, "fine_gray")) {
+    # The Fine-Gray model (DEC-127): cause 1 of cox_bench_cause()'s status, the subjects as `id` for
+    # fine_gray and each row its own subject for fine_gray_right, Breslow ties, and the case weights.
+    right <- identical(task, "fine_gray_right")
+    d$cause <- cox_bench_cause(d)
+    d$subject <- seq_len(nrow(d))
+    lhs <- if (right) "Surv(stop, cause)" else "Surv(start, stop, cause)"
+    env <- list2env(list(Surv = survival::Surv, strata = survival::strata), parent = globalenv())
+    formula <- stats::as.formula(paste(lhs, "~", paste(covariates, collapse = " + ")), env = env)
+    id <- if (!right) "subject"
+    prepare <- NULL
+    call <- switch(side,
+      fit = function() fit_fine_gray(formula, d, "provider", cause = "1", id = id, weights = "weight"),
+      coxph = {
+        columns <- c(if (!right) "start", "stop", "cause", "provider", "subject", "weight", covariates)
+        data <- d[, columns]
+        expand <- stats::as.formula(paste(lhs, "~ . + strata(provider)"), env = env)
+        fitted <- stats::as.formula(paste("Surv(fgstart, fgstop, fgstatus) ~", paste(covariates, collapse = " + "),
+                                          "+ strata(provider)"), env = env)
+        function() {
+          fg <- if (right) {
+            survival::finegray(expand, data = data, etype = "1", timefix = FALSE)
+          } else {
+            survival::finegray(expand, data = data, etype = "1", id = subject, timefix = FALSE)
+          }
+          fg$fgwt <- fg$fgwt * fg$weight
+          fg <- fg[fg$fgwt > 0, , drop = FALSE]
+          survival::coxph(fitted, data = fg, weights = fgwt, cluster = subject, ties = "breslow", control = control)
+        }
+      },
+      engine = {
+        # The prepared data and the data frame of each chunk of providers that has events of the cause:
+        # its providers' rows and its anchors' (R/model-survival.R, survival_fine_gray_chunks(), DEC-122).
+        prepare <- function() {
+          prepared <- pprof:::data_prepare(formula, d, "provider", response_type = "competing_risks",
+                                           weights = "weight", cluster = id)
+          subjects <- if (is.null(prepared$cluster)) seq_along(prepared$response) else as.integer(prepared$cluster)
+          chunks <- pprof:::survival_fine_gray_chunks(prepared, subjects, pprof:::fine_gray_chunk_providers)
+          frames <- lapply(chunks, function(chunk) {
+            own <- prepared$provider_index %in% chunk$own
+            if (!any(prepared$response[own] == 1)) return(NULL)
+            rows <- which(own | prepared$provider_index %in% chunk$anchors)
+            frame <- data.frame(.stop = prepared$stop[rows], .status = factor(prepared$response[rows], levels = 0:2),
+                                .row = rows, .provider = prepared$provider_index[rows])
+            if (!right) {
+              frame$.start <- prepared$start[rows]
+              frame$.id <- subjects[rows]
+            }
+            list(frame = frame, own = chunk$own)
+          })
+          list(prepared = prepared, frames = frames[!vapply(frames, is.null, logical(1))])
+        }
+        built <- prepare()
+        prepared <- built$prepared
+        frames <- built$frames
+        rm(built)
+        expand <- stats::as.formula(paste(if (right) "Surv(.stop, .status)" else "Surv(.start, .stop, .status)",
+                                          "~ .row + strata(.provider)"), env = env)
+        fields <- c(".row", "fgstart", "fgstop", "fgstatus", "fgwt")
+        function() {
+          parts <- lapply(frames, function(chunk) {
+            frame <- chunk$frame
+            fg <- if (right) {
+              survival::finegray(expand, data = frame, etype = "1", timefix = FALSE)
+            } else {
+              survival::finegray(expand, data = frame, etype = "1", id = .id, timefix = FALSE)
+            }
+            kept <- prepared$provider_index[fg$.row] %in% chunk$own
+            lapply(fg[fields], function(column) column[kept])
+          })
+          column <- function(name) unlist(lapply(parts, `[[`, name), use.names = FALSE)
+          weight <- column("fgwt") * prepared$weights[column(".row")]
+          fitted <- which(weight > 0)
+          rows <- column(".row")[fitted]
+          x <- prepared$design[rows, , drop = FALSE]
+          y <- survival::Surv(column("fgstart")[fitted], column("fgstop")[fitted], column("fgstatus")[fitted])
+          strata <- as.integer(factor(prepared$provider_index[rows]))
+          weights <- weight[fitted]
+          fit <- survival::agreg.fit(x, y, strata, rep(0, length(rows)), NULL, control, weights = weights,
+                                     method = "breslow", rownames = NULL, nocenter = c(-1, 0, 1))
+          object <- c(fit, list(x = x, y = y, weights = weights))
+          object$naive.var <- fit$var
+          object$strata <- strata
+          object$terms <- prepared$terms
+          object$class <- NULL
+          class(object) <- fit$class
+          subjects <- if (is.null(prepared$cluster)) rows else prepared$cluster[rows]
+          cluster <- if (is.factor(subjects)) as.integer(subjects) else match(subjects, unique(subjects))
+          fit$robust_var <- crossprod(stats::residuals(object, type = "dfbeta", collapse = cluster, weighted = TRUE))
+          fit$n_expanded <- length(rows)
+          fit
+        }
+      }
+    )
+    timed <- measure(call)
+    value <- timed$value
+    variance <- if (inherits(value, "pprof_fine_gray")) value$vcov else if (inherits(value, "coxph")) value$var else
+      value$robust_var
+    result <- list(coefficients = unname(value$coefficients), variance = unname(variance),
+                   object_mb = if (identical(side, "fit")) as.numeric(utils::object.size(value)) / 2^20 else NA_real_,
+                   expanded_rows = if (inherits(value, "coxph")) value$n else value$n_expanded)
+    rm(value)
+    timed$value <- NULL
+    times <- timed$times
+    prep_s <- NA_real_
+    if (!is.null(prepare)) {
+      prep_s <- stats::median(vapply(1:3, function(i) as.numeric(bench::bench_time(prepare())[["real"]]), numeric(1)))
+    }
+    return(c(list(first_s = timed$first, median_s = stats::median(times), min_s = min(times), max_s = max(times),
+                  runs = length(times), peak_before_mb = timed$before / 2^20, peak_after_mb = timed$after / 2^20,
+                  gc_max_mb = timed$gc_max, prep_s = prep_s),
+             stats::setNames(as.list(rep(NA_real_, length(profile_columns))), profile_columns), result))
+  }
   if (identical(task, "profile")) {
     # The profiling functions on one fit, made outside the timing: the expected events' closed form
     # (which the fit computes), the indirect and direct measures, each test with its limits (pprof_py's
@@ -361,8 +492,11 @@ max_relative_difference <- function(a, b) {
 wt_lib <- bench_install_working_tree()
 scenarios_file <- file.path("dev", "bench", "cox", "scenarios.R")
 scenarios <- cox_bench_scenarios()
+# The list of scenarios that run_pprof_py.py reads, beside their data.
+dir.create(data_root, recursive = TRUE, showWarnings = FALSE)
+jsonlite::write_json(scenarios, file.path(data_root, "scenarios.json"), dataframe = "rows", auto_unbox = TRUE)
 measures <- c("first_s", "median_s", "min_s", "max_s", "runs", "peak_before_mb", "peak_after_mb", "gc_max_mb", "prep_s",
-              "expected_s", "measures_s", "midp_s", "exact_s", "funnel_s")
+              "expected_s", "measures_s", "midp_s", "exact_s", "funnel_s", "object_mb", "expanded_rows")
 rows <- list()
 mismatches <- 0L
 for (i in seq_len(nrow(scenarios))) {

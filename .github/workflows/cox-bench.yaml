@@ -8,10 +8,14 @@
 # breslow$|^covariates-5 robust$"; run 38004882689). From Phase C4 (DEC-118) it runs by default the
 # elastic-net Cox model's tasks: its path on covariates-50 and rows-1e4, and its 10-fold cross-validation
 # on covariates-50, which takes about 15 minutes a round; glmnet, a suggested package, is installed for
-# them. As on the gate's machine, the sides alternate in fresh single-threaded processes on the same data.
+# them. From Phase C5 (DEC-127) it runs by default the Fine-Gray model's tasks: fine_gray on center,
+# covariates-5, and providers-100, whose expansion has about 4.3 million rows, and fine_gray_right on
+# center and providers-7500, every entry at 0. As on the gate's machine, the sides alternate in fresh
+# single-threaded processes on the same data.
 #
 # The 10% rule compares the sides on the runner. The report sets the package's mid-p times beside
-# pprof_py's from C1, which ran on the project lead's machine, so those ratios are indicative. The job
+# pprof_py's from C1, and its Fine-Gray fits beside pprof_py's FineGrayPH from C5, both run on the project
+# lead's machine, so those ratios are indicative. The job
 # uploads the CSV, its JSON, the report, the notes, and the log, writes the report to the run's summary,
 # and repeats the verdicts as notices, which the public API returns without signing in
 # (dev/tools/ci_runs.R). Nothing is committed, and no verdict fails the job.
@@ -23,9 +27,9 @@ on:
       only:
         description: >-
           Regular expression selecting "<scenario> <task>" (tasks: breslow, efron, robust, profile,
-          penalized_path, penalized_cv)
+          penalized_path, penalized_cv, fine_gray, fine_gray_right)
         required: false
-        default: " penalized"
+        default: " fine_gray"
       rounds:
         description: "Rounds of the paired measurement"
         required: false
@@ -79,7 +83,7 @@ jobs:
           cat > bench-results/notes.md <<EOF
           ## Notes on this run
 
-          - **The runner.** GitHub-hosted \`ubuntu-24.04\`, run ${GITHUB_RUN_ID}: ${cpu}, $(nproc) processors, ${memory} GB of memory. Tasks selected with \`--only "${ONLY}"\`, ${ROUNDS} rounds. The pprof_py times beside the package's are C1's, from the project lead's Windows machine, so their ratios are indicative.
+          - **The runner.** GitHub-hosted \`ubuntu-24.04\`, run ${GITHUB_RUN_ID}: ${cpu}, $(nproc) processors, ${memory} GB of memory. Tasks selected with \`--only "${ONLY}"\`, ${ROUNDS} rounds. The pprof_py times beside the package's are C1's and C5's, from the project lead's Windows machine, so their ratios are indicative.
           EOF
           cat bench-results/notes.md
           free -m
@@ -100,7 +104,8 @@ jobs:
           report="bench-results/cox-paired-$STAMP-linux.md"
           Rscript dev/bench/cox/summarize_paired.R "$report" dev/bench/results/cox-engines-20261008-windows.csv \
             dev/bench/results/cox-pprof_py-20261008-windows.csv "bench-results/cox-paired-$STAMP-linux.csv" \
-            --notes bench-results/notes.md --notices || true
+            --pprof-py dev/bench/results/cox-c5-pprof_py-20261015-windows.csv --notes bench-results/notes.md \
+            --notices || true
           if [ -f "$report" ]; then cat "$report" >> "$GITHUB_STEP_SUMMARY"; fi
 
       - name: Upload the results

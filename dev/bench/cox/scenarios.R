@@ -67,3 +67,10 @@ cox_bench_read <- function(dir) {
   attr(d, "covariates") <- spec$covariates
   d
 }
+
+# The status of the Fine-Gray tasks (the CoxPH C5 plan, §4.6; DEC-127): the scenario's events, those of
+# every third row (by row number) of a second cause, derived without random numbers so that no scenario's
+# data change; a factor whose first level is censoring. run_pprof_py.py derives the same.
+cox_bench_cause <- function(d) {
+  factor(ifelse(d$event == 1, ifelse(seq_len(nrow(d)) %% 3L == 0L, 2L, 1L), 0L), levels = 0:2)
+}
