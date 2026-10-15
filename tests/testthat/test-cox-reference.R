@@ -291,8 +291,8 @@ for (set in c("core", "full")) {
             expect_identical(indirect$observed, unlist(py$observed), label = label)
             expect_cox_match(fit$providers$person_time, py$person_time, "closed_form", paste(label, "person-time"))
             # D-58: pprof_py's Efron fit counts zero-weight events among tied deaths, so its coefficients,
-            # and the expected events at them, differ; with Breslow ties they agree.
-            d58 <- identical(id, "zero-weights") && identical(ties, "efron")
+            # and the expected events at them, differ; with Breslow ties they agree (the records' `d58`).
+            d58 <- rec$d58
             check <- if (d58) expect_cox_differ else expect_cox_match
             check(indirect$expected, py$expected, "cox_baseline", paste(label, "expected events"))
             check(direct$expected, py$direct_expected, "cox_baseline", paste(label, "direct expected events"))

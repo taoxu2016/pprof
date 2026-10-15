@@ -109,8 +109,10 @@ cox_last_step_bound <- function(a, b, iterates, iterations) {
 # the other causes censored (M-35), with what the measures need: the event, the providers as pprof_py
 # grouped them (the stratum, or id mod 10 in an unstratified case, dev/reference/cox/generate.py's
 # providers_of()), the times, the offset, and the covariates; pprof_py's outputs (its `measures`,
-# `tests`, and `funnel`); and for stratified records the package's tight fit, whose strata are those
-# providers.
+# `tests`, and `funnel`); for stratified records the package's tight fit, whose strata are those
+# providers, with the case's weights; and `d58`, whether pprof_py's fit counts zero-weight events among
+# Efron's tied deaths there (D-58): the zero-weights case, and from Phase C5 the weighted competing-risk
+# case's cause 1, on whose events of zero weight the generator placed a tie (dev/reference/cox/cases.py).
 cox_profile_records <- function(fx, ties) {
   def <- fx$case
   d <- fx$input
@@ -120,7 +122,8 @@ cox_profile_records <- function(fx, ties) {
     return(list(list(
       label = paste(def$id, ties), event = d$event, provider = if (isTRUE(def$stratified)) d$stratum else d$id %% 10,
       start = start, stop = d$time, offset = if (isTRUE(def$offset)) d$offset else 0, x = x,
-      py = fx$pprof_py[[ties]], fit = if (isTRUE(def$stratified)) function() cox_case_fit(fx, ties, tight = TRUE)
+      py = fx$pprof_py[[ties]], fit = if (isTRUE(def$stratified)) function() cox_case_fit(fx, ties, tight = TRUE),
+      d58 = identical(def$id, "zero-weights") && identical(ties, "efron")
     )))
   }
   lhs <- if (isTRUE(def$truncated)) "Surv(entry, time, event == %d)" else "Surv(time, event == %d)"
@@ -130,7 +133,11 @@ cox_profile_records <- function(fx, ties) {
     list(label = sprintf("%s %s cause %s", def$id, ties, cause), event = as.numeric(d$event == as.integer(cause)),
          provider = d$stratum, start = start, stop = d$time, offset = 0, x = x,
          py = fx$pprof_py[[ties]]$cause_specific[[cause]],
-         fit = function() fit_cox_stratified(f, d, provider = "stratum", ties = ties, max_iter = 100, tol = 1e-11))
+         fit = function() {
+           fit_cox_stratified(f, d, provider = "stratum", weights = if (isTRUE(def$weighted)) "weight", ties = ties,
+                              max_iter = 100, tol = 1e-11)
+         },
+         d58 = isTRUE(def$weighted) && identical(ties, "efron") && identical(cause, "1"))
   })
 }
 
