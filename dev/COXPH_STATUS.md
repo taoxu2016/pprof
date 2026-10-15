@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is at its gate (2026-10-15) on `coxph/phase-5` (its plan, `dev/design/COXPH_C5_PLAN.md`, approved 2026-10-15).
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is closed (2026-10-15) and in `main`. Phase C6, documentation and hardening, is next, its plan first.
 
 ## 2026-10-07
 
@@ -348,3 +348,10 @@ Recorded on 2026-10-14, for the next session.
   - the benchmarks: `dev/bench/results/cox-c5-paired-20261015-windows.md`, as the entry above sums it up.
 - Open for the project lead: the push of the branch; `cox-bench.yaml`'s Fine–Gray tasks on providers-100 and providers-7500, which run when the project lead dispatches it; telling survival's maintainers of `finegray()`'s case-weight defect and of its cost with many strata, an action outside the fork. D-78 still awaits a methodology owner's confirmation (M-16), with the decisions taken under delegation in C0, among them D-56 to D-58, which C5 applies to the Fine–Gray model.
 - Next step: the project lead's review of the C5 gate.
+
+## 2026-10-15: the C5 gate closed
+
+- The project lead approved closing the C5 gate and asked for the work in `main`: `coxph/phase-5` goes to the fork, and the fork's `main` takes it as a fast-forward from `4c7b028`.
+- With the merge, `cox-bench.yaml` in `main` runs the Fine–Gray tasks by default when the project lead dispatches it (DEC-127): `fine_gray` on center, covariates-5, and providers-100, and `fine_gray_right` on center and providers-7500. The penalized tasks take `only` = " penalized", and the corner run "^corner |^providers-7500 breslow$|^covariates-5 robust$".
+- Open, as at the gate: D-78 awaits a methodology owner's confirmation (M-16), with the decisions taken under delegation in C0; the codes of an `id` (Fine–Gray) or a `cluster` (stratified model) that is a factor are untested; the package's tarball is 22 KB under the 5 MB at which `R CMD check` notes its size; telling survival's maintainers of `finegray()`'s case-weight defect and of its cost with many strata is the project lead's to take or ask for; and, from C4, the fits' overhead at 7,500 providers, the measures' time at 10,000 rows and 7,500 providers, and `rewrite-bench.yaml`'s setup. `CLAUDE.md`'s "Current phase" section still names Phase C5 as next; it changes with the project lead's approval.
+- Next step: Phase C6, documentation and hardening (the brief's §4, row C6), when the project lead asks: its plan first, `dev/design/COXPH_C6_PLAN.md`, for approval, on `coxph/phase-6` from `main`.
