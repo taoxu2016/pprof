@@ -76,8 +76,10 @@ fine_gray_direct_coxph <- function(prepared, expansion, ties, tol = 1e-9, max_it
   covariates <- colnames(prepared$design)
   for (name in covariates) d[[name]] <- unname(prepared$design[rows, name])
   right_side <- paste(c(covariates, "strata(provider)"), collapse = " + ")
+  # survfit() of the fit evaluates its data again in the formula's environment, which therefore holds them.
   f <- stats::as.formula(paste("Surv(fgstart, fgstop, fgstatus) ~", right_side),
-                         env = list2env(list(Surv = survival::Surv, strata = survival::strata), parent = globalenv()))
+                         env = list2env(list(Surv = survival::Surv, strata = survival::strata, d = d),
+                                        parent = globalenv()))
   survival::coxph(f, data = d, weights = fgwt, cluster = id, ties = ties,
                   control = survival::coxph.control(eps = tol, iter.max = max_iter, timefix = FALSE))
 }

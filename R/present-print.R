@@ -85,6 +85,33 @@ print.pprof_cox_penalized <- function(x, ...) {
   invisible(x)
 }
 
+# The Fine-Gray model (fit_fine_gray()): its tie method, the event of interest, the events and competing
+# events, the expanded rows, the rows left out for weight 0, convergence, and the variance (DEC-128).
+#' @export
+print.pprof_fine_gray <- function(x, ...) {
+  ties <- if (identical(x$spec$ties, "efron")) "Efron" else "Breslow"
+  cat(sprintf("<pprof model: fine_gray (%s ties)>\n", ties))
+  cat(sprintf("Event of interest \"%s\"; %s observations of %s providers, %s events, %s competing events",
+              x$cause, present_count(x$n_obs), present_count(x$n_providers), present_count(x$n_events),
+              present_count(x$n_competing)))
+  if (x$n_zero_weight > 0L) {
+    cat(sprintf("; %s observations with weight 0 left out of the fit", present_count(x$n_zero_weight)))
+  }
+  cat("\n")
+  cat(sprintf("Expanded data: %s rows in the fit\n", present_count(x$n_expanded)))
+  convergence <- x$convergence
+  status <- if (isTRUE(convergence$converged)) "Converged" else "Not converged"
+  cat(sprintf("%s after %d iterations (stop rule \"%s\", tol %s)\n", status, as.integer(convergence$iterations),
+              convergence$stop_rule, format(convergence$tol)))
+  cat(sprintf("Variance: robust, %s\n",
+              if (is.null(x$spec$id)) "one cluster per observation" else sprintf("clustered by %s", x$spec$id)))
+  if (length(x$coefficients) > 0L) {
+    cat("Coefficients (log subdistribution hazard ratios):\n")
+    print(signif(x$coefficients, 4))
+  }
+  invisible(x)
+}
+
 #' @export
 print.pprof_summary <- function(x, ...) {
   cat(sprintf("<pprof summary: %s%s>\n", x$family, if (is.null(x$method)) "" else sprintf(" (%s)", x$method)))

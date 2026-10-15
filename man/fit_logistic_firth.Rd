@@ -95,6 +95,7 @@ Firth D (1993). Bias reduction of maximum likelihood estimates. \emph{Biometrika
 Other fitting functions:
 \code{\link[=fit_cox_penalized]{fit_cox_penalized()}},
 \code{\link[=fit_cox_stratified]{fit_cox_stratified()}},
+\code{\link[=fit_fine_gray]{fit_fine_gray()}},
 \code{\link[=fit_linear_cre]{fit_linear_cre()}},
 \code{\link[=fit_linear_fe]{fit_linear_fe()}},
 \code{\link[=fit_linear_re]{fit_linear_re()}},

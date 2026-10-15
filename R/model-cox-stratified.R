@@ -15,6 +15,11 @@
 #'   events, write it in `Surv()`, for example `Surv(time, status == 1)`, which censors the other
 #'   events (the cause-specific model). Right-censored times must be above 0, and entry times below
 #'   their exit times. `offset()` terms add to the linear predictor.
+#' - **Competing risks.** The cause-specific model of each event type is this model with that event
+#'   written in `Surv()` and the others censored at their times, as pprof_py's `CauseSpecificCoxPH`
+#'   fits it; its measures and tests compare each provider's events of that type with their
+#'   expectation, the competing events censored. [fit_fine_gray()] fits the Fine-Gray model of the same
+#'   event, which keeps subjects with a competing event at risk and describes its cumulative incidence.
 #' - **Ties** of event times are handled by Breslow's method, or Efron's. Times are compared
 #'   exactly, so times that differ only by rounding are different times; integer time units avoid
 #'   such near ties, and [check_data()] reports them.
@@ -80,6 +85,15 @@
 #' fit_cox_stratified(Surv(time, status) ~ age + sex, lung, provider = "inst", robust = TRUE)
 #' # Each institution's standardized ratio of deaths, with mid-p tests and limits.
 #' head(profile_providers(fit, interval = "midp")$table)
+#' # Competing risks: the cause-specific model of each event type, the other censored.
+#' mgus2 <- survival::mgus2
+#' mgus2$etime <- with(mgus2, ifelse(pstat == 0, futime, ptime))
+#' mgus2$event <- factor(with(mgus2, ifelse(pstat == 0, 2 * death, 1)), levels = 0:2,
+#'                       labels = c("censored", "progression", "death"))
+#' progression <- fit_cox_stratified(Surv(etime, event == "progression") ~ age + mspike, mgus2,
+#'                                   provider = "sex")
+#' death <- fit_cox_stratified(Surv(etime, event == "death") ~ age + mspike, mgus2, provider = "sex")
+#' rbind(progression = coef(progression), death = coef(death))
 #' @export
 fit_cox_stratified <- function(formula, data, provider, weights = NULL, cluster = NULL, ties = "breslow",
                                robust = FALSE, max_iter = 20, tol = 1e-9, keep_data = FALSE, verbose = FALSE) {

@@ -60,6 +60,7 @@ reference:
   - fit_cox_stratified
   - fit_cox_penalized
   - select_lambda
+  - fit_fine_gray
 - title: Profiling providers
   contents:
   - test_providers
@@ -87,6 +88,7 @@ reference:
   - cox_stratified_methods
   - baseline_hazard
   - cox_penalized_methods
+  - fine_gray_methods
   - pprof_tidy
 - title: Example data
   contents:

@@ -136,6 +136,28 @@ augment.pprof_cox_penalized <- function(x, ...) {
 
 #' @rdname pprof_tidy
 #' @export
+glance.pprof_fine_gray <- function(x, ...) {
+  # The stratified Cox model's columns (DEC-103), with the competing events (DEC-128); the log-likelihood,
+  # AIC, and BIC are those of the weighted expanded data, as survival's coxph() reports them.
+  partial <- stats::logLik(x)
+  convergence <- x$convergence
+  tibble::tibble(
+    n_obs = x$n_obs, n_providers = x$n_providers, n_excluded_providers = x$n_excluded_providers,
+    n_events = x$n_events, n_competing = x$n_competing, loglik = as.double(partial), aic = stats::AIC(partial),
+    bic = stats::BIC(partial), auc = NA_real_, iterations = as.integer(convergence$iterations),
+    converged = convergence$converged
+  )
+}
+
+#' @rdname pprof_tidy
+#' @export
+augment.pprof_fine_gray <- function(x, ...) {
+  # D-81: the fitted values and residuals of the expanded rows do not belong to the observations.
+  abort_unsupported_inference(x, "augment()")
+}
+
+#' @rdname pprof_tidy
+#' @export
 augment.pprof_model <- function(x, ...) {
   fitted <- stats::fitted(x)
   order <- order(x$row_index)

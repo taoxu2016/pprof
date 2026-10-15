@@ -38,7 +38,8 @@ use \code{FALSE}, because the provider effects absorb the intercept.}
 \item{event_counts}{Whether to count events per provider and flag providers with no events
 or only events (binary outcomes).}
 
-\item{response_type}{\code{"default"}, or \code{"survival"} for a \code{Surv()} response.}
+\item{response_type}{\code{"default"}, \code{"survival"} for a \code{Surv()} response, or \code{"competing_risks"}
+for a \code{Surv()} response with a factor status of several event types.}
 
 \item{weights}{The name of a column of case weights, finite and at least 0, kept as
 \code{weights}, or \code{NULL}.}
@@ -97,6 +98,13 @@ their exit times; a status \code{Surv()} cannot read, or an entry time not below
 an error rather than a missing value. With \code{event_counts = TRUE} the provider table also has
 \code{person_time}, the sum of \code{stop - start}. Rows with a missing value in the weights, the
 cluster, or a variable of an \code{offset()} term are dropped too.
+
+For competing risks (\code{response_type = "competing_risks"}, the Fine–Gray model), the response is
+a \code{Surv()} object whose status is a factor: its first level is censoring and the others are the
+event types, as \code{Surv()} reads a factor status. \code{response} then holds each observation's state, 0
+for censoring and k for the k-th event type, and \code{settings$states} the event types' labels; the
+times follow the rules above. The events to count depend on the event of interest, which the
+model chooses, so \code{event_counts} must be \code{FALSE}.
 }
 \examples{
 data(ExampleDataBinary)

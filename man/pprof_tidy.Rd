@@ -10,6 +10,8 @@
 \alias{tidy.pprof_cox_penalized}
 \alias{glance.pprof_cox_penalized}
 \alias{augment.pprof_cox_penalized}
+\alias{glance.pprof_fine_gray}
+\alias{augment.pprof_fine_gray}
 \alias{augment.pprof_model}
 \title{Tidy outputs of models and results}
 \usage{
@@ -28,6 +30,10 @@
 \method{glance}{pprof_cox_penalized}(x, ...)
 
 \method{augment}{pprof_cox_penalized}(x, ...)
+
+\method{glance}{pprof_fine_gray}(x, ...)
+
+\method{augment}{pprof_fine_gray}(x, ...)
 
 \method{augment}{pprof_model}(x, ...)
 }
@@ -80,6 +86,7 @@ tidy(test_providers(fit))
 Other model methods:
 \code{\link{cox_penalized_methods}},
 \code{\link{cox_stratified_methods}},
+\code{\link{fine_gray_methods}},
 \code{\link{linear_fe_methods}},
 \code{\link{logistic_fe_methods}},
 \code{\link{mixed_methods}},

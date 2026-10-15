@@ -74,6 +74,11 @@ events), \code{Surv(start, stop, status)}. The status is 0/1, logical, or 1/2; f
 events, write it in \code{Surv()}, for example \code{Surv(time, status == 1)}, which censors the other
 events (the cause-specific model). Right-censored times must be above 0, and entry times below
 their exit times. \code{offset()} terms add to the linear predictor.
+\item \strong{Competing risks.} The cause-specific model of each event type is this model with that event
+written in \code{Surv()} and the others censored at their times, as pprof_py's \code{CauseSpecificCoxPH}
+fits it; its measures and tests compare each provider's events of that type with their
+expectation, the competing events censored. \code{\link[=fit_fine_gray]{fit_fine_gray()}} fits the Fine-Gray model of the same
+event, which keeps subjects with a competing event at risk and describes its cumulative incidence.
 \item \strong{Ties} of event times are handled by Breslow's method, or Efron's. Times are compared
 exactly, so times that differ only by rounding are different times; integer time units avoid
 such near ties, and \code{\link[=check_data]{check_data()}} reports them.
@@ -109,12 +114,22 @@ summary(fit)
 fit_cox_stratified(Surv(time, status) ~ age + sex, lung, provider = "inst", robust = TRUE)
 # Each institution's standardized ratio of deaths, with mid-p tests and limits.
 head(profile_providers(fit, interval = "midp")$table)
+# Competing risks: the cause-specific model of each event type, the other censored.
+mgus2 <- survival::mgus2
+mgus2$etime <- with(mgus2, ifelse(pstat == 0, futime, ptime))
+mgus2$event <- factor(with(mgus2, ifelse(pstat == 0, 2 * death, 1)), levels = 0:2,
+                      labels = c("censored", "progression", "death"))
+progression <- fit_cox_stratified(Surv(etime, event == "progression") ~ age + mspike, mgus2,
+                                  provider = "sex")
+death <- fit_cox_stratified(Surv(etime, event == "death") ~ age + mspike, mgus2, provider = "sex")
+rbind(progression = coef(progression), death = coef(death))
 }
 \seealso{
 \code{\link[=baseline_hazard]{baseline_hazard()}}, \link{cox_stratified_methods}, \code{\link[=test_coefficients]{test_coefficients()}}, \code{\link[=check_data]{check_data()}}.
 
 Other fitting functions:
 \code{\link[=fit_cox_penalized]{fit_cox_penalized()}},
+\code{\link[=fit_fine_gray]{fit_fine_gray()}},
 \code{\link[=fit_linear_cre]{fit_linear_cre()}},
 \code{\link[=fit_linear_fe]{fit_linear_fe()}},
 \code{\link[=fit_linear_re]{fit_linear_re()}},

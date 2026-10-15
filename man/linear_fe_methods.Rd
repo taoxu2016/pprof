@@ -51,6 +51,7 @@ logLik(fit)
 Other model methods:
 \code{\link{cox_penalized_methods}},
 \code{\link{cox_stratified_methods}},
+\code{\link{fine_gray_methods}},
 \code{\link{logistic_fe_methods}},
 \code{\link{mixed_methods}},
 \code{\link{pprof_model_methods}},
