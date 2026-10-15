@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-15",
+  "commit": "39044807e22f5527ad2f79d0b9888a10767ce1c6",
+  "package_code_clean": true,
+  "r": "R version 4.4.0 (2024-04-24 ucrt)",
+  "platform": "x86_64-w64-mingw32",
+  "os": "Windows 11 x64 (build 22621)",
+  "cpu": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+  "logical_cores": 8,
+  "blas": "",
+  "lapack": "3.12.0",
+  "rounds": 2,
+  "only": "^center fine_gray|^covariates-5 fine_gray$",
+  "packages": {
+    "pprof": "2.0.0",
+    "survival": "3.8.12",
+    "Matrix": "1.7.6",
+    "bench": "1.1.4",
+    "callr": "3.8.0",
+    "glmnet": "5.1"
+  },
+  "threads": "OMP_THREAD_LIMIT = 1, OMP_NUM_THREADS = 1; survival is single-threaded"
+}

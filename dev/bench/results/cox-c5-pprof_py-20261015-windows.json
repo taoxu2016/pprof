@@ -1,0 +1,16 @@
+{
+ "date": "2026-10-15",
+ "commit": "39044807e22f5527ad2f79d0b9888a10767ce1c6",
+ "python": "3.12.3",
+ "platform": "Windows-11-10.0.22621-SP0",
+ "cpu": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+ "logical_cores": 8,
+ "packages": {
+  "pprof_py": "0.7.0",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "pandas": "3.0.6",
+  "numba": "0.68.0"
+ },
+ "threads": "numba's default (the CSV's numba_threads column)"
+}

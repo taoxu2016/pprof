@@ -1,0 +1,5 @@
+scenario,n,providers,covariates,task,status,first_s,median_s,min_s,max_s,runs,peak_before_mb,peak_after_mb,numba_threads
+center,100000,1000,20,fine_gray,ok,4.1220060999985435,3.8209847000034642,3.7239079999999376,4.295293499999389,5,295.84375,688.50390625,8
+center,100000,1000,20,fine_gray_right,ok,2.6764282999938587,3.2651908000043477,3.117142999995849,3.8104683000055957,5,287.26953125,615.9296875,8
+providers-7500,100000,7500,20,fine_gray_right,ok,5.073043299998972,5.038343000000168,4.780105999998341,7.049224399997911,5,284.3515625,374.00390625,8
+covariates-5,100000,1000,5,fine_gray,"ms\survival\finegray.py"", line 472, in _build_pieces_one_group raise FloatingPointError( FloatingPointError: Fine-Gray censoring/truncation probability reached zero before a competing-event extension.",,,,,,,,
