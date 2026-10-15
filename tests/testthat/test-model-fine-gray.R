@@ -166,6 +166,18 @@ test_that("inputs: a factor status, no offsets, missing values dropped (DEC-123,
   expect_identical(nrow(d) - fit$n_obs, sum(dropped))
 })
 
+test_that("covariates the fit cannot estimate are errors that name them (M-26, D-59)", {
+  d <- fine_gray_data()
+  # A sum of covariates, and a covariate constant within every provider, which the strata absorb.
+  d$sum <- d$x1 + d$x2
+  d$size <- as.numeric(factor(d$provider))
+  for (term in c("sum", "size")) {
+    formula <- stats::as.formula(paste("Surv(start, stop, cause) ~ x1 + x2 +", term))
+    condition <- expect_error(fine_gray_fit(formula, d), class = "pprof_error_data")
+    expect_identical(condition$aliased, term)
+  }
+})
+
 test_that("a single event type is fitted as pprof_py fits it: the Cox model clustered by subject (DEC-123)", {
   d <- fine_gray_data(split = FALSE, late = 0)
   d$single <- factor(as.integer(d$cause == "1"), levels = 0:1)

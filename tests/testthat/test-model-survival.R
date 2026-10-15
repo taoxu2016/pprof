@@ -225,6 +225,20 @@ test_that("the transform is one stratified finegray() call's, bitwise, in chunks
   }
 })
 
+test_that("chunks without events of the cause are skipped, as finegray() leaves their providers out (DEC-122)", {
+  d <- fine_gray_data()
+  # Providers p01 and p02 without events of cause 1: theirs become censoring. With delayed entry, they can
+  # still be the chunks' anchors.
+  d$cause[d$provider %in% c("p01", "p02") & d$cause == "1"] <- "0"
+  prepared <- fine_gray_prepare(Surv(start, stop, cause) ~ x1 + x2, d, weights = "w", cluster = "id")
+  direct <- fine_gray_direct_expansion(prepared, 1)
+  expect_false(any(prepared$provider_index[direct$row] %in% 1:2))
+  for (size in c(1L, 2L, 3L, 50L)) {
+    expansion <- survival_fine_gray_expand(prepared, 1, survival_fine_gray_subjects(prepared), size)
+    expect_identical(expansion, direct, label = sprintf("chunks of %d", size))
+  }
+})
+
 test_that("each chunk decides delayed entry as all rows do (DEC-122)", {
   # Provider 1's own rows have no late entry, and its entry time 10 equals a competing event time;
   # provider 2's rows make the whole data's entry delayed (dev/design/coxph-facts/31, part C).
