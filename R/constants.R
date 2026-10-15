@@ -146,3 +146,11 @@ penalized_null_max_iter <- 100L
 # a deviance ratio of exactly 0 at their first point. A check of the package's own; no reference:
 # pprof_py's solver converges where glmnet 5.1 diverges (dev/design/coxph-facts/26, part C).
 penalized_deviance_ratio_floor <- -sqrt(.Machine$double.eps)
+
+# K-145, DEC-122: the Fine-Gray transform calls survival's finegray() once per chunk of
+# fine_gray_chunk_providers providers, each chunk deciding delayed entry as all rows do, whose output
+# is the stratified call's bitwise; finegray()'s own steps go over all its rows once per stratum, so one
+# call's time grows with rows times providers. A cost setting, not a number of the model: on the
+# benchmark's data chunks of 50 took 3 to 14 times less time than one call
+# (dev/design/coxph-facts/35_finegray_chunks.txt). No reference: pprof_py's transform is its own.
+fine_gray_chunk_providers <- 50L

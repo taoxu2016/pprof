@@ -221,3 +221,224 @@ survival_engine_newdata <- function(design, offset, codes, has_offset) {
   if (has_offset) frame$.offset <- offset
   frame
 }
+
+# --- The Fine-Gray model (the CoxPH C5 plan, §3.2; COXPH_DESIGN §E.3; DEC-121 to DEC-124) -------------
+#
+# survival's finegray() expands the data, and survival's fitter, called as coxph() calls it, with
+# coxph()'s robust step clustered by subject, fits the weighted Cox model stratified by provider: the
+# fit is coxph(cluster = id)'s on the expansion, bitwise (dev/design/coxph-facts/32). Three things about
+# survival 3.8-12's finegray() shape the calls (dev/design/coxph-facts/31, 33, 35):
+# - its weights argument multiplies the output weights by user.weights[split$row], where split$row counts
+#   the rows of the stratum, so every stratum after the first gets the case weights of the data's first
+#   rows: the case weights multiply its output weights after the call instead, K-145's definition;
+# - its own steps go over all its rows once per stratum, so one call's time grows with rows times
+#   providers: it is called once per chunk of providers, each chunk deciding delayed entry as all rows
+#   do, which gives the stratified call's output bitwise;
+# - with delayed entry its weights can be NaN or infinite, where pprof_py raises (D-80).
+# Rows with weight 0 stay in the transform, whose censoring and entry distributions are unweighted, and
+# their pieces, of weight 0, are left out of the fit (M-25).
+
+# The subject of each observation: the `id` column's codes (the data layer keeps them as `cluster`), or
+# each observation its own subject.
+survival_fine_gray_subjects <- function(prepared) {
+  if (is.null(prepared$cluster)) seq_along(prepared$response) else as.integer(prepared$cluster)
+}
+
+# DEC-124: pprof_py's rules for the subjects, which finegray() does not apply. (start, stop] data need
+# `id` when an entry time is not 0; right-censored data have one row per subject; a subject's rows are
+# in one provider.
+survival_fine_gray_check_subjects <- function(prepared, has_id) {
+  counting <- identical(prepared$settings$survival_type, "counting")
+  if (counting && !has_id && any(prepared$start != 0)) {
+    abort_invalid_input(paste("Data with entry times, Surv(start, stop, status), need `id`, the subject of each row,",
+                              "when an entry time is not 0."), arg = "id")
+  }
+  if (!has_id) return(invisible(prepared))
+  subjects <- as.integer(prepared$cluster)
+  if (!counting && anyDuplicated(subjects) > 0L) {
+    abort_invalid_input(paste("Right-censored data have one row per subject, but `id` repeats; for several rows per",
+                              "subject, write the response as Surv(start, stop, status)."), arg = "id")
+  }
+  ordered <- order(subjects, prepared$provider_index)
+  s <- subjects[ordered]
+  p <- prepared$provider_index[ordered]
+  n <- length(s)
+  if (n > 1L && any(s[-1L] == s[-n] & p[-1L] != p[-n])) {
+    abort_invalid_input("Each subject's rows must belong to one provider, but some subjects of `id` change provider.",
+                        arg = "id")
+  }
+  invisible(prepared)
+}
+
+# DEC-122: the providers in chunks of `size`, in provider order. finegray() decides delayed entry over its
+# rows (some subject's first row, by subject and exit time, enters later than the smallest exit) and then
+# computes each stratum from its own rows; with delayed entry over all rows, each chunk also holds the
+# provider of the smallest exit and the provider of the first such subject, so that it decides as all
+# rows do. Right-censored data never have delayed entry in finegray().
+survival_fine_gray_chunks <- function(prepared, subjects, size) {
+  providers <- sort(unique(prepared$provider_index))
+  anchors <- integer()
+  if (identical(prepared$settings$survival_type, "counting")) {
+    by_subject <- order(subjects, prepared$stop)
+    first <- by_subject[!duplicated(subjects[by_subject])]
+    late <- first[prepared$start[first] > min(prepared$stop)]
+    if (length(late) > 0L) {
+      anchors <- unique(c(prepared$provider_index[which.min(prepared$stop)], prepared$provider_index[late[1L]]))
+    }
+  }
+  lapply(split(providers, ceiling(seq_along(providers) / size)), function(own) list(own = own, anchors = anchors))
+}
+
+# One finegray() call on the observations `rows`, stratified by provider: the event type `cause` (the
+# state's code), the states as a factor with at least two event types (a single one gets an unused second
+# level, which finegray() needs and which changes nothing, so that a single event type is fitted as pprof_py
+# fits it), the subjects as `id` for (start, stop] data, and times compared exactly (M-23). The prepared
+# vectors are a data frame held in the formula's environment, as survival_engine_fit() holds its own.
+# Its errors (a subject with gaps, or with an event before its last row) are the data's.
+survival_finegray_call <- function(prepared, rows, cause, subjects) {
+  counting <- identical(prepared$settings$survival_type, "counting")
+  levels <- 0:max(length(prepared$settings$states), 2L)
+  frame <- data.frame(.stop = prepared$stop[rows], .status = factor(prepared$response[rows], levels = levels),
+                      .row = rows, .provider = prepared$provider_index[rows])
+  if (counting) {
+    frame$.start <- prepared$start[rows]
+    frame$.id <- subjects[rows]
+  }
+  env <- list2env(list(Surv = survival::Surv, strata = survival::strata, frame = frame), parent = baseenv())
+  env$formula <- stats::as.formula(
+    paste(if (counting) "Surv(.start, .stop, .status)" else "Surv(.stop, .status)", "~ .row + strata(.provider)"),
+    env = env
+  )
+  call <- as.call(c(list(quote(survival::finegray), quote(formula), data = quote(frame), etype = as.character(cause)),
+                    if (counting) list(id = quote(.id)), list(timefix = FALSE)))
+  expanded <- tryCatch(eval(call, env), error = function(e) {
+    abort_invalid_input(sprintf("survival's finegray() cannot expand the data: %s", conditionMessage(e)),
+                        arg = "formula", engine_message = conditionMessage(e))
+  })
+  list(row = expanded$.row, start = expanded$fgstart, stop = expanded$fgstop, status = expanded$fgstatus,
+       weight = expanded$fgwt)
+}
+
+# The Fine-Gray expansion of every observation for the event type `cause`, from finegray() called once per
+# chunk of `size` providers (DEC-122): `row` (each expanded row's observation), `start`, `stop`, `status`
+# (1 for an event of the cause), and `weight`, finegray()'s weight times the observation's case weight
+# (DEC-123), in provider order as the stratified call orders them. Weights that are not finite raise
+# (D-80); the case weights do not enter finegray()'s censoring and entry distributions.
+survival_fine_gray_expand <- function(prepared, cause, subjects, size = fine_gray_chunk_providers) {
+  parts <- lapply(survival_fine_gray_chunks(prepared, subjects, size), function(chunk) {
+    own <- prepared$provider_index %in% chunk$own
+    # finegray() leaves out the providers without events of the cause.
+    if (!any(prepared$response[own] == cause)) return(NULL)
+    part <- survival_finegray_call(prepared, which(own | prepared$provider_index %in% chunk$anchors), cause, subjects)
+    kept <- prepared$provider_index[part$row] %in% chunk$own
+    lapply(part, function(column) column[kept])
+  })
+  parts <- parts[!vapply(parts, is.null, logical(1))]
+  fields <- c("row", "start", "stop", "status", "weight")
+  expansion <- stats::setNames(lapply(fields, function(f) unlist(lapply(parts, `[[`, f), use.names = FALSE)), fields)
+  undefined <- !is.finite(expansion$weight)
+  if (any(undefined)) {
+    ids <- prepared$providers$provider_id[sort(unique(prepared$provider_index[expansion$row[undefined]]))]
+    abort_data(
+      sprintf(paste("The Fine-Gray weights are undefined in %d provider(s) (%s): with entries after the first exits,",
+                    "the probability of being under observation reaches 0 before a competing event, and survival's",
+                    "finegray() gives such weights NaN or infinite values, where pprof_py raises an error. Larger",
+                    "providers, or data without late entries, avoid it."),
+              length(ids), paste(utils::head(ids, 10L), collapse = ", ")),
+      providers = ids
+    )
+  }
+  if (!is.null(prepared$weights)) expansion$weight <- expansion$weight * prepared$weights[expansion$row]
+  expansion
+}
+
+# The clusters of the robust variance for the expanded rows of the observations `rows`: the subjects,
+# coded as coxph() codes a cluster column (DEC-100, DEC-106), a factor's codes, otherwise the order of
+# first appearance; without `id`, one cluster per observation.
+survival_fine_gray_cluster_codes <- function(prepared, rows) {
+  if (is.null(prepared$cluster)) return(match(rows, unique(rows)))
+  values <- prepared$cluster[rows]
+  if (is.factor(values)) as.integer(values) else match(values, unique(values))
+}
+
+# The Fine-Gray fit for the event type `cause` (DEC-121): the expansion, then survival's fitter on its rows
+# with positive weight (M-25), called as coxph() calls it, and coxph()'s robust step clustered by subject;
+# what the model keeps, and the fitted expansion, which the coxph() object of the curves needs.
+survival_fine_gray_fit <- function(prepared, cause, has_id, ties, max_iter, tol, size = fine_gray_chunk_providers) {
+  survival_fine_gray_check_subjects(prepared, has_id)
+  label <- prepared$settings$states[cause]
+  if (!any(prepared$response == cause)) {
+    abort_data(sprintf("No observation has an event of the cause \"%s\", so there is nothing to fit.", label))
+  }
+  expansion <- survival_fine_gray_expand(prepared, cause, survival_fine_gray_subjects(prepared), size)
+  fitted <- which(expansion$weight > 0)
+  if (!any(expansion$status[fitted] == 1)) {
+    abort_data(sprintf("No event of the cause \"%s\" has a positive weight, so there is nothing to fit.", label))
+  }
+  expansion <- lapply(expansion, function(column) column[fitted])
+  rows <- expansion$row
+  inputs <- list(
+    x = data_subset_design(prepared$design, rows),
+    y = survival::Surv(expansion$start, expansion$stop, expansion$status),
+    strata = as.integer(factor(prepared$provider_index[rows])), offset = rep(0, length(rows)),
+    weights = expansion$weight, counting = TRUE
+  )
+  control <- survival::coxph.control(eps = tol, iter.max = max_iter, timefix = FALSE)
+  engine <- survival_run_fitter(inputs, ties, control)
+  fit <- engine$fit
+  names <- colnames(prepared$design)
+  p <- length(names)
+  if (p == 0L) {
+    coefficients <- stats::setNames(numeric(), character())
+    naive <- matrix(numeric(), 0L, 0L)
+    vcov <- naive
+    loglik <- rep(fit$loglik, 2L)
+  } else {
+    coefficients <- fit$coefficients
+    if (anyNA(coefficients)) {
+      aliased <- names[is.na(coefficients)]
+      abort_data(sprintf(paste("The covariates are linearly dependent, or constant within every provider, so a",
+                               "Fine-Gray model stratified by provider cannot estimate the coefficients of %s."),
+                         paste(aliased, collapse = ", ")), aliased = aliased)
+    }
+    naive <- matrix(fit$var, p, p, dimnames = list(names, names))
+    vcov <- survival_robust_vcov(fit, inputs, survival_fine_gray_cluster_codes(prepared, rows), prepared$terms)
+    dimnames(vcov) <- list(names, names)
+    loglik <- fit$loglik
+  }
+  n <- length(prepared$response)
+  positive <- if (is.null(prepared$weights)) rep(TRUE, n) else prepared$weights > 0
+  list(
+    coefficients = coefficients, vcov = vcov, naive_vcov = naive, loglik = unname(loglik),
+    linear_predictor = if (p > 0L) unname(drop(prepared$design %*% coefficients)) else rep(0, n),
+    n_events = as.integer(sum(expansion$status == 1)),
+    n_competing = as.integer(sum(positive & prepared$response != 0 & prepared$response != cause)),
+    n_expanded = length(rows), n_zero_weight = sum(!positive), expansion = expansion,
+    convergence = list(iterations = engine$iterations, converged = engine$converged, stop_rule = "relative_loglik",
+                       tol = tol, max_iter = max_iter)
+  )
+}
+
+# The coxph() object of the fitted expansion, with the fit's settings (COXPH_DESIGN §E.3, DEC-121), for
+# the cumulative incidence: survival_engine_fit()'s pattern on the expanded rows, with their weights and
+# the provider strata, no cluster, and robust = FALSE (the curves do not use the variance).
+survival_fine_gray_engine_fit <- function(prepared, expansion, ties, max_iter, tol) {
+  rows <- expansion$row
+  columns <- survival_engine_columns(ncol(prepared$design))
+  frame <- data.frame(.start = expansion$start, .stop = expansion$stop, .status = expansion$status,
+                      .provider = prepared$provider_index[rows], .weight = expansion$weight)
+  for (j in seq_along(columns)) frame[[columns[j]]] <- unname(prepared$design[rows, j])
+  env <- list2env(list(Surv = survival::Surv, strata = survival::strata, frame = frame,
+                       control = survival::coxph.control(eps = tol, iter.max = max_iter, timefix = FALSE)),
+                  parent = baseenv())
+  env$formula <- stats::as.formula(
+    paste("Surv(.start, .stop, .status) ~", paste(c(columns, "strata(.provider)"), collapse = " + ")),
+    env = env
+  )
+  call <- as.call(list(quote(survival::coxph), formula = quote(formula), data = quote(frame), weights = quote(.weight),
+                       ties = ties, robust = FALSE, model = FALSE, control = quote(control)))
+  tryCatch(
+    suppressWarnings(eval(call, env)),
+    error = survival_abort
+  )
+}
