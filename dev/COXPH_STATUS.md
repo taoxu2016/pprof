@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is built on `coxph/phase-5` (its plan, `dev/design/COXPH_C5_PLAN.md`, approved 2026-10-15) and goes to its gate.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is at its gate (2026-10-15) on `coxph/phase-5` (its plan, `dev/design/COXPH_C5_PLAN.md`, approved 2026-10-15).
 
 ## 2026-10-07
 
@@ -332,3 +332,19 @@ Recorded on 2026-10-14, for the next session.
   - providers-100 (`fine_gray`) and providers-7500 (`fine_gray_right`) wait for `cox-bench.yaml`, which the project lead dispatches; pprof_py's time on providers-7500 with every entry at 0, 5.0 s, is in `cox-c5-pprof_py-20261015-windows.csv`.
 - Registers: DEC-121 to DEC-129, with DEC-098's status; where K-145 and K-146 are in the package, with survival's case-weight defect; D-80 and D-81, and the C5 status of D-56, D-57, D-58, and D-74; M-35 and M-41 implemented, and M-23 and M-25 applied to the transform; NAMING §10, COXPH_DESIGN as built, ARCHITECTURE §E.3 and §E.6, NEWS, and the plan's status line.
 - Next step: the C5 gate (`/phase-gate C5`).
+
+## 2026-10-15: Phase C5 at its gate
+
+- Delivered on `coxph/phase-5` (brief §4, row C5), `cd377ed` to `c1bcec9`, as the entry above lists: cause-specific models, `fit_cox_stratified()` with the event of interest written in `Surv()`, with their tests, help, and profiling (DEC-129); and the Fine–Gray model, `fit_fine_gray()`, stratified by provider, with the cumulative incidence of `predict()` and coefficient inference on the robust variance (DEC-121 to DEC-128).
+- Since the entry above: `c1bcec9` adds two tests of the plan's cases that the gate's coverage run found missing: chunks of providers without events of the cause (§4.3), and covariates the fit cannot estimate (§4.4; M-26, D-59).
+- Gate checks:
+  - `devtools::document()` changed nothing;
+  - `devtools::test()`, in a clean worktree: at `27d1ba1` 83 files, 1,301 tests, 12,610 expectations; at `c1bcec9` 83 files, 1,303 tests, 12,619 expectations (617 s); none failed or skipped, no warnings or errors;
+  - `R CMD check --as-cran --no-manual` at `c1bcec9`, run alone: 0 errors, 0 warnings, the 2 notes of the previous gates (868 s); the tarball is 4,977,843 bytes, 22 KB under the 5 MB at which the check notes its size;
+  - `validation/run-reference.R`, in a clean worktree at `27d1ba1` and at `c1bcec9`: 368 of 368 cases, none skipped, no provider within tolerance of a flag threshold; the report equals the committed one but for its date and commit;
+  - the Cox comparisons with the fixtures pass in `devtools::test()`, and `dev/reference/cox/calibrate.R` reproduces the committed calibration report byte for byte (1,058 of 1,058 scored rows, 84 explained; 4,724 flags, none differing; 14 s);
+  - `covr::package_coverage()` at `c1bcec9`: 96.72% of the package; of the R lines C5 added (against `main`), 344 of 353 relevant lines, 97.45%. The uncovered ones: the validator's checks of five fields, the error for covariates that are not finite, the error for `data` whose refit differs from the model (other data fail earlier, when checked against the model), the multi-state check of `data_survival_response()`, which `data_prepare()`'s own check makes unreachable, and the codes of an `id` that is a factor (as the stratified model's untested branch for a factor `cluster`). At `27d1ba1` the added lines were at 96.03%, the two cases `c1bcec9` tests among the uncovered;
+  - `lintr`: the 10 changed package files, the 9 changed test files, and the 3 benchmark scripts are clean; fact scripts 31 to 35 keep their style (`<<-`, long lines, a few semicolons), and C5's additions to the generator's `survival.R` and to `calibrate.R` are clean, the lints of those files being older;
+  - the benchmarks: `dev/bench/results/cox-c5-paired-20261015-windows.md`, as the entry above sums it up.
+- Open for the project lead: the push of the branch; `cox-bench.yaml`'s Fine–Gray tasks on providers-100 and providers-7500, which run when the project lead dispatches it; telling survival's maintainers of `finegray()`'s case-weight defect and of its cost with many strata, an action outside the fork. D-78 still awaits a methodology owner's confirmation (M-16), with the decisions taken under delegation in C0, among them D-56 to D-58, which C5 applies to the Fine–Gray model.
+- Next step: the project lead's review of the C5 gate.
