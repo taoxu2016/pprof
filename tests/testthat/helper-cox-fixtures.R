@@ -215,3 +215,28 @@ cox_penalized_path <- function(rows) do.call(cbind, lapply(rows, function(r) as.
 cox_active_set_differences <- function(a, b) {
   sum(xor(a != 0, b != 0) & pmax(abs(a), abs(b)) > reference_tolerance("penalized_path")$atol)
 }
+
+# --- The Fine-Gray records of the competing-risk cases (Phase C5) ---------------------------------
+
+# A competing-risk case's input for fit_fine_gray(): the status as a factor of the event codes, whose
+# first level is censoring, and the provider: the stratum for the stratified records, one provider for
+# the unstratified ones, whose fits are then pprof_py's unstratified fits.
+fine_gray_case_data <- function(fx, stratified) {
+  d <- fx$input
+  d$.status <- factor(d$event, levels = c(0L, sort(setdiff(unique(d$event), 0L))))
+  d$.provider <- if (stratified) d$stratum else 0L
+  d
+}
+
+# The package's fit of a Fine-Gray record (`key`: the cause, and "_unstratified" for the unstratified fit)
+# at the generator's default or tight control (dev/reference/cox/generate.py's pprof_fine_gray()).
+fine_gray_case_fit <- function(fx, key, ties, tight = FALSE, ...) {
+  def <- fx$case
+  lhs <- if (isTRUE(def$truncated)) "Surv(entry, time, .status)" else "Surv(time, .status)"
+  f <- stats::as.formula(paste(lhs, "~", paste(unlist(def$features), collapse = " + ")),
+                         env = list2env(list(Surv = survival::Surv), parent = globalenv()))
+  fit_fine_gray(f, fine_gray_case_data(fx, !endsWith(key, "_unstratified")), provider = ".provider",
+                cause = sub("_unstratified", "", key, fixed = TRUE), id = "id",
+                weights = if (isTRUE(def$weighted)) "weight", ties = ties, max_iter = if (tight) 100 else 20,
+                tol = if (tight) 1e-11 else 1e-9, ...)
+}

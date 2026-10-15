@@ -93,3 +93,49 @@ test_that("an installed glmnet 5.0 or later reproduces the core penalized fixtur
     }
   }
 })
+
+# Phase C5: survival's Fine-Gray records, made by finegray() (case weights multiplied after the call, which
+# survival 3.8-12's weights argument misapplies after the first stratum) and coxph(cluster = id) on the
+# expansion's rows of positive weight (dev/reference/cox/survival.R).
+test_that("the installed survival reproduces the core competing-risk fixtures' Fine-Gray records", {
+  skip_if_not_installed("survival", minimum_version = "3.5-8")
+  manifest <- cox_manifest("core")
+  if (is.null(manifest)) skip("no core Cox fixture set here")
+  for (id in names(manifest$cases)) {
+    fx <- cox_fixture(id)
+    if (!identical(fx$case$kind, "competing")) next
+    d <- fx$input
+    d$.row <- seq_len(nrow(d)) - 1L
+    d$.status <- factor(d$event, levels = c(0L, sort(setdiff(unique(d$event), 0L))))
+    weighted <- isTRUE(fx$case$weighted)
+    x_terms <- paste(unlist(fx$case$features), collapse = " + ")
+    lhs <- if (isTRUE(fx$case$truncated)) "Surv(entry, time, .status)" else "Surv(time, .status)"
+    env <- list2env(list(Surv = survival::Surv, strata = survival::strata), parent = globalenv())
+    for (ties in c("breslow", "efron")) {
+      for (key in names(fx$survival[[ties]]$fine_gray)) {
+        label <- paste(id, ties, key)
+        stratified <- !endsWith(key, "_unstratified")
+        rhs <- paste(x_terms, "+ .row + id + stratum", if (stratified) "+ strata(stratum)" else "")
+        fg <- survival::finegray(stats::as.formula(paste(lhs, "~", rhs), env = env), data = d,
+                                 etype = sub("_unstratified", "", key, fixed = TRUE), id = id, timefix = FALSE)
+        if (weighted) fg$fgwt <- fg$fgwt * d$weight[fg$.row + 1L]
+        reference <- fx$survival[[ties]]$fine_gray[[key]]
+        expect_null(reference_compare(fg$fgwt, reference$expanded$weight, reference_tolerance("closed_form")),
+                    label = paste(label, "expanded weights"))
+        fit_rows <- fg[fg$fgwt > 0, ]
+        f <- stats::as.formula(paste("Surv(fgstart, fgstop, fgstatus) ~", x_terms,
+                                     if (stratified) "+ strata(stratum)" else ""), env = env)
+        fit <- survival::coxph(f, data = fit_rows, weights = fgwt, cluster = id, ties = ties,
+                               control = survival::coxph.control(eps = 1e-11, iter.max = 100, timefix = FALSE))
+        expect_null(reference_compare(unname(stats::coef(fit)), reference$tight$coef,
+                                      reference_tolerance("cox_coefficient")), label = paste(label, "coefficients"))
+        expect_null(reference_compare(packed_upper(fit$var), reference$tight$covariance,
+                                      reference_tolerance("cox_variance")), label = paste(label, "robust covariance"))
+        expect_null(reference_compare(packed_upper(fit$naive.var), reference$tight$naive_covariance,
+                                      reference_tolerance("cox_variance")), label = paste(label, "model-based"))
+        expect_null(reference_compare(fit$loglik[2], reference$tight$loglik, reference_tolerance("cox_function")),
+                    label = paste(label, "log-likelihood"))
+      }
+    }
+  }
+})
