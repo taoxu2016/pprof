@@ -360,18 +360,18 @@ Logistic models share one implementation of `expected_outcome()` (plogis of effe
 
 Capability names: `coef_wald`, `coef_lr`, `coef_score`, `provider_exact`, `provider_bootstrap`, `provider_score`, `provider_score_standard`, `provider_wald`, `interval_exact`, `interval_score`, `interval_wald`, `standardize_indirect`, `standardize_direct`, `funnel`, and, from CoxPH Phase C3, `provider_midp` and `interval_midp`. Every entry point calls `require_capability(model, name)` first; a model that does not declare the capability gets `pprof_error_unsupported_inference`, naming the model class and the capability. A model never receives a request it has not declared, so a penalized model cannot return a Wald number by accident.
 
-| Capability | Logistic FE | Firth | Linear FE | Logistic RE/CRE | Linear RE/CRE | Cox stratified (as of CoxPH C3) | Cox penalized (CoxPH C4) |
-|---|---|---|---|---|---|---|---|
-| coef_wald | yes | yes | yes | yes | yes | yes (K-148) | no |
-| coef_lr, coef_score | yes | yes (D-12, M-2) | no | no | no | no | no |
-| provider_exact, provider_bootstrap, provider_score, provider_score_standard | yes | yes | no | no | no | provider_exact (Poisson, K-140); the others no | no |
-| provider_midp | no | no | no | no | no | yes (K-141) | no |
-| provider_wald | yes | yes | yes | yes | yes | no | no |
-| interval_exact, interval_score | yes | yes | no | no | no | interval_exact (Garwood's or Byar's, K-140); interval_score no | no |
-| interval_midp | no | no | no | no | no | yes (K-141, DEC-110) | no |
-| interval_wald | yes | yes | yes | yes | yes | no | no |
-| standardize_indirect, standardize_direct | yes | yes | yes | yes | yes | yes (K-137, K-138) | no (M-34) |
-| funnel | yes (score-test limits, K-110; exact limits unsupported, D-07) | yes | yes (normal limits, K-111) | no | no | yes (the mid-p test's count boundaries, K-149, DEC-107) | no (M-34) |
+| Capability | Logistic FE | Firth | Linear FE | Logistic RE/CRE | Linear RE/CRE | Cox stratified (as of CoxPH C3) | Cox penalized (CoxPH C4) | Fine–Gray (CoxPH C5) |
+|---|---|---|---|---|---|---|---|---|
+| coef_wald | yes | yes | yes | yes | yes | yes (K-148) | no | yes, on the robust variance (K-148) |
+| coef_lr, coef_score | yes | yes (D-12, M-2) | no | no | no | no | no | no |
+| provider_exact, provider_bootstrap, provider_score, provider_score_standard | yes | yes | no | no | no | provider_exact (Poisson, K-140); the others no | no | no |
+| provider_midp | no | no | no | no | no | yes (K-141) | no | no |
+| provider_wald | yes | yes | yes | yes | yes | no | no | no |
+| interval_exact, interval_score | yes | yes | no | no | no | interval_exact (Garwood's or Byar's, K-140); interval_score no | no | no |
+| interval_midp | no | no | no | no | no | yes (K-141, DEC-110) | no | no |
+| interval_wald | yes | yes | yes | yes | yes | no | no | no |
+| standardize_indirect, standardize_direct | yes | yes | yes | yes | yes | yes (K-137, K-138) | no (M-34) | no (M-41) |
+| funnel | yes (score-test limits, K-110; exact limits unsupported, D-07) | yes | yes (normal limits, K-111) | no | no | yes (the mid-p test's count boundaries, K-149, DEC-107) | no (M-34) | no (M-41) |
 
 The table mirrors exactly what the reference offers per class; it adds no inference.
 
@@ -384,6 +384,8 @@ As built in CoxPH Phase C2 (DEC-101, DEC-102): the provider-stratified Cox model
 As built in CoxPH Phase C3 (DEC-107 to DEC-110): the Cox column as the table shows. The two new capabilities are declared by no other family, so `test = "midp"` and `interval = "midp"` raise `pprof_error_unsupported_inference` for them; the tests and intervals of the Cox model are two-sided, and direct standardization has no intervals, as in pprof_py.
 
 As built in CoxPH Phase C4 (DEC-120, M-34): the elastic-net Cox model declares no capability, as §E.5's step 9 anticipated for a penalized model, and there is no provider profiling at a selected λ in this phase. `summary()`, `confint()`, `augment()`, `test_coefficients()`, and every profiling function raise `pprof_error_unsupported_inference` for it; its `vcov` is a matrix of `NA`, and `tidy()` gives estimates without standard errors.
+
+As built in CoxPH Phase C5 (DEC-128, M-41): the Fine–Gray model declares `coef_wald` only, on the robust variance clustered by subject, with the Cox models' covariate rule. It has no provider measures, so every profiling function raises `pprof_error_unsupported_inference` for it, as do `residuals()`, `augment()`, and `baseline_hazard()` (D-81).
 
 ### E.4 Registration and the extension proof
 
@@ -425,6 +427,8 @@ As built in CoxPH Phase C2 (DEC-099 to DEC-104): `data_prepare()` takes a `Surv(
 As built in CoxPH Phase C3 (DEC-107 to DEC-112): the profiling layer serves the stratified Cox model as the sketch said it would, by summing observed and expected values by provider. The fit computes each observation's expected events at the national baseline once (`cox_expected_events()`, `R/model-cox-measures.R`), and `expected_outcome()` scales them by exp(effect). The family specification's `count_distribution = "poisson"` routes the tests, the limits of the measures, and the funnel's limits to the Poisson functions of the inference layer (`R/inference-poisson.R`), and its `direct_by_provider(model, rows)` gives the direct expectations, since the model has no provider effects to put in a direct sum. The family specification has no `measure_limits` field, which COXPH_DESIGN §D.2 had proposed: a function in a model file (layer 2) could not call the inference layer's limits (layer 3), and `test-architecture.R` checks calls inside closures too (DEC-108). Besides those, the shared code changed by the `midp` choices of tests and intervals, the capability names, a classed warning for providers without expected events (D-70), and the plots' handling of estimates that are not finite (DEC-112), each with today's behavior as its default.
 
 As built in CoxPH Phase C4 (DEC-113 to DEC-120): the elastic-net Cox model is a module as §E.4 describes one. `fit_cox_penalized()` (`R/model-cox-penalized.R`) and `select_lambda()` (`R/model-cox-selection.R`) sit on a second engine adapter, `R/model-glmnet.R`, beside the survival adapter, to which they add two functions (`survival_fit_columns()` and `survival_partial_loglik()`); glmnet stays a suggested package, required at the call (DEC-088). Its paths follow §E.5's rules (`coef()` gives the path or a grid point's solution; no interpolation; `select_lambda()` sets `selected`), with pprof_py's cross-validation in place of §E.5's fold design. The data, inference, and profiling layers are unchanged. Besides the model's methods in the presentation files and its constants, the shared code changed only by a classed warning for covariates without variation, and the survival adapter's input builder was split so that the new functions share it; the existing families and the stratified Cox model stayed bitwise identical (the `data_prepare()` snapshot, `devtools::test()`, and `validation/run-reference.R` at each commit that touched shared code).
+
+As built in CoxPH Phase C5 (DEC-121 to DEC-129): the Fine–Gray model is a module on the survival adapter, to which it adds the transform, survival's `finegray()` called per chunk of providers, and the fit of the expansion with the fitter and robust step the stratified model uses (`R/model-survival.R`); `fit_fine_gray()` is `R/model-fine-gray.R`. The data layer gains `response_type = "competing_risks"`, a multi-state `Surv()` response kept as each observation's state, which no existing caller reaches. The model has no provider measures (M-41), so the inference and profiling layers are unchanged, and the cause-specific models are the stratified model with the event of interest written in `Surv()`. Besides the data layer's new branch, the model's methods in the presentation files, and a constant, the shared code changed only in the hint of the error for a factor status in a Cox model's data, which now names `fit_fine_gray()`; the existing families and the stratified and elastic-net Cox models stayed bitwise identical (the `data_prepare()` snapshot, `devtools::test()`, and `validation/run-reference.R` at each commit that touched shared code).
 
 ---
 

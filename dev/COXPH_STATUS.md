@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, has its plan with the project lead (`dev/design/COXPH_C5_PLAN.md`).
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is built on `coxph/phase-5` (its plan, `dev/design/COXPH_C5_PLAN.md`, approved 2026-10-15) and goes to its gate.
 
 ## 2026-10-07
 
@@ -296,3 +296,39 @@ Recorded on 2026-10-14, for the next session.
   - survival's fitter and the robust step on the expansion give `coxph(cluster = id)`'s fit bitwise in all 16 fixture configurations and reproduce the fixtures' survival records exactly; against pprof_py the differences are D-56's and D-57's;
   - a status with several event types must be a factor, and pprof_py rejects a repeated `id` on right-censored data and a subject that changes provider, which survival accepts.
 - Next step: the project lead's approval of the plan and its §6 decisions; then its §5 commits, starting with §4.1's runs of the unchanged code.
+
+## 2026-10-15: Phase C5 built
+
+- The project lead approved the plan with its nine decisions as recommended (DEC-121 to DEC-129).
+- The commits, in the plan's §5 order:
+  - `cd377ed`: the plan, with fact scripts 31 to 35 and their outputs;
+  - `76fabac`, `819eed4`: the generator's weighted competing-risk case, `competing-weights`, and both fixture sets regenerated (DEC-126); the diff reports (`dev/reference/diff-reports/20261015-cox-competing-weights-*.md`) show the core set's 7 cases identical and the full set's 15 identical with the new one added, and a second generation reproduced every file;
+  - `c671786`: the C5 calibration rows (DEC-125): the report passes 1,058 of 1,058 scored rows, 84 explained, the Fine–Gray log-likelihoods within 0.0018 units of `cox_function` and their negative controls beyond 2.6e8;
+  - `c5f1cc9`: the competing-risks response in the data layer;
+  - `69673b0`: the Cox reference tests refit the full set's competing-risk records with their weights (below);
+  - `07aff5b`: the Fine–Gray adapter, in the survival adapter;
+  - `3b143f7`: `fit_fine_gray()`, its object, and its methods;
+  - `ef63ce4`: the comparisons with the fixtures;
+  - `8558c91`: the cause-specific models' tests;
+  - `f843da1`, `4af4463`, `5e74c81`: the benchmark code, a wording fix of its report, and its results;
+  - `3904480`: the comparisons name every Efron Fine–Gray record of the weighted case that D-58 moves;
+  - the registers and documents (this commit).
+- Departures from the plan:
+  - the checks after `c5f1cc9` found 16 failing expectations in "measures and flags of the package's fits, full Cox fixtures (D-58, M-29)": the profiling tests refit every competing-risk record of the full set, and their refits left out the weights that pprof_py's fits of the new case took. The data layer was not the cause. `69673b0` refits with the case's weights and marks per record where D-58 applies; no other expectation changed;
+  - `fit_cox_stratified()`'s help gained its competing-risks paragraph and example with `fit_fine_gray()` (`3b143f7`), not with the cause-specific tests (the plan's commit 8); `data_prepare()`'s help, regenerated there, gained the competing-risks response of `c5f1cc9`;
+  - a test helper, `tests/testthat/helper-cox-fine-gray.R`, holds the data and the direct survival calls that the adapter and model tests share, as C4's `helper-cox-penalized.R` does;
+  - the benchmark's engine side builds the fitter's inputs from the expansion within its timed call, since the expansion comes from that call; the preparation timed apart is `data_prepare()` and the chunks' data frames. The plan listed the fitter's inputs with the preparation; the rule compares the fit with their sum, which does not change. `run_paired.R` also writes the list of scenarios that `run_pprof_py.py` reads, and `summarize_paired.R` takes C5's pprof_py run with `--pprof-py` and reads runs whose columns differ;
+  - `3904480`, after the benchmark code: the comparison test asserted D-58's difference for the weighted case's Efron fits of cause 1 only; the calibration report shows the unstratified fit of cause 2 moved too, and the stratified fit of cause 2 equal to pprof_py's, which the test now asserts.
+- The existing families and the stratified and elastic-net Cox models stayed bitwise identical. `devtools::test()` and `validation/run-reference.R` ran in a clean worktree at `4c7b028` and after each commit marked (S): at `4c7b028` 81 files, 1,259 tests (11,521 expectations); at `c5f1cc9` 81 files, 1,264 tests, with the 16 failures above; at `07aff5b` 81 files, 1,273 tests (11,788); at `3b143f7` 82 files, 1,288 tests (11,952); at `3904480` 83 files, 1,301 tests (12,610); otherwise with no failure, warning, or skip. Each time the reference report differed from the committed one only in its date and commit lines (368 of 368 cases), and the `data_prepare()` snapshot test passed.
+- Against survival and pprof_py:
+  - the transform equals one stratified `finegray()` call's expansion bitwise in chunks of any size, with fact 31's counterexample to calls per provider among the cases; the fit equals `coxph(cluster = id)` on that expansion bitwise, with both tie methods, and the cumulative incidence 1 − `survfit()`'s survival;
+  - on every Fine–Gray record of the three competing-risk cases (each cause, both tie methods, stratified and not), the expansion's rows and status equal pprof_py's and its times and weights lie within `closed_form`; iteration counts are equal; tight coefficients lie within `cox_coefficient` and default ones within the last Newton step; model-based variances, Efron robust variances, and log-likelihoods within their tiers; and the cumulative incidence within `cox_baseline`. The exceptions are those the calibration explains, where the fits equal survival's records: D-56 (the robust variances with Breslow ties), D-57 (three records whose last step pprof_py halved), and D-58 (the weighted case's Efron fits of cause 1, and of cause 2 without strata);
+  - the cause-specific fits of the three cases equal `coxph()`'s on the same rows bitwise, default and tight, with pprof_py's iteration counts, and its tight fits within the tiers, except the weighted case's Efron fit of cause 1 (D-58);
+  - on the D-80 example, pprof_py's transform raises where the package raises and where it fits (run 2026-10-15).
+- The benchmarks (`dev/bench/results/cox-c5-paired-20261015-windows.md`; two rounds, the machine paging throughout):
+  - every fit's coefficients and robust variance equal its survival calls' bitwise, and so do those of the user's calls, one stratified `finegray()` followed by `coxph(cluster = subject)`;
+  - no fit is too slow by DEC-105's rule: the fit takes 0.84 to 1.04 times its survival calls plus their preparation (medians; fastest runs 0.78 to 1.00), and the user's calls four to five times the fit's time (44 s against 10.5 s on center);
+  - beside pprof_py's `FineGrayPH` on numba's 8 threads, the fit takes 2.8 times its time on center (10.5 s against 3.8 s) and 2.5 times with every entry at 0 (8.0 s against 3.3 s): the brief's SHOULD is not met, as the plan expected (DEC-098, DEC-122). pprof_py raises on covariates-5 (D-80), where the fit takes about 7.2 s;
+  - providers-100 (`fine_gray`) and providers-7500 (`fine_gray_right`) wait for `cox-bench.yaml`, which the project lead dispatches; pprof_py's time on providers-7500 with every entry at 0, 5.0 s, is in `cox-c5-pprof_py-20261015-windows.csv`.
+- Registers: DEC-121 to DEC-129, with DEC-098's status; where K-145 and K-146 are in the package, with survival's case-weight defect; D-80 and D-81, and the C5 status of D-56, D-57, D-58, and D-74; M-35 and M-41 implemented, and M-23 and M-25 applied to the transform; NAMING §10, COXPH_DESIGN as built, ARCHITECTURE §E.3 and §E.6, NEWS, and the plan's status line.
+- Next step: the C5 gate (`/phase-gate C5`).

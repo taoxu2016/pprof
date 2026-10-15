@@ -1,6 +1,6 @@
 # CoxPH Phase C5 plan: competing risks
 
-> **Status: for the project lead's approval.** It implements the brief's §4 row C5 (`dev/coxph_brief.md`; also §2.1 item 4, §2.4's `CauseSpecificCoxPH` and `FineGrayPH` rows, §3.2's Fine–Gray item, §3.3 rows 2 to 6, §3.5, §3.7, §5.1, §5.5, §6, and §10's Q2, Q3, and Q13) and COXPH_DESIGN §A.6, §B.1, §B.2, §C.1, §D.4, §E.3, §G, §H, and §I, under DEC-086 to DEC-120.
+> **Status: approved by the project lead on 2026-10-15, with the nine decisions of §6 as recommended** (DEC-121 to DEC-129). It implements the brief's §4 row C5 (`dev/coxph_brief.md`; also §2.1 item 4, §2.4's `CauseSpecificCoxPH` and `FineGrayPH` rows, §3.2's Fine–Gray item, §3.3 rows 2 to 6, §3.5, §3.7, §5.1, §5.5, §6, and §10's Q2, Q3, and Q13) and COXPH_DESIGN §A.6, §B.1, §B.2, §C.1, §D.4, §E.3, §G, §H, and §I, under DEC-086 to DEC-120.
 
 C5 adds `fit_fine_gray()`, pprof_py's `FineGrayPH(strata = provider)`: survival's `finegray()` expands the data, and a weighted Cox fit stratified by provider, with the robust variance clustered by subject, estimates the subdistribution hazard ratios; the cumulative incidence comes from survival's `survfit()`. The model declares coefficient inference only: there are no Fine–Gray-based provider measures (M-41). Cause-specific models are already `fit_cox_stratified()` with the event of interest written in `Surv()` (DEC-090, M-35); C5 completes their tests and documentation. The existing families and the stratified and elastic-net Cox models stay bitwise identical.
 

@@ -255,6 +255,8 @@ As built in C4 (DEC-113, DEC-115; `R/model-cox-penalized.R`, `R/model-glmnet.R`)
 - **Cumulative incidence.** 1 − exp(−H(t)) from the weighted baseline.
 - **In the package:** `survival::finegray()` and `coxph()` (§E.3), stratified by provider (M-41).
 
+As found in C5 (`dev/design/COXPH_C5_PLAN.md` §2; `dev/design/coxph-facts/31` to `35`): survival 3.8-12's `finegray()` applies its `weights` argument to the wrong rows after its first stratum (`user.weights[split$row]`, where `split$row` counts the stratum's rows), so the case weights multiply its output weights after the call, which is pprof_py's product (DEC-123). Its time grows with rows times providers, since its own steps go over all rows once per stratum, so it is called per chunk of providers, each chunk deciding delayed entry as all rows do (DEC-122). With delayed entry in small providers its weights can be NaN or infinite, where pprof_py raises `FloatingPointError`; pprof_py also raises where no later piece follows and every weight is finite (D-80). pprof_py rejects a repeated `id` with right-censored data and a subject that changes strata, which `finegray()` does not check, and the package follows pprof_py (DEC-124). `CauseSpecificCoxPH` is `fit_cox_stratified()` with the event of interest in `Surv()` (DEC-129).
+
 ## B. The interface
 
 The names are those of `dev/NAMING.md` §10 (DEC-090).
@@ -294,6 +296,8 @@ As built in C4 (DEC-120, D-79): `coef(model)` gives the path, one column per λ 
 - `predict(type = "cumulative_incidence", newdata)`.
 - Returns `c("pprof_fine_gray", "pprof_model")`.
 
+As built in C5 (DEC-123, DEC-124, DEC-128): the status is a factor whose first level is censoring, `Surv()`'s multi-state coding, not integer codes, which `Surv()` reads as one event type; `cause` is an event type, by label or by a number equal to it. `id` is required with (start, stop] data when an entry time is not 0 (`finegray()` needs one for any such data, and gets the observations as subjects when every entry is 0); it must not repeat with right-censored data, and each subject's rows belong to one provider. The formula takes no `offset()` terms, as pprof_py's `FineGrayPH` takes none. The methods are `print()`, `summary()`, `coef()`, `vcov()`, `confint()`, `test_coefficients()`, `nobs()` (the events of interest in the fit), `logLik()` (the weighted expansion's partial log-likelihood), `predict(newdata = NULL, type = c("linear_predictor", "risk", "cumulative_incidence"), data = NULL)`, `tidy()`, and `glance()`. The cumulative incidence gives each row of `newdata` its provider's curve at that provider's event times of the cause (`row`, `provider_id`, `time`, `cumulative_incidence`), from the kept `coxph()` object or one rebuilt from `data` (DEC-005). `residuals()`, `augment()`, and `baseline_hazard()` raise `pprof_error_unsupported_inference` (D-81).
+
 `baseline_hazard(model, data = NULL)`
 
 - For `pprof_cox_stratified`: each provider stratum's baseline cumulative hazard at x = 0 and offset 0 (M-28), from `survival::basehaz()` of the engine fit with the offset factor removed.
@@ -326,6 +330,7 @@ Methods of `pprof_cox_stratified`: `print()`, `summary()`, `coef()`, `vcov()`, `
 
 - Shared fields: `vcov`, the robust covariance clustered by subject; `provider_effects = NULL`.
 - Own fields: `naive_vcov`, `cause`, `n_expanded` (the rows of the expanded data), `loglik`, and `engine_fit` with `keep_data = TRUE`, which predictions need, or `data`.
+- As built in C5 (DEC-128): the shared fields have `response`, the indicator of the event of interest, `linear_predictor`, x'β, and the provider table with `n_events` (the events of interest), `n_competing`, and `person_time`. The own fields are `start`, `stop`, `weights`, `status` (each observation's state), `states`, `cause`, `naive_vcov`, `loglik` (the weighted expansion's, at β = 0 and at the estimates), `n_events`, `n_competing`, `n_expanded` (the expanded rows in the fit), `n_zero_weight`, and `engine_fit`, the expansion's `coxph()` object, with `keep_data = TRUE`. The settings are in `spec`: `family = "fine_gray"`, `cause`, `id`, `ties`, `weights`, `max_iter`, `tol`, and `keep_data`. Without `keep_data = TRUE` the expansion is not kept (DEC-004), and the object holds about six doubles per observation.
 
 ### B.3 Results
 
@@ -367,6 +372,8 @@ The new arguments' defaults reproduce the current behavior (DEC-092).
   - aliased covariates;
   - covariates with a large mean (D-64).
 - **`model_data_spec()`** records the response type and the weight, cluster, and offset settings, so that `model_prepared_data()` can rebuild the data (DEC-005).
+
+As built in C5 (DEC-123): `response_type = "competing_risks"` reads a `Surv()` response of the multi-state types, `"mright"` or `"mcounting"`, whose status is a factor with censoring as its first level. `response` holds each observation's state (0 for censoring, k for the k-th event type) and `settings$states` the event types' labels; the times, weights, and clusters follow the survival data's rules. `event_counts = TRUE` raises, since which events count depends on the event of interest; a status that is not a factor raises with the hint `factor()`. A factor status with `response_type = "survival"` raises, in `check_data()` too, with a hint that names the cause-specific `Surv(time, status == 1)` and `fit_fine_gray()`. No existing caller reaches the new branch: the `data_prepare()` snapshot, `devtools::test()`, and `validation/run-reference.R` gave the existing families' results after each commit of C5 that touched shared code.
 
 ### C.2 The existing families stay unchanged
 
@@ -447,6 +454,7 @@ As built in C3 (DEC-108): item 3 has no `measure_limits`, so `profile_spec_defau
 - **`pprof_fine_gray`.**
   - It declares `coef_wald`, with the robust variance.
   - `predict(type = "cumulative_incidence", newdata)` comes from `survival::survfit()` of the engine fit.
+  - As built in C5 (DEC-128, M-41): `inference_capabilities()` gives `"coef_wald"`, whose tests and intervals use the robust variance with the Cox models' covariate rule (DEC-101); the family specification has `family = "fine_gray"` and none of the profiling hooks, so every profiling function raises `pprof_error_unsupported_inference` for it.
 
 ## E. The engine adapters
 
@@ -523,6 +531,11 @@ As built in C4 (DEC-113 to DEC-115; `R/model-glmnet.R`, `R/model-cox-penalized.R
   - `survival::coxph(Surv(fgstart, fgstop, fgstatus) ~ <covariates> + strata(.provider), weights = fgwt times the case weight, cluster = .id, ties, control = coxph.control(eps = tol, iter.max = max_iter, timefix = FALSE))`.
   - Case weights multiply the Fine–Gray weights only and never enter the censoring or entry distributions, as in pprof_py (§A.6).
   - The robust variance with Breslow ties is `survival`'s (D-56).
+
+As built in C5 (DEC-121 to DEC-124; `R/model-survival.R`):
+
+- **The transform.** `finegray(Surv(.start, .stop, .status) ~ .row + strata(.provider), data, etype = cause, id = .id, timefix = FALSE)`, or `Surv(.stop, .status)` without `id` for right-censored data, on a data frame of the prepared vectors held in the formula's environment. `.status` is the factor of the states with levels 0 to max(K, 2), so that a single event type gets the second level `finegray()` needs; `.row` carries each expanded row's observation. It is called once per chunk of 50 providers, every chunk holding the providers that make it decide delayed entry as all rows do, which gives one stratified call's output bitwise (DEC-122). No `weights` argument: the expanded rows' weights are `fgwt` times their observations' case weights (DEC-123). Weights that are not finite raise `pprof_error_data` (D-80); `finegray()`'s own errors become `pprof_error_invalid_input`, with its message in `engine_message`.
+- **The fit.** Survival's fitter on the expanded rows of positive weight, called as `coxph()` calls it (DEC-100), and `coxph()`'s robust step clustered by subject (DEC-099): `coxph(cluster = id)`'s fit on the expansion, bitwise, in 0.35 to 0.57 of its time on the benchmark's data (DEC-121). `coxph()` itself fits the same rows, without a cluster and with `robust = FALSE`, only for the cumulative incidence (`survfit()`) and `keep_data = TRUE`.
 
 ## F. Algorithms and their cost
 
@@ -603,6 +616,8 @@ As §B.2.
 
 As built in C4 (DEC-117; `dev/reference/diff-reports/20261014-cox-penalized-*.md`): the full set adds two penalized cases, `penalized-settings` (pprof_py's `combined.csv` with a constant column `x0`; one path per setting, both tie methods: a constant column with an unpenalized covariate, ridge, no standardization, a given grid, a short grid with its own ratio, unequal penalty factors, and one covariate) and `penalized-few-events` (the first 15 rows of `penalized_wide.csv`: 8 events, 20 covariates; D-78). Their R side calls `glmnet` as the adapter does. Every existing fixture file stayed byte-identical; the full set grew by 149 KB, and the core set did not change.
 
+As built in C5 (DEC-126; `dev/reference/diff-reports/20261015-cox-competing-weights-*.md`): the full set adds `competing-weights`, 360 synthetic subjects in 6 providers, about a third with two or three (start, stop] rows between which a covariate changes, some entering late, with case weights on a 1/2 grid and some 0, one of them on an event tied with another (D-58), and both causes. Its records are those of every competing-risk case, with the weights, and its R side calls survival as the adapter does. Every existing fixture file stayed byte-identical; the full set grew by 67 KB, and the core set did not change.
+
 ### G.2 Tolerance tiers
 
 Calibrated in C1 (DEC-097; `validation/cox-calibration-report.md`): pprof_py against `survival` or `glmnet` within 1 unit, every negative control beyond 10, under the package's elementwise rule.
@@ -624,6 +639,8 @@ Calibrated in C1 (DEC-097; `validation/cox-calibration-report.md`): pprof_py aga
 - **Flags** match exactly, except for providers within tolerance of a threshold, which the equivalence report lists.
 
 As applied in C4 (DEC-116; no tier changes): `closed_form` for the grid, λ_max, and the column scales against pprof_py, with calibration rows (the other tie method's grid and a dropped weight as negative controls; a given grid and the scales without standardization exactly); `closed_form` for the fold deviances, cvm, and cvsd against the generator's R side; `penalized_path` for the paths, cvm, cvsd, and the selected coefficients against pprof_py; `exact` for λ_min, λ_1se, the folds, and the degenerate covariates; `cox_engine` for the adapter against direct `glmnet` calls; active sets exactly, except within `penalized_path` of 0 (D-72). The calibration report passes 954 of 954 scored rows, the grid rows within 2.1e-5 of the tier and their controls beyond 5e8. The paths lie within 0.213 units of `penalized_path` of pprof_py's, cvm within 0.128 and cvsd within 0.018, with the same λ_min and λ_1se; on the few-events case they agree to the 30th point (D-78).
+
+As applied in C5 (DEC-125; no tier changes): `exact` for the Fine–Gray expansion's rows and status and for iteration counts; `closed_form` for its times and weights; `cox_coefficient`, and D-57's last-step bound for default fits, for the coefficients; `cox_variance` for both variances, with D-56 for the robust variances with Breslow ties; `cox_function` for the log-likelihoods at the estimates and at 0, with calibration rows; `cox_baseline` for the cumulative incidence; `cox_engine` for the adapter against direct `finegray()` and `coxph()` calls. The calibration report passes 1,058 of 1,058 scored rows, 84 explained; the Fine–Gray log-likelihoods lie within 0.0018 units of `cox_function`, and their negative controls beyond 2.6e8.
 
 ### G.3 Test layers (brief §6)
 
@@ -647,7 +664,7 @@ As applied in C4 (DEC-116; no tier changes): `closed_form` for the grid, λ_max,
   - a constant shift of the offset, which leaves the measures unchanged;
   - duplicated rows against weight 2, with Breslow ties.
 - **F. Edge cases:** the brief's §6, F.
-- **G. Regression tests:** one per register entry, D-56 to D-74, and D-75, D-77, and D-78 and D-79 added in C2, C3, and C4.
+- **G. Regression tests:** one per register entry, D-56 to D-74, and D-75, D-77, D-78 and D-79, and D-80 and D-81 added in C2, C3, C4, and C5.
 
 ### G.4 Simulation
 
@@ -687,11 +704,13 @@ As built in C3 (DEC-111; `dev/bench/results/cox-c3-paired-20261009-windows.md`):
 
 As built in C4 (DEC-118; `dev/bench/results/cox-c4-paired-20261014-windows.md`): `run_paired.R` times `fit_cox_penalized()` against `glmnet()` on the adapter's inputs, with pprof_py's grid in the preparation, on covariates-50 and rows-1e4, and `select_lambda()` with 10 given folds against the fold paths, the `coxnet.deviance()` calls, the shift's survival evaluations, and the summaries in plain R, on covariates-50; `cox-bench.yaml` runs these tasks by default. Every result equals its engine side's bitwise, and no fit is too slow by DEC-105's rule. In one process the path takes 0.97 times its comparator on covariates-50 and 1.03 on rows-1e4, and `select_lambda()`'s loop 0.998 times the plain-R loop's (`dev/design/coxph-facts/29_penalized_fit_parts.txt`, `30_penalized_cv_parts.txt`). Beside C1's pprof_py times, the path is 4.5 times faster and the path with its cross-validation 9.3 times faster.
 
+As built in C5 (DEC-127; `dev/bench/results/cox-c5-paired-20261015-windows.md`): `run_paired.R` times `fit_fine_gray()` against the survival calls it makes, written out (`finegray()` per chunk of providers, the case weights, the fitter's inputs from the expansion, the fitter, and the robust step), with `data_prepare()` and the chunks' data frames as their preparation, on center and covariates-5 (`fine_gray`) and on center with every entry at 0 (`fine_gray_right`); `cox-bench.yaml` runs these and providers-100 and providers-7500 by default. Every fit equals its survival calls bitwise, and none is too slow by DEC-105's rule (0.84 to 1.04 times the comparator, medians). The user's calls, one stratified `finegray()` followed by `coxph(cluster = subject)`, take four to five times as long; pprof_py's `FineGrayPH` takes 0.36 to 0.41 of the fit's time on center, on numba's 8 threads, and raises on covariates-5 (D-80).
+
 ## J. Register entries
 
 | Register | Entries |
 |---|---|
 | `dev/CONVENTIONS.md`, "Cox models (pprof_py v0.7.0)" | K-131 to K-147; K-148 (C2) and K-149 (C3) |
-| `dev/DISCREPANCIES.md`, "The CoxPH phase" | D-56 to D-74; D-75 (C2), D-77 (C3), and D-78 and D-79 (C4) |
-| `dev/OPEN_QUESTIONS.md`, "The CoxPH phase" | M-23 to M-41, decided under the project lead's delegation; M-39 re-decided in C3 (DEC-107); M-30, M-34, and M-37 implemented in C4 |
-| `dev/DECISIONS.md` | DEC-086 to DEC-093; DEC-094 to DEC-098 (C1), DEC-099 to DEC-106 (C2), DEC-107 to DEC-112 (C3), DEC-113 to DEC-120 (C4) |
+| `dev/DISCREPANCIES.md`, "The CoxPH phase" | D-56 to D-74; D-75 (C2), D-77 (C3), D-78 and D-79 (C4), and D-80 and D-81 (C5) |
+| `dev/OPEN_QUESTIONS.md`, "The CoxPH phase" | M-23 to M-41, decided under the project lead's delegation; M-39 re-decided in C3 (DEC-107); M-30, M-34, and M-37 implemented in C4; M-35 and M-41 implemented, and M-23 and M-25 applied to the Fine–Gray transform, in C5 |
+| `dev/DECISIONS.md` | DEC-086 to DEC-093; DEC-094 to DEC-098 (C1), DEC-099 to DEC-106 (C2), DEC-107 to DEC-112 (C3), DEC-113 to DEC-120 (C4), DEC-121 to DEC-129 (C5) |
