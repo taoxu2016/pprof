@@ -78,7 +78,8 @@ validate_pprof_data <- function(x) {
 validate_pprof_data_survival <- function(x, n) {
   fail <- function(what) abort_invalid_input(sprintf("Invalid `pprof_data` object: %s.", what), arg = "x")
   per_observation <- function(value) is.double(value) && is.null(dim(value)) && length(value) == n
-  if (identical(x[["settings"]][["response_type"]], "survival")) {
+  response_type <- x[["settings"]][["response_type"]]
+  if (identical(response_type, "survival") || identical(response_type, "competing_risks")) {
     if (!per_observation(x[["start"]]) || !per_observation(x[["stop"]])) {
       fail("survival data must have `start` and `stop` times for every observation")
     }
@@ -90,7 +91,16 @@ validate_pprof_data_survival <- function(x, n) {
       fail("`settings$survival_type` must be \"right\" or \"counting\"")
     }
     if (identical(type, "right") && any(x[["start"]] != 0)) fail("right-censored data must start at 0")
-    if (!is.numeric(x[["response"]]) || !all(x[["response"]] %in% c(0, 1))) fail("the status must be 0 or 1")
+    if (identical(response_type, "competing_risks")) {
+      # Each observation's state: 0 for censoring, k for the k-th event type of `settings$states`.
+      states <- x[["settings"]][["states"]]
+      if (!is.character(states) || length(states) == 0L) fail("`settings$states` must name the event types")
+      if (!is.numeric(x[["response"]]) || !all(x[["response"]] %in% (0:length(states)))) {
+        fail("the status must be a state: 0 for censoring, or the position of an event type")
+      }
+    } else if (!is.numeric(x[["response"]]) || !all(x[["response"]] %in% c(0, 1))) {
+      fail("the status must be 0 or 1")
+    }
     if (isTRUE(x[["settings"]][["event_counts"]]) && !"person_time" %in% names(x[["providers"]])) {
       fail("the provider table of survival data must have `person_time`")
     }

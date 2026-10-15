@@ -224,3 +224,97 @@ test_that("the validator rejects inconsistent survival data", {
   rejected(x)
   expect_identical(validate_pprof_data(p), p)
 })
+
+# --- Competing risks (the CoxPH C5 plan, §3.1 and decision 3) --------------------------------------
+
+competing_data <- function() {
+  d <- survival_data()
+  d$cause <- factor(c(0, 1, 2, 1, 0, 2, 1, 1, 0, 2), levels = 0:2)
+  d
+}
+
+prepare_competing <- function(formula, data = competing_data(), ...) {
+  data_prepare(formula, data, "id", response_type = "competing_risks", ...)
+}
+
+test_that("a competing-risks response keeps each observation's state and the event types", {
+  d <- competing_data()
+  p <- prepare_competing(Surv(time, cause) ~ x, d)
+  expect_identical(p$response, as.numeric(as.character(d$cause))[p$row_index])
+  expect_identical(p$settings$states, c("1", "2"))
+  expect_identical(p$settings$response_type, "competing_risks")
+  expect_identical(p$settings$survival_type, "right")
+  expect_identical(p$start, rep(0, 10))
+  expect_identical(p$stop, d$time[p$row_index])
+  expect_false(any(c("n_events", "person_time") %in% names(p$providers)))
+  counting <- prepare_competing(Surv(entry, time, cause) ~ x, d)
+  expect_identical(counting$settings$survival_type, "counting")
+  expect_identical(counting$start, d$entry[counting$row_index])
+  # Labels and unused event types: the factor's levels after the first, whatever they are called.
+  labels <- c("none", "relapse", "death", "transplant")
+  d$label <- factor(labels[as.integer(d$cause)], levels = labels)
+  labelled <- prepare_competing(Surv(time, label) ~ x, d)
+  expect_identical(labelled$settings$states, c("relapse", "death", "transplant"))
+  expect_identical(labelled$response, p$response)
+  # The times, design, providers, weights, and clusters are those of the survival data of any event.
+  reference <- prepare_survival(Surv(entry, time, cause != "0") ~ x, d, weights = "w", cluster = "patient")
+  competing <- prepare_competing(Surv(entry, time, cause) ~ x, d, weights = "w", cluster = "patient")
+  for (element in setdiff(observation_elements, c("response", "providers"))) {
+    expect_identical(competing[[element]], reference[[element]], info = element)
+  }
+  expect_identical(competing$providers[c("provider_id", "n_obs", "included")],
+                   reference$providers[c("provider_id", "n_obs", "included")])
+  expect_identical(competing$response > 0, reference$response == 1)
+})
+
+test_that("a competing-risks response needs a factor status and no event counts (D-74)", {
+  d <- competing_data()
+  invalid <- function(expr) expect_error(expr, class = "pprof_error_invalid_input")
+  # A numeric status coded 0/1/2, which Surv() reads as 1/2 coding with its zeros missing.
+  d$code <- as.numeric(as.character(d$cause))
+  expect_error(prepare_competing(Surv(time, code) ~ x, d), "factor", class = "pprof_error_invalid_input")
+  invalid(prepare_competing(Surv(time, status) ~ x, d))
+  invalid(prepare_competing(Surv(time, cause) ~ x, d, event_counts = TRUE))
+  strata <- survival::strata
+  invalid(prepare_competing(Surv(time, cause) ~ x + strata(f), d))
+  d$late <- d$time
+  d$late[3] <- d$entry[3]
+  invalid(prepare_competing(Surv(late, time, cause) ~ x, d))
+  # A factor status in a Cox model's data names both models for several event types.
+  expect_error(prepare_survival(Surv(time, cause) ~ x, d), "fit_fine_gray", class = "pprof_error_invalid_input")
+})
+
+test_that("a missing status drops its row (D-62)", {
+  d <- competing_data()
+  complete <- prepare_competing(Surv(time, cause) ~ x, d[-4, ])
+  d$cause[4] <- NA
+  p <- prepare_competing(Surv(time, cause) ~ x, d)
+  expect_identical(p$n_incomplete, 1L)
+  expect_false(4L %in% p$row_index)
+  expect_identical(p$response, complete$response)
+})
+
+test_that("the model's data specification records the competing-risks settings", {
+  p <- prepare_competing(Surv(time, cause) ~ x, weights = "w", cluster = "patient")
+  spec <- model_data_spec(p)
+  expect_identical(spec[c("response_type", "weights", "cluster", "allow_offset")],
+                   list(response_type = "competing_risks", weights = "w", cluster = "patient", allow_offset = FALSE))
+})
+
+test_that("the validator checks the states of competing-risks data", {
+  p <- prepare_competing(Surv(entry, time, cause) ~ x, weights = "w", cluster = "patient")
+  rejected <- function(x) expect_error(validate_pprof_data(x), class = "pprof_error_invalid_input")
+  x <- p
+  x$response[1] <- 3
+  rejected(x)
+  x <- p
+  x$response[1] <- 0.5
+  rejected(x)
+  x <- p
+  x$settings$states <- NULL
+  rejected(x)
+  x <- p
+  x$start[1] <- x$stop[1]
+  rejected(x)
+  expect_identical(validate_pprof_data(p), p)
+})

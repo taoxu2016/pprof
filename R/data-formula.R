@@ -9,12 +9,12 @@
 # fixed-effect case, where provider effects absorb the intercept: the formula must keep its
 # intercept so that factors are coded with a reference level, as in the reference
 # (`model.matrix(reformulate(Z.char), data)[, -1]`, K-04), and the data layer then drops the
-# intercept column. With `response_type = "survival"` the response must be a Surv() call and the
-# formula has none of survival's special terms (R/data-survival.R); the baseline hazards absorb
-# the intercept. With `allow_offset`, offset() terms are allowed and their variables are among the
-# variables returned.
+# intercept column. With `response_type = "survival"` or `"competing_risks"` the response must be a
+# Surv() call and the formula has none of survival's special terms (R/data-survival.R); the baseline
+# hazards absorb the intercept. With `allow_offset`, offset() terms are allowed and their variables are
+# among the variables returned.
 data_parse_formula <- function(formula, data, provider, intercept, response_type = "default", allow_offset = FALSE) {
-  survival <- identical(response_type, "survival")
+  survival <- response_type %in% c("survival", "competing_risks")
   terms <- tryCatch(
     if (survival) {
       stats::terms(formula, specials = data_survival_specials, data = data)

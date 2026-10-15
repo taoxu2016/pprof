@@ -5,6 +5,12 @@
 # for right-censored data) and `stop`. The provider is the strata of the Cox models, so the formula
 # has none of survival's special terms. Case weights, clusters, and offset() terms come with it.
 # None of this runs for the existing families, which pass none of the new arguments (§C.2).
+#
+# data_prepare(response_type = "competing_risks") reads the multi-state types, "mright" and
+# "mcounting": a factor status whose first level is censoring and whose other levels are the event
+# types, Surv()'s coding (the CoxPH C5 plan's decision 3). The response is each observation's state, 0
+# for censoring and k for the k-th event type, whose labels are kept in the settings; the model that
+# reads it (the Fine-Gray model) makes the indicator of its event of interest itself.
 
 #' @importFrom survival Surv
 #' @export
@@ -65,6 +71,24 @@ data_survival_frame_problems <- function(frame) {
   list(status = which(status), times = which(times))
 }
 
+# The message for a competing-risks response that is not of a multi-state type.
+data_competing_response_message <- paste(
+  "A competing-risks response must be Surv(time, status) or Surv(start, stop, status) with a factor status, whose",
+  "first level is censoring and whose other levels are the event types, for example Surv(time, factor(status,",
+  "levels = 0:2)). survival's Surv() reads a numeric status as 0/1 or 1/2 coding."
+)
+
+# data_prepare()'s check of a competing-risks frame: a multi-state response, then the checks of every
+# survival frame. A numeric status coded 0/1/2 reaches here as type "right", with its 0s missing.
+data_check_competing_frame <- function(frame) {
+  response <- stats::model.response(frame)
+  type <- if (inherits(response, "Surv")) attr(response, "type")
+  if (!(identical(type, "mright") || identical(type, "mcounting"))) {
+    abort_invalid_input(data_competing_response_message, arg = "formula")
+  }
+  data_check_survival_frame(frame)
+}
+
 # data_prepare()'s check of the frame: invalid responses are errors, not rows to delete.
 data_check_survival_frame <- function(frame) {
   problems <- data_survival_frame_problems(frame)
@@ -81,17 +105,22 @@ data_check_survival_frame <- function(frame) {
 }
 
 # The parts of the Surv() response of a model frame: `start` (0 for right-censored data), `stop`,
-# and `status` (0/1), and whether the data are counting-process data. Only the types the Cox models
-# take: right-censored and counting-process data with a 0/1 status.
-data_survival_response <- function(frame) {
+# and `status`, and whether the data are counting-process data. The Cox models take right-censored and
+# counting-process data with a 0/1 status; with `competing`, the multi-state types, whose status is each
+# observation's state (0 for censoring), with `states`, the labels of the event types.
+data_survival_response <- function(frame, competing = FALSE) {
   response <- stats::model.response(frame)
   if (!inherits(response, "Surv")) {
     abort_invalid_input("The response of a Cox model must be a Surv() object.", arg = "formula")
   }
   type <- attr(response, "type")
-  if (!type %in% c("right", "counting")) {
+  if (competing && !type %in% c("mright", "mcounting")) {
+    abort_invalid_input(data_competing_response_message, arg = "formula")
+  }
+  if (!competing && !type %in% c("right", "counting")) {
     hint <- if (type %in% c("mright", "mcounting")) {
-      " For one of several events, write it in Surv(), for example Surv(time, status == 1)."
+      paste(" For the cause-specific model of one of several events, write it in Surv(), for example",
+            "Surv(time, status == 1); for its Fine-Gray model, use fit_fine_gray().")
     } else {
       ""
     }
@@ -102,10 +131,12 @@ data_survival_response <- function(frame) {
     )
   }
   values <- unclass(response)
-  counting <- identical(type, "counting")
+  counting <- type %in% c("counting", "mcounting")
   stop_time <- unname(values[, if (counting) "stop" else "time"])
-  list(start = if (counting) unname(values[, "start"]) else rep(0, length(stop_time)), stop = stop_time,
-       status = unname(values[, "status"]), counting = counting)
+  parts <- list(start = if (counting) unname(values[, "start"]) else rep(0, length(stop_time)), stop = stop_time,
+                status = unname(values[, "status"]), counting = counting)
+  if (competing) parts$states <- attr(response, "states")
+  parts
 }
 
 # pprof_py's rules for the times (COXPH_DESIGN §A.1, K-131): right-censored times finite and above

@@ -36,6 +36,13 @@
 #' `person_time`, the sum of `stop - start`. Rows with a missing value in the weights, the
 #' cluster, or a variable of an `offset()` term are dropped too.
 #'
+#' For competing risks (`response_type = "competing_risks"`, the Fine–Gray model), the response is
+#' a `Surv()` object whose status is a factor: its first level is censoring and the others are the
+#' event types, as `Surv()` reads a factor status. `response` then holds each observation's state, 0
+#' for censoring and k for the k-th event type, and `settings$states` the event types' labels; the
+#' times follow the rules above. The events to count depend on the event of interest, which the
+#' model chooses, so `event_counts` must be `FALSE`.
+#'
 #' @param formula A two-sided formula: the response on the left, the covariates on the right.
 #'   The provider is not part of the formula.
 #' @param data A data frame.
@@ -48,7 +55,8 @@
 #'   use `FALSE`, because the provider effects absorb the intercept.
 #' @param event_counts Whether to count events per provider and flag providers with no events
 #'   or only events (binary outcomes).
-#' @param response_type `"default"`, or `"survival"` for a `Surv()` response.
+#' @param response_type `"default"`, `"survival"` for a `Surv()` response, or `"competing_risks"`
+#'   for a `Surv()` response with a factor status of several event types.
 #' @param weights The name of a column of case weights, finite and at least 0, kept as
 #'   `weights`, or `NULL`.
 #' @param cluster The name of a column of clusters, kept as `cluster`: a factor as it is, other
@@ -86,11 +94,16 @@ data_prepare <- function(formula, data, provider, within_between = NULL, min_pro
   if (!is.null(min_provider_size)) check_count(min_provider_size, "min_provider_size", min = 1)
   check_flag(intercept, "intercept")
   check_flag(event_counts, "event_counts")
-  check_choice(response_type, c("default", "survival"), "response_type")
+  check_choice(response_type, c("default", "survival", "competing_risks"), "response_type")
   data_check_column_argument(data, weights, "weights")
   data_check_column_argument(data, cluster, "cluster")
   check_flag(allow_offset, "allow_offset")
-  survival <- identical(response_type, "survival")
+  competing <- identical(response_type, "competing_risks")
+  survival <- identical(response_type, "survival") || competing
+  if (competing && event_counts) {
+    abort_invalid_input(paste("A competing-risks response has no event counts of its own: which events count depends",
+                              "on the event of interest, which the model chooses."), arg = "event_counts")
+  }
   # The data layer's settings beyond those of the existing families, recorded only when used, so
   # that the existing families' objects are unchanged (COXPH_DESIGN §C.2).
   extended <- survival || !is.null(weights) || !is.null(cluster) || allow_offset
@@ -124,14 +137,15 @@ data_prepare <- function(formula, data, provider, within_between = NULL, min_pro
     })
   }
   model_frame <- if (survival) {
-    data_without_surv_warnings(data_model_frame(terms, data, complete, inspect = data_check_survival_frame))
+    inspect <- if (competing) data_check_competing_frame else data_check_survival_frame
+    data_without_surv_warnings(data_model_frame(terms, data, complete, inspect = inspect))
   } else {
     data_model_frame(terms, data, complete)
   }
   frame <- model_frame$frame
   rows <- model_frame$rows
   if (survival) {
-    times <- data_survival_response(frame)
+    times <- data_survival_response(frame, competing)
     data_check_survival_values(times)
     response <- times$status
   } else {
@@ -171,6 +185,8 @@ data_prepare <- function(formula, data, provider, within_between = NULL, min_pro
                                  allow_offset = allow_offset))
     # The type of the Surv() response, which selects survival's fitter (R/model-survival.R).
     if (survival) settings$survival_type <- if (times$counting) "counting" else "right"
+    # The labels of the event types of a competing-risks response, whose states `response` holds.
+    if (competing) settings$states <- times$states
   }
   new_pprof_data(
     formula = formula,
