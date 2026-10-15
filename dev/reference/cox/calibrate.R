@@ -22,6 +22,9 @@
 # and column scales against their construction in R from survival's score at the null point (the c4_
 # functions), and the paths of the two cases with settings; on the few-events case glmnet's path ends
 # early, and its points beyond the 30th are reported with D-78.
+# From Phase C5 (the C5 plan's decision 5), the Fine-Gray records add their log-likelihoods, and the
+# weighted competing-risk case's Efron rows that fail are explained by D-58 (zero-weight events tied
+# with others).
 args <- commandArgs(trailingOnly = TRUE)
 report_file <- if (length(args) >= 1) args[[1]] else file.path("validation", "cox-calibration-report.md")
 dirs <- c(if (length(args) >= 2) args[[2]] else file.path("tests", "testthat", "fixtures", "cox"),
@@ -174,6 +177,9 @@ calibrate_competing <- function(id, fx) {
   for (ties in c("breslow", "efron")) {
     py <- fx$pprof_py[[ties]]
     r <- fx$survival[[ties]]
+    # A weighted case (Phase C5): pprof_py counts zero-weight events among Efron's tied deaths (B7); survival
+    # leaves them out (M-25). The note explains a row only where it fails.
+    weight_note <- if (isTRUE(fx$case$weighted) && ties == "efron") "D-58" else ""
     for (cause in names(py$cause_specific)) {
       a <- py$cause_specific[[cause]]
       b <- r$cause_specific[[cause]]
@@ -182,9 +188,9 @@ calibrate_competing <- function(id, fx) {
       add(id, ties, sprintf("cause %s: coefficients, tight", cause), "cox_coefficient",
           ratio(a$tight$coef, b$tight$coef, "cox_coefficient"),
           list(other_ties = ratio(fx$pprof_py[[other(ties)]]$cause_specific[[cause]]$tight$coef, a$tight$coef,
-                                  "cox_coefficient")))
+                                  "cox_coefficient")), note = weight_note)
       add(id, ties, sprintf("cause %s: covariance, tight", cause), "cox_variance",
-          ratio(a$tight$covariance, b$tight$covariance, "cox_variance"))
+          ratio(a$tight$covariance, b$tight$covariance, "cox_variance"), note = weight_note)
     }
     for (key in names(py$fine_gray)) {
       a <- py$fine_gray[[key]]
@@ -207,25 +213,49 @@ calibrate_competing <- function(id, fx) {
       add(id, ties, label("iterations, default and tight"), "exact",
           ratio(c(a$default$iterations, a$tight$iterations), c(b$default$iterations, b$tight$iterations), "exact"))
       tight_ratio <- ratio(a$tight$coef, b$tight$coef, "cox_coefficient")
-      fit_note <- last_step_note(tight_ratio, a$tight$coef, b$tight$coef, a$iterates, a$tight$iterations)
+      # D-58 first: a difference it causes can fall within the last Newton step without being D-57's.
+      fit_note <- if (nzchar(weight_note)) {
+        weight_note
+      } else {
+        last_step_note(tight_ratio, a$tight$coef, b$tight$coef, a$iterates, a$tight$iterations)
+      }
       add(id, ties, label("coefficients, tight"), "cox_coefficient", tight_ratio,
           list(other_ties = ratio(fx$pprof_py[[other(ties)]]$fine_gray[[key]]$tight$coef, a$tight$coef,
                                   "cox_coefficient")), note = fit_note)
       add(id, ties, label("robust covariance, tight"), "cox_variance",
-          ratio(a$tight$covariance, b$tight$covariance, "cox_variance"), note = if (ties == "breslow") "D-56" else "")
+          ratio(a$tight$covariance, b$tight$covariance, "cox_variance"),
+          note = if (ties == "breslow") "D-56" else fit_note)
       add(id, ties, label("model-based covariance, tight"), "cox_variance",
-          ratio(a$tight$naive_covariance, b$tight$naive_covariance, "cox_variance"))
+          ratio(a$tight$naive_covariance, b$tight$naive_covariance, "cox_variance"), note = fit_note)
+      # Phase C5 (the C5 plan's decision 5): the partial log-likelihoods of the weighted expansion, at the
+      # estimates and at 0; the other tie method's are the negative control.
+      a_other <- fx$pprof_py[[other(ties)]]$fine_gray[[key]]$tight
+      add(id, ties, label("log-likelihoods at the estimates and at 0, tight"), "cox_function",
+          ratio(c(a$tight$loglik, a$tight$loglik_null), c(b$tight$loglik, b$tight$loglik_null), "cox_function"),
+          list(other_ties = ratio(c(a_other$loglik, a_other$loglik_null), c(a$tight$loglik, a$tight$loglik_null),
+                                  "cox_function")), note = fit_note)
       for (i in seq_along(a$cumulative_incidence)) {
         ca <- a$cumulative_incidence[[i]]
         cb <- b$cumulative_incidence[[i]]
         stratum <- if (is.null(ca$stratum)) "all" else ca$stratum
         keys <- sprintf("%a", unlist(ca$time))
         reference_keys <- sprintf("%a", unlist(cb$time))
+        incidence <- ca$cumulative_incidence
+        point_note <- ""
+        if (isTRUE(fx$case$weighted) && anyNA(match(keys, reference_keys))) {
+          # pprof_py's curves also have the times of zero-weight events, which survival's fit leaves out
+          # (M-25): the common times are compared, and the extra ones are D-58's.
+          common <- !is.na(match(keys, reference_keys))
+          keys <- keys[common]
+          incidence <- lapply(incidence, function(v) unlist(v)[common])
+          point_note <- "D-58"
+        }
         survival_incidence <- lapply(cb$cumulative_incidence, function(v) at_points(keys, reference_keys, v))
-        incidence_ratio <- ratio(ca$cumulative_incidence, survival_incidence, "cox_baseline")
-        # The incidence inherits the coefficients' difference when D-57 explains it.
+        incidence_ratio <- ratio(incidence, survival_incidence, "cox_baseline")
+        # The incidence inherits the coefficients' difference when D-57 or D-58 explains it.
         add(id, ties, label(sprintf("cumulative incidence at pprof_py's times, stratum %s", stratum)),
-            "cox_baseline", incidence_ratio, note = if (!is.na(incidence_ratio) && incidence_ratio > 1) fit_note else "")
+            "cox_baseline", incidence_ratio,
+            note = if (!is.na(incidence_ratio) && incidence_ratio > 1) fit_note else point_note)
       }
     }
   }
