@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is closed (2026-10-15) and in `main`. Phase C6, documentation and hardening, the phase's last, is at its gate (2026-10-16), waiting for the project lead's approval; `main` holds its work to `f1c8414`.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is closed (2026-10-15) and in `main`. Phase C6, documentation and hardening, the phase's last, is closed (2026-10-16) and in `main`: the CoxPH phase is complete (`dev/design/COXPH_FINAL_REVIEW.md`).
 
 ## 2026-10-07
 
@@ -403,3 +403,10 @@ Recorded on 2026-10-14, for the next session.
   - the benchmarks: `dev/bench/results/cox-final-20261016.md`, every fit meeting the MUST in its latest run.
 - The final review, `dev/design/COXPH_FINAL_REVIEW.md`, gives each criterion of the brief's §11 with its evidence: all met, with the SHOULD of §3.7 not met where DEC-098 allows it, and the Class B items' sign-off by a methodology owner open (M-16).
 - Next step: the project lead's approval of the gate. Then, with approval: the phase's later commits into `main`, best through a pull request (which runs `rewrite-sanitizers`); `CLAUDE.md`'s "Current phase", whose text the gate report proposes.
+
+## 2026-10-16: the C6 gate closed
+
+- The project lead approved closing the C6 gate, and with it the CoxPH phase, and asked for the work in `main`: the fork's `main` takes `coxph/phase-6` as a fast-forward from `f1c8414`, and the branch goes to the fork.
+- `main` takes the work by push, not by a pull request, so `rewrite-sanitizers`, which runs on pull requests or by hand, has not run on the phase's code; the other workflows run on the push.
+- Open, as at the gate (`dev/design/COXPH_FINAL_REVIEW.md` §4): the methodology owners' sign-off of the Class B items and the questions (M-16); reporting survival's `finegray()` defects and pprof_py's upstream; the website's address; the CRAN submission, with R-hub's check without long double, deferred by the project lead; `rewrite-bench.yaml`'s first run; and `CLAUDE.md`'s "Current phase", whose text the gate report proposed and which changes with the project lead's approval.
+- Next step: none within the CoxPH phase. The next work, a brief for one of the later models (the CoxPH brief's §2.2, DEC-089) or the CRAN submission, is the project lead's to choose.

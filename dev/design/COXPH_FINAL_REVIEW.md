@@ -1,6 +1,6 @@
 # CoxPH phase: final review
 
-> **Status: for the C6 gate (DEC-140), 2026-10-16.** The review of the CoxPH phase against its brief (`dev/coxph_brief.md`): the success criteria of its §11 with their evidence, the deliverables, the register entries that await a methodology owner, the open items for the project lead, and the known limits. Branch `coxph/phase-6`; the package as of `e772ce4`, the last commit that changed it.
+> **Status: approved by the project lead at the C6 gate (DEC-140), 2026-10-16.** The review of the CoxPH phase against its brief (`dev/coxph_brief.md`): the success criteria of its §11 with their evidence, the deliverables, the register entries that await a methodology owner, the open items for the project lead, and the known limits. Branch `coxph/phase-6`; the package as of `e772ce4`, the last commit that changed it.
 
 The CoxPH phase added Cox proportional hazards models to pprof, following pprof_py v0.7.0 (commit `9320766`), with estimation delegated to survival and glmnet (DEC-086), in seven phases on their own branches: C0 the design (`dev/design/COXPH_DESIGN.md`), C1 the fixtures and the baseline, C2 the data layer and the model stratified by provider, C3 its provider profiling, C4 the elastic-net model, C5 competing risks, and C6 the documentation and hardening. Each phase's plan is `dev/design/COXPH_C<n>_PLAN.md`, its evidence `dev/design/coxph-facts/`, and its dated log `dev/COXPH_STATUS.md`.
 
