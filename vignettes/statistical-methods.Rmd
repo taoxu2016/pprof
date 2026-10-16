@@ -13,9 +13,12 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 This vignette states what pprof computes: the models, how they are fitted, and the
 formulas of its tests, standardized measures, intervals, and funnel limits, with the
-numerical conventions of the code where they matter. The results are those of pprof 1.0.3,
-which pprof reproduces. A few short computations check formulas against the package.
-`vignette("pprof", package = "pprof")` shows the functions in use.
+numerical conventions of the code where they matter. For the models of pprof 1.0.3 the
+results are those of pprof 1.0.3, which pprof reproduces; the Cox models follow pprof_py
+0.7.0, the group's Python package, with their estimation done by the survival package and,
+for penalized models, glmnet. A few short computations check formulas against the package.
+`vignette("pprof", package = "pprof")` and `vignette("time-to-event", package = "pprof")`
+show the functions in use.
 
 ```{r data, message = FALSE}
 library(pprof)
@@ -32,7 +35,11 @@ vector of length $p$ with coefficients $\beta$. Provider effects are $\gamma_i$ 
 fixed-effect models and $\alpha_i$ in random-effect models. Tests and intervals use
 $a = 1 - {}$`level` (computed in floating point, so $1 - 0.95$ is not exactly $0.05$),
 $z_q$ is the $q$ quantile of the standard normal distribution, $\Phi$ its distribution
-function, and $\operatorname{plogis}(x) = 1 / (1 + e^{-x})$.
+function, $\bar\Phi = 1 - \Phi$, and $\operatorname{plogis}(x) = 1 / (1 + e^{-x})$. For
+time-to-event outcomes, observation $ij$ is at risk over the interval $(s_{ij}, t_{ij}]$,
+with $s_{ij} = 0$ for right-censored data or its entry time with delayed entry, and ends with
+an event ($\delta_{ij} = 1$) or not ($\delta_{ij} = 0$); $o_{ij}$ is its offset (0 without
+`offset()` terms), $\eta_{ij} = Z_{ij}^\top \hat\beta + o_{ij}$, and $r_{ij} = e^{\eta_{ij}}$.
 
 ## Models
 
@@ -66,6 +73,19 @@ its provider mean $\bar x_i$ and the deviation $x_{ij} - \bar x_i$, each with it
 coefficient (Mundlak 1978), so that the effects may be correlated with the provider means.
 The means are computed over every row of the data with a value of $x$, before rows with
 missing values are dropped.
+
+**Cox models.** For time-to-event outcomes, the model stratified by provider has the hazard
+$$
+\lambda_{ij}(t) = \lambda_{0i}(t) \exp(Z_{ij}^\top \beta + o_{ij}),
+$$
+with a baseline hazard $\lambda_{0i}$ of its own for each provider, as pprof_py's
+`CoxPH(strata = provider)`. The providers' differences are in their baseline hazards, which
+are not estimated as effects: profiling compares each provider's observed events with those
+expected at a national baseline (He and Schaubel 2014). `fit_cox_penalized()` adds an
+elastic-net penalty to the same partial likelihood; a cause-specific model of competing
+risks is `fit_cox_stratified()` with the event of interest written in `Surv()`, the other
+events censored; and `fit_fine_gray()` models the subdistribution hazard of one event type
+(Fine and Gray 1999), also stratified by provider.
 
 **Data.** Rows with a missing outcome, provider, or covariate are dropped. The design
 matrix is that of `model.matrix()` with the session's contrasts. Providers are ordered as
@@ -180,6 +200,29 @@ the linear random-effect model, $s_i = \sqrt{R_i \hat\sigma^2 / n_i}$ with the s
 factor $R_i = \hat\sigma_\alpha^2 / (\hat\sigma_\alpha^2 + \hat\sigma^2 / n_i)$, and for the
 other models those of lme4.
 
+### Cox models
+
+survival's fitters (`coxph.fit()` and `agreg.fit()`, called as `coxph()` calls them)
+maximize the partial likelihood stratified by provider. At an event time $t$ of provider
+$i$, its risk set holds the provider's observations with $s_{ij} < t \le t_{ij}$: an
+observation that enters at $t$ is not at risk then, and one that leaves at $t$ is. Times are
+compared exactly, without `coxph()`'s default merging of times that differ by rounding
+(`timefix`). Tied event times are handled by Breslow's method (`ties = "breslow"`, the
+default; Breslow 1974) or Efron's (`"efron"`; Efron 1977), and case weights multiply each
+observation's terms; observations with weight 0 are left out of the fit. Newton-Raphson
+starts at $\beta = 0$ and stops when $|1 - \ell_{\text{old}} / \ell_{\text{new}}|$ is at most
+`tol` ($10^{-9}$) or after `max_iter` (20) iterations, with survival's step halving; a fit
+that reaches the limit warns. Covariates the fit cannot estimate, linearly dependent or
+constant within every provider, and data without events are errors.
+
+The variance is the inverse of the information. With `robust = TRUE`, or a `cluster`
+column, it is the robust variance $V \big(\sum_c s_c s_c^\top\big) V$ of Lin and Wei (1989),
+with $V$ the inverse information and $s_c$ the sum of the weighted score residuals of
+cluster $c$, each observation its own cluster with `robust = TRUE` alone; the tie method is
+respected. The linear predictor $Z_{ij}^\top \hat\beta$ is on the scale of the covariates,
+not centered. `baseline_hazard()` gives each provider's baseline cumulative hazard at
+covariates 0 and offset 0.
+
 ## Provider tests
 
 The null value, or norm, is the median of the estimated effects for fixed-effect models
@@ -252,6 +295,33 @@ with $n - m - p$ degrees of freedom with the full variance, as in pprof 1.0.3.
 $z_i = (\hat\alpha_i - \alpha_0) / s_i$, compared with the normal distribution, with the
 conditional standard deviation $s_i$. When lme4 estimates $\sigma_\alpha^2$ as 0, every
 $\hat\alpha_i$ and $s_i$ is 0 and every flag is missing.
+
+**Cox models.** Provider $i$'s observed events $O_i$ are compared with $X \sim$
+Poisson($E_i e^{c}$), with $E_i$ its expected events (below) and $c$ the numeric `null`, 0
+by default; the tests are two-sided. With $F$ and $f$ the Poisson distribution and
+probability functions at that mean, the mid-p test (`"midp"`, the default; Lancaster 1961)
+computes $p_{\min} = 2F(O_i) - f(O_i)$ and $p_{\max} = 2\{1 - F(O_i - 1)\} - f(O_i)$,
+$p^* = \max\{10^{-6}, \min(p_{\min}, p_{\max}) / 2\}$, and the statistic
+$z = \Phi^{-1}(p^*)$ if $p_{\min} \le p_{\max}$ and $-\Phi^{-1}(p^*)$ otherwise, and reports
+the p-value $2\bar\Phi(|z|)$, so at least $2 \times 10^{-6}$. The exact test (`"exact"`)
+computes $p = \min\{0.999, 2P(X \ge O_i)\}$ when $O_i > E_i e^c$ and
+$\min\{0.999, 2P(X \le O_i)\}$ otherwise, the statistic
+$z = \operatorname{sign}(O_i - E_i e^c)\, \bar\Phi^{-1}(p / 2)$, and reports $2\bar\Phi(|z|)$,
+which is 1 when $O_i = E_i e^c$. A provider is flagged 1 or -1, by the sign of $z$, when the
+p-value is below $a$; a p-value that underflows to 0 gives an infinite statistic and a flag.
+These are pprof_py's definitions. For the first institution of survival's `lung` data:
+
+```{r cox-midp-by-hand}
+cox <- fit_cox_stratified(Surv(time, status) ~ age + sex, survival::lung, provider = "inst")
+indirect <- standardize_providers(cox)$table
+o <- indirect$observed[1]
+e <- indirect$expected[1]
+p_min <- 2 * ppois(o, e) - dpois(o, e)
+p_max <- 2 * (1 - ppois(o - 1, e)) - dpois(o, e)
+p_star <- max(1e-6, min(p_min, p_max) / 2)
+z <- if (p_min <= p_max) qnorm(p_star) else -qnorm(p_star)
+c(by_hand = 2 * pnorm(abs(z), lower.tail = FALSE), pprof = test_providers(cox)$table$p_value[1])
+```
 
 ### What the random-effect tests and intervals do
 
@@ -362,6 +432,34 @@ linear models the differences
 $\{\sum_j \hat Y_{ij} - \sum_j (\hat\mu + \alpha_0 + Z_{ij}^\top \hat\beta)\} / n_i$ and
 $\{\sum_{ij} (\hat\mu + \hat\alpha_k + Z_{ij}^\top \hat\beta) - \sum_{ij} Y_{ij}\} / n$.
 
+**Cox models.** The measures are He and Schaubel's (2014), as pprof_py computes them. The
+national baseline is Breslow's estimator over every observation of every provider, without
+weights, at the fitted coefficients, whatever ties fitted them:
+$\Lambda_0(t) = \sum_{t_k \le t} d(t_k) / R(t_k)$ over the distinct event times $t_k$, with
+$d(t)$ the number of events at $t$ and $R(t) = \sum r_{ij} \mathbb{1}(s_{ij} < t \le t_{ij})$.
+Provider $i$'s expected events are
+$E_i = \sum_j r_{ij} \{\Lambda_0(t_{ij}) - \Lambda_0(s_{ij})\}$, so that $\sum_i E_i = O$, the
+total number of events, and the indirect ratio is $O_i / E_i$ (undefined when
+$O_i = E_i = 0$, infinite when only $E_i = 0$, with a warning). A numeric `null` $c$
+multiplies every $E_i$ by $e^c$. The direct expectation of provider $k$ is
+$E^{(k)} = \sum R(t) / R_k(t)$ over its event rows, with $R_k$ the same sum over its own
+observations: the events every observation would have at provider $k$'s own Breslow
+baseline. The direct ratio is $E^{(k)} / O$. Person-time is $\sum_j (t_{ij} - s_{ij})$.
+
+The expected events by hand, from the fit's linear predictor, for the `lung` fit above:
+
+```{r cox-expected-by-hand}
+risk <- exp(linear_predictor(cox))
+exit <- cox$stop
+event <- observed_outcome(cox)
+times <- sort(unique(exit[event == 1]))
+at_risk <- vapply(times, function(t) sum(risk[exit >= t]), numeric(1))
+hazard <- cumsum(tabulate(match(exit[event == 1], times), length(times)) / at_risk)
+expected <- tapply(risk * c(0, hazard)[findInterval(exit, times) + 1], provider_index(cox), sum)
+all.equal(as.vector(expected), indirect$expected)
+c(expected = sum(expected), observed = sum(event))
+```
+
 ## Intervals
 
 **Provider effects of logistic fixed-effect models.** The exact and score intervals
@@ -394,6 +492,22 @@ as in pprof 1.0.3; the differences' intervals shift by the same amounts.
 **Random and correlated random effects.** $\hat\alpha_i \pm z_{1-a/2}\, s_i$, carried
 through the measures' sums.
 
+**Cox models.** The intervals are those of the indirect ratio, two-sided; direct
+standardization has none, as in pprof_py. The mid-p limits invert the mid-p test: on the
+scale of the Poisson mean $\mu$, they are the roots of $2\bar\Phi(|z(\mu)|) = a$, with
+$z(\mu)$ the mid-p statistic of $O_i$ at mean $\mu$, one on each side of the root of
+$z(\mu) = 0$, divided by $E_i$; where the equation has no root below (above) that point
+within pprof_py's search range, the lower (upper) limit is 0 (infinite). The roots depend on
+$O_i$ alone, so pprof finds those of each distinct count once, by bisection to rounding. The
+exact limits are Garwood's (1936) when $E_i < 100$:
+$\chi^2_{a/2}(2O_i) / (2E_i)$ (0 when $O_i = 0$) and $\chi^2_{1-a/2}(2O_i + 2) / (2E_i)$,
+with $\chi^2_q(\nu)$ the $q$ quantile of the chi-square distribution with $\nu$ degrees of
+freedom; and Byar's approximation otherwise:
+$(O_i / E_i)\{1 - 1/(9O_i) - z_{1-a/2} / (3\sqrt{O_i})\}^3$ (0 when $O_i = 0$) and
+$\{(O_i + 1) / E_i\}\{1 - 1/(9(O_i + 1)) + z_{1-a/2} / (3\sqrt{O_i + 1})\}^3$. The limits are
+chosen by $E_i$, not $O_i$, and Byar's can disagree with the exact test's flag near the
+threshold, as in pprof_py.
+
 The Wald interval of the effects, by hand (the function warns, because three hospitals have
 no events):
 
@@ -412,7 +526,11 @@ with $n - m - p$ degrees of freedom; linear random-effect and correlated random-
 models Student's t with $n - p - m + 1$ degrees of freedom ($p$ counting the intercept) and
 lme4's Wald intervals; logistic random-effect and correlated random-effect models the
 p-value $2\{1 - \Phi(z)\}$, as in pprof 1.0.3, which exceeds 1 for negative estimates, and
-lme4's Wald intervals.
+lme4's Wald intervals. The Cox models use $z = \hat\beta / \operatorname{se}$, the p-value
+$2\bar\Phi(|z|)$ computed as an upper tail, as pprof_py computes it, so that p-values below
+about $10^{-16}$ are not reported as 0, and the interval $\hat\beta \mp z_{1-a/2}
+\operatorname{se}$; the Fine-Gray model's standard errors are robust, clustered by subject,
+and penalized models have none.
 
 For logistic fixed-effect models, `test_coefficients()` also gives likelihood-ratio and
 score tests. As in pprof 1.0.3, the model without the tested covariate is refit with the
@@ -443,6 +561,64 @@ $\hat\sigma^2 / n_i$ and the normal distribution while the test uses the full va
 Student's t, so a point outside the limits may not be flagged, as in pprof 1.0.3. Exact
 funnel limits are not available, and random-effect models have no funnel plot.
 
+For Cox models the precision is $E_i$ and the limits are those of the mid-p test, as in
+pprof_py: at an expected count $E$ and a level, with $o_{\text{lo}}$ the largest count the
+test flags as lower than expected and $o_{\text{hi}}$ the smallest it flags as higher, among
+the counts 0 to $\lceil E + 40\sqrt{E} + 50 \rceil$, the limits are
+$(o_{\text{lo}} + \tfrac12) / E$ and $(o_{\text{hi}} - \tfrac12) / E$ ($-\infty$ and $\infty$
+where no count is flagged). The providers are coloured by the mid-p test at the first level,
+so a provider lies outside the limits exactly when that test flags it.
+
+## Penalized and competing-risk Cox models
+
+**The elastic-net Cox model.** `fit_cox_penalized()` minimizes
+$$
+-\frac{\ell(\beta)}{W} + \lambda \sum_k f_k \Big\{ \alpha |\beta_k| + \frac{1 - \alpha}{2} \beta_k^2 \Big\}
+$$
+over a decreasing grid of $\lambda$, with $\ell$ the stratified partial likelihood above, $W$
+the sum of the case weights, and $f_k$ the penalty factors (1 by default; 0 leaves a
+covariate unpenalized). Each covariate is divided by its weighted standard deviation
+(`standardize = TRUE`), without centering, and coefficients are reported on the original
+scale; a covariate whose weighted variance is below $10\varepsilon$ is left out with a
+warning and gets coefficient 0; the factors are rescaled to sum to the number of covariates
+kept. The grid has `n_lambda` (100) values evenly spaced in $\log\lambda$, from
+$\lambda_{\max}$, the smallest $\lambda$ at which every penalized coefficient is 0 (the
+largest score of a penalized covariate at the fit of the unpenalized ones, over its factor
+and $W$, divided by $\max(\alpha, 10^{-3})$), down to $r\lambda_{\max}$, with $r$ =
+`lambda_min_ratio`, or $10^{-2}$ when there are fewer observations than covariates and
+$10^{-4}$ otherwise. glmnet computes the path on this grid (Simon, Friedman, Hastie and
+Tibshirani 2011), and it ends early, with a warning, where glmnet stops before the end of
+the grid or finds no solution.
+
+`select_lambda()` cross-validates over $K$ folds (10 by default): the observations with an
+event, then those without, each in the order of the data, receive a random permutation of
+the fold labels repeated to their number, or the folds are given. Each fold's path is fitted
+on its training rows over the whole data's grid, and its deviance at each $\lambda$ is
+$$
+D_{k\lambda} = \frac{2\{\ell^{\text{sat}} - \ell(\hat\beta_{k\lambda})\} - 2\{\ell^{\text{sat}}_{T} - \ell_{T}(\hat\beta_{k\lambda})\}}{W_k},
+$$
+with $\ell$ over every observation, $\ell_T$ over the training rows, $W_k$ the summed weight
+of the held-out events, and $\ell^{\text{sat}} = -\sum w_t \log w_t$ over each provider's
+distinct event times, $w_t$ the summed weight of the events at $t$, for both tie methods. The
+mean is $\bar D_\lambda = \sum_k W_k D_{k\lambda} / \sum_k W_k$ and its standard error
+$\{\sum_k W_k (D_{k\lambda} - \bar D_\lambda)^2 / \sum_k W_k / (K - 1)\}^{1/2}$; a $\lambda$
+whose deviance is not finite in some fold is dropped. $\lambda_{\min}$ is the largest
+$\lambda$ at the smallest mean deviance, and $\lambda_{1se}$, the default, the largest whose
+mean deviance is at most the smallest plus its standard error. These are pprof_py's
+definitions; glmnet's own `cv.glmnet()` normalizes otherwise from glmnet 5.
+
+**Competing risks.** A cause-specific model is the stratified model of the event of
+interest with the other events censored at their times. `fit_fine_gray()` expands the data
+with survival's `finegray()`, within each provider: an observation with a competing event
+stays at risk after it, over intervals whose weights are the ratio of the censoring
+distribution's Kaplan-Meier survival at the interval to its value at the competing event,
+and with delayed entry the same ratio of the entry distribution's; case weights multiply
+these weights. A weighted Cox fit stratified by provider, as above, estimates the log
+subdistribution hazard ratios, with the robust variance clustered by subject (Fine and
+Gray 1999), and the cumulative incidence at given covariates is $1 - \exp\{-H(t)\}$, with
+$H$ the fit's cumulative subdistribution hazard. The Fine-Gray model has no provider
+measures.
+
 ## Numerical conventions
 
 | Convention | Value |
@@ -455,14 +631,34 @@ funnel limits are not available, and random-effect models have no funnel plot.
 | Firth's log-determinant | provider blocks at least $10^{-12}$; ridge $10^{-8}$ if the Cholesky factorization fails |
 | Interval search | brackets in steps of 5, three attempts |
 | Rates | kept within 0 and 100 |
+| Cox fits | relative change of the log-likelihood at most $10^{-9}$, at most 20 iterations |
+| Mid-p test of Cox models | one-sided probability at least $10^{-6}$ |
+| Exact test of Cox models | p-value at most 0.999 |
+| Exact limits of Cox models | Garwood's when $E_i < 100$, Byar's otherwise |
+| Mid-p limits: search range | from $10^{-10} \max(E_i, 1)$ to $10(O_i + E_i + 10)$ on the Poisson mean |
+| Funnel limits of Cox models | counts 0 to $\lceil E + 40\sqrt{E} + 50 \rceil$ |
+| Penalized paths | covariates with weighted variance below $10\varepsilon$ left out; $\alpha$ at least $10^{-3}$ in $\lambda_{\max}$ |
 
 ## References
 
 Bates D, Mächler M, Bolker B, Walker S (2015). Fitting linear mixed-effects models using
 lme4. *Journal of Statistical Software*, 67(1), 1-48. <https://doi.org/10.18637/jss.v067.i01>
 
+Breslow N (1974). Covariance analysis of censored survival data. *Biometrics*, 30(1), 89-99.
+<https://doi.org/10.2307/2529620>
+
+Efron B (1977). The efficiency of Cox's likelihood function for censored data. *Journal of the
+American Statistical Association*, 72(359), 557-565. <https://doi.org/10.1080/01621459.1977.10480613>
+
+Fine JP, Gray RJ (1999). A proportional hazards model for the subdistribution of a competing
+risk. *Journal of the American Statistical Association*, 94(446), 496-509.
+<https://doi.org/10.1080/01621459.1999.10474144>
+
 Firth D (1993). Bias reduction of maximum likelihood estimates. *Biometrika*, 80(1),
 27-38. <https://doi.org/10.1093/biomet/80.1.27>
+
+Garwood F (1936). Fiducial limits for the Poisson distribution. *Biometrika*, 28(3-4), 437-442.
+<https://doi.org/10.1093/biomet/28.3-4.437>
 
 He K (2019). Indirect and direct standardization for evaluating transplant centers.
 *Journal of Hospital Administration*, 8(1), 9-14. <https://doi.org/10.5430/jha.v8n1p9>
@@ -486,6 +682,13 @@ Jones HE, Spiegelhalter DJ (2011). The identification of "unusual" health-care p
 from a hierarchical model. *The American Statistician*, 65(3), 154-163.
 <https://doi.org/10.1198/tast.2011.10190>
 
+Lancaster HO (1961). Significance tests in discrete distributions. *Journal of the American
+Statistical Association*, 56(294), 223-234. <https://doi.org/10.1080/01621459.1961.10482105>
+
+Lin DY, Wei LJ (1989). The robust inference for the Cox proportional hazards model. *Journal
+of the American Statistical Association*, 84(408), 1074-1078.
+<https://doi.org/10.1080/01621459.1989.10478874>
+
 Morris CN (1983). Parametric empirical Bayes inference: theory and applications. *Journal
 of the American Statistical Association*, 78(381), 47-55.
 <https://doi.org/10.1080/01621459.1983.10477920>
@@ -496,6 +699,10 @@ Mundlak Y (1978). On the pooling of time series and cross section data. *Econome
 Ohlssen DI, Sharples LD, Spiegelhalter DJ (2007). A hierarchical modelling framework for
 identifying unusual performance in health care providers. *Journal of the Royal
 Statistical Society: Series A*, 170(4), 865-890. <https://doi.org/10.1111/j.1467-985X.2007.00487.x>
+
+Simon N, Friedman J, Hastie T, Tibshirani R (2011). Regularization paths for Cox's
+proportional hazards model via coordinate descent. *Journal of Statistical Software*, 39(5).
+<https://doi.org/10.18637/jss.v039.i05>
 
 Spiegelhalter DJ (2005). Funnel plots for comparing institutional performance.
 *Statistics in Medicine*, 24(8), 1185-1202. <https://doi.org/10.1002/sim.1970>

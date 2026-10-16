@@ -18,10 +18,14 @@
 #' effects. For continuous outcomes, [fit_linear_fe()], [fit_linear_re()], and
 #' [fit_linear_cre()] fit the corresponding linear models. For time-to-event outcomes,
 #' [fit_cox_stratified()] fits the Cox model with one baseline hazard per provider, through the
-#' survival package. Every fit takes a formula, a data frame, and the name of the provider
-#' column. Before fitting, [check_data()] reports missing values, covariates with little or no
-#' variation, highly correlated covariates, and variance inflation factors, and for survival
-#' data near-tied times, weights, and covariates a stratified fit cannot estimate.
+#' survival package, and with the event of interest written in `Surv()` the cause-specific model
+#' of one of several competing events; [baseline_hazard()] gives its baseline hazards.
+#' [fit_cox_penalized()] fits elastic-net Cox paths through the glmnet package, a suggested
+#' package, and [select_lambda()] chooses a penalty by cross-validation; [fit_fine_gray()] fits
+#' the Fine-Gray model of competing risks. Every fit takes a formula, a data frame, and the name
+#' of the provider column. Before fitting, [check_data()] reports missing values, covariates with
+#' little or no variation, highly correlated covariates, and variance inflation factors, and for
+#' survival data near-tied times, weights, and covariates a stratified fit cannot estimate.
 #'
 #' @section Profiling providers:
 #' [test_providers()] tests and flags providers, [standardize_providers()] computes
@@ -38,6 +42,7 @@
 #' @section Vignettes:
 #' `vignette("pprof", package = "pprof")` goes through an analysis,
 #' `vignette("models", package = "pprof")` describes the models and what each supports,
+#' `vignette("time-to-event", package = "pprof")` profiles providers with time-to-event outcomes,
 #' `vignette("statistical-methods", package = "pprof")` gives the formulas behind the results,
 #' `vignette("migration", package = "pprof")` maps the functions of pprof 1.0.3 to the new
 #' ones, and `vignette("adding-a-model", package = "pprof")` shows how to add a model.
@@ -62,7 +67,13 @@
 #' He K (2019). Indirect and direct standardization for evaluating transplant centers.
 #' *Journal of Hospital Administration*, 8(1), 9-14.
 #'
+#' He K, Schaubel DE (2014). Semiparametric methods for center effect measures based on the ratio
+#' of survival functions. *Lifetime Data Analysis*, 20(4), 619-644. \doi{10.1007/s10985-014-9293-9}
+#'
 #' Hsiao C (2022). *Analysis of Panel Data*. Cambridge University Press.
+#'
+#' Therneau TM, Grambsch PM (2000). *Modeling Survival Data: Extending the Cox Model*. Springer.
+#' \doi{10.1007/978-1-4757-3294-8}
 #'
 #' Wu W, Kuriakose JP, Weng W, Burney RE, He K (2023). Test-specific funnel plots for
 #' healthcare provider profiling leveraging individual- and summary-level information.

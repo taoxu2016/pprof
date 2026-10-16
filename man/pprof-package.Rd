@@ -20,10 +20,14 @@ SerBIN or BAN algorithm, \code{\link[=fit_logistic_firth]{fit_logistic_firth()}}
 effects. For continuous outcomes, \code{\link[=fit_linear_fe]{fit_linear_fe()}}, \code{\link[=fit_linear_re]{fit_linear_re()}}, and
 \code{\link[=fit_linear_cre]{fit_linear_cre()}} fit the corresponding linear models. For time-to-event outcomes,
 \code{\link[=fit_cox_stratified]{fit_cox_stratified()}} fits the Cox model with one baseline hazard per provider, through the
-survival package. Every fit takes a formula, a data frame, and the name of the provider
-column. Before fitting, \code{\link[=check_data]{check_data()}} reports missing values, covariates with little or no
-variation, highly correlated covariates, and variance inflation factors, and for survival
-data near-tied times, weights, and covariates a stratified fit cannot estimate.
+survival package, and with the event of interest written in \code{Surv()} the cause-specific model
+of one of several competing events; \code{\link[=baseline_hazard]{baseline_hazard()}} gives its baseline hazards.
+\code{\link[=fit_cox_penalized]{fit_cox_penalized()}} fits elastic-net Cox paths through the glmnet package, a suggested
+package, and \code{\link[=select_lambda]{select_lambda()}} chooses a penalty by cross-validation; \code{\link[=fit_fine_gray]{fit_fine_gray()}} fits
+the Fine-Gray model of competing risks. Every fit takes a formula, a data frame, and the name
+of the provider column. Before fitting, \code{\link[=check_data]{check_data()}} reports missing values, covariates with
+little or no variation, highly correlated covariates, and variance inflation factors, and for
+survival data near-tied times, weights, and covariates a stratified fit cannot estimate.
 }
 
 \section{Profiling providers}{
@@ -46,6 +50,7 @@ results with ggplot2 and return the plot.
 
 \code{vignette("pprof", package = "pprof")} goes through an analysis,
 \code{vignette("models", package = "pprof")} describes the models and what each supports,
+\code{vignette("time-to-event", package = "pprof")} profiles providers with time-to-event outcomes,
 \code{vignette("statistical-methods", package = "pprof")} gives the formulas behind the results,
 \code{vignette("migration", package = "pprof")} maps the functions of pprof 1.0.3 to the new
 ones, and \code{vignette("adding-a-model", package = "pprof")} shows how to add a model.
@@ -73,7 +78,13 @@ facilities; adjusting for hospital effects. \emph{Lifetime Data Analysis}, 19, 4
 He K (2019). Indirect and direct standardization for evaluating transplant centers.
 \emph{Journal of Hospital Administration}, 8(1), 9-14.
 
+He K, Schaubel DE (2014). Semiparametric methods for center effect measures based on the ratio
+of survival functions. \emph{Lifetime Data Analysis}, 20(4), 619-644. \doi{10.1007/s10985-014-9293-9}
+
 Hsiao C (2022). \emph{Analysis of Panel Data}. Cambridge University Press.
+
+Therneau TM, Grambsch PM (2000). \emph{Modeling Survival Data: Extending the Cox Model}. Springer.
+\doi{10.1007/978-1-4757-3294-8}
 
 Wu W, Kuriakose JP, Weng W, Burney RE, He K (2023). Test-specific funnel plots for
 healthcare provider profiling leveraging individual- and summary-level information.

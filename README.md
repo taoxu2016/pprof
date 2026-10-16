@@ -10,7 +10,10 @@ It handles binary and continuous outcomes with fixed, random, or correlated rand
 provider effects. For logistic models with many providers, the serial blockwise inversion
 Newton algorithm (SerBIN) uses the block structure of the information matrix; linear
 fixed-effect models are fitted within providers, without a column for each provider; and
-the random-effect models are fitted with lme4.
+the random-effect models are fitted with lme4. For time-to-event outcomes it fits Cox models
+stratified by provider with survival, with standardized ratios of observed to expected
+events and Poisson tests; elastic-net Cox models with glmnet; and competing risks, by
+cause-specific models and the Fine-Gray model.
 
 ## Installation
 
@@ -51,7 +54,9 @@ plot_funnel(funnel_limits(fit))
 ## Learn more
 
 - `vignette("pprof", package = "pprof")`: getting started, a complete analysis.
-- `vignette("models", package = "pprof")`: the seven models and what each supports.
+- `vignette("models", package = "pprof")`: the models and what each supports.
+- `vignette("time-to-event", package = "pprof")`: profiling providers with time-to-event
+  outcomes.
 - `vignette("statistical-methods", package = "pprof")`: the formulas behind the results.
 - `vignette("migration", package = "pprof")`: how code written for pprof 1.0.3 maps to the
   new interface. The functions of pprof 1.0.3 (`logis_fe()`, `test()`, `SM_output()`, and
@@ -80,11 +85,16 @@ file for detailed guidelines of how to contribute.
    19, 490-512. <https://doi.org/10.1007/s10985-013-9264-6>
 3. He, K. (2019). Indirect and direct standardization for evaluating transplant centers.
    *Journal of Hospital Administration*, 8(1), 9-14. <https://doi.org/10.5430/jha.v8n1p9>
-4. Hsiao, C. (2022). *Analysis of Panel Data* (No. 64). Cambridge University Press.
-5. Wu, W., Kuriakose, J. P., Weng, W., Burney, R. E., & He, K. (2023). Test-specific funnel
+4. He, K., & Schaubel, D. E. (2014). Semiparametric methods for center effect measures based
+   on the ratio of survival functions. *Lifetime Data Analysis*, 20(4), 619-644.
+   <https://doi.org/10.1007/s10985-014-9293-9>
+5. Hsiao, C. (2022). *Analysis of Panel Data* (No. 64). Cambridge University Press.
+6. Therneau, T. M., & Grambsch, P. M. (2000). *Modeling Survival Data: Extending the Cox
+   Model*. Springer. <https://doi.org/10.1007/978-1-4757-3294-8>
+7. Wu, W., Kuriakose, J. P., Weng, W., Burney, R. E., & He, K. (2023). Test-specific funnel
    plots for healthcare provider profiling leveraging individual- and summary-level
    information. *Health Services and Outcomes Research Methodology*, 23(1), 45-58.
    <https://doi.org/10.1007/s10742-022-00285-9>
-6. Wu, W., Yang, Y., Kang, J., & He, K. (2022). Improving large-scale estimation and
+8. Wu, W., Yang, Y., Kang, J., & He, K. (2022). Improving large-scale estimation and
    inference for profiling health care providers. *Statistics in Medicine*, 41(15),
    2840-2853. <https://doi.org/10.1002/sim.9387>

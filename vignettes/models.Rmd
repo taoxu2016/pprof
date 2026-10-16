@@ -14,13 +14,15 @@ knitr::opts_chunk$set(
 )
 ```
 
-pprof fits seven models. Every fit takes a formula with the outcome and the risk
-factors, a data frame, and the name of the column that identifies the providers, and
-returns a model that the profiling functions (`test_providers()`,
-`standardize_providers()`, `provider_effects()`, `funnel_limits()`, and
-`profile_providers()`) work with. This vignette describes the models, what each assumes,
-and what each supports. `vignette("pprof", package = "pprof")` shows a complete analysis,
-and `vignette("statistical-methods", package = "pprof")` gives the formulas.
+pprof fits ten models: seven for binary and continuous outcomes, and three Cox models for
+time-to-event outcomes. Every fit takes a formula with the outcome and the risk factors, a
+data frame, and the name of the column that identifies the providers, and returns a model
+that the profiling functions (`test_providers()`, `standardize_providers()`,
+`provider_effects()`, `funnel_limits()`, and `profile_providers()`) work with, to the
+extent the model supports them. This vignette describes the models, what each assumes, and
+what each supports. `vignette("pprof", package = "pprof")` shows a complete analysis,
+`vignette("time-to-event", package = "pprof")` one with time-to-event outcomes, and
+`vignette("statistical-methods", package = "pprof")` gives the formulas.
 
 ```{r data, message = FALSE}
 library(pprof)
@@ -31,12 +33,16 @@ continuous <- data.frame(y = ExampleDataLinear$Y, hospital = ExampleDataLinear$P
 risk <- y ~ z1 + z2 + z3 + z4 + z5
 ```
 
-## The seven models
+## The models
 
 | Outcome | Fixed effects | Random effects | Correlated random effects |
 |---|---|---|---|
 | binary | `fit_logistic_fe()`, `fit_logistic_firth()` | `fit_logistic_re()` | `fit_logistic_cre()` |
 | continuous | `fit_linear_fe()` | `fit_linear_re()` | `fit_linear_cre()` |
+
+For time-to-event outcomes, `fit_cox_stratified()` fits the Cox model with a baseline hazard
+of its own for each provider, `fit_cox_penalized()` the same model with an elastic-net
+penalty, and `fit_fine_gray()` the Fine-Gray model of competing risks (below).
 
 - **Fixed effects.** Each provider's effect γ~i~ is a parameter, estimated from the
   provider's own observations: by maximum likelihood for `fit_logistic_fe()`, by Firth's
@@ -78,13 +84,23 @@ points, from the literature, bear on it.
   likelihood estimates and keeps the estimates finite when a provider's patients all have
   the same outcome (Firth 1993; Heinze and Schemper 2002), which matters for small
   providers and rare events.
+- For time-to-event outcomes, the Cox model stratified by provider estimates no provider
+  effects: each provider has a baseline hazard of its own, and profiling compares its
+  observed events with those expected for its patients at a national baseline (He and
+  Schaubel 2014). With competing events, the cause-specific model and the Fine-Gray model
+  answer different questions: the first describes the rate of the event among the patients
+  still at risk, with competing events censored, and the second the cumulative incidence of
+  the event, keeping patients with a competing event at risk (Putter, Fiocco and Geskus
+  2007). Only the cause-specific model has provider measures.
 
 ## What each model supports
 
 Each model declares the inference it supports, and the profiling functions refuse, with a
 `pprof_error_unsupported_inference` error, what a model does not declare. The table below
 is computed from fits of the example data (the logistic random-effect models on the first
-20 hospitals, to keep this vignette fast).
+20 hospitals, to keep this vignette fast), and of survival's `lung` and `mgus2` data for the
+Cox models, with institutions and the two sexes as providers; the penalized model appears
+when glmnet is installed.
 
 ```{r fits, message = FALSE}
 small <- binary[binary$hospital <= 20, ]
@@ -97,21 +113,34 @@ fits <- list(
   fit_linear_re = fit_linear_re(risk, continuous, "hospital"),
   fit_linear_cre = fit_linear_cre(risk, continuous, "hospital", within_between = c("z1", "z2"))
 )
+lung <- survival::lung
+mgus2 <- survival::mgus2
+mgus2$etime <- with(mgus2, ifelse(pstat == 0, futime, ptime))
+mgus2$event <- factor(with(mgus2, ifelse(pstat == 0, 2 * death, 1)), levels = 0:2,
+                      labels = c("censored", "progression", "death"))
+fits$fit_cox_stratified <- fit_cox_stratified(Surv(time, status) ~ age + sex, lung, "inst")
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  fits$fit_cox_penalized <- fit_cox_penalized(Surv(time, status) ~ age + sex + ph.karno, lung, "inst", n_lambda = 10)
+}
+fits$fit_fine_gray <- fit_fine_gray(Surv(etime, event) ~ age + mspike, mgus2, "sex", cause = "progression")
 declared <- function(fit, prefix) {
   capabilities <- inference_capabilities(fit)
   paste(sub(prefix, "", grep(prefix, capabilities, value = TRUE)), collapse = ", ")
 }
+# The fields of the family specification that profiling reads, for the models that profile providers.
+profiled <- function(fit, field) {
+  if (!any(grepl("^(provider|standardize)_", inference_capabilities(fit)))) return("")
+  value <- profile_spec(fit)[[field]]
+  if (is.null(value) && identical(field, "test_default")) "exact" else paste(value, collapse = ", ")
+}
 support <- data.frame(
   model = names(fits),
   provider_tests = vapply(fits, declared, "", prefix = "^provider_"),
-  default_test = vapply(fits, function(fit) {
-    test <- profile_spec(fit)$test_default
-    if (is.null(test)) "exact" else test
-  }, ""),
+  default_test = vapply(fits, profiled, "", field = "test_default"),
   intervals = vapply(fits, declared, "", prefix = "^interval_"),
-  default_null = vapply(fits, function(fit) as.character(profile_spec(fit)$null_default), ""),
-  measures = vapply(fits, function(fit) paste(profile_spec(fit)$measures, collapse = ", "), ""),
-  indirect_numerator = vapply(fits, function(fit) profile_spec(fit)$indirect_numerator, ""),
+  default_null = vapply(fits, profiled, "", field = "null_default"),
+  measures = vapply(fits, profiled, "", field = "measures"),
+  indirect_numerator = vapply(fits, profiled, "", field = "indirect_numerator"),
   funnel = vapply(fits, function(fit) "funnel" %in% inference_capabilities(fit), NA),
   coefficient_tests = vapply(fits, declared, "", prefix = "^coef_"),
   row.names = NULL
@@ -119,7 +148,7 @@ support <- data.frame(
 knitr::kable(support)
 ```
 
-Three differences between the families are worth stating:
+Four differences between the families are worth stating:
 
 - Indirect measures compare a provider's observed outcomes with those expected under the
   norm for the fixed-effect models, but its predicted outcomes, which include its estimated
@@ -128,6 +157,10 @@ Three differences between the families are worth stating:
 - The norm is the median of the provider effects for the fixed-effect models (linear
   fixed-effect models also offer `null = "mean"`), and 0 for the random-effect models;
   `null` can always be a number.
+- The Cox model stratified by provider has no provider effects: its tests compare each
+  provider's observed events with a Poisson distribution whose mean is its expected events,
+  the mid-p test by default, and its measures are ratios of observed to expected events. The
+  penalized Cox model and the Fine-Gray model declare no provider profiling.
 
 ## Fixed-effect models
 
@@ -263,12 +296,32 @@ within <- coef(decomposed)[paste0("z", 1:5, "_within")]
 max(abs(within - coef(fits$fit_linear_fe)))
 ```
 
+## Cox models
+
+`fit_cox_stratified()` takes `Surv(time, status)` or, with delayed entry or several rows
+per patient, `Surv(start, stop, status)`; Breslow's or Efron's method for tied times
+(`ties`); case weights (`weights`), whose rows of weight 0 are left out of the fit and kept
+in the measures; `offset()` terms; and the robust variance, with a `cluster` column or one
+cluster per row (`robust = TRUE`). It screens no provider. Its fits are survival's, and its
+measures and tests pprof_py's, as `vignette("time-to-event", package = "pprof")` shows with
+the settings where they differ from `coxph()`'s defaults. `fit_cox_penalized()` gives a path
+of coefficients over a grid of penalties, and `select_lambda()` chooses one by
+cross-validation; glmnet, which computes the paths, is a suggested package. `fit_fine_gray()`
+takes a status that is a factor whose first level is censoring, and the event of interest
+as `cause`:
+
+```{r cox-models}
+fine_gray <- fits$fit_fine_gray
+fine_gray
+```
+
 ## Methods that need the risk factors
 
 Models keep, for every observation, what the profiling needs (the outcome, the linear
 predictor, the provider), but not the matrix of risk factors. The standard score test and
-the likelihood-ratio and score tests of the coefficients need it: fit with
-`keep_data = TRUE`, or pass the data again.
+the likelihood-ratio and score tests of the coefficients need it, and so do the Cox models'
+baseline hazards, curves, and score and dfbeta residuals, and the Fine-Gray model's
+cumulative incidence: fit with `keep_data = TRUE`, or pass the data again.
 
 ```{r data-required}
 standard <- test_providers(fit, test = "score", score_type = "standard", data = binary)
@@ -300,6 +353,10 @@ He K, Kalbfleisch JD, Li Y, Li Y (2013). Evaluating hospital readmission rates i
 facilities; adjusting for hospital effects. *Lifetime Data Analysis*, 19, 490-512.
 <https://doi.org/10.1007/s10985-013-9264-6>
 
+He K, Schaubel DE (2014). Semiparametric methods for center effect measures based on the ratio
+of survival functions. *Lifetime Data Analysis*, 20(4), 619-644.
+<https://doi.org/10.1007/s10985-014-9293-9>
+
 Heinze G, Schemper M (2002). A solution to the problem of separation in logistic
 regression. *Statistics in Medicine*, 21(16), 2409-2419. <https://doi.org/10.1002/sim.1047>
 
@@ -307,6 +364,9 @@ Hsiao C (2022). *Analysis of Panel Data*, 4th edition. Cambridge University Pres
 
 Mundlak Y (1978). On the pooling of time series and cross section data. *Econometrica*,
 46(1), 69-85. <https://doi.org/10.2307/1913646>
+
+Putter H, Fiocco M, Geskus RB (2007). Tutorial in biostatistics: competing risks and
+multi-state models. *Statistics in Medicine*, 26(11), 2389-2430. <https://doi.org/10.1002/sim.2712>
 
 Wu W, Yang Y, Kang J, He K (2022). Improving large-scale estimation and inference for
 profiling health care providers. *Statistics in Medicine*, 41(15), 2840-2853.
