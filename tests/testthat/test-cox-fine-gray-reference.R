@@ -13,16 +13,14 @@ fine_gray_reference_ids <- function(set) {
   ids[vapply(ids, function(id) identical(cox_fixture(id, set)$case$kind, "competing"), logical(1))]
 }
 
-fine_gray_matches <- function(a, b, tier) {
-  is.null(reference_compare(as.double(unlist(a)), as.double(unlist(b)), reference_tolerance(tier)))
-}
-
+# a matches b, or differs from it, under a tier of helper-tolerances.R, elementwise (expect_cox_tier(),
+# which records the comparison for validation/run-cox-reference.R).
 expect_fine_gray_match <- function(a, b, tier, label) {
-  expect(fine_gray_matches(a, b, tier), sprintf("%s: differs from the reference beyond %s", label, tier))
+  expect_cox_tier(as.double(unlist(a)), as.double(unlist(b)), tier, label)
 }
 
 expect_fine_gray_differ <- function(a, b, tier, label) {
-  expect(!fine_gray_matches(a, b, tier), sprintf("%s: expected to differ beyond %s", label, tier))
+  expect_cox_tier(as.double(unlist(a)), as.double(unlist(b)), tier, label, differ = TRUE)
 }
 
 # The records whose differences from pprof_py the calibration report explains (validation/
@@ -75,12 +73,11 @@ for (set in c("core", "full")) {
             }
             if (d57) {
               bound <- cox_last_step_bound(coef(tight), py$tight$coef, py$iterates, py$tight$iterations)
-              expect_lte(max(abs(unname(coef(tight)) - unlist(py$tight$coef))), bound, label = paste(label, "(D-57)"))
+              expect_cox_within_step(coef(tight), py$tight$coef, bound, paste(label, "(D-57)"))
             } else {
               expect_fine_gray_match(coef(tight), py$tight$coef, "cox_coefficient", paste(label, "coefficients"))
               bound <- cox_last_step_bound(coef(default), py$default$coef, py$iterates, py$default$iterations)
-              expect_lte(max(abs(unname(coef(default)) - unlist(py$default$coef))), bound,
-                         label = paste(label, "default"))
+              expect_cox_within_step(coef(default), py$default$coef, bound, paste(label, "default"))
             }
             expect_fine_gray_match(cox_packed_upper(tight$naive_vcov), py$tight$naive_covariance, "cox_variance",
                                    paste(label, "model-based covariance"))

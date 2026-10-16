@@ -28,14 +28,12 @@ compare_penalized_case <- function(fx, label_prefix) {
         invokeRestart("muffleWarning")
       })
       # The grid (K-143): lambda_max and the scales always; the grid itself, exactly when it was given.
-      expect_null(reference_compare(fit$lambda_max, py$lambda_max, reference_tolerance("closed_form")),
-                  label = paste(label, "lambda_max"))
-      expect_null(reference_compare(unname(fit$column_scale), as.numeric(unlist(py$column_scale)),
-                                    reference_tolerance("closed_form")), label = paste(label, "column scales"))
+      expect_cox_tier(fit$lambda_max, py$lambda_max, "closed_form", paste(label, "lambda_max"))
+      expect_cox_tier(unname(fit$column_scale), as.numeric(unlist(py$column_scale)), "closed_form",
+                      paste(label, "column scales"))
       py_grid <- as.numeric(unlist(py$lambda))
       reached <- length(fit$lambda)
-      expect_null(reference_compare(fit$lambda, py_grid[seq_len(reached)], reference_tolerance("closed_form")),
-                  label = paste(label, "grid"))
+      expect_cox_tier(fit$lambda, py_grid[seq_len(reached)], "closed_form", paste(label, "grid"))
       expect_identical(unname(fit$penalty_factor), as.numeric(unlist(py$penalty_factor)),
                        label = paste(label, "factors"))
       expect_identical(fit$degenerate, as.character(unlist(r_side$degenerate)), label = paste(label, "degenerate"))
@@ -46,8 +44,7 @@ compare_penalized_case <- function(fx, label_prefix) {
       r_path <- cox_penalized_path(r_side$coef_path)
       if (!expected_end) {
         expect_identical(reached, length(py_grid), label = paste(label, "points reached"))
-        expect_null(reference_compare(unname(fit$coefficient_path), py_path, reference_tolerance("penalized_path")),
-                    label = paste(label, "path against pprof_py"))
+        expect_cox_tier(unname(fit$coefficient_path), py_path, "penalized_path", paste(label, "path against pprof_py"))
         expect_identical(cox_active_set_differences(fit$coefficient_path, py_path), 0L,
                          label = paste(label, "active sets (D-72)"))
       } else {
@@ -57,11 +54,10 @@ compare_penalized_case <- function(fx, label_prefix) {
         expect_true("pprof_warning_not_converged" %in% warned, label = paste(label, "warning (D-78)"))
         expect_identical(fit$convergence$converged, FALSE)
         first <- seq_len(30L)
-        expect_null(reference_compare(unname(fit$coefficient_path[, first]), py_path[, first],
-                                      reference_tolerance("penalized_path")), label = paste(label, "path to the 30th"))
+        expect_cox_tier(unname(fit$coefficient_path[, first]), py_path[, first], "penalized_path",
+                        paste(label, "path to the 30th"))
       }
-      expect_null(reference_compare(unname(fit$coefficient_path), r_path, reference_tolerance("penalized_path")),
-                  label = paste(label, "path against glmnet"))
+      expect_cox_tier(unname(fit$coefficient_path), r_path, "penalized_path", paste(label, "path against glmnet"))
     }
   }
 }
@@ -76,26 +72,24 @@ compare_penalized_cross_validation <- function(fx, label_prefix) {
     selected <- select_lambda(fit, folds = folds)
     cv <- selected$cross_validation
     py_grid <- as.numeric(unlist(py$lambda))
-    expect_null(reference_compare(cv$cvm, as.numeric(unlist(py$cvm)), reference_tolerance("penalized_path")),
-                label = paste(label, "cvm"))
-    expect_null(reference_compare(cv$cvsd, as.numeric(unlist(py$cvsd)), reference_tolerance("penalized_path")),
-                label = paste(label, "cvsd"))
+    expect_cox_tier(cv$cvm, as.numeric(unlist(py$cvm)), "penalized_path", paste(label, "cvm"))
+    expect_cox_tier(cv$cvsd, as.numeric(unlist(py$cvsd)), "penalized_path", paste(label, "cvsd"))
     expect_identical(match(c(cv$lambda_min, cv$lambda_1se), fit$lambda),
                      match(as.numeric(c(py$lambda_min, py$lambda_1se)), py_grid), label = paste(label, "selection"))
     expect_identical(cv$n_folds_used, as.integer(unlist(py$folds_used)), label = paste(label, "folds used"))
-    expect_null(reference_compare(unname(selected$coefficients), as.numeric(unlist(py$coef)),
-                                  reference_tolerance("penalized_path")), label = paste(label, "selected coefficients"))
+    expect_cox_tier(unname(selected$coefficients), as.numeric(unlist(py$coef)), "penalized_path",
+                    paste(label, "selected coefficients"))
     # Against the generator's R side on pprof_py's own grid: the same glmnet fold paths, with each fold's
     # deviances from survival's partial likelihood per lambda (dev/reference/cox/survival.R).
     r_side <- fx$survival[[ties]]$alpha_1$cv
     on_grid <- select_lambda(cox_penalized_case_fit(fx, ties, "alpha_1", lambda = py_grid, keep_data = TRUE),
                              folds = folds)$cross_validation
-    expect_null(reference_compare(on_grid$fold_deviance, t(cox_penalized_path(r_side$fold_deviance)),
-                                  reference_tolerance("closed_form")), label = paste(label, "fold deviances"))
-    expect_null(reference_compare(on_grid$cvm, as.numeric(unlist(r_side$cvm)), reference_tolerance("closed_form")),
-                label = paste(label, "cvm against glmnet and survival"))
-    expect_null(reference_compare(on_grid$cvsd, as.numeric(unlist(r_side$cvsd)), reference_tolerance("closed_form")),
-                label = paste(label, "cvsd against glmnet and survival"))
+    expect_cox_tier(on_grid$fold_deviance, t(cox_penalized_path(r_side$fold_deviance)), "closed_form",
+                    paste(label, "fold deviances"))
+    expect_cox_tier(on_grid$cvm, as.numeric(unlist(r_side$cvm)), "closed_form",
+                    paste(label, "cvm against glmnet and survival"))
+    expect_cox_tier(on_grid$cvsd, as.numeric(unlist(r_side$cvsd)), "closed_form",
+                    paste(label, "cvsd against glmnet and survival"))
     expect_identical(on_grid$held_out_weight, as.numeric(unlist(r_side$held_weight)), label = paste(label, "held-out"))
   }
 }

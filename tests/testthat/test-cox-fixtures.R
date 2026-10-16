@@ -53,12 +53,9 @@ test_that("the installed survival reproduces the core Cox fixtures' tight fits",
       fit <- cox_survival_tight_fit(fits[[key]]$fx, ties)
       reference <- fits[[key]]$reference
       label <- paste(id, key)
-      expect_null(reference_compare(unname(stats::coef(fit)), reference$coef, reference_tolerance("cox_coefficient")),
-                  label = paste(label, "coefficients"))
-      expect_null(reference_compare(fit$loglik[2], reference$loglik, reference_tolerance("cox_function")),
-                  label = paste(label, "log-likelihood"))
-      expect_null(reference_compare(packed_upper(stats::vcov(fit)), reference$covariance,
-                                    reference_tolerance("cox_variance")), label = paste(label, "covariance"))
+      expect_cox_tier(unname(stats::coef(fit)), reference$coef, "cox_coefficient", paste(label, "coefficients"))
+      expect_cox_tier(fit$loglik[2], reference$loglik, "cox_function", paste(label, "log-likelihood"))
+      expect_cox_tier(packed_upper(stats::vcov(fit)), reference$covariance, "cox_variance", paste(label, "covariance"))
     }
   }
 })
@@ -87,8 +84,7 @@ test_that("an installed glmnet 5.0 or later reproduces the core penalized fixtur
                               penalty.factor = pf, standardize = TRUE, cox.ties = ties,
                               control = list(thresh = 1e-12, maxit = 1e5, fdev = 0, devmax = 1))
         path <- lapply(seq_len(ncol(fit$beta)), function(j) as.numeric(fit$beta[, j]))
-        expect_null(reference_compare(path, reference$coef_path, reference_tolerance("penalized_path")),
-                    label = paste(id, ties, key))
+        expect_cox_tier(path, reference$coef_path, "penalized_path", paste(id, ties, key))
       }
     }
   }
@@ -120,21 +116,18 @@ test_that("the installed survival reproduces the core competing-risk fixtures' F
                                  etype = sub("_unstratified", "", key, fixed = TRUE), id = id, timefix = FALSE)
         if (weighted) fg$fgwt <- fg$fgwt * d$weight[fg$.row + 1L]
         reference <- fx$survival[[ties]]$fine_gray[[key]]
-        expect_null(reference_compare(fg$fgwt, reference$expanded$weight, reference_tolerance("closed_form")),
-                    label = paste(label, "expanded weights"))
+        expect_cox_tier(fg$fgwt, reference$expanded$weight, "closed_form", paste(label, "expanded weights"))
         fit_rows <- fg[fg$fgwt > 0, ]
         f <- stats::as.formula(paste("Surv(fgstart, fgstop, fgstatus) ~", x_terms,
                                      if (stratified) "+ strata(stratum)" else ""), env = env)
         fit <- survival::coxph(f, data = fit_rows, weights = fgwt, cluster = id, ties = ties,
                                control = survival::coxph.control(eps = 1e-11, iter.max = 100, timefix = FALSE))
-        expect_null(reference_compare(unname(stats::coef(fit)), reference$tight$coef,
-                                      reference_tolerance("cox_coefficient")), label = paste(label, "coefficients"))
-        expect_null(reference_compare(packed_upper(fit$var), reference$tight$covariance,
-                                      reference_tolerance("cox_variance")), label = paste(label, "robust covariance"))
-        expect_null(reference_compare(packed_upper(fit$naive.var), reference$tight$naive_covariance,
-                                      reference_tolerance("cox_variance")), label = paste(label, "model-based"))
-        expect_null(reference_compare(fit$loglik[2], reference$tight$loglik, reference_tolerance("cox_function")),
-                    label = paste(label, "log-likelihood"))
+        expect_cox_tier(unname(stats::coef(fit)), reference$tight$coef, "cox_coefficient", paste(label, "coefficients"))
+        expect_cox_tier(packed_upper(fit$var), reference$tight$covariance, "cox_variance",
+                        paste(label, "robust covariance"))
+        expect_cox_tier(packed_upper(fit$naive.var), reference$tight$naive_covariance, "cox_variance",
+                        paste(label, "model-based"))
+        expect_cox_tier(fit$loglik[2], reference$tight$loglik, "cox_function", paste(label, "log-likelihood"))
       }
     }
   }

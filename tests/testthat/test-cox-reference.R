@@ -14,17 +14,14 @@ cox_reference_ids <- function(set, kind = "cox") {
   ids[vapply(ids, function(id) identical(cox_fixture(id, set)$case$kind, kind), logical(1))]
 }
 
-# a matches b under a tier of helper-tolerances.R, elementwise.
-cox_matches <- function(a, b, tier) {
-  is.null(reference_compare(as.double(unlist(a)), as.double(unlist(b)), reference_tolerance(tier)))
-}
-
+# a matches b, or differs from it, under a tier of helper-tolerances.R, elementwise (expect_cox_tier(),
+# which records the comparison for validation/run-cox-reference.R).
 expect_cox_match <- function(a, b, tier, label) {
-  expect(cox_matches(a, b, tier), sprintf("%s: differs from the reference beyond %s", label, tier))
+  expect_cox_tier(as.double(unlist(a)), as.double(unlist(b)), tier, label)
 }
 
 expect_cox_differ <- function(a, b, tier, label) {
-  expect(!cox_matches(a, b, tier), sprintf("%s: expected to differ beyond %s", label, tier))
+  expect_cox_tier(as.double(unlist(a)), as.double(unlist(b)), tier, label, differ = TRUE)
 }
 
 # The baseline of a fit at pprof_py's points: each (stratum, event time) of pprof_py's raw baseline,
@@ -63,8 +60,7 @@ for (set in c("core", "full")) {
             expect_cox_differ(coef(tight), py$tight$coef, "cox_coefficient", paste(label, "pprof_py (D-58)"))
           } else {
             bound <- cox_last_step_bound(coef(default), py$default$coef, py$iterates, py$default$iterations)
-            expect_lte(max(abs(unname(coef(default)) - unlist(py$default$coef))), bound,
-                       label = paste(label, "default"))
+            expect_cox_within_step(coef(default), py$default$coef, bound, paste(label, "default"))
           }
           reference <- if (d58) r$tight else py$tight
           expect_cox_match(coef(tight), reference$coef, "cox_coefficient", paste(label, "coefficients"))
@@ -294,14 +290,16 @@ for (set in c("core", "full")) {
             # and the expected events at them, differ; with Breslow ties they agree (the records' `d58`).
             d58 <- rec$d58
             check <- if (d58) expect_cox_differ else expect_cox_match
-            check(indirect$expected, py$expected, "cox_baseline", paste(label, "expected events"))
-            check(direct$expected, py$direct_expected, "cox_baseline", paste(label, "direct expected events"))
+            entry <- if (d58) " (D-58)" else ""
+            check(indirect$expected, py$expected, "cox_baseline", paste0(label, " expected events", entry))
+            check(direct$expected, py$direct_expected, "cox_baseline", paste0(label, " direct expected events", entry))
             if (d58) next
             expect_cox_match(indirect$estimate, py$indirect_ratio, "cox_baseline", paste(label, "indirect ratios"))
             expect_cox_match(direct$estimate, py$direct_ratio, "cox_baseline", paste(label, "direct ratios"))
             for (test in c("midp", "exact")) {
               flags <- quiet(test_providers(fit, test = test))$table$flag
               near <- cox_near_threshold(indirect$observed, indirect$expected, test)
+              cox_record_near(paste(label, test), indirect$provider_id[near])
               expect_identical(flags[!near], as.integer(unlist(rec$py$tests[[test]]$flag))[!near],
                                label = paste(label, test, "flags"))
             }

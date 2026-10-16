@@ -240,3 +240,63 @@ fine_gray_case_fit <- function(fx, key, ties, tight = FALSE, ...) {
                 weights = if (isTRUE(def$weighted)) "weight", ties = ties, max_iter = if (tight) 100 else 20,
                 tol = if (tight) 1e-11 else 1e-9, ...)
 }
+
+# --- The record of the comparisons (CoxPH C6, DEC-135) ------------------------------------------------
+
+# validation/run-cox-reference.R runs the Cox reference tests with the option pprof.cox_comparisons set to
+# an environment. Each comparison below then adds a row to it: the test file (the environment's `file`),
+# the label, the tier, the ratio of the largest difference to the allowed one under the package's rule,
+# |a - b| <= atol + rtol * |b| elementwise (equal values, infinities and missing values included, count 0),
+# and whether a match or a difference beyond the tier was expected. Without the option nothing is
+# recorded; either way each call is the one expectation it replaced, asserting the same thing.
+cox_tier_ratio <- function(a, b, tier) {
+  a <- as.double(unlist(a))
+  b <- as.double(unlist(b))
+  if (length(a) != length(b)) return(Inf)
+  if (!length(a)) return(0)
+  tolerance <- reference_tolerance(tier)
+  same <- (is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & a == b)
+  ratio <- abs(a - b) / (tolerance$atol + tolerance$rtol * abs(b))
+  ratio[same] <- 0
+  ratio[is.na(ratio)] <- Inf
+  max(ratio)
+}
+
+cox_record <- function(label, tier, ratio, expected) {
+  log <- getOption("pprof.cox_comparisons")
+  if (is.environment(log)) {
+    log$rows[[length(log$rows) + 1L]] <- data.frame(file = if (is.null(log$file)) NA_character_ else log$file,
+                                                    label = label, tier = tier, ratio = ratio, expected = expected,
+                                                    stringsAsFactors = FALSE)
+  }
+  invisible()
+}
+
+# One comparison under a tier, as one expectation: `a` matches `b`, or with `differ` differs from it beyond
+# the tier, by reference_compare() on the values as given.
+expect_cox_tier <- function(a, b, tier, label, differ = FALSE) {
+  matches <- is.null(reference_compare(a, b, reference_tolerance(tier)))
+  cox_record(label, tier, cox_tier_ratio(a, b, tier), if (differ) "differ" else "match")
+  if (differ) {
+    expect(!matches, sprintf("%s: expected to differ beyond %s", label, tier))
+  } else {
+    expect(matches, sprintf("%s: differs from the reference beyond %s", label, tier))
+  }
+}
+
+# A default fit's coefficients within the bound of cox_last_step_bound() (D-57), as one expectation.
+expect_cox_within_step <- function(a, b, bound, label) {
+  difference <- max(abs(unname(a) - unlist(b)))
+  cox_record(label, "last Newton step", difference / bound, "match")
+  expect_lte(difference, bound, label = label)
+}
+
+# Providers whose flags a comparison leaves out, within tolerance of a threshold (cox_near_threshold()).
+cox_record_near <- function(label, providers) {
+  log <- getOption("pprof.cox_comparisons")
+  if (is.environment(log) && length(providers)) {
+    log$near[[length(log$near) + 1L]] <- data.frame(label = label, provider = as.character(providers),
+                                                    stringsAsFactors = FALSE)
+  }
+  invisible()
+}
