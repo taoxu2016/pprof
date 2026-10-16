@@ -1,0 +1,36 @@
+R version 4.4.0 (2024-04-24 ucrt)
+survival 3.8.12, glmnet 5.1
+
+patients 7944, deaths 2514, transplants 1431, late entries 1977
+hospitalization rows 17061, hospitalizations 9117
+coefficients identical() to coxph(ties = "breslow", timefix = FALSE): TRUE
+largest difference from coxph()'s defaults (Efron ties, timefix = TRUE): 0.00029
+mid-p flags at level 0.95: 4 lower, 91 as expected, 5 higher
+funnel plot 8808 bytes
+caterpillar plot 6972 bytes
+Fine-Gray expanded rows in the fit: 19828
+selected lambda 0.01674 (rule 1se)
+
+Elapsed seconds:
+  data                                     0.04
+  recurrent data                           0.03
+  check_data                               0.13
+  fit                                      0.03
+  coxph, the package's settings            0.03
+  coxph, its defaults                      0.04
+  fit, robust                              0.06
+  summary                                  0.02
+  profile_providers, mid-p                 0.03
+  test_providers, exact                    0.00
+  standardize_providers, both              0.00
+  funnel_limits, two levels                0.02
+  plot_funnel                              0.55
+  plot_caterpillar                         0.22
+  fit, recurrent                           0.06
+  profile_providers, recurrent             0.01
+  cause-specific fit                       0.01
+  fit_fine_gray                            0.39
+  cumulative incidence                     0.43
+  fit_cox_penalized, 20 lambda values      0.11
+  select_lambda, 5 folds                   0.63
+  in all                                   2.84

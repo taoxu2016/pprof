@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is closed (2026-10-15) and in `main`. Phase C6, documentation and hardening, is next, its plan first.
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is closed (2026-10-15) and in `main`. Phase C6, documentation and hardening, the phase's last, is under way: its plan was approved on 2026-10-16.
 
 ## 2026-10-07
 
@@ -355,3 +355,18 @@ Recorded on 2026-10-14, for the next session.
 - With the merge, `cox-bench.yaml` in `main` runs the Fine–Gray tasks by default when the project lead dispatches it (DEC-127): `fine_gray` on center, covariates-5, and providers-100, and `fine_gray_right` on center and providers-7500. The penalized tasks take `only` = " penalized", and the corner run "^corner |^providers-7500 breslow$|^covariates-5 robust$".
 - Open, as at the gate: D-78 awaits a methodology owner's confirmation (M-16), with the decisions taken under delegation in C0; the codes of an `id` (Fine–Gray) or a `cluster` (stratified model) that is a factor are untested; the package's tarball is 22 KB under the 5 MB at which `R CMD check` notes its size; telling survival's maintainers of `finegray()`'s case-weight defect and of its cost with many strata is the project lead's to take or ask for; and, from C4, the fits' overhead at 7,500 providers, the measures' time at 10,000 rows and 7,500 providers, and `rewrite-bench.yaml`'s setup. `CLAUDE.md`'s "Current phase" section still names Phase C5 as next; it changes with the project lead's approval.
 - Next step: Phase C6, documentation and hardening (the brief's §4, row C6), when the project lead asks: its plan first, `dev/design/COXPH_C6_PLAN.md`, for approval, on `coxph/phase-6` from `main`.
+
+## 2026-10-16: the C6 plan
+
+- The project lead asked for Phase C6 on 2026-10-15. Branch `coxph/phase-6`, from `main` at `8023d8f`; `CLAUDE.md`'s "Current phase" section names Phase C6 (`a919c0b`, the project lead's approval in the request).
+- CI on `8023d8f`, the C5 merge: every workflow passed on `main` (`rewrite-check` 38802825847, `rewrite-reference` 38802825883, `rewrite-coverage` 38802825917, `rewrite-lint` 38802825882, `rewrite-pkgdown` 38802825926) and on `coxph/phase-5`, read through the public API (`dev/tools/ci_runs.R`).
+- The plan, `dev/design/COXPH_C6_PLAN.md`, for the project lead's approval, with the evidence behind it in `dev/design/coxph-facts/36` to `39`. Found while planning:
+  - the tarball is 22,842 bytes under the 5,000,000 at which `R CMD check --as-cran` notes its size, and the vignette and the Cox sections of the methods vignette need about 65 KB; the bundled data resaved with xz free 48,217 bytes, their objects `identical()`;
+  - the vignette's computations, on data derived from `ExampleDataBinary`, take 2.8 s, and its stratified fit is `identical()` to `coxph(ties = "breslow", timefix = FALSE)`'s; the five vignettes' rebuild under `R CMD check` takes 38 s;
+  - CI never runs the full Cox fixture set: it checks the built tarball, without `validation/`, with `NOT_CRAN` unset;
+  - of 72 invalid calls to the Cox functions, 66 raise pprof's classed conditions and 4 R's own errors, which every family shares; `fit_fine_gray()` names `cluster` for a missing `id` column, and profiling a penalized fit names the internal `profile_spec()`;
+  - the examples of `fit_cox_penalized()` and `select_lambda()` take 1.1 to 1.2 s, above DEC-068's 1 s;
+  - in a simulation with provider strata (100 replicates per scenario), the mid-p test flags 4.9% and the exact test 3.9% of providers without an effect, and with small providers 4.7% and 3.1%;
+  - fact 35 was missing from the facts README; its row and command are added.
+- A stray `build.log` that the session's first build attempt wrote into the repository's root was in the planning tarballs (a third note in their check) and was deleted; it was never committed.
+- Next step: the project lead's approval of the plan and its §6 decisions; then its §5 commits, starting with §4.1's runs of the unchanged code.
