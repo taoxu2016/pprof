@@ -1,13 +1,13 @@
 # Cox equivalence report: the package against pprof_py v0.7.0, survival, and glmnet
 
-Generated 2026-10-16 18:10:31 UTC by `validation/run-cox-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621); survival 3.8.12, glmnet 5.1; 79 s.
-Package under test: pprof 2.0.0 from the working tree at commit c0ae91d.
+Generated 2026-10-16 19:13:06 UTC by `validation/run-cox-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621); survival 3.8.12, glmnet 5.1; 86 s.
+Package under test: pprof 2.0.0 from the working tree at commit 976836c.
 Fixtures: the core set (tests/testthat/fixtures/cox) and the full set (validation/fixtures/cox), generated at 76fabac by `dev/reference/cox/generate.py` from pprof_py v0.7.0 (commit 9320766) and the pinned survival and glmnet.
 
 ## Summary
 
 - Test files: 7; tests 80, expectations 3705; failed 0, errors 0, skipped 0, warnings 0.
-- Comparisons with the fixtures recorded: 1893; within their tier: 1867; differences beyond their tier that a register entry decides: 26; failing: 0.
+- Comparisons with the fixtures recorded: 1897; within their tier: 1871; differences beyond their tier that a register entry decides: 26; failing: 0.
 - Largest ratio to its tier among the comparisons expected to match: 0.995 (cox_coefficient, `tiny-ties breslow coefficients`, test-cox-reference.R).
 - Providers left out of a flag comparison, within tolerance of a threshold: 0.
 
@@ -103,9 +103,9 @@ The largest ratio to the tier in each group, and the comparison where it occurs.
 | `test-cox-fixtures.R` | tiny-ties | efron | cox_coefficient | 1 | 0 | tiny-ties efron coefficients |
 | `test-cox-fixtures.R` | tiny-ties | efron | cox_function | 1 | 0 | tiny-ties efron log-likelihood |
 | `test-cox-fixtures.R` | tiny-ties | efron | cox_variance | 1 | 0 | tiny-ties efron covariance |
-| `test-cox-penalized-reference.R` | penalized-combined | breslow | closed_form | 9 | 0.00368 | penalized-combined breslow cvsd against glmnet and survival |
+| `test-cox-penalized-reference.R` | penalized-combined | breslow | closed_form | 10 | 0.00368 | penalized-combined breslow cvsd against glmnet and survival |
 | `test-cox-penalized-reference.R` | penalized-combined | breslow | penalized_path | 7 | 0.0598 | penalized-combined breslow alpha_0.5 path against pprof_py |
-| `test-cox-penalized-reference.R` | penalized-combined | efron | closed_form | 9 | 0.00377 | penalized-combined efron cvsd against glmnet and survival |
+| `test-cox-penalized-reference.R` | penalized-combined | efron | closed_form | 10 | 0.00377 | penalized-combined efron cvsd against glmnet and survival |
 | `test-cox-penalized-reference.R` | penalized-combined | efron | penalized_path | 7 | 0.0675 | penalized-combined efron alpha_0.5 path against pprof_py |
 | `test-cox-penalized-reference.R` | penalized-few-events | breslow | closed_form | 3 | 6.4e-06 | penalized-few-events breslow default grid |
 | `test-cox-penalized-reference.R` | penalized-few-events | breslow | penalized_path | 2 | 0.0947 | penalized-few-events breslow default path to the 30th |
@@ -131,9 +131,9 @@ The largest ratio to the tier in each group, and the comparison where it occurs.
 | `test-cox-penalized-reference.R` | penalized-weights | breslow | penalized_path | 2 | 0.0464 | penalized-weights breslow alpha_1 path against pprof_py |
 | `test-cox-penalized-reference.R` | penalized-weights | efron | closed_form | 3 | 7.75e-05 | penalized-weights efron alpha_1 grid |
 | `test-cox-penalized-reference.R` | penalized-weights | efron | penalized_path | 2 | 0.0515 | penalized-weights efron alpha_1 path against pprof_py |
-| `test-cox-penalized-reference.R` | penalized-wide | breslow | closed_form | 9 | 0.00495 | penalized-wide breslow cvsd against glmnet and survival |
+| `test-cox-penalized-reference.R` | penalized-wide | breslow | closed_form | 10 | 0.00495 | penalized-wide breslow cvsd against glmnet and survival |
 | `test-cox-penalized-reference.R` | penalized-wide | breslow | penalized_path | 7 | 0.21 | penalized-wide breslow alpha_0.5 path against pprof_py |
-| `test-cox-penalized-reference.R` | penalized-wide | efron | closed_form | 9 | 0.00183 | penalized-wide efron fold deviances |
+| `test-cox-penalized-reference.R` | penalized-wide | efron | closed_form | 10 | 0.00183 | penalized-wide efron fold deviances |
 | `test-cox-penalized-reference.R` | penalized-wide | efron | penalized_path | 7 | 0.213 | penalized-wide efron alpha_1 path against pprof_py |
 | `test-cox-reference.R` | competing-simple | breslow | closed_form | 14 | 3.24e-05 | competing-simple breslow cause 1 direct expected events |
 | `test-cox-reference.R` | competing-simple | breslow | cox_baseline | 8 | 0.0104 | competing-simple breslow cause 1 direct expected events |

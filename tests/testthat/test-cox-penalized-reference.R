@@ -90,7 +90,10 @@ compare_penalized_cross_validation <- function(fx, label_prefix) {
                     paste(label, "cvm against glmnet and survival"))
     expect_cox_tier(on_grid$cvsd, as.numeric(unlist(r_side$cvsd)), "closed_form",
                     paste(label, "cvsd against glmnet and survival"))
-    expect_identical(on_grid$held_out_weight, as.numeric(unlist(r_side$held_weight)), label = paste(label, "held-out"))
+    # Sums of the case weights, which R's sum() accumulates in long double on x86_64 and in double on arm64,
+    # where they can differ from the recorded ones in the last bit (DEC-141).
+    expect_cox_tier(on_grid$held_out_weight, as.numeric(unlist(r_side$held_weight)), "closed_form",
+                    paste(label, "held-out weights"))
   }
 }
 
