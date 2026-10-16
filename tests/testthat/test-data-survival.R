@@ -348,3 +348,13 @@ test_that("the validator also checks the type of survival data and the offset", 
   rejected(x)
   expect_identical(validate_pprof_data(p), p)
 })
+
+test_that("the error for invalid times counts the rows in good English", {
+  d <- survival_data()
+  d$time[1] <- Inf
+  condition <- expect_error(prepare_survival(Surv(time, status) ~ x, d), class = "pprof_error_invalid_input")
+  expect_true(endsWith(conditionMessage(condition), ": 1 row is not."))
+  d$time[2] <- Inf
+  condition <- expect_error(prepare_survival(Surv(entry, time, status) ~ x, d), class = "pprof_error_invalid_input")
+  expect_true(endsWith(conditionMessage(condition), ": 2 rows are not."))
+})

@@ -357,3 +357,10 @@ test_that("covariates that are not finite, and data that refit otherwise, raise"
   expect_error(predict(fit, newdata = d[1:2, ], type = "cumulative_incidence", data = other),
                class = "pprof_error_invalid_input")
 })
+
+test_that("an id that names no column is reported as `id`", {
+  condition <- expect_error(fine_gray_fit(id = "subject"), class = "pprof_error_invalid_input")
+  expect_identical(condition$arg, "id")
+  condition <- expect_error(fine_gray_fit(id = c("id", "provider")), class = "pprof_error_invalid_input")
+  expect_identical(condition$arg, "id")
+})

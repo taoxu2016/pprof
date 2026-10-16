@@ -152,12 +152,13 @@ data_survival_invalid_times <- function(parts) {
 data_check_survival_values <- function(parts) {
   invalid <- data_survival_invalid_times(parts)
   if (any(invalid)) {
+    rows <- if (sum(invalid) == 1L) "1 row is not" else sprintf("%d rows are not", sum(invalid))
     abort_invalid_input(
       sprintf(if (parts$counting) {
-        "Entry and exit times must be finite, with the entry below the exit: %d row%s are not."
+        "Entry and exit times must be finite, with the entry below the exit: %s."
       } else {
-        "Right-censored times must be finite and above 0: %d row%s are not."
-      }, sum(invalid), if (sum(invalid) == 1L) " is" else "s"),
+        "Right-censored times must be finite and above 0: %s."
+      }, rows),
       arg = "formula"
     )
   }

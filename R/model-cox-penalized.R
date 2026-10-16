@@ -338,6 +338,16 @@ inference_capabilities.pprof_cox_penalized <- function(model) {
   character()
 }
 
+#' @export
+profile_spec.pprof_cox_penalized <- function(model) {
+  # The fields every family has, so that a profiling function reaches the capability check and names
+  # the capability the model lacks; no profiling hook is set (M-34), as for the Fine-Gray model.
+  list(
+    family = "cox_penalized", effect = "none: the elastic-net Cox model has no provider effects", null_default = 0,
+    null_options = character(), indirect_numerator = "observed", measures = "ratio"
+  )
+}
+
 # --- Standard methods (COXPH_DESIGN §B.1) --------------------------------------------------------
 
 #' Methods of the elastic-net Cox model

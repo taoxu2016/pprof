@@ -102,6 +102,8 @@ fit_fine_gray <- function(formula, data, provider, cause, id = NULL, weights = N
   check_number(tol, "tol", lower = 0, open = TRUE)
   check_flag(keep_data, "keep_data")
   check_flag(verbose, "verbose")
+  # `id` reaches data_prepare() as its `cluster`, so it is checked here under its own name.
+  if (is.data.frame(data)) data_check_column_argument(data, id, "id")
   prepared <- data_prepare(formula, data, provider, response_type = "competing_risks", weights = weights,
                            cluster = id)
   if (ncol(prepared$design) > 0L && !all(is.finite(range(prepared$design)))) {

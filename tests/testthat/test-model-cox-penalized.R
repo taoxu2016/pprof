@@ -315,3 +315,12 @@ test_that("the validator checks for provider effects; an unpenalized start that 
   # A lambda_max of 0, where no penalized covariate moves the score at the null point, gives a grid of zeros.
   expect_identical(cox_penalized_grid(0, 4, 1e-4), rep(0, 4))
 })
+
+test_that("profiling a penalized fit names the capability it lacks, not an internal generic", {
+  fit <- penalized_fit(n_lambda = 6)
+  for (call in list(quote(test_providers(fit)), quote(standardize_providers(fit)), quote(funnel_limits(fit)),
+                    quote(profile_providers(fit)))) {
+    condition <- expect_error(eval(call), class = "pprof_error_unsupported_inference", label = deparse(call))
+    expect_true(condition$requested %in% capability_names, label = deparse(call))
+  }
+})
