@@ -345,6 +345,8 @@ Methods of `pprof_cox_stratified`: `print()`, `summary()`, `coef()`, `vcov()`, `
 
 The volume of a Cox provider in `plot_volume()` stays its number of rows; showing expected events or person-time is a presentation choice for C6.
 
+As built in C6 (DEC-133): the volume stays the number of rows. The help of `plot_volume()` and the time-to-event vignette say that with several rows per patient, as with recurrent events, the rows are intervals of follow-up rather than patients, and that the funnel plot, which places each provider at its expected events, shows better how precise each ratio is.
+
 As built in C3 (DEC-112, D-77): IDs in `providers` that the model does not include raise `pprof_error_invalid_input`, as for every family, where pprof_py ignores them.
 
 ## C. The data layer
@@ -670,11 +672,15 @@ As applied in C5 (DEC-125; no tier changes): `exact` for the Fine–Gray expansi
 
 In C6, the size and coverage of the exact and mid-p tests and limits under the null, with provider strata, as `validation/run-simulation.R` does for the other families.
 
+As built in C6 (DEC-134; `validation/simulation-report.md`, `9c0a6a3`): the family `cox_stratified`, last in the script so that no other family's seeds change, with 50 providers, times in days from a constant baseline hazard of 1/1,000 a day, follow-up of 180 to 1,095 days, and a quarter of the patients entering late; three scenarios (no provider effects with 30 to 150 patients per provider, six outlying providers at log hazard ratios ±0.5, and no provider effects with 5 to 30 patients per provider); the fit at its defaults; the mid-p and exact tests with the indirect ratios' intervals of their kind; 200 replicates each. At level 0.95 the mid-p test flags 4.6% to 4.8% of the providers without an effect and the exact test 3.4% to 4.0%; it flags 85.2% (mid-p) and 83.0% (exact) of the outliers in the direction of their effect and none in the other; the intervals cover 95.2% to 95.4% (mid-p) and 96.0% to 96.5% (exact) of the null providers' ratios, and 95.6% and 96.2% of the outliers'. The existing families' rows are unchanged.
+
 ### G.5 CI
 
 - The Cox reference comparisons run on every platform: `survival`'s results did not change across versions or platforms (`02_r_reference_drift.txt`).
 - The `glmnet` tests skip without `glmnet` ≥ 5.0.
 - Regenerating the fixtures is a manual workflow (brief §12).
+
+As built in C6 (DEC-135, DEC-141): `R CMD check` runs only the core set, since the full set is not in the tarball, so `validation/run-cox-reference.R` runs both sets in `rewrite-reference.yaml`'s four jobs, with glmnet: the fixtures' platform (Windows, R 4.4.0) and Linux, macOS, and Windows with R release or oldrel-1. Its first runs, at `f1c8414`, found no failing comparison and two failing tests on macOS (arm64), where R's `sum()` accumulates in double: the cross-validation's held-out weights, now compared at `closed_form` (DEC-141). At `085eaeb` (run 38954075826) every platform passes, 1,897 comparisons with none failing.
 
 ## H. Dependencies
 
@@ -706,6 +712,8 @@ As built in C4 (DEC-118; `dev/bench/results/cox-c4-paired-20261014-windows.md`):
 
 As built in C5 (DEC-127; `dev/bench/results/cox-c5-paired-20261015-windows.md`): `run_paired.R` times `fit_fine_gray()` against the survival calls it makes, written out (`finegray()` per chunk of providers, the case weights, the fitter's inputs from the expansion, the fitter, and the robust step), with `data_prepare()` and the chunks' data frames as their preparation, on center and covariates-5 (`fine_gray`) and on center with every entry at 0 (`fine_gray_right`); `cox-bench.yaml` runs these and providers-100 and providers-7500 by default. Every fit equals its survival calls bitwise, and none is too slow by DEC-105's rule (0.84 to 1.04 times the comparator, medians). The user's calls, one stratified `finegray()` followed by `coxph(cluster = subject)`, take four to five times as long; pprof_py's `FineGrayPH` takes 0.36 to 0.41 of the fit's time on center, on numba's 8 threads, and raises on covariates-5 (D-80).
 
+As built in C6 (DEC-136; `dev/bench/results/cox-final-20261016.md`, `cox-c6-runner-20261016-linux.md`): the project lead's dispatch of `cox-bench.yaml` with its default selection (run 38957683403, at `085eaeb`) measured the Fine–Gray fits on center, providers-100, providers-7500, and covariates-5: none too slow by DEC-105's rule, every estimate equal to its survival calls' bitwise, the fit taking 0.21 to 0.51 of the user's calls' time (0.058 on providers-7500). The final report gathers the phase's runs: every fit meets the MUST in its latest run, and the SHOULD is not met where DEC-098 allows it.
+
 ## J. Register entries
 
 | Register | Entries |
@@ -713,4 +721,4 @@ As built in C5 (DEC-127; `dev/bench/results/cox-c5-paired-20261015-windows.md`):
 | `dev/CONVENTIONS.md`, "Cox models (pprof_py v0.7.0)" | K-131 to K-147; K-148 (C2) and K-149 (C3) |
 | `dev/DISCREPANCIES.md`, "The CoxPH phase" | D-56 to D-74; D-75 (C2), D-77 (C3), D-78 and D-79 (C4), and D-80 and D-81 (C5) |
 | `dev/OPEN_QUESTIONS.md`, "The CoxPH phase" | M-23 to M-41, decided under the project lead's delegation; M-39 re-decided in C3 (DEC-107); M-30, M-34, and M-37 implemented in C4; M-35 and M-41 implemented, and M-23 and M-25 applied to the Fine–Gray transform, in C5 |
-| `dev/DECISIONS.md` | DEC-086 to DEC-093; DEC-094 to DEC-098 (C1), DEC-099 to DEC-106 (C2), DEC-107 to DEC-112 (C3), DEC-113 to DEC-120 (C4), DEC-121 to DEC-129 (C5) |
+| `dev/DECISIONS.md` | DEC-086 to DEC-093; DEC-094 to DEC-098 (C1), DEC-099 to DEC-106 (C2), DEC-107 to DEC-112 (C3), DEC-113 to DEC-120 (C4), DEC-121 to DEC-129 (C5), DEC-130 to DEC-140 (C6, with DEC-062 amended by DEC-132) |

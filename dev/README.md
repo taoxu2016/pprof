@@ -13,7 +13,7 @@ Developer documents and tools for pprof. Not part of the package (`.Rbuildignore
 | `DECISIONS.md` | Decision records (`DEC-xxx`) |
 | `OPEN_QUESTIONS.md` | Questions for the methodology owners (`M-xx`) |
 | `DOMAIN.md` | Glossary and methodological references |
-| `design/` | `ARCHITECTURE.md` (the design, with notes on how it was built) and `BEHAVIOR_SPECS.md` (what each function of pprof 1.0.3 does); the CoxPH phase's design (`COXPH_DESIGN.md`), its phases' plans (`COXPH_C<n>_PLAN.md`), the wording list of its documentation (`COXPH_C6_WORDING.md`), and the evidence behind them (`coxph-facts/`) |
+| `design/` | `ARCHITECTURE.md` (the design, with notes on how it was built) and `BEHAVIOR_SPECS.md` (what each function of pprof 1.0.3 does); the CoxPH phase's design (`COXPH_DESIGN.md`), its phases' plans (`COXPH_C<n>_PLAN.md`), the wording list of its documentation (`COXPH_C6_WORDING.md`), its final review (`COXPH_FINAL_REVIEW.md`), and the evidence behind them (`coxph-facts/`) |
 | `reference/` | The generator of the frozen results of pprof 1.0.3 in `tests/testthat/fixtures/reference/` and `validation/fixtures/reference/`, with its diff reports; in `reference/cox/`, the generator of the Cox fixtures from pprof_py v0.7.0 and the pinned survival and glmnet, with the calibration of the Cox tolerance tiers |
 | `bench/` | Benchmarks against pprof 1.0.3, and in `bench/cox/` the paired Cox benchmarks against the engine calls, with results |
 | `tools/ci_runs.R` | Reads the fork's CI runs, jobs, and annotations through the public GitHub API, without signing in |

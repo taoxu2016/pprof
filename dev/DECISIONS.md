@@ -610,7 +610,7 @@ The Phase 7 decisions below were proposed with the Phase 7 plan (`dev/design/PHA
 ### DEC-062: Vignettes built and checked with the package
 
 - Date: 2026-10-04
-- Status: accepted with the Phase 7 plan (2026-10-05)
+- Status: accepted with the Phase 7 plan (2026-10-05); its budget amended by DEC-132 (2026-10-16): with the sixth vignette, each vignette's code at most 10 s and all six at most 40 s
 - Context: The five vignettes of pprof 1.0.3 are excluded from the build, contradict the code (D-37), and describe the old interface, and one of them shows an image that does not exist (PHASE7_PLAN.md F6). Brief §9 asks for vignettes built from source and checked. `R CMD check` builds and re-builds vignettes, and on CRAN their time adds to the examples' and the tests'. The code of the candidate workflows takes 0.1 to 6.2 s per call on this machine; the heavy calls are the bootstrap test with 10,000 resamples (4.9 s) and the logistic RE and CRE fits on the full example data (5.4 s and 6.2 s; 0.7 s and 1.0 s on 20 providers) (F7).
 - Decision: Five vignettes replace the old ones: `pprof.Rmd` ("Getting started with pprof"), `models.Rmd` ("Models and what they support"), `statistical-methods.Rmd` ("Statistical methods"), `migration.Rmd` (DEC-064), and `adding-a-model.Rmd` (DEC-063). All are built by `R CMD build` and re-built by `R CMD check` (`VignetteBuilder: knitr`, output `rmarkdown::html_vignette`); none is a pkgdown-only article, and `vignettes/articles/` is used only if a vignette cannot meet its budget. Conventions: every number in the text is computed inline; code runs with the default of one thread and sets a seed before random draws; no chunk is left unevaluated except installation code; deliberate warnings and errors are shown and explained; each vignette's code takes at most 10 s and all five at most 30 s on this machine, heavier calls using the 20-provider subset of the help examples or fewer resamples, as the text says; the installed `doc/` stays under 1 MB. The old vignettes and `vignettes/Charts/` are removed; `.Rbuildignore` and `.lintr` no longer exclude `vignettes/`, and the new vignettes lint clean (DEC-031).
 - Alternatives considered: heavy material as pkgdown articles (checked only by the site build, not by `R CMD check`); correcting the old vignettes in place (they describe the old interface); fewer vignettes (the methods would be spread over help pages, which document one function each).
@@ -952,7 +952,7 @@ The decisions below were made in CoxPH Phase C1 under the project lead's delegat
 ### DEC-098: Large Cox fits may be slower than pprof_py's
 
 - Date: 2026-10-08
-- Status: accepted by the project lead (2026-10-08, C1 gate), as recommended in the C1 gate report; the cheaper robust variance it asked C2 to look for is DEC-099, and the comparator of the 10% rule is made precise by DEC-100 and DEC-105. The C2 benchmarks (`dev/bench/results/cox-c2-paired-20261009-windows.md`; the robust engine calls less the plain ones, against C1's pprof_py times, so indicatively): the robust step takes 0.07 to 0.23 s at 100,000 rows with 5 or 20 covariates, 0.6 to 0.9 s with 50, and 2.0 to 2.4 s at 1,000,000 rows, where pprof_py's robust variance adds 0 to 0.2 s and 0.9 s; the SHOULD holds for the robust variance with 5 covariates and not at the other sizes. Extended to the Fine–Gray fits in C5 (DEC-122, DEC-127): their survival calls take 2.5 to 2.8 times pprof_py's whole fit on center (`dev/bench/results/cox-c5-paired-20261015-windows.md`), so the SHOULD is not met there either, and the MUST holds against those calls
+- Status: accepted by the project lead (2026-10-08, C1 gate), as recommended in the C1 gate report; the cheaper robust variance it asked C2 to look for is DEC-099, and the comparator of the 10% rule is made precise by DEC-100 and DEC-105. The C2 benchmarks (`dev/bench/results/cox-c2-paired-20261009-windows.md`; the robust engine calls less the plain ones, against C1's pprof_py times, so indicatively): the robust step takes 0.07 to 0.23 s at 100,000 rows with 5 or 20 covariates, 0.6 to 0.9 s with 50, and 2.0 to 2.4 s at 1,000,000 rows, where pprof_py's robust variance adds 0 to 0.2 s and 0.9 s; the SHOULD holds for the robust variance with 5 covariates and not at the other sizes. Extended to the Fine–Gray fits in C5 (DEC-122, DEC-127): their survival calls take 2.5 to 2.8 times pprof_py's whole fit on center (`dev/bench/results/cox-c5-paired-20261015-windows.md`), so the SHOULD is not met there either, and the MUST holds against those calls. The final runs (DEC-136; `dev/bench/results/cox-final-20261016.md`): on the C6 runner the Fine–Gray fit takes 1.4 times pprof_py's time on center and 1.2 times with every entry at 0 (pprof_py's times from the project lead's machine, so indicatively); the SHOULD stays unmet for large fits, most robust variances, the measures at 10,000 rows and 7,500 providers, and the Fine–Gray fits, as this decision allows.
 - Context: The brief's §3.7 requires a fit to be at most 10% slower than the engine call it wraps (MUST) and no slower than pprof_py (SHOULD). On the C1 baseline's data (`dev/bench/results/cox-baseline-20261008-windows.md`), pprof_py v0.7.0 fits 1,000,000 rows in 4.3 s against `survival::agreg.fit()`'s 17.2 s, with one numba thread or eight, and its robust variance takes 5.2 s against 130 s through `coxph()` with one cluster per row; at 10,000 rows `survival` is faster (0.08 s against 0.37 s). In Phase C0, on other data, `agreg.fit()` was the faster (6.3 s against 9.4 s).
 - Decision: The SHOULD is not a requirement for fits at large sizes: the package keeps `survival` as its engine (DEC-086, DEC-091), and the MUST holds against the engine calls. Phase C2 looks for a cheaper robust variance than `coxph()` with one cluster per row, from `survival`'s own residual routines on the fitter's result, and reports the measures and tests (the package's own code) against pprof_py's.
 - Alternatives considered: a Cox engine of the package's own (contrary to the brief's strategy, DEC-086); `threads` for `survival` (it is single-threaded).
@@ -1017,7 +1017,7 @@ The decisions below were made in CoxPH Phase C2. DEC-099 to DEC-104 were approve
 ### DEC-105: The 10% rule compares a Cox fit with its engine call plus the preparation of the engine's inputs
 
 - Date: 2026-10-09
-- Status: accepted by the project lead (2026-10-09, C2 gate), as recommended in the gate report; it changes how decision 7 of the C2 plan (DEC-100) is read; C3 times each fit with its measures against the engine call, the preparation of its inputs, and the measures (DEC-111)
+- Status: accepted by the project lead (2026-10-09, C2 gate), as recommended in the gate report; it changes how decision 7 of the C2 plan (DEC-100) is read; C3 times each fit with its measures against the engine call, the preparation of its inputs, and the measures (DEC-111). The final runs (DEC-136; `dev/bench/results/cox-final-20261016.md`): every fit meets the rule in its latest run, the two fits at its line on the C3 runner and the Fine–Gray fits on the C6 runner.
 - Context: The brief's §3.7: "A `pprof` fit MUST NOT be more than 10% slower than the direct engine call it wraps plus the measures." The C2 plan's decision 7 (DEC-100) took as the comparator survival's fitter on the inputs the adapter builds, prepared outside the timing, as C1's baseline timed the engines. In the paired runs (`dev/bench/results/cox-c2-paired-20261009-windows.md`: seven of C1's eight scenarios, two rounds; the corner could not be measured on this machine, which paged), every fit's estimates equal its engine call's bitwise, and 17 of the 21 fits are too slow by DEC-038's rule: their medians are 1.0 to 2.3 times the engine call's at 100,000 rows and 1.2 to 1.5 times at 1,000,000; the other four pass by the 0.05 s floor (10,000 rows) or by one round's noise. The excess is the preparation of the inputs from the data frame, `data_prepare()` and the adapter's inputs, 0.1 to 0.4 s at 100,000 rows and about 2 s at 1,000,000: against the engine call plus that preparation, no fit is too slow. In one process (`dev/design/coxph-facts/21_fit_time_parts.txt`), the model frame that any formula interface builds takes 13% of the fitter's time at 20 covariates and 28% at 5; `data_prepare()` as a whole 27% to 33% at 20 covariates and 71% at 5; the adapter's inputs 6% to 19%; the finite check of the design 2% to 4%; the model object 1% to 4%. Against `coxph()` on the data frame, the call a user would make, the fits take 0.2 to 0.5 of its time.
 - Decision: The rule compares a Cox fit with its engine call plus the preparation of the engine's inputs from the user's data (the formula, the model frame, the design, and the inputs in the engine's form), which a direct call of the fitter on a data frame also needs: a fit is too slow when, in every round, its median and fastest run are more than 10% above that sum and its median at least 0.05 s above (DEC-038). The paired report gives both readings; under this one, the C2 fits meet the MUST.
 - Alternatives considered: (1) keep the plan's comparator, and record that the Cox fits do not meet the MUST; (2) a data path for survival data that bypasses R's model frame for numeric covariates: a second path beside the one every family shares (COXPH_DESIGN §C.2 keeps one), and with the model frame's 13% gone, the sort by provider and the adapter's inputs still take more than 10% of the fitter; (3) trimming the adapter's own steps, with the same results: its inputs (10% of the fitter at 1,000,000 rows) built with fewer copies and the strata codes by an integer match rather than `factor()`, a few percent of the fitter, worth a later performance change but not enough for (1); (4) `coxph()` as the comparator, which the fits beat by a factor of 2 to 5, against the brief's distinction between the engine (6.3 s) and its formula interface (18 s).
@@ -1244,3 +1244,113 @@ The decisions below were made in CoxPH Phase C5. The project lead approved DEC-1
 - Decision: No `fit_cox_cause_specific()`. C5 adds the tests of the plan's §4.4, a paragraph and an example in `fit_cox_stratified()`'s help, and the `NEWS.md` entry.
 - Alternatives considered: a function fitting every cause at once, as pprof_py's class does (a list of the stratified model's objects, which the profiling functions would take one at a time anyway).
 - Consequences: the cause-specific fits of the three competing-risk cases are `coxph()`'s on the same rows bitwise, at default and tight control, with pprof_py's iteration counts, and pprof_py's tight fits within `cox_coefficient` and `cox_variance`, except the weighted case's Efron fit of cause 1 (D-58); profiling a cause-specific fit equals profiling the fit of the recoded 0/1 status (`test-cox-reference.R`, `test-profile-cox.R`).
+
+The decisions below were made in CoxPH Phase C6. The project lead approved DEC-130 to DEC-140 with the C6 plan (`dev/design/COXPH_C6_PLAN.md` §6, 2026-10-16), each as recommended there ("I approve all your recommendation and continue"), and DEC-141 the same day, after CI's first runs of the Cox comparisons on macOS.
+
+### DEC-130: The time-to-event vignette's data are simulated from the example data
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16, with the C6 plan, its decision 1)
+- Context: The brief's §8 asks for a vignette on profiling providers with time-to-event outcomes. survival's data sets have too few providers to show profiling (`lung`'s 18 institutions of 2 to 36 patients, `cgd`'s 13 hospitals), and a bundled data set of provider scale would take 60 to 100 KB of a tarball with about 23 KB of room (`dev/design/coxph-facts/36`). Built from `ExampleDataBinary`'s 100 hospitals and its patients' risk factors, with times in days simulated from a stated Cox model, every computation the vignette shows took 2.8 s, the fit equalled `coxph(ties = "breslow", timefix = FALSE)` `identical()`, and the flags were 4 lower, 91 as expected, and 5 higher (fact 37).
+- Decision: `vignettes/time-to-event.Rmd` simulates its data from `ExampleDataBinary` with a seed: a hospital effect on the hazard of death, a quarter of the patients entering late, transplants as a competing event, and follow-up of 180 to 1,095 days; recurrent hospitalizations simulated from the same patients. No data file is added.
+- Alternatives considered: survival's data sets (real data, too few providers); a new bundled data set (more than the tarball's room).
+- Consequences: the vignette's numbers are computed inline from its own simulation; its code, sourced with the installed package, takes 4.1 s here (DEC-132), and its fit is `identical()` to `coxph(ties = "breslow", timefix = FALSE)`'s, which it shows.
+
+### DEC-131: The bundled data are compressed with xz
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16, with the C6 plan, its decision 2)
+- Context: The tarball of the C5 code was 4,977,158 bytes, 22,842 under the 5,000,000 bytes above which `R CMD check --as-cran` notes its size; the new vignette needs about 20 to 30 KB (fact 36). The three `data/*.rda` files were gzip-compressed; xz keeps the objects `identical()` and saves 48,217 bytes; `BuildResaveData: best` would save 35,171 bytes without changing the repository's files.
+- Decision: `data/*.rda` resaved with xz (commit `266bb38`), the objects `identical()` to before. If a documentation commit left less than 10 KB of room, the vignettes' plots would go to 72 dpi, then one plot of the new vignette would go.
+- Alternatives considered: `BuildResaveData: best` (less room); the vignette as a pkgdown article (neither installed nor checked, DEC-062's last resort); justifying the size note to CRAN.
+- Consequences: the tarball was 4,978,069 bytes with the new vignette (`6e966cf`) and 5,000,670 with the Cox sections of the other vignettes (`fd17f8e`), 670 over the threshold, so the first fallback was taken: the vignettes' plots at 72 dpi (`5976ede`, 4,975,472 bytes). With the developer documentation it is 4,982,545 bytes (`976836c`), 17,455 under; the second fallback was not needed. The final review gives the size at the gate.
+
+### DEC-132: The vignettes' time budget with six vignettes
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16, with the C6 plan, its decision 3); amends DEC-062
+- Context: DEC-062 set each vignette's code at most 10 s and all five at most 30 s on this machine. The sixth vignette's computations took 2.8 s in fact 37.
+- Decision: The new vignette's code at most 10 s here, the six vignettes' at most 40 s; the tarball's room and the vignettes' rebuild time are reported at each documentation commit.
+- Alternatives considered: keeping 30 s for six vignettes.
+- Consequences: at `5976ede` the six vignettes' code takes 25.7 s, the new one's 4.1 s (medians of three runs with the installed package); `R CMD check` rebuilds them in 35 to 46 s.
+
+### DEC-133: `plot_volume()` counts rows for Cox models
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16, with the C6 plan, its decision 4); COXPH_DESIGN §B.3 as built
+- Context: `plot_volume()` puts each provider's measures against its number of rows. With (start, stop] data the rows are intervals, not patients. Its expected events would need the indirect measures, which a result of direct standardization lacks, and an axis that differs by family; its person-time would change a result's table.
+- Decision: The volume stays the number of rows, as built; the help of `plot_volume()` and the vignette say that with several rows per patient the rows are not patients, and that the funnel plot puts providers on their expected events. No code changes.
+- Alternatives considered: the expected events; the person-time.
+- Consequences: no change to any result.
+
+### DEC-134: The Cox model in the simulation study
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16, with the C6 plan, its decision 5); extends DEC-053
+- Context: The brief's §6 D asks for a simulation of the size and coverage of the exact and mid-p tests and limits under the null, with provider strata. A prototype of the replicate took 0.024 to 0.046 s; on 100 replicates the mid-p test flagged 4.90% and the exact 3.92% of the providers under the null, and 4.70% and 3.14% with 5 to 30 patients per provider (fact 39).
+- Decision: `validation/run-simulation.R` adds the family `cox_stratified` last, so that no other family's seeds change, with three scenarios (no provider effects with 30 to 150 patients per provider; six outlying providers at log hazard ratios +0.5 and -0.5; no provider effects with 5 to 30 patients per provider), times in days from a constant baseline hazard with late entries, the fit at its defaults, the mid-p and exact tests with the indirect ratios' intervals of their kind, and 200 replicates per scenario. The report stays informational (DEC-053).
+- Alternatives considered: a separate Cox simulation script.
+- Consequences: `validation/simulation-report.md` at `266bb38` (`9c0a6a3`): at level 0.95 the mid-p test flags 4.8% of the providers without an effect (4.6% beside six outliers, 4.8% with small providers) and the exact test 4.0% (3.9%, 3.4%); the outlying providers are flagged in the direction of their effect in 85.2% (mid-p) and 83.0% (exact) of their tests, never in the other; the indirect ratios' intervals cover 95.2% to 95.4% (mid-p) and 96.0% to 96.5% (exact) of the null providers' ratios, and 95.6% and 96.2% of the outliers'. The existing families' rows are unchanged. The report stays informational (DEC-053); the final review lists these operating characteristics for the methodology owners (M-16).
+
+### DEC-135: The final Cox equivalence report is generated, and runs on every CI platform
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16, with the C6 plan, its decision 6)
+- Context: The full Cox fixture set runs only with `NOT_CRAN` set, so CI's checks never ran it (C6 plan, §2.6), and the brief's §11 criterion 2 asks for the Cox comparisons on every platform. The four Cox reference test files compared through local helpers and `expect_null(reference_compare())`, which recorded no margins.
+- Decision: One helper in `tests/testthat/helper-cox-fixtures.R`, `expect_cox_tier()`, with `expect_cox_within_step()` for the default fits' last-step bounds, asserts what each comparison asserted, as one expectation, and records its ratio to the tier when `validation/run-cox-reference.R` asks; the script runs the four reference files and the three engine-identity files with `NOT_CRAN` set and writes `validation/cox-equivalence-report.md`: the comparisons by file, case, tie method, and tier with their largest ratios, the differences a register entry decides, the providers near a threshold, the engine identity, the calibration's result, and the register's CoxPH entries. `rewrite-reference.yaml`'s jobs run it, with glmnet installed, on the fixtures' platform and on Linux, macOS, and Windows.
+- Alternatives considered: a hand-written report (no margins for the package's own comparisons, and the full set compared on this machine only).
+- Consequences: every file's expectations unchanged by the helper (3,108 in the four reference files, before and after); the report at `266bb38`: 1,893 comparisons, 1,867 within their tier (the largest ratio 0.995), 26 explained by D-56, D-58, and M-23, none failing. On CI the comparisons ran on the fixtures' platform and on Linux, macOS, and Windows from `f1c8414`: no comparison failed anywhere, and two tests failed on macOS (arm64), where `sum()` accumulates in double, which DEC-141 settled; at `085eaeb` every platform passes (1,897 comparisons, run 38954075826). The script names any failing test in its report and in an annotation (`de6a5e5`).
+
+### DEC-136: The final benchmark runs
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16, with the C6 plan, its decision 7); DEC-098's and DEC-105's status
+- Context: The fits of C5 and the two fits that C3's runner run found at DEC-105's line had no run at the final code; the measures' SHOULD was not met at 10,000 rows and 7,500 providers (0.02 s and 0.07 s slower than pprof_py's).
+- Decision: One dispatch of `cox-bench.yaml` by the project lead with `only` = `" fine_gray|^providers-7500 breslow$|^covariates-5 robust$|^center (breslow|robust)$"` and 2 rounds; nothing measured again here; DEC-105's alternative 3 not taken; the measures' SHOULD recorded as not met, with the reasons, in `dev/bench/results/cox-final-<date>.md`.
+- Alternatives considered: alternative 3 (fewer copies in the adapter's inputs, with a paired run before and after); every task on the runner (3 to 4 hours).
+- Consequences: the project lead dispatched `cox-bench.yaml` with its default selection, the Fine–Gray tasks (`only` = `" fine_gray"`, 2 rounds), on `coxph/phase-6` at `085eaeb` (run 38957683403, committed as `dev/bench/results/cox-c6-runner-20261016-linux.*`) and on `main` at `f1c8414` (run 38952307742, its notices): 5 fits on center, providers-100, providers-7500, and covariates-5, none too slow by DEC-105's rule, every estimate equal to its survival calls' bitwise. The two fits at DEC-105's line and their control were not measured again; they last ran on the C3 runner, and their code changed afterwards only as `dev/bench/results/cox-final-20261016.md` lists, with their results bitwise unchanged. That report records the phase's runs, the MUST met by every fit in its latest run, and the SHOULD as DEC-098 allows.
+
+### DEC-137: `rewrite-bench.yaml` is set up as the reference workflow's Linux job
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16, with the C6 plan, its decision 8)
+- Context: `rewrite-bench.yaml` has never run, and its setup, the CRAN snapshot in `~/.Rprofile` for every package, is the one that failed `cox-bench.yaml`'s first dispatch (run 38003811342; C6 plan, §2.6), while `rewrite-reference.yaml`'s per-platform Linux job builds pprof 1.0.3 on a runner and passes.
+- Decision: Its setup follows that job: R 4.4.0, current binaries from the public package manager, the CRAN snapshot only for the reference library, and the logs uploaded; the project lead dispatches it once with a few tasks; it stays informational.
+- Alternatives considered: leaving it as it is, recorded as not working; removing it.
+- Consequences: the workflow's setup is changed (`0a64fa9`) but has not run: the project lead's second dispatch of 2026-10-16 was of `rewrite-reference.yaml` (run 38957603497, which passed). It stays informational, and its first dispatch will test the setup.
+
+### DEC-138: Hardening at the end of the CoxPH phase
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16, with the C6 plan, its decision 9)
+- Context: The coverage of the R lines the CoxPH phase added was 95% to 98.5% at the phases' gates, with branches left untested (C6 plan, §2.7); a sweep of 72 invalid inputs found two Cox messages that named the wrong thing (§2.4); the tarball, the examples' times, and CRAN's check without long doubles needed checking.
+- Decision: Tests of the reachable lines (factor clusters and subjects against `coxph()` bitwise, the validators, covariates that are not finite, refits whose data differ); `fit_fine_gray()` checks `id` as `id` before `data_prepare()`; the penalized model gets a family specification without profiling hooks, so that profiling it names the capability it lacks; R's own errors that every family shares are left; the penalized examples under 1 s; `urlchecker`; the description and `cran-comments.md`; `rhub.yaml` dispatched once by the project lead with `nold`; no new workflow.
+- Alternatives considered: a new workflow for other platforms.
+- Consequences: the coverage of the R lines the phase added is 99.82% (1,634 of 1,637 at `976836c`, against 97.49% at the plan); the three lines no input reaches are listed in the final review. The two messages are fixed (`6df2b54`), the penalized examples take 0.40 s and 0.55 s (`c0ae91d`), and `urlchecker` finds no address failing but the website's. R-hub's check without long double was not run: on 2026-10-16 the project lead deferred the CRAN submission and what it needs; CI's macOS run showed the same arithmetic in one comparison (DEC-141).
+
+### DEC-139: One wording check-in before the remaining documentation
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16, with the C6 plan, its decision 10)
+- Context: DEC-065 as amended lists every statement of property in the user documentation with its source. The Cox documentation adds statements about competing risks, recurrent events, and production measures, where readers infer most.
+- Decision: After the vignette and the user documentation (the plan's commits 8 and 9), the drafts and the wording list (`dev/design/COXPH_C6_WORDING.md`) go to the project lead, whose decision on the wording comes before the help pages, the developer guide, and NEWS.
+- Alternatives considered: the wording list reviewed at the gate only.
+- Consequences: the project lead approved the wording list as it stood (2026-10-16, "I approve all your recommendations"), after commits `6e966cf`, `fd17f8e`, and `5976ede`; the help pages, the developer guide, and NEWS follow it.
+
+### DEC-140: The CoxPH phase's final review
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16, with the C6 plan, its decision 11)
+- Context: The rewrite closed with a final review (`dev/design/FINAL_REVIEW.md`, in the history at `5977087`); the CoxPH brief's §11 lists its success criteria.
+- Decision: `dev/design/COXPH_FINAL_REVIEW.md` gives the §11 criteria with their evidence and status, the deliverables, the register with the Class B items awaiting a methodology owner, the open items for the project lead, and the known limits; the gate's report points to it.
+- Alternatives considered: the gate's report alone.
+- Consequences: the phase's record ends in one document.
+
+### DEC-141: The cross-validation's held-out weights are compared at the closed_form tier
+
+- Date: 2026-10-16
+- Status: accepted by the project lead (2026-10-16), option (a) of the question put after CI's first runs on macOS
+- Context: On CI's first runs of `validation/run-cox-reference.R` (DEC-135; runs 38942129736, 38942133656, and 38947821480), every comparison passed on every platform, but on macOS (R 4.5.3, arm64) two tests failed: `test-cox-penalized-reference.R` compared the held-out event weights of `penalized-combined`'s cross-validation, both tie methods, with the generator's by `identical()`. They are sums of non-integer case weights. R's `sum()` accumulates in long double on x86_64, where the fixtures were made, and in double on arm64, where long double is double; summed in plain double here, 5 of the case's 10 folds change by one unit in the last place (2.2e-16 relative). The fold deviances, `cvm`, `cvsd`, and the selected λ computed from them passed on macOS at their tiers.
+- Decision: The held-out weights are compared at the `closed_form` tier (atol 1e-12, rtol 1e-10), which the test rules give closed-form results and which the cross-validation's other sums use, through `expect_cox_tier()`, so that the Cox report records them.
+- Alternatives considered: `identical()` on the fixtures' platform and `closed_form` elsewhere; leaving the test as it was, with macOS recorded as a known failure.
+- Consequences: the tier is unchanged and one more quantity is compared under it; the file's 364 expectations are unchanged, and the Cox report records 1,897 comparisons, none failing (`085eaeb`). On CI at `085eaeb` (run 38954075826), the Cox comparisons pass on the four platforms: 1,897 comparisons, none failing, and no test failing. R-hub's check without long double (DEC-138) is the test of the other sums under that arithmetic.
