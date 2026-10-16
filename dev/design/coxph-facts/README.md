@@ -45,6 +45,7 @@ Each numbered script writes the output file of the same name (`.txt`). Where an 
 | `37_vignette_prototype.R` | the computations a vignette on time-to-event outcomes would show, timed, on data derived from `ExampleDataBinary`, with the fit against `coxph()` (C6 plan) | the brief's §8, `dev/design/COXPH_C6_PLAN.md` §2.2 |
 | `38_input_sweep.R` | 72 invalid calls to the Cox functions and their methods, and the condition each raises (C6 plan) | `dev/design/COXPH_C6_PLAN.md` §2.4 |
 | `39_simulation_replicate.R` | a simulation of the Cox model's mid-p and exact tests and limits with provider strata, three scenarios, 100 replicates each (C6 plan) | the brief's §6 D, `dev/design/COXPH_C6_PLAN.md` §2.5 |
+| `40_guide_dry_run.md` | not a script: the report of a subagent without the session's context, which designed two later models (frailty Cox profiling, discrete-time provider models) from the developer guide, "Adding a model to pprof", and ARCHITECTURE §E alone, with the gaps it found, and what changed in response (C6 plan) | the brief's §11 item 7, `dev/design/COXPH_C6_PLAN.md` §3.5 |
 
 ## Running them
 

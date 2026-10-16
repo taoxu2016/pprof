@@ -193,9 +193,10 @@ easy to miss:
 ## Fitting into the rest of R
 
 The standard methods `coef()`, `vcov()`, `nobs()`, and `formula()` are shared and read the
-object. `fitted()`, `residuals()`, `predict()`, and `logLik()` are each model's own:
-`augment()` uses `fitted()` and `residuals(type = "response")`, and `AIC()` and `BIC()` use
-`logLik()`. Besides the fields that `new_pprof_model()` fills, `print()`, `summary()`, and
+object. `fitted()`, `residuals()`, `predict()`, and `logLik()` are each model's own: the
+shared `augment()` uses `fitted()` and `residuals(type = "response")` (a model without
+response residuals, such as a Cox model, has an `augment()` of its own), and `AIC()` and
+`BIC()` use `logLik()`. Besides the fields that `new_pprof_model()` fills, `print()`, `summary()`, and
 `glance()` show these when the object has them: `loglik`, `aic`, `bic`, and `auc`;
 `spec$method`; and `convergence`, a list whose `iterations`, `converged`, `stop_rule`, and
 `tol` they report. `names(fit)` and `str(fit$convergence)` of a `fit_logistic_fe()` model
@@ -205,14 +206,14 @@ show complete examples.
 
 `profile_spec()` returns a list. Six fields are required:
 
-| Field | Meaning | Logistic FE | Linear FE | Random effects |
-|---|---|---|---|---|
-| `family` | a name | `"logistic_fe"` | `"linear_fe"` | the model's |
-| `effect` | the name of the effect | `"gamma"` | `"gamma"` | `"alpha"` |
-| `null_default` | the default norm | `"median"` | `"median"` | `0` |
-| `null_options` | the named norms `null_effect()` understands | `"median"` | `"median"`, `"mean"` | none |
-| `indirect_numerator` | the sum compared with the expected one: `"observed"` outcomes, or `"predicted"` (then `predicted_outcome()` gives it) | `"observed"` | `"observed"` | `"predicted"` |
-| `measures` | the measures | `"ratio"`, `"rate"` | `"difference"` | as the outcome's |
+| Field | Meaning | Logistic FE | Linear FE | Random effects | Cox, stratified by provider |
+|---|---|---|---|---|---|
+| `family` | a name | `"logistic_fe"` | `"linear_fe"` | the model's | `"cox_stratified"` |
+| `effect` | the name of the effect, a label that the profiling code does not read | `"gamma"` | `"gamma"` | `"alpha"` | a description: the model has no provider effects, and the tests' effect is the log ratio of the provider's hazard to the national baseline |
+| `null_default` | the default norm | `"median"` | `"median"` | `0` | `0` |
+| `null_options` | the named norms `null_effect()` understands | `"median"` | `"median"`, `"mean"` | none | none |
+| `indirect_numerator` | the sum compared with the expected one: `"observed"` outcomes, or `"predicted"` (then `predicted_outcome()` gives it) | `"observed"` | `"observed"` | `"predicted"` | `"observed"` |
+| `measures` | the measures | `"ratio"`, `"rate"` | `"difference"` | as the outcome's | `"ratio"` |
 
 The other fields are needed only by some functions. A field left out takes the default in
 the table, which is the behavior of logistic fixed-effect models, except for
@@ -223,8 +224,8 @@ the table, which is the behavior of logistic fixed-effect models, except for
 | `variance_function(mean)` | the null variance of indirect standardization, and the funnel precision | none (the variance is then missing) |
 | `mean_function(eta)` | intervals of the standardized measures; the expected outcome for a linear predictor `eta` | none |
 | `direct_expected(effects, linear_predictor, threads)` | direct standardization: given the effects of all the included providers (unnamed, in provider order), the linear predictor of all observations, and the thread count, it returns, for each effect, the total outcome expected in the whole population if every observation had that effect (a vector as long as `effects`) | none |
-| `direct_by_provider(model, rows)` | direct standardization for a model without provider effects: the expected total of each provider in `rows` (rows of the provider table), in that order | none |
-| `count_distribution` | the null distribution of the providers' counts: `"poisson_binomial"` (binary outcomes), or `"poisson"`, which selects the Poisson exact and mid-p tests, the limits of indirect ratios, and the funnel limits of the test, all two-sided | `"poisson_binomial"` |
+| `direct_by_provider(model, rows)` | direct standardization by provider, used in place of `direct_expected` whenever it is given, as by a model without provider effects: the expected total of each provider in `rows` (rows of the provider table), in that order | none |
+| `count_distribution` | the null distribution of the providers' counts: `"poisson_binomial"` (binary outcomes), or `"poisson"`, which selects the Poisson exact and mid-p tests, the limits of indirect ratios, and the funnel limits of the test, all two-sided; these read the observed counts, so `"poisson"` goes with `indirect_numerator = "observed"` | `"poisson_binomial"` |
 | `funnel` | funnel limits: a list with `measure`, `target`, `floor`, `test`, `precision(expected, variance)` (or with a third argument `n_obs`), and `half_width(critical, precision)`; with Poisson counts the limits are the test's, without `floor` and `half_width` | none |
 | `test_default` | the test of `test_providers()` when `test` is not given | `"exact"` |
 | `comparison` | `"ratio"` (observed over expected) or `"difference"` (per observation) | `"ratio"` |
@@ -235,7 +236,10 @@ the table, which is the behavior of logistic fixed-effect models, except for
 | `coefficient_wald` | the rule of the coefficients' Wald tests and intervals | normal, two-sided |
 | `wald_caution` | warn when Wald inference covers providers with no events or only events | `FALSE` (logistic fixed effects: `TRUE`) |
 
-`str(profile_spec(fit))` of a fitted model shows a complete specification with its values.
+`str(profile_spec(fit))` of a fitted model shows a complete specification with its values;
+that of a `fit_cox_stratified()` model shows a model without provider effects whose counts
+are Poisson (`count_distribution = "poisson"`, `direct_by_provider`, and the mid-p test as
+`test_default`).
 
 ## Capabilities
 
@@ -275,7 +279,11 @@ list is where that decision is recorded.
   classes with its own prefix.
 - **In pprof itself**, in a file `R/model-<name>.R` with the fit function, the methods, and
   their roxygen tags, following the naming convention of the repository's `dev/NAMING.md`
-  (classes `pprof_<name>`, arguments from its vocabulary). No other R file changes.
+  (classes `pprof_<name>`, arguments from its vocabulary). No other R file changes, with two
+  exceptions: the model's own `print()`, `glance()`, or `augment()` methods go in the
+  presentation files, where the architecture test lets them use that layer's helpers, as the
+  Cox models' do; and a new call to an engine pprof already uses goes in that engine's
+  adapter.
 
 ## Testing a model
 
@@ -298,6 +306,86 @@ adapter `src/rcpp_<module>.cpp` whose exported functions are named
 each new object file goes into `OBJECTS` in both `src/Makevars` and `src/Makevars.win`; after
 changing the adapter, `Rcpp::compileAttributes()` regenerates the glue. Thread counts come
 only from a `threads` argument, and parallel regions call no R API.
+
+## Delegating estimation to another package
+
+pprof's random-effect models are fit by lme4, and its Cox models by survival and glmnet. A
+model whose estimation another package provides delegates it the same way: one function, the
+*adapter*, calls the package, and the fit function builds the model from what the adapter
+returns. The rules pprof's adapters follow:
+
+- Call the package as its user-level function calls it, with every setting that can change
+  a number given explicitly, so that the fit equals that function's on the same rows to the
+  last bit, which a test can check. pprof calls survival's fitting functions rather than
+  `coxph()`, with the arguments `coxph()` passes them, because they are about three times
+  faster on large data; start with the user-level function, and go lower only with a
+  benchmark.
+- Take what the model needs beyond the fit, such as variances, residuals, or baseline
+  hazards, from the package as well, rather than computing it again.
+- Turn the package's errors into pprof's classes, `pprof_error_convergence` with the
+  package's message, and decide which of its warnings and messages the user sees.
+- Keep the estimates, not the package's object, which can be large; pprof keeps it only with
+  `keep_data = TRUE`.
+- State the oldest version of the package that computes what the adapter relies on. A
+  package that only some models need is suggested rather than imported, and the fit checks
+  that it is installed before calling it.
+
+Here the toy model's provider effects come from `glm()`, now with a covariate:
+
+```{r delegate-fit}
+# The adapter, the only function that calls glm(): every setting is explicit, and an error of
+# glm() becomes pprof's class for a failed fit, with glm()'s message.
+glm_engine <- function(prepared) {
+  rows <- list(y = prepared$response, provider = factor(prepared$provider_index), x = prepared$design)
+  tryCatch(
+    stats::glm(y ~ 0 + provider + x, family = stats::binomial(link = "logit"), data = rows,
+               control = stats::glm.control(epsilon = 1e-8, maxit = 25)),
+    error = function(e) {
+      stop(errorCondition(paste("The glm() fit failed:", conditionMessage(e)),
+                          engine_message = conditionMessage(e),
+                          class = c("pprof_error_convergence", "pprof_error")))
+    }
+  )
+}
+
+glm_toy_fit <- function(formula, data, provider) {
+  prepared <- data_prepare(formula, data, provider, min_provider_size = 1, event_counts = TRUE)
+  engine <- glm_engine(prepared)
+  included <- prepared$providers$included
+  effects <- seq_len(sum(included))
+  estimates <- stats::coef(engine)
+  beta <- stats::setNames(estimates[-effects], colnames(prepared$design))
+  vcov <- stats::vcov(engine)[-effects, -effects, drop = FALSE]
+  dimnames(vcov) <- list(names(beta), names(beta))
+  new_pprof_model(
+    prepared,
+    coefficients = beta,
+    vcov = vcov,
+    provider_effects = stats::setNames(estimates[effects], prepared$providers$provider_id[included]),
+    linear_predictor = drop(prepared$design %*% beta),
+    spec = list(family = "toy", engine = "glm"),
+    class = c("pprof_glm_toy_model", "pprof_toy_model")
+  )
+}
+```
+
+The toy model's methods hold for any logistic model with provider effects, so the new class
+inherits them. The check that matters is the engine's identity: `glm()` called directly on the
+same rows, in the same order, gives the same numbers to the last bit. `data_prepare()` sorts
+the observations by provider, and `toy_data` already is:
+
+```{r delegate-check}
+set.seed(2026)
+toy_data$x <- round(stats::rnorm(nrow(toy_data)), 2)
+delegated <- glm_toy_fit(y ~ x, toy_data, "hospital")
+direct <- glm(y ~ 0 + hospital + x, family = binomial, data = toy_data)
+identical(unname(provider_estimates(delegated)), unname(coef(direct)[1:5]))
+identical(unname(coef(delegated)), unname(coef(direct)["x"]))
+test_providers(delegated)$table
+```
+
+pprof's tests of its own adapters make the same comparison with lme4, survival, and glmnet,
+so that a new version of one of them that changes a number fails there first.
 
 ## Walk-through: a group lasso model
 
@@ -357,7 +445,8 @@ unpenalized. Nothing in it changes the existing models or the profiling code.
 10. **Files.** `R/model-logistic-grouplasso.R` (the fit, the methods, the capabilities),
     `R/model-grouplasso-path.R` (`coef()`, `select_lambda()`), `R/plot-coefficient-path.R`,
     the C++ engine and adapter, two lines in each Makevars file, the tests, and an entry in
-    this guide. No existing R file changes.
+    this guide. No other existing R file changes, unless the model has its own `print()` or
+    `glance()`, which go in the presentation files.
 
 ## Further reading
 
@@ -366,5 +455,6 @@ developer interface. The package's source repository (<https://github.com/UM-Kev
 holds the design documents behind this guide, which are not installed with the package:
 `dev/design/ARCHITECTURE.md` (the layers, the model objects, the contract, and the
 capabilities), `dev/NAMING.md` (names, arguments, classes, and conditions),
-`dev/DEVELOPER_GUIDE.md` (for contributors to pprof itself), and the test of this guide's
-toy model, `tests/testthat/test-extension-toy-model.R`.
+`dev/DEVELOPER_GUIDE.md` (for contributors to pprof itself, with the rules of its adapters
+in "Delegated engines" and where each model planned for later would start), and the test of
+this guide's toy model, `tests/testthat/test-extension-toy-model.R`.
