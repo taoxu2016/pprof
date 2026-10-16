@@ -49,9 +49,9 @@
 #' if (requireNamespace("glmnet", quietly = TRUE)) {
 #'   lung <- survival::lung
 #'   fit <- fit_cox_penalized(Surv(time, status) ~ age + sex + ph.karno + wt.loss, lung,
-#'                            provider = "inst", n_lambda = 20, keep_data = TRUE)
+#'                            provider = "inst", n_lambda = 10, keep_data = TRUE)
 #'   set.seed(1)
-#'   selected <- select_lambda(fit, n_folds = 5)
+#'   selected <- select_lambda(fit, n_folds = 3)
 #'   selected$selected
 #'   coef(selected, lambda = selected$cross_validation$lambda_min)
 #' }

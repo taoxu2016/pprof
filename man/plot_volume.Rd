@@ -39,6 +39,12 @@ measures' intervals are drawn when the result has them, a one-sided interval fro
 bound to the estimate. The plot draws the results as they are and computes nothing; it is
 returned, not printed.
 }
+\details{
+The volume counts rows of data. For Cox models with several rows per patient, such as
+recurrent events in \code{Surv(start, stop, event)} form, the rows are intervals of follow-up,
+not patients; \code{\link[=plot_funnel]{plot_funnel()}}, which places each provider at its expected events, shows
+better how precise each ratio is.
+}
 \examples{
 data(ExampleDataBinary)
 example <- data.frame(y = ExampleDataBinary$Y, hospital = ExampleDataBinary$ProvID,

@@ -11,6 +11,11 @@
 #' bound to the estimate. The plot draws the results as they are and computes nothing; it is
 #' returned, not printed.
 #'
+#' The volume counts rows of data. For Cox models with several rows per patient, such as
+#' recurrent events in `Surv(start, stop, event)` form, the rows are intervals of follow-up,
+#' not patients; [plot_funnel()], which places each provider at its expected events, shows
+#' better how precise each ratio is.
+#'
 #' @param x A `pprof_profile` result from [profile_providers()], or a `pprof_measures` result
 #'   from [standardize_providers()] (then without flags).
 #' @param standardization,measure The standardizations and measures to plot, one panel each;

@@ -7,7 +7,10 @@
 #' standardized measures with optional intervals ([standardize_providers()]), and, for
 #' models that support funnel plots, the funnel limits ([funnel_limits()]). For random-effect
 #' models, the tests and intervals use the shrunk conditional modes; see [test_providers()]
-#' and `vignette("statistical-methods", package = "pprof")`.
+#' and `vignette("statistical-methods", package = "pprof")`. The Cox model stratified by
+#' provider ([fit_cox_stratified()]) has no provider effects: its profile holds the Poisson
+#' tests of the observed events against the expected ones (the mid-p test by default), the
+#' indirect ratios, and the funnel limits.
 #'
 #' @inheritParams test_providers
 #' @param interval The interval of the standardized measures: `"none"`, `"exact"`,

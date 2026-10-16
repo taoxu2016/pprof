@@ -75,11 +75,9 @@
 #'                            provider = "inst", n_lambda = 20)
 #'   fit
 #'   coef(fit)[, 1:3]
-#'   # The unpenalized age, and cross-validation over 5 folds.
-#'   fit <- fit_cox_penalized(Surv(time, status) ~ age + sex + ph.karno + wt.loss, lung,
-#'                            provider = "inst", n_lambda = 20, penalty_factor = c(age = 0))
-#'   set.seed(1)
-#'   select_lambda(fit, n_folds = 5, data = lung)
+#'   # Age unpenalized; select_lambda() then chooses the penalty by cross-validation.
+#'   fit_cox_penalized(Surv(time, status) ~ age + sex + ph.karno + wt.loss, lung,
+#'                     provider = "inst", n_lambda = 20, penalty_factor = c(age = 0))
 #' }
 #' @export
 fit_cox_penalized <- function(formula, data, provider, weights = NULL, alpha = 1, lambda = NULL, n_lambda = 100,

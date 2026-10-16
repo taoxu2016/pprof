@@ -63,7 +63,10 @@ Runs the profiling steps for a model and collects their results: the provider ef
 standardized measures with optional intervals (\code{\link[=standardize_providers]{standardize_providers()}}), and, for
 models that support funnel plots, the funnel limits (\code{\link[=funnel_limits]{funnel_limits()}}). For random-effect
 models, the tests and intervals use the shrunk conditional modes; see \code{\link[=test_providers]{test_providers()}}
-and \code{vignette("statistical-methods", package = "pprof")}.
+and \code{vignette("statistical-methods", package = "pprof")}. The Cox model stratified by
+provider (\code{\link[=fit_cox_stratified]{fit_cox_stratified()}}) has no provider effects: its profile holds the Poisson
+tests of the observed events against the expected ones (the mid-p test by default), the
+indirect ratios, and the funnel limits.
 }
 \examples{
 data(ExampleDataBinary)
