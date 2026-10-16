@@ -318,3 +318,33 @@ test_that("the validator checks the states of competing-risks data", {
   rejected(x)
   expect_identical(validate_pprof_data(p), p)
 })
+
+test_that("no complete rows, and times that are not finite, are errors", {
+  d <- survival_data()
+  d$x <- NA_real_
+  expect_error(prepare_survival(Surv(time, status) ~ x, d), class = "pprof_error_data")
+  d <- survival_data()
+  d$time[1] <- Inf
+  expect_error(prepare_survival(Surv(time, status) ~ x, d), class = "pprof_error_invalid_input")
+  expect_error(prepare_survival(Surv(entry, time, status) ~ x, d), class = "pprof_error_invalid_input")
+})
+
+test_that("the survival response's helpers refuse what is not a Surv() response of their type", {
+  frame <- stats::model.frame(time ~ x, survival_data())
+  expect_identical(data_survival_frame_problems(frame), list(status = integer(), times = integer()))
+  expect_error(data_survival_response(frame), class = "pprof_error_invalid_input")
+  right <- stats::model.frame(survival::Surv(time, status) ~ x, survival_data())
+  expect_error(data_survival_response(right, competing = TRUE), class = "pprof_error_invalid_input")
+})
+
+test_that("the validator also checks the type of survival data and the offset", {
+  p <- prepare_survival(Surv(time, status) ~ x + offset(e), allow_offset = TRUE)
+  rejected <- function(x) expect_error(validate_pprof_data(x), class = "pprof_error_invalid_input")
+  x <- p
+  x$settings$survival_type <- "interval"
+  rejected(x)
+  x <- p
+  x$offset[1] <- Inf
+  rejected(x)
+  expect_identical(validate_pprof_data(p), p)
+})

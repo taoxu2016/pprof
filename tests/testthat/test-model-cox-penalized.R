@@ -298,3 +298,20 @@ test_that("metamorphic: row order, provider labels, covariate order, time scale,
   twice <- rbind(d[d$w != 2, ], doubled, doubled)
   close(penalized_fit(twice, lambda = grid)$coefficient_path, base$coefficient_path, "penalized_path")
 })
+
+test_that("the validator checks for provider effects; an unpenalized start that does not converge warns", {
+  fit <- penalized_fit(n_lambda = 6)
+  broken <- fit
+  broken$provider_effects <- stats::setNames(rep(0, fit$n_providers), fit$providers$provider_id)
+  expect_error(validate_pprof_cox_penalized(broken), class = "pprof_error_invalid_input")
+  # survival's fit of the unpenalized covariates at the start of the path, as if it reached its limit.
+  real <- survival_fit_columns
+  local_mocked_bindings(survival_fit_columns = function(...) {
+    null <- real(...)
+    null$converged <- FALSE
+    null
+  })
+  expect_warning(penalized_fit(n_lambda = 6, penalty_factor = c(x1 = 0)), class = "pprof_warning_not_converged")
+  # A lambda_max of 0, where no penalized covariate moves the score at the null point, gives a grid of zeros.
+  expect_identical(cox_penalized_grid(0, 4, 1e-4), rep(0, 4))
+})

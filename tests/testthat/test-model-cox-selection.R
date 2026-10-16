@@ -216,3 +216,10 @@ test_that("select_lambda() offers no bootstrap standard error (D-67), and needs 
   one <- fit_cox_penalized(cox_penalized_formula(d), d, "provider", weights = "w", n_lambda = 1, keep_data = TRUE)
   expect_error(select_lambda(one), class = "pprof_error_invalid_input")
 })
+
+test_that("the saturated log-likelihood of rows without events is 0", {
+  d <- cox_penalized_data()
+  prepared <- data_prepare(cox_penalized_formula(d), d, "provider", response_type = "survival", weights = "w",
+                           allow_offset = TRUE)
+  expect_identical(cox_saturated_loglik(prepared, which(prepared$response == 0)), 0)
+})

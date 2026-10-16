@@ -92,3 +92,32 @@ test_that("weights and clusters apply to survival data only, and other data are 
   expect_null(result$survival)
   expect_false(any(grepl("survival", capture.output(print(result)), fixed = TRUE)))
 })
+
+test_that("no complete rows, weights that are not numbers, and no covariates", {
+  d <- check_survival_data()
+  d$x <- NA_real_
+  expect_error(check_data(Surv(time, status) ~ x, d, "id"), class = "pprof_error_data")
+  d <- check_survival_data()
+  d$w <- as.character(d$w)
+  expect_error(check_data(Surv(time, status) ~ x, d, "id", weights = "w"), class = "pprof_error_invalid_input")
+  bare <- check_data(Surv(time, status) ~ 1, check_survival_data(), "id")
+  expect_identical(bare$survival$aliased, character())
+  expect_identical(bare$survival$large_mean, character())
+})
+
+test_that("the report prints negative weights, invalid statuses, providers without person-time, and long lists", {
+  printed <- function(...) capture.output(print(check_data(...)))
+  d <- check_survival_data()
+  d$w[1] <- -1
+  expect_true("Negative or infinite weights: 1 row" %in% printed(Surv(time, status) ~ x, d, "id", weights = "w"))
+  d <- check_survival_data()
+  d$status[2] <- 3
+  expect_true(any(startsWith(printed(Surv(time, status) ~ x, d, "id"), "Invalid status: 1 row")))
+  d <- check_survival_data()
+  d$time[d$id == 4] <- 0
+  expect_true("Providers without person-time: 4" %in% printed(Surv(time, status) ~ x, d, "id"))
+  # More than ten providers are listed by their first ten and a count.
+  many <- data.frame(time = 1:30, status = rep(0:1, 15), x = (1:30) / 7, id = 1:30)
+  output <- printed(Surv(time, status) ~ x, many, "id")
+  expect_true(any(endsWith(output, "... (15 providers)")))
+})

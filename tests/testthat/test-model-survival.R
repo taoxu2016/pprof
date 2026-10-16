@@ -90,6 +90,24 @@ test_that("the robust variance is coxph()'s with one cluster per row, or the clu
   }
 })
 
+test_that("a cluster column that is a factor keeps its codes, as coxph() codes it (DEC-100)", {
+  d <- adapter_data()
+  # Levels in another order than the clusters' first appearance, with a level no row has.
+  d$patient <- factor(d$patient, levels = c(rev(sort(unique(d$patient))), 99L))
+  for (formula in list(Surv(time, status) ~ x + z, Surv(entry, time, status) ~ x + z + offset(o))) {
+    prepared <- adapter_prepare(formula, data = d, weights = "w", cluster = "patient")
+    expect_true(is.factor(prepared$cluster))
+    rows <- survival_fit_rows(prepared)
+    for (ties in c("breslow", "efron")) {
+      control <- survival::coxph.control(eps = 1e-9, iter.max = 20, timefix = FALSE)
+      clustered <- survival_fit(prepared, ties, robust = TRUE, max_iter = 20, tol = 1e-9)
+      direct <- adapter_coxph(prepared, ties, control, cluster = prepared$cluster[rows])
+      expect_identical(unname(clustered$vcov), unname(direct$var), label = paste(ties, "factor clusters"))
+      expect_identical(unname(clustered$naive_vcov), unname(direct$naive.var), label = paste(ties, "naive"))
+    }
+  }
+})
+
 test_that("rows with weight 0 are left out of the fit and kept in the data (M-25, D-58)", {
   d <- adapter_data()
   prepared <- adapter_prepare(Surv(time, status) ~ x + z, d, weights = "w")
@@ -278,6 +296,21 @@ test_that("the fit is coxph(cluster = id)'s on the expansion, bitwise (DEC-121)"
         expect_identical(unname(coef(engine)), unname(fit$coefficients), label = paste(label, "engine fit"))
       }
     }
+  }
+})
+
+test_that("subjects given by a factor keep its codes, as coxph() codes a factor cluster (DEC-100, DEC-121)", {
+  d <- fine_gray_data()
+  # Levels in another order than the subjects' first appearance, with a level no row has.
+  d$id <- factor(d$id, levels = c(rev(sort(unique(d$id))), 9999L))
+  prepared <- fine_gray_prepare(Surv(start, stop, cause) ~ x1 + x2, d, weights = "w", cluster = "id")
+  expect_true(is.factor(prepared$cluster))
+  for (ties in c("breslow", "efron")) {
+    fit <- survival_fine_gray_fit(prepared, 1, TRUE, ties, max_iter = 20, tol = 1e-9, size = 2L)
+    direct <- fine_gray_direct_coxph(prepared, fine_gray_direct_expansion(prepared, 1), ties)
+    expect_identical(fit$coefficients, coef(direct), label = paste(ties, "coefficients"))
+    expect_identical(unname(fit$vcov), unname(direct$var), label = paste(ties, "robust variance"))
+    expect_identical(unname(fit$naive_vcov), unname(direct$naive.var), label = paste(ties, "model-based variance"))
   }
 })
 

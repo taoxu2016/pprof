@@ -160,3 +160,11 @@ test_that("the funnel limits are the count boundaries of the test, half-way betw
   exact <- infer_poisson_funnel_limits(expected, "exact", level)
   expect_true(all(exact[, "upper"] >= limits[, "upper"]))
 })
+
+test_that("an unknown Poisson test is refused", {
+  expect_error(infer_poisson_statistic(3, 2, "wald"), class = "pprof_error_invalid_input")
+})
+
+test_that("the warning for providers without expected events concerns Poisson families only (D-70)", {
+  expect_null(profile_warn_zero_expected(NULL, list(count_distribution = "poisson_binomial"), 0, 1))
+})

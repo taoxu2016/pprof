@@ -431,3 +431,49 @@ test_that("verbose reports the fit through pprof messages", {
   expect_true(any(grepl("weight 0", messages, fixed = TRUE)))
   expect_silent(fit_cox_stratified(Surv(time, status) ~ x, d, "provider"))
 })
+
+test_that("the validator checks every field; null_effect() needs a number; other data do not refit the model", {
+  d <- cox_data()
+  fit <- fit_cox_stratified(Surv(entry, time, status) ~ x + z, d, "provider", weights = "w", robust = TRUE)
+  rejected <- function(x) expect_error(validate_pprof_cox_stratified(x), class = "pprof_error_invalid_input")
+  x <- fit
+  class(x) <- c("pprof_fine_gray", "pprof_model")
+  rejected(x)
+  x <- fit
+  x$spec$family <- "logistic_fe"
+  rejected(x)
+  x <- fit
+  x$provider_effects <- stats::setNames(rep(0, x$n_providers), x$providers$provider_id)
+  rejected(x)
+  x <- fit
+  x$response[1] <- 2
+  rejected(x)
+  x <- fit
+  x$weights <- x$weights[-1]
+  rejected(x)
+  x <- fit
+  x$loglik <- 1
+  rejected(x)
+  x <- fit
+  x$martingale_residuals <- x$martingale_residuals[-1]
+  rejected(x)
+  x <- fit
+  x$expected_events[1] <- -1
+  rejected(x)
+  x <- fit
+  x$naive_vcov <- x$naive_vcov[1, 1, drop = FALSE]
+  rejected(x)
+  x <- fit
+  x$providers$person_time <- NULL
+  rejected(x)
+  x <- fit
+  x$engine_fit <- list()
+  rejected(x)
+  expect_error(null_effect(fit, "median"), class = "pprof_error_invalid_input")
+  # Data with the model's rows, providers, and covariates but other statuses pass the check against the
+  # model, and their refit's coefficients differ from the model's.
+  other <- d
+  other$status <- 1 - other$status
+  expect_error(baseline_hazard(fit, data = other), class = "pprof_error_invalid_input")
+  expect_output(print(fit), "robust, one cluster per observation", fixed = TRUE)
+})

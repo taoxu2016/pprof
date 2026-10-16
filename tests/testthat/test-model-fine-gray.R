@@ -322,3 +322,38 @@ test_that("the validator rejects inconsistent objects", {
   expect_error(validate_pprof_fine_gray(x), class = "pprof_error_invalid_input")
   expect_identical(validate_pprof_fine_gray(fit), fit)
 })
+
+test_that("the validator also checks the class, the intervals, the weights, the variances, and the engine fit", {
+  fit <- fine_gray_fit()
+  rejected <- function(x) expect_error(validate_pprof_fine_gray(x), class = "pprof_error_invalid_input")
+  x <- fit
+  class(x) <- c("pprof_cox_stratified", "pprof_model")
+  rejected(x)
+  x <- fit
+  x$start <- x$stop
+  rejected(x)
+  x <- fit
+  x$weights <- x$weights[-1]
+  rejected(x)
+  x <- fit
+  x$naive_vcov <- x$naive_vcov[1, 1, drop = FALSE]
+  rejected(x)
+  x <- fit
+  x$engine_fit <- list()
+  rejected(x)
+})
+
+test_that("covariates that are not finite, and data that refit otherwise, raise", {
+  d <- fine_gray_data()
+  infinite <- d
+  infinite$x1[1] <- Inf
+  expect_error(fine_gray_fit(data = infinite), class = "pprof_error_invalid_input")
+  # Data with the model's rows, providers, and covariates but other event types: the check against the
+  # model passes, and the refit's coefficients differ from the model's.
+  fit <- fine_gray_fit(data = d)
+  other <- d
+  swap <- which(other$cause != "0")[1:10]
+  other$cause[swap] <- ifelse(other$cause[swap] == "1", "2", "1")
+  expect_error(predict(fit, newdata = d[1:2, ], type = "cumulative_incidence", data = other),
+               class = "pprof_error_invalid_input")
+})
