@@ -31,10 +31,22 @@ files <- c("cox-fixtures", "cox-reference", "cox-penalized-reference", "cox-fine
            "model-survival", "model-glmnet", "model-fine-gray")
 engine_files <- c("model-survival", "model-glmnet", "model-fine-gray")
 started <- Sys.time()
+# Each failing or erroring expectation: its file, its test, and the first line of its message.
+log$failures <- list()
 results <- lapply(files, function(name) {
   log$file <- paste0("test-", name, ".R")
   res <- testthat::test_local(".", filter = paste0("^", name, "$"), reporter = testthat::SilentReporter$new(),
                               stop_on_failure = FALSE, load_package = "source")
+  for (test in res) {
+    for (e in test$results) {
+      if (inherits(e, "expectation_failure") || inherits(e, "expectation_error")) {
+        first <- strsplit(conditionMessage(e), "\n", fixed = TRUE)[[1]][1]
+        log$failures[[length(log$failures) + 1L]] <- data.frame(
+          file = log$file, test = test$test, kind = if (inherits(e, "expectation_error")) "error" else "failure",
+          message = substr(first, 1L, 300L), stringsAsFactors = FALSE)
+      }
+    }
+  }
   df <- as.data.frame(res)
   data.frame(file = paste0("test-", name, ".R"), tests = nrow(df), expectations = sum(df$nb),
              failed = sum(df$failed), errors = sum(df$error), skipped = sum(df$skipped), warnings = sum(df$warning),
@@ -115,6 +127,14 @@ lines <- c(lines, "", "## Differences from pprof_py that a register entry decide
            "| File | Comparison | Tier | Ratio | Entry | Status |", "|---|---|---|---|---|---|",
            if (nrow(differ)) sprintf("| `%s` | %s | %s | %s | %s | %s |", differ$file, differ$label, differ$tier,
                                      fmt(differ$ratio), differ$entry, differ$status))
+test_failures <- if (length(log$failures)) do.call(rbind, log$failures) else
+  data.frame(file = character(), test = character(), kind = character(), message = character())
+lines <- c(lines, "", "## Failing tests", "",
+           "Every expectation that failed or raised an error, whether or not it records a comparison.", "",
+           if (nrow(test_failures)) c("| File | Test | Kind | Message (first line) |", "|---|---|---|---|",
+                                      sprintf("| `%s` | %s | %s | %s |", test_failures$file, test_failures$test,
+                                              test_failures$kind, gsub("|", "\\|", test_failures$message, fixed = TRUE)))
+           else "None.")
 failing <- rows[rows$status == "FAIL", ]
 lines <- c(lines, "", "## Failing comparisons", "",
            if (nrow(failing)) c("| File | Comparison | Tier | Ratio | Expected |", "|---|---|---|---|---|",
@@ -173,5 +193,10 @@ summary_line <- sprintf("%d comparisons: %d within their tier, %d explained, %d 
 cat(sprintf("Wrote %s: %s\n", report_file, summary_line))
 if (nzchar(Sys.getenv("GITHUB_ACTIONS"))) {
   cat(sprintf("::%s title=Cox comparisons::%s\n", if (failed) "error" else "notice", summary_line))
+  # One annotation per failing test (the public API returns annotations without signing in).
+  for (k in seq_len(min(nrow(test_failures), 20L))) {
+    cat(sprintf("::error title=Cox test %s::%s: %s: %s\n", test_failures$kind[k], test_failures$file[k],
+                test_failures$test[k], gsub("[\r\n]", " ", test_failures$message[k])))
+  }
 }
 if (failed) quit(status = 1L)

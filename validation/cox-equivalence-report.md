@@ -1,7 +1,7 @@
 # Cox equivalence report: the package against pprof_py v0.7.0, survival, and glmnet
 
-Generated 2026-10-16 15:40:08 UTC by `validation/run-cox-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621); survival 3.8.12, glmnet 5.1; 104 s.
-Package under test: pprof 2.0.0 from the working tree at commit 9c0a6a3.
+Generated 2026-10-16 18:10:31 UTC by `validation/run-cox-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621); survival 3.8.12, glmnet 5.1; 79 s.
+Package under test: pprof 2.0.0 from the working tree at commit c0ae91d.
 Fixtures: the core set (tests/testthat/fixtures/cox) and the full set (validation/fixtures/cox), generated at 76fabac by `dev/reference/cox/generate.py` from pprof_py v0.7.0 (commit 9320766) and the pinned survival and glmnet.
 
 ## Summary
@@ -476,6 +476,12 @@ Each must exceed its tier: the package gives survival's result where pprof_py's 
 | `test-cox-fine-gray-reference.R` | competing-weights efron 1 pprof_py (D-58) | cox_coefficient | 3.96e+03 | D-58 | explained |
 | `test-cox-fine-gray-reference.R` | competing-weights efron 1_unstratified pprof_py (D-58) | cox_coefficient | 5.32e+04 | D-58 | explained |
 | `test-cox-fine-gray-reference.R` | competing-weights efron 2_unstratified pprof_py (D-58) | cox_coefficient | 1.86e+04 | D-58 | explained |
+
+## Failing tests
+
+Every expectation that failed or raised an error, whether or not it records a comparison.
+
+None.
 
 ## Failing comparisons
 
