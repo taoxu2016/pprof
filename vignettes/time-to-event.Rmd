@@ -1,0 +1,347 @@
+---
+title: "Profiling providers with time-to-event outcomes"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Profiling providers with time-to-event outcomes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE, comment = "#>",
+  fig.width = 6, fig.height = 4, dpi = 96, fig.retina = 1, out.width = "100%"
+)
+has_glmnet <- requireNamespace("glmnet", quietly = TRUE)
+```
+
+When the outcome is the time to an event, such as death, graft failure, or a hospitalization, pprof
+profiles providers with Cox proportional hazards models. This vignette goes through an analysis of
+simulated survival data: the data, the model stratified by provider, standardized ratios, tests and
+flags, and plots, then recurrent events, competing risks, and penalized models, and last how the
+results relate to those of survival's `coxph()` with its defaults. The models follow the definitions
+of pprof_py 0.7.0, the group's Python package, and their estimation is done by the survival package,
+and by glmnet for penalized models. `vignette("statistical-methods", package = "pprof")` gives the
+formulas, and `vignette("models", package = "pprof")` compares the models.
+
+## The data
+
+The patients, their hospitals, and their five risk factors are those of `ExampleDataBinary`. Their
+times are simulated here, in days, from a Cox model in which each hospital has its own effect on the
+hazard of death; a quarter of the patients enter follow-up late, a transplant ends the follow-up of
+others, and follow-up ends after six months to three years.
+
+```{r data, message = FALSE}
+library(pprof)
+data(ExampleDataBinary)
+set.seed(2026)
+patients <- data.frame(patient = seq_along(ExampleDataBinary$Y), hospital = ExampleDataBinary$ProvID,
+                       ExampleDataBinary$Z)
+n <- nrow(patients)
+hospital_effect <- rnorm(100, 0, 0.2)[patients$hospital]
+risk <- with(patients, 0.4 * z1 - 0.3 * z2 + 0.2 * z3)
+patients$entry <- ifelse(runif(n) < 0.25, sample(1:180, n, replace = TRUE), 0)
+end <- patients$entry + sample(180:1095, n, replace = TRUE)
+death <- patients$entry + ceiling(rexp(n, exp(risk + hospital_effect) / 1500))
+transplant <- patients$entry + ceiling(rexp(n, exp(-0.3 * patients$z1) / 2500))
+patients$exit <- pmin(death, transplant, end)
+patients$status <- factor(ifelse(patients$exit == end & end < pmin(death, transplant), "censored",
+                                 ifelse(death <= transplant, "death", "transplant")),
+                          levels = c("censored", "death", "transplant"))
+patients$died <- as.integer(patients$status == "death")
+head(patients)
+```
+
+```{r data-facts, include = FALSE}
+counts <- table(patients$status)
+```
+
+`patients` holds `r format(nrow(patients), big.mark = ",")` patients of
+`r length(unique(patients$hospital))` hospitals. A patient is at risk from `entry` to `exit` (in days
+since a common origin, such as the start of treatment), and `died` records whether follow-up ended in
+death: `r format(counts[["death"]], big.mark = ",")` deaths,
+`r format(counts[["transplant"]], big.mark = ",")` transplants, and `r format(counts[["censored"]], big.mark = ",")`
+patients whose follow-up ended otherwise. A patient who enters late is not at risk before the entry
+day: `Surv(entry, exit, died)` gives each patient's interval (entry, exit], and a right-censored
+response without late entries is written `Surv(exit, died)`.
+
+Times are compared exactly. survival's `coxph()` by default merges times that differ only by
+rounding (its `timefix`), while pprof, like pprof_py, does not. Times in whole units, such as days,
+avoid the question; `check_data()` reports the times that `coxph()`'s default would merge, along with
+the other problems a Cox fit can have:
+
+```{r check}
+check_data(Surv(entry, exit, died) ~ z1 + z2 + z3, patients, provider = "hospital")
+```
+
+## The model stratified by provider
+
+`fit_cox_stratified()` fits the Cox model with a baseline hazard of its own for each hospital and
+coefficients shared by all, λ~ij~(t) = λ~0i~(t) exp(z~ij~'β), by maximizing the partial likelihood
+stratified by hospital. The hospitals' differences are left in their baseline hazards rather than
+estimated as effects: profiling then compares each hospital's observed events with those expected
+for its patients (He and Schaubel 2014).
+
+```{r fit}
+fit <- fit_cox_stratified(Surv(entry, exit, died) ~ z1 + z2 + z3, data = patients, provider = "hospital")
+fit
+summary(fit)
+```
+
+Tied event times are handled by Breslow's method by default (Breslow 1974), or by Efron's with
+`ties = "efron"` (Efron 1977). `robust = TRUE`, or a `cluster` column, gives the robust variance of Lin
+and Wei (1989), and `weights` case weights. The fit is survival's: the same model from `coxph()`,
+with the settings pprof passes, gives the same coefficients, and its defaults give others.
+
+```{r coxph}
+same <- survival::coxph(Surv(entry, exit, died) ~ z1 + z2 + z3 + strata(hospital), data = patients,
+                        ties = "breslow", timefix = FALSE)
+identical(unname(coef(fit)), unname(coef(same)))
+defaults <- survival::coxph(Surv(entry, exit, died) ~ z1 + z2 + z3 + strata(hospital), data = patients)
+max(abs(coef(fit) - coef(defaults)))
+```
+
+`baseline_hazard()` gives each hospital's baseline cumulative hazard, at covariates 0, and
+`predict()` the cumulative hazards and survival curves of new patients; both need the data, kept
+with `keep_data = TRUE` or passed again:
+
+```{r baseline}
+head(baseline_hazard(fit, data = patients))
+```
+
+## Standardized ratios
+
+`standardize_providers()` compares each hospital's observed deaths O~i~ with the deaths E~i~ expected
+for its patients:
+
+```{r measures}
+measures <- standardize_providers(fit, standardization = c("indirect", "direct"))
+head(measures$table)
+```
+
+E~i~ sums, over the hospital's patients, the national baseline hazard over each patient's time at
+risk, times the patient's relative risk exp(z~ij~'β̂). The national baseline is the Breslow estimator
+over all hospitals' patients at the fitted coefficients, so that the expected deaths of all
+hospitals add up to the deaths observed. The indirect ratio O~i~ / E~i~, the standardized mortality
+ratio (SMR) when the event is death, is above 1 when a hospital has more deaths than expected for its
+patients. The direct ratio puts every hospital on the same patients: the deaths the whole population
+would have at hospital i's own baseline hazard, estimated from its patients, over the deaths the
+population has. `provider_table(fit)` gives each hospital's events and person-time, the sum of its
+patients' times at risk.
+
+The expected deaths count every patient, also those with a case weight of 0, without weights, and use
+Breslow's estimator whatever the ties of the fit, as pprof_py's measures do. A hospital none of whose
+patients is at risk at any time of death has no expected deaths; its ratio is undefined or infinite,
+with a warning.
+
+## Tests and flags
+
+`test_providers()` tests each hospital's ratio against 1 and flags it as higher (1) or lower (-1) than
+expected, or as expected (0). Under the null hypothesis the hospital's number of deaths is taken to
+be Poisson with mean E~i~. The default test is the mid-p test, which counts half the probability of
+the observed count (Lancaster 1961); the exact test, `test = "exact"`, counts all of it and is the
+more conservative of the two.
+
+```{r tests}
+tests <- test_providers(fit)
+table(tests$table$flag)
+exact <- test_providers(fit, test = "exact")
+table(exact$table$flag)
+```
+
+```{r tests-facts, include = FALSE}
+flags <- table(factor(tests$table$flag, levels = -1:1))
+```
+
+At level 0.95 the mid-p test flags `r flags[["1"]]` hospitals as higher and `r flags[["-1"]]` as lower
+than expected. Each hospital is tested at that level without an adjustment for multiple testing, so
+that about 1 in 20 of the hospitals with no difference from the norm are flagged by chance, as
+`vignette("pprof", package = "pprof")` explains. The tests are two-sided.
+
+`interval = "midp"` or `"exact"` adds the limits of the indirect ratio that invert each test; the
+exact limits are Garwood's (1936) when E~i~ is below 100 and Byar's approximation otherwise:
+
+```{r intervals}
+intervals <- standardize_providers(fit, interval = "midp")
+head(intervals$table)
+```
+
+## Plots
+
+A funnel plot shows each hospital's indirect ratio against its expected deaths, with the limits of
+the mid-p test at each expected count, so that a hospital lies outside the limits exactly when the
+test flags it:
+
+```{r funnel}
+plot_funnel(funnel_limits(fit, level = c(0.95, 0.998)))
+```
+
+A caterpillar plot shows the ratios with their intervals:
+
+```{r caterpillar}
+plot_caterpillar(intervals, use_flag = TRUE)
+```
+
+`plot_volume()` plots the ratios against each hospital's number of rows of data. With one row per
+patient, as here, that is its number of patients; with several rows per patient, as in the next
+section, it is not, and the funnel plot, which uses the expected events, is the better guide to how
+precise each ratio is.
+
+## Recurrent events
+
+When patients can have the event more than once, as with hospitalizations, each patient's follow-up
+is split into intervals that end at each event, `Surv(start, stop, event)`, and the robust variance,
+clustered by patient, allows for the dependence between a patient's events (Andersen and Gill 1982;
+Lin, Wei, Yang and Ying 2000). Here the hospitalizations of each patient are simulated during the
+patient's follow-up:
+
+```{r recurrent}
+set.seed(2027)
+rate <- exp(0.3 * patients$z1 + 0.2 * patients$z4) / 400
+days <- patients$entry + t(apply(matrix(ceiling(rexp(n * 30, rate)), n), 1, cumsum))
+during <- days < patients$exit
+patient <- c(row(days)[during], seq_len(n))
+ends <- c(days[during], patients$exit)
+hospitalized <- c(rep(1L, sum(during)), rep(0L, n))
+sorted <- order(patient, ends)
+hospitalizations <- data.frame(patient = patient[sorted], stop = ends[sorted], hospitalized = hospitalized[sorted])
+# Each interval starts where the patient's previous one stopped, the first at the patient's entry.
+first <- !duplicated(hospitalizations$patient)
+hospitalizations$start <- c(NA, hospitalizations$stop[-nrow(hospitalizations)])
+hospitalizations$start[first] <- patients$entry[hospitalizations$patient[first]]
+hospitalizations$hospital <- patients$hospital[hospitalizations$patient]
+hospitalizations$z1 <- patients$z1[hospitalizations$patient]
+hospitalizations$z4 <- patients$z4[hospitalizations$patient]
+recurrent <- fit_cox_stratified(Surv(start, stop, hospitalized) ~ z1 + z4, hospitalizations,
+                                provider = "hospital", cluster = "patient")
+recurrent
+shr <- standardize_providers(recurrent)
+head(shr$table)
+```
+
+The ratio of observed to expected hospitalizations is a standardized hospitalization ratio (SHR).
+These ratios are He and Schaubel's measures, as in pprof_py; measures used in public reporting, such
+as a standardized hospitalization ratio of dialysis facilities, may be defined otherwise.
+
+## Competing risks
+
+A transplant ends a patient's follow-up before death can occur. The model above treats it as
+censoring: its coefficients and ratios describe the hazard of death, which is the cause-specific
+model of death. Writing the event of interest in `Surv()` gives the cause-specific model of any event
+type, and profiling works on it as on any stratified fit:
+
+```{r cause-specific}
+transplants <- fit_cox_stratified(Surv(entry, exit, status == "transplant") ~ z1 + z2 + z3, patients,
+                                  provider = "hospital")
+coef(transplants)
+head(standardize_providers(transplants)$table, 3)
+```
+
+The Fine-Gray model describes instead the cumulative incidence of death, the probability of dying
+by a given time when transplants compete with death (Fine and Gray 1999): patients with a transplant
+stay in the risk set, with weights that decrease over time. `fit_fine_gray()` fits it stratified by
+hospital, with survival's `finegray()` and a weighted Cox fit whose variance is robust, clustered by
+patient; `cause` names the event of interest, and `id` the patient of each row:
+
+```{r fine-gray}
+fine_gray <- fit_fine_gray(Surv(entry, exit, status) ~ z1 + z2 + z3, patients, provider = "hospital",
+                           cause = "death", id = "patient")
+summary(fine_gray)
+curves <- predict(fine_gray, newdata = data.frame(z1 = c(-1, 1), z2 = 0, z3 = 0, hospital = 1),
+                  type = "cumulative_incidence", data = patients)
+# The cumulative incidence of death after one and two years in hospital 1, for z1 = -1 and z1 = 1.
+at <- function(days) {
+  sapply(split(curves, curves$row), function(k) k$cumulative_incidence[max(which(k$time <= days))])
+}
+incidence <- rbind(one_year = at(365), two_years = at(730))
+colnames(incidence) <- c("z1 = -1", "z1 = 1")
+incidence
+```
+
+The two models answer different questions: the cause-specific hazard describes the rate of death
+among the patients still at risk, and the subdistribution hazard of the Fine-Gray model the
+cumulative incidence of death (Putter, Fiocco and Geskus 2007). The Fine-Gray model has no provider
+measures: ratios built on the subdistribution hazard would be a new method, so the profiling
+functions raise an error for it.
+
+## Penalized models
+
+`fit_cox_penalized()` fits the Cox model stratified by provider with an elastic-net penalty on the
+coefficients, over a decreasing sequence of penalties λ, and `select_lambda()` chooses λ by
+cross-validation (Simon, Friedman, Hastie and Tibshirani 2011). The paths are computed by glmnet,
+a suggested package; the code below runs only when glmnet is installed.
+
+```{r penalized, eval = has_glmnet}
+path <- fit_cox_penalized(Surv(entry, exit, died) ~ z1 + z2 + z3 + z4 + z5, patients, provider = "hospital",
+                          n_lambda = 20)
+set.seed(1)
+selected <- select_lambda(path, n_folds = 5, data = patients)
+selected$selected
+tidy(selected)
+```
+
+`alpha` sets the mix of the lasso (`alpha = 1`, the default) and ridge (`alpha = 0`) penalties, and
+`penalty_factor` leaves chosen covariates unpenalized. The penalties, the cross-validation's
+deviance, and its folds are those of pprof_py, as the next section says. A penalized fit has no
+standard errors and no provider profiling, so those functions raise an error for it.
+
+## pprof and the defaults of `coxph()`
+
+pprof's Cox models reproduce pprof_py's results, computed by survival and glmnet, where survival's
+own defaults would differ:
+
+| | pprof | survival's `coxph()` |
+|---|---|---|
+| Tied event times | Breslow's method; Efron's with `ties = "efron"` | Efron's method |
+| Times that differ by rounding | compared exactly | merged (`timefix = TRUE`) |
+| Robust variance | with `robust = TRUE` or a `cluster` column | also turned on by a `cluster()` term or non-integer weights |
+| Case weights of 0 | the rows are left out of the fit and kept in the measures | an error |
+| Covariates the fit cannot estimate, or no events | an error that names them | missing coefficients |
+| The reported baseline hazard | at covariates 0 and offset 0 | `basehaz()`: at the covariates' means by default |
+| Missing values | the rows are dropped | the rows are dropped |
+
+The expected events of the measures count every row without weights, at Breslow's estimator of the
+national baseline whatever the fit's ties. The penalized models compute their penalties as pprof_py
+does, from the smallest that sets every penalized coefficient to 0 down to a fraction of it, and pass
+them to glmnet. `select_lambda()` fits every fold on the whole data's penalties and normalizes each
+fold's deviance by the weight of its held-out events, as pprof_py does and as glmnet's `cv.glmnet()`
+did before glmnet 5, which normalizes by the held-out weight; its folds spread the events evenly, and
+are drawn with R's random numbers, so that they differ from pprof_py's for the same seed.
+
+## References
+
+Andersen PK, Gill RD (1982). Cox's regression model for counting processes: a large sample study.
+*The Annals of Statistics*, 10(4), 1100-1120. <https://doi.org/10.1214/aos/1176345976>
+
+Breslow N (1974). Covariance analysis of censored survival data. *Biometrics*, 30(1), 89-99.
+<https://doi.org/10.2307/2529620>
+
+Efron B (1977). The efficiency of Cox's likelihood function for censored data. *Journal of the
+American Statistical Association*, 72(359), 557-565. <https://doi.org/10.1080/01621459.1977.10480613>
+
+Fine JP, Gray RJ (1999). A proportional hazards model for the subdistribution of a competing risk.
+*Journal of the American Statistical Association*, 94(446), 496-509.
+<https://doi.org/10.1080/01621459.1999.10474144>
+
+Garwood F (1936). Fiducial limits for the Poisson distribution. *Biometrika*, 28(3-4), 437-442.
+<https://doi.org/10.1093/biomet/28.3-4.437>
+
+He K, Schaubel DE (2014). Semiparametric methods for center effect measures based on the ratio of
+survival functions. *Lifetime Data Analysis*, 20(4), 619-644. <https://doi.org/10.1007/s10985-014-9293-9>
+
+Lancaster HO (1961). Significance tests in discrete distributions. *Journal of the American
+Statistical Association*, 56(294), 223-234. <https://doi.org/10.1080/01621459.1961.10482105>
+
+Lin DY, Wei LJ (1989). The robust inference for the Cox proportional hazards model. *Journal of the
+American Statistical Association*, 84(408), 1074-1078. <https://doi.org/10.1080/01621459.1989.10478874>
+
+Lin DY, Wei LJ, Yang I, Ying Z (2000). Semiparametric regression for the mean and rate functions of
+recurrent events. *Journal of the Royal Statistical Society: Series B*, 62(4), 711-730.
+<https://doi.org/10.1111/1467-9868.00259>
+
+Putter H, Fiocco M, Geskus RB (2007). Tutorial in biostatistics: competing risks and multi-state
+models. *Statistics in Medicine*, 26(11), 2389-2430. <https://doi.org/10.1002/sim.2712>
+
+Simon N, Friedman J, Hastie T, Tibshirani R (2011). Regularization paths for Cox's proportional
+hazards model via coordinate descent. *Journal of Statistical Software*, 39(5).
+<https://doi.org/10.18637/jss.v039.i05>

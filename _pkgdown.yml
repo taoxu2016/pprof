@@ -21,6 +21,8 @@ navbar:
       menu:
       - text: Models and what they support
         href: articles/models.html
+      - text: Profiling providers with time-to-event outcomes
+        href: articles/time-to-event.html
       - text: Statistical methods
         href: articles/statistical-methods.html
       - text: Migrating from pprof 1.0.3
@@ -35,6 +37,7 @@ articles:
   contents:
   - pprof
   - models
+  - time-to-event
   - statistical-methods
   - migration
 - title: Developing pprof
