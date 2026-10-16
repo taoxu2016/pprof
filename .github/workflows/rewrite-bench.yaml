@@ -5,6 +5,12 @@
 # measures the reference and the working tree with the same harness (dev/bench), and uploads
 # both result files and the comparison report. The gate's benchmark comparison is run on the
 # machine of the committed baseline instead.
+#
+# The setup is that of rewrite-reference.yaml's per-platform Linux job, which builds pprof 1.0.3 on
+# a runner and passes (CoxPH C6, DEC-137): the package under test with current binaries from the public
+# package manager and its hard dependencies, and the CRAN snapshot of the reference library (DEC-017)
+# only for that library, through PPROF_REFERENCE_SNAPSHOT_REPO. The earlier setup put the snapshot in
+# ~/.Rprofile for every package, which failed cox-bench.yaml's first dispatch (run 38003811342).
 name: rewrite-bench
 
 on:
@@ -23,24 +29,36 @@ jobs:
     timeout-minutes: 300
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      OMP_THREAD_LIMIT: 1
+      PPROF_REFERENCE_SNAPSHOT_REPO: "https://packagemanager.posit.co/cran/__linux__/noble/2026-10-01"
     steps:
       - uses: actions/checkout@v5
 
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: "4.4.0"
-          use-public-rspm: false
-
-      - name: Use the CRAN snapshot of the reference library
-        run: echo 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2026-10-01"))' >> ~/.Rprofile
+          use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
+        id: dependencies
+        continue-on-error: true
         with:
           extra-packages: any::bench, any::callr, any::jsonlite, any::ps
-          needs: check
+          dependencies: '"hard"'
+
+      # The action's own log is not readable without signing in.
+      - name: Report a failure to install the dependencies
+        if: steps.dependencies.outcome == 'failure'
+        run: |
+          Rscript .github/scripts/ci-annotate.R dependencies hard FALSE deps::. any::sessioninfo any::bench any::callr \
+            any::jsonlite any::ps
+          exit 1
 
       - name: Build the reference library
-        run: Rscript dev/reference/setup_reference_library.R
+        shell: bash
+        run: |
+          set -o pipefail
+          Rscript dev/reference/setup_reference_library.R 2>&1 | tee reference-library.log
 
       - name: Measure the reference
         run: |
@@ -57,10 +75,21 @@ jobs:
           Rscript dev/bench/compare_to_baseline.R bench-results/reference-baseline-*.csv bench-results/working-tree-*.csv \
             --report bench-results/comparison.md || true
           cat bench-results/comparison.md || true
+          if [ -f bench-results/comparison.md ]; then cat bench-results/comparison.md >> "$GITHUB_STEP_SUMMARY"; fi
+
+      - name: Report a failed step
+        if: failure() && steps.dependencies.outcome == 'success'
+        run: |
+          if [ -f reference-library.log ] && ! grep -q "Reference library ready" reference-library.log; then
+            Rscript .github/scripts/ci-annotate.R tail "Building the reference library, last lines" reference-library.log 40
+          fi
 
       - name: Upload the results
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: bench-results
-          path: bench-results
+          path: |
+            bench-results
+            reference-library.log
+          if-no-files-found: ignore

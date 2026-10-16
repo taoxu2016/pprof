@@ -17,6 +17,11 @@
 #   against them with the unchanged tolerances: the package must reproduce pprof 1.0.3 on that
 #   platform.
 #
+# Both jobs also run the Cox comparisons (validation/run-cox-reference.R; CoxPH C6, DEC-135): the Cox
+# reference tests on the core and full Cox fixture sets, which compare the package with pprof_py v0.7.0,
+# survival, and glmnet under the calibrated tiers on every platform (COXPH_DESIGN §G.5), with glmnet
+# installed. R CMD check runs only the core set, since the full set is not in the tarball.
+#
 # The reports are uploaded as artifacts and summarized in annotations (.github/scripts/ci-annotate.R).
 name: rewrite-reference
 
@@ -57,14 +62,14 @@ jobs:
         id: dependencies
         continue-on-error: true
         with:
-          extra-packages: any::devtools, any::jsonlite, any::withr, any::testthat
+          extra-packages: any::devtools, any::jsonlite, any::withr, any::testthat, any::glmnet
           dependencies: '"hard"'
           upgrade: "TRUE"
 
       - name: Report a failure to install the dependencies
         if: steps.dependencies.outcome == 'failure'
         run: |
-          Rscript .github/scripts/ci-annotate.R dependencies hard TRUE deps::. any::sessioninfo any::devtools any::jsonlite any::withr any::testthat
+          Rscript .github/scripts/ci-annotate.R dependencies hard TRUE deps::. any::sessioninfo any::devtools any::jsonlite any::withr any::testthat any::glmnet
           exit 1
 
       # Eigen sizes the blocks of lme4's matrix products from the L1 cache it reads from the
@@ -137,12 +142,22 @@ jobs:
         if: always() && steps.dependencies.outcome == 'success'
         run: Rscript .github/scripts/ci-annotate.R report validation/equivalence-report-ci.md reference-run.log
 
+      # The script writes its summary as an annotation.
+      - name: Run the Cox comparisons
+        if: always() && steps.dependencies.outcome == 'success'
+        shell: bash
+        run: |
+          set -o pipefail
+          Rscript validation/run-cox-reference.R cox-equivalence-report-ci.md 2>&1 | tee cox-reference-run.log
+
       - name: Upload the equivalence report
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: equivalence-report-fixture-platform
-          path: validation/equivalence-report-ci.md
+          path: |
+            validation/equivalence-report-ci.md
+            cox-equivalence-report-ci.md
           if-no-files-found: ignore
 
   platforms:
@@ -174,14 +189,14 @@ jobs:
         id: dependencies
         continue-on-error: true
         with:
-          extra-packages: any::devtools, any::jsonlite, any::withr, any::testthat, any::callr, any::Matrix
+          extra-packages: any::devtools, any::jsonlite, any::withr, any::testthat, any::callr, any::Matrix, any::glmnet
           dependencies: '"hard"'
           upgrade: "TRUE"
 
       - name: Report a failure to install the dependencies
         if: steps.dependencies.outcome == 'failure'
         run: |
-          Rscript .github/scripts/ci-annotate.R dependencies hard TRUE deps::. any::sessioninfo any::devtools any::jsonlite any::withr any::testthat any::callr any::Matrix
+          Rscript .github/scripts/ci-annotate.R dependencies hard TRUE deps::. any::sessioninfo any::devtools any::jsonlite any::withr any::testthat any::callr any::Matrix any::glmnet
           exit 1
 
       - name: Build pprof 1.0.3 on this platform
@@ -214,6 +229,14 @@ jobs:
           PPROF_REFERENCE_CORE="$RUNNER_TEMP/core" PPROF_REFERENCE_FULL="$RUNNER_TEMP/full" \
             Rscript validation/run-reference.R equivalence-report-platform.md 2>&1 | tee reference-run.log
 
+      # The script writes its summary as an annotation.
+      - name: Run the Cox comparisons
+        if: always() && steps.dependencies.outcome == 'success'
+        shell: bash
+        run: |
+          set -o pipefail
+          Rscript validation/run-cox-reference.R cox-equivalence-report-platform.md 2>&1 | tee cox-reference-run.log
+
       - name: Report in annotations
         if: always() && steps.dependencies.outcome == 'success'
         shell: bash
@@ -232,6 +255,7 @@ jobs:
           name: reference-${{ runner.os }}
           path: |
             equivalence-report-platform.md
+            cox-equivalence-report-platform.md
             fixture-diff-core.md
             fixture-diff-full.md
           if-no-files-found: ignore
