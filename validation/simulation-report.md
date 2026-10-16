@@ -1,10 +1,11 @@
 # Simulation report: provider tests and intervals with known truth
 
-Generated 2026-10-06 21:07:45 UTC by `validation/run-simulation.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621); lme4 2.0.6, Matrix 1.7.6.
-Working tree at commit 5a291c6; 200 replicates per family and scenario, seed 20261005; 1952 s.
+Generated 2026-10-16 15:30:24 UTC by `validation/run-simulation.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621); lme4 2.0.6, Matrix 1.7.6, survival 3.8.12.
+Working tree at commit 266bb38; 200 replicates per family and scenario, seed 20261005; 5050 s.
 
 Informational (DEC-053): this report gates nothing. A departure from nominal is a question for the methodology
-owners; the procedures are those of pprof 1.0.3, and changing them would be Class B.
+owners; the procedures are those of pprof 1.0.3, and for the Cox model those of pprof_py 0.7.0, and changing them
+would be Class B.
 
 ## Design
 
@@ -18,6 +19,10 @@ owners; the procedures are those of pprof 1.0.3, and changing them would be Clas
   `fit_linear_cre(within_between = "x1")`, `fit_logistic_re()`, `fit_logistic_cre(within_between = "x1")`),
   then `test_providers()`, `provider_effects()`, and `standardize_providers("indirect")` run at their defaults
   (two-sided, level 0.95, the family's null) with intervals of the test's kind. True values: see the script's header.
+- The Cox model, `fit_cox_stratified()` with the provider as strata: 30 to 150 patients per provider (in the third
+  scenario 5 to 30), times in days with a constant baseline hazard of 0.001 a day, follow-up of 180 to 1095 days,
+  25% of the patients entering late (days 1 to 180), outlying log hazard ratios +0.5 and -0.5. Its mid-p and exact
+  tests run with the indirect ratios' intervals of their kind; the model has no provider effects, hence no effect coverage.
 
 ## Results
 
@@ -41,3 +46,9 @@ with ("outlier") an effect. Singular: lme4 fits on the boundary (provider varian
 | logistic_re | six outlying providers | Wald | 200 | 0 | 0 | 0.9 (0.1) | 60.3 (1.7) | 0 | 0 | 99.1 (0.1) | 44.5 (2.2) | 99.1 (0.1) | 44.1 (2.2) |
 | logistic_cre | no provider effects | Wald | 200 | 0 | 124 | 0.0 (0.0) | — | — | 3900 | 100.0 (0.0) | — | 100.0 (0.0) | — |
 | logistic_cre | six outlying providers | Wald | 200 | 0 | 0 | 0.7 (0.1) | 59.9 (1.6) | 0 | 0 | 99.3 (0.1) | 38.8 (2.2) | 99.3 (0.1) | 38.2 (2.2) |
+| cox_stratified | no provider effects | mid-p | 200 | 0 | 0 | 4.8 (0.2) | — | — | 0 | — | — | 95.2 (0.2) | — |
+| cox_stratified | no provider effects | exact | 200 | 0 | 0 | 4.0 (0.2) | — | — | 0 | — | — | 96.0 (0.2) | — |
+| cox_stratified | six outlying providers | mid-p | 200 | 0 | 0 | 4.6 (0.2) | 85.2 (1.0) | 0 | 0 | — | — | 95.4 (0.2) | 95.6 (0.6) |
+| cox_stratified | six outlying providers | exact | 200 | 0 | 0 | 3.9 (0.2) | 83.0 (1.0) | 0 | 0 | — | — | 96.1 (0.2) | 96.2 (0.6) |
+| cox_stratified | no provider effects, 5 to 30 patients per provider | mid-p | 200 | 0 | 0 | 4.8 (0.2) | — | — | 0 | — | — | 95.2 (0.2) | — |
+| cox_stratified | no provider effects, 5 to 30 patients per provider | exact | 200 | 0 | 0 | 3.4 (0.2) | — | — | 0 | — | — | 96.5 (0.2) | — |

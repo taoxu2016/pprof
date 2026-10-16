@@ -12,12 +12,15 @@ Large or slow equivalence checks that do not ship with the package (the folder i
 | `equivalence-report.md` | The latest report: per-case outcome, largest absolute and relative differences (including values in attributes, such as the lme4 components of RE fits), how many long double vectors stored as signatures are bitwise identical, and the providers whose reference p-value lies within tolerance of a flag threshold (brief §3.4). Cases of Class A fixes are compared with their per-case expectations (`tests/testthat/helper-reference-overrides.R`, DEC-022) and marked with their register entry |
 | `run-differential.R` | Differential testing of the fitting functions and their methods (Phase 3 for logistic fixed effects, Phase 4 for the other fits, Phase 5 for the methods of the other fits): seeded random binary datasets (provider counts and sizes, event rates, providers with no events or only events, the number of covariates) for `logis_fe()`, `logis_firth()`, `logis_re()`, and `logis_cre()`, seeded random linear datasets (small providers, a covariate that varies between providers, missing outcomes) for `linear_fe()`, `linear_re()`, and `linear_cre()`, and datasets of both kinds with character IDs whose collation order differs from their numeric order; the methods run over the grid of alternatives, `level`, nulls, and `parm`; every function and method runs on the pinned reference library in a separate R session and on the working tree, and the results are compared with the fixtures' tolerance tiers |
 | `differential-report.md` | The latest differential report |
+| `run-simulation.R` | The simulation study of the provider tests and intervals with known truth (DEC-053): for each family, data without provider effects and with six outlying providers, fit at the defaults, with the size and power of the default test and the coverage of its intervals; from CoxPH Phase C6, the Cox model stratified by provider, with its mid-p and exact tests and a scenario of small providers (DEC-134). Informational: it gates nothing |
+| `simulation-report.md` | The latest simulation report |
 
 Run from the repository root:
 
 ```sh
 Rscript validation/run-reference.R
 Rscript validation/run-differential.R            # needs dev/reference/lib (dev/reference/setup_reference_library.R)
+Rscript validation/run-simulation.R              # about 35 minutes
 ```
 
 The core set also runs as part of `devtools::test()` (slow cases skip on CRAN). Comparisons of lme4-backed results run only when the installed lme4 and Matrix versions equal those in the fixture manifest; otherwise they are reported as skipped, so that version sensitivity is documented rather than hidden by tolerances (brief §3.1).
