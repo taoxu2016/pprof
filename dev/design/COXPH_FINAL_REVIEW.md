@@ -1,6 +1,8 @@
 # CoxPH phase: final review
 
 > **Status: approved by the project lead at the C6 gate (DEC-140), 2026-10-16.** The review of the CoxPH phase against its brief (`dev/coxph_brief.md`): the success criteria of its §11 with their evidence, the deliverables, the register entries that await a methodology owner, the open items for the project lead, and the known limits. Branch `coxph/phase-6`; the package as of `e772ce4`, the last commit that changed it.
+>
+> **Update, 2026-10-19:** the project lead, named the methodology owner (M-16), signed off the Class B items and the questions of §3 (DEC-142); the text below is as approved at the gate.
 
 The CoxPH phase added Cox proportional hazards models to pprof, following pprof_py v0.7.0 (commit `9320766`), with estimation delegated to survival and glmnet (DEC-086), in seven phases on their own branches: C0 the design (`dev/design/COXPH_DESIGN.md`), C1 the fixtures and the baseline, C2 the data layer and the model stratified by provider, C3 its provider profiling, C4 the elastic-net model, C5 competing risks, and C6 the documentation and hardening. Each phase's plan is `dev/design/COXPH_C<n>_PLAN.md`, its evidence `dev/design/coxph-facts/`, and its dated log `dev/COXPH_STATUS.md`.
 
@@ -113,7 +115,7 @@ And the validation the brief's §6 asks for: the Cox fixtures from pprof_py and 
 
 ## 4. Open items for the project lead
 
-- **The methodology owners** (M-16): the Class B items and questions of §3.
+- **The methodology owners** (M-16): the Class B items and questions of §3. Closed on 2026-10-19: the project lead, as methodology owner, signed them off (DEC-142).
 - **Reports upstream**: survival's `finegray()`, which applies its `weights` argument to the wrong rows after the first stratum and goes over all rows once per stratum (DEC-122, DEC-123); and pprof_py's defects (the brief's Appendix B). Whether and how to report them is the project lead's decision.
 - **The website's address**, which `R CMD check` notes as 404 until the site is published (DEC-066).
 - **The CRAN submission** (`cran-comments.md`), deferred by the project lead on 2026-10-16, with R-hub's check without long double before it (DEC-138).

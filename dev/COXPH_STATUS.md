@@ -2,7 +2,7 @@
 
 The dated log of the CoxPH phase (`dev/coxph_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is closed (2026-10-15) and in `main`. Phase C6, documentation and hardening, the phase's last, is closed (2026-10-16) and in `main`: the CoxPH phase is complete (`dev/design/COXPH_FINAL_REVIEW.md`).
+**Status:** Phase C2, the data layer and the stratified Cox model, is closed (2026-10-09) and in `main`. Phase C3, provider profiling for the stratified Cox model, is closed (2026-10-09) and in `main`, with its corner scenario measured on a GitHub runner (run 38004882689). Phase C4, the elastic-net Cox model, is closed (2026-10-14) and in `main`. Phase C5, competing risks, is closed (2026-10-15) and in `main`. Phase C6, documentation and hardening, the phase's last, is closed (2026-10-16) and in `main`: the CoxPH phase is complete (`dev/design/COXPH_FINAL_REVIEW.md`). On 2026-10-19 the project lead, as methodology owner (M-16), signed off its Class B items and questions (DEC-142).
 
 ## 2026-10-07
 
@@ -410,3 +410,10 @@ Recorded on 2026-10-14, for the next session.
 - `main` takes the work by push, not by a pull request, so `rewrite-sanitizers`, which runs on pull requests or by hand, has not run on the phase's code; the other workflows run on the push.
 - Open, as at the gate (`dev/design/COXPH_FINAL_REVIEW.md` §4): the methodology owners' sign-off of the Class B items and the questions (M-16); reporting survival's `finegray()` defects and pprof_py's upstream; the website's address; the CRAN submission, with R-hub's check without long double, deferred by the project lead; `rewrite-bench.yaml`'s first run; and `CLAUDE.md`'s "Current phase", whose text the gate report proposed and which changes with the project lead's approval.
 - Next step: none within the CoxPH phase. The next work, a brief for one of the later models (the CoxPH brief's §2.2, DEC-089) or the CRAN submission, is the project lead's to choose.
+
+## 2026-10-19: the Class B items and questions signed off
+
+- The project lead approved the recommendations for the decisions that awaited a methodology owner, and confirmed that the approval is the methodology owners' written sign-off: M-16 is answered, the methodology owner being the project lead, and D-56 to D-61, D-64, D-72, D-78, and M-23 to M-41 are signed off as decided (DEC-142).
+- Recorded on the branch `coxph/sign-off`, from `main` at `bec3c21`: the registers (the CoxPH sections of DISCREPANCIES and OPEN_QUESTIONS, M-16 in ARCHITECTURE §M, the status of DEC-087 and DEC-115, and DEC-142), a dated note in the final review, and the Cox equivalence report, whose generator now reads the sign-off from the register and marks no CoxPH entry as awaiting. No package file and no number changed; the report's comparisons are as before (1,897, none failing).
+- Still open: the rewrite's Class B entries and the open questions among M-1 to M-22, which now await the project lead's sign-off; and the other open items of the final review's §4.
+- Next step: the project lead's approval to merge `coxph/sign-off` into `main` and push it to the fork.

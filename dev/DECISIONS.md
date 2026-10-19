@@ -851,7 +851,7 @@ The decisions below were made in CoxPH Phase C0 under the project lead's delegat
 ### DEC-087: The CoxPH brief's questions are decided under the project lead's delegation
 
 - Date: 2026-10-07
-- Status: accepted under the project lead's delegation (2026-10-07); confirmed by the project lead (2026-10-08, C0 gate)
+- Status: accepted under the project lead's delegation (2026-10-07); confirmed by the project lead (2026-10-08, C0 gate); signed off by the project lead as methodology owner (2026-10-19, DEC-142)
 - Context: The brief's §10 asks sixteen questions (Q1 to Q14 for the methodology owners, Q15 and Q16 for the project lead), each with a proposed default, and the C0 design raises three more. M-16, who the methodology owners are, is still open, and C0 cannot finish its design without answers.
 - Decision: The project lead delegated the answers. They are recorded as M-23 to M-41 in `dev/OPEN_QUESTIONS.md`, each decided as proposed; the Class B differences from pprof_py that follow (D-56 to D-61, D-64, D-72) are decided accordingly and marked for confirmation by a methodology owner.
 - Alternatives considered: reproducing pprof_py's defects until the owners are named (would build known errors into the new code, B1 and B6 among them).
@@ -1111,7 +1111,7 @@ The decisions below were made in CoxPH Phase C4. The project lead approved DEC-1
 ### DEC-115: glmnet's early stops and failed solutions end the path
 
 - Date: 2026-10-14
-- Status: accepted by the project lead (2026-10-14, with the C4 plan, its decision 3); registers D-78
+- Status: accepted by the project lead (2026-10-14, with the C4 plan, its decision 3); registers D-78; D-78 signed off by the project lead as methodology owner (2026-10-19, DEC-142)
 - Context: On data with few events per covariate (15 rows, 8 events, 20 covariates), glmnet 5.1 stops at the 73rd grid point with Breslow ties, its iteration limit counting passes over all points together, and with Efron ties diverges at the 55th without a warning (coefficients near 9.9e35, a deviance ratio of -1.7e35), where pprof_py converges at every point (fact 26, part C).
 - Decision: The path ends at glmnet's last grid point, and before the first point whose coefficients are not finite or whose deviance ratio is below -sqrt(eps) (a deviance above the null deviance, which no solution of the penalized problem has); the fit warns once with `pprof_warning_not_converged`, naming the first point not reached and suggesting a larger `max_iter`. A fold's path that ends early leaves the later points' deviances missing, so those lambdas are not selected (K-144's rule for non-finite deviances), with one warning naming the folds.
 - Alternatives considered: glmnet's own early stop only (the Efron divergence would pass through silently); refusing data with fewer events than covariates (pprof_py fits them).
@@ -1354,3 +1354,14 @@ The decisions below were made in CoxPH Phase C6. The project lead approved DEC-1
 - Decision: The held-out weights are compared at the `closed_form` tier (atol 1e-12, rtol 1e-10), which the test rules give closed-form results and which the cross-validation's other sums use, through `expect_cox_tier()`, so that the Cox report records them.
 - Alternatives considered: `identical()` on the fixtures' platform and `closed_form` elsewhere; leaving the test as it was, with macOS recorded as a known failure.
 - Consequences: the tier is unchanged and one more quantity is compared under it; the file's 364 expectations are unchanged, and the Cox report records 1,897 comparisons, none failing (`085eaeb`). On CI at `085eaeb` (run 38954075826), the Cox comparisons pass on the four platforms: 1,897 comparisons, none failing, and no test failing. R-hub's check without long double (DEC-138) is the test of the other sums under that arithmetic.
+
+The decision below was made after the CoxPH phase closed.
+
+### DEC-142: The project lead is the methodology owner, and signs off the CoxPH phase's Class B items and questions
+
+- Date: 2026-10-19
+- Status: decided by the project lead (2026-10-19): "I approve all your recommendations for those decisions", confirmed the same day as the methodology owners' written sign-off, with M-16 answered by the project lead
+- Context: M-16 asked who the methodology owners are who sign off Class B items in writing (ARCHITECTURE §M; its default, "to be named by the project lead"). The CoxPH phase's Class B differences D-56 to D-61, D-64, and D-72, and its questions M-23 to M-41, were decided under the project lead's delegation (DEC-087) and confirmed by the project lead at the C0 gate; D-78 was decided with the C4 plan (DEC-115). All awaited a methodology owner's confirmation, as the final review listed (`dev/design/COXPH_FINAL_REVIEW.md` §3).
+- Decision: M-16 is answered: the project lead is the methodology owner who signs off Class B items. As such, the project lead signs off D-56, D-57, D-58, D-59, D-60, D-61, D-64, D-72, and D-78, and M-23 to M-41, each as decided and recorded in the registers.
+- Alternatives considered: recording the approval as the project lead's, with the methodology owners' sign-off left open; adding only the "awaiting a methodology owner" wording to the register's rows.
+- Consequences: the registers mark these entries signed off (`dev/DISCREPANCIES.md` and `dev/OPEN_QUESTIONS.md`, their CoxPH sections; M-16 in ARCHITECTURE §M; DEC-087 and DEC-115), the final review carries a dated note, and the Cox equivalence report marks no CoxPH entry as awaiting. No number changes. The rewrite's Class B entries and the questions among M-1 to M-22 that are still open are not signed off by this decision; they await the project lead's sign-off.

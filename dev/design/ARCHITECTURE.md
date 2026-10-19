@@ -707,4 +707,4 @@ Each question has a proposed default; the default always reproduces the referenc
 | M-13 | Should screening by provider size remain specific to the logistic FE models? | preserve | earlier question 6 (`dev/OPEN_QUESTIONS.md`) |
 | M-14 | Is the "predicted over expected" numerator of RE indirect measures the intended estimand? | preserve | K-82, K-84 |
 | M-15 | Exact and score intervals for no-event and all-event providers use α, not α/2, for their single finite limit even when two-sided. Intended? | preserve | K-90 |
-| M-16 | Who are the designated methodology owners for written sign-off on Class B items? | to be named by the project lead | brief §3.3 |
+| M-16 | Who are the designated methodology owners for written sign-off on Class B items? | to be named by the project lead. Answered 2026-10-19: the project lead (DEC-142) | brief §3.3 |
