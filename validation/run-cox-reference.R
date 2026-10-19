@@ -176,8 +176,12 @@ if (file.exists(register)) {
   section <- if (length(start)) text[start[1]:length(text)] else character()
   entries <- grep("^\\| D-[0-9]+ \\|", section, value = TRUE)
   cells <- lapply(strsplit(entries, "|", fixed = TRUE), function(x) trimws(x[-1]))
-  awaiting <- vapply(cells, function(x) grepl("B", x[[3]]) && grepl("delegation|awaiting", x[[4]]), logical(1))
-  lines <- c(lines, "From `dev/DISCREPANCIES.md`. Class B entries decided under the project lead's delegation or awaiting a methodology owner are marked (M-16).", "",
+  # A Class B entry decided under the delegation, or marked awaiting, awaits a methodology owner until the register
+  # records its sign-off (DEC-142 signed off the CoxPH phase's).
+  awaiting <- vapply(cells, function(x) {
+    grepl("B", x[[3]]) && grepl("delegation|awaiting", x[[4]]) && !grepl("signed off", x[[4]], fixed = TRUE)
+  }, logical(1))
+  lines <- c(lines, "From `dev/DISCREPANCIES.md`. Class B entries that await a methodology owner's sign-off are marked (M-16; the project lead signed off the CoxPH phase's on 2026-10-19, DEC-142).", "",
              "| ID | Component | Class | Status | Awaiting a methodology owner |", "|---|---|---|---|---|",
              vapply(seq_along(cells), function(k) sprintf("| %s | %s | %s | %s | %s |", cells[[k]][[1]], cells[[k]][[2]],
                                                           cells[[k]][[3]], cells[[k]][[4]], if (awaiting[[k]]) "yes" else ""), ""))

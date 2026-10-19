@@ -1,7 +1,7 @@
 # Cox equivalence report: the package against pprof_py v0.7.0, survival, and glmnet
 
-Generated 2026-10-16 19:13:06 UTC by `validation/run-cox-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621); survival 3.8.12, glmnet 5.1; 86 s.
-Package under test: pprof 2.0.0 from the working tree at commit 976836c.
+Generated 2026-10-19 15:25:25 UTC by `validation/run-cox-reference.R` on R version 4.4.0 (2024-04-24 ucrt), Windows 11 x64 (build 22621); survival 3.8.12, glmnet 5.1; 81 s.
+Package under test: pprof 2.0.0 from the working tree at commit bec3c21.
 Fixtures: the core set (tests/testthat/fixtures/cox) and the full set (validation/fixtures/cox), generated at 76fabac by `dev/reference/cox/generate.py` from pprof_py v0.7.0 (commit 9320766) and the pinned survival and glmnet.
 
 ## Summary
@@ -509,19 +509,19 @@ Explained rows by register entry: D-56 18, D-57 5, D-58 36, D-64 21, D-78 2, M-2
 
 ## The register's CoxPH entries
 
-From `dev/DISCREPANCIES.md`. Class B entries decided under the project lead's delegation or awaiting a methodology owner are marked (M-16).
+From `dev/DISCREPANCIES.md`. Class B entries that await a methodology owner's sign-off are marked (M-16; the project lead signed off the CoxPH phase's on 2026-10-19, DEC-142).
 
 | ID | Component | Class | Status | Awaiting a methodology owner |
 |---|---|---|---|---|
-| D-56 | Robust variance | B | verified; decided (delegation): `survival`'s | yes |
-| D-57 | Newton–Raphson | B | verified; decided (delegation): `survival`'s | yes |
-| D-58 | Zero case weights | B | verified; decided (delegation): left out of the fit | yes |
-| D-59 | Aliased covariates, no events | B | verified; decided (delegation): classed error | yes |
-| D-60 | Reported baseline hazard | B | verified; decided (delegation): at x = 0 and offset 0 | yes |
-| D-61 | Penalized cross-validation folds | B | verified; decided (delegation): R's random numbers | yes |
+| D-56 | Robust variance | B | verified; decided (delegation): `survival`'s; signed off 2026-10-19 (DEC-142) |  |
+| D-57 | Newton–Raphson | B | verified; decided (delegation): `survival`'s; signed off 2026-10-19 (DEC-142) |  |
+| D-58 | Zero case weights | B | verified; decided (delegation): left out of the fit; signed off 2026-10-19 (DEC-142) |  |
+| D-59 | Aliased covariates, no events | B | verified; decided (delegation): classed error; signed off 2026-10-19 (DEC-142) |  |
+| D-60 | Reported baseline hazard | B | verified; decided (delegation): at x = 0 and offset 0; signed off 2026-10-19 (DEC-142) |  |
+| D-61 | Penalized cross-validation folds | B | verified; decided (delegation): R's random numbers; signed off 2026-10-19 (DEC-142) |  |
 | D-62 | Missing values | A | verified; decided: listwise deletion |  |
 | D-63 | Standardized measures | A | verified; does not arise |  |
-| D-64 | Large linear predictors | B | verified; decided (delegation): `survival`'s | yes |
+| D-64 | Large linear predictors | B | verified; decided (delegation): `survival`'s; signed off 2026-10-19 (DEC-142) |  |
 | D-65 | Provider-penalized Cox | A and B | verified; deferred to a later brief |  |
 | D-66 | Discrete-time models | A and B | verified; deferred to a later brief |  |
 | D-67 | Bootstrap standard error of the CV deviance | B | verified; not carried over |  |
@@ -529,12 +529,12 @@ From `dev/DISCREPANCIES.md`. Class B entries decided under the project lead's de
 | D-69 | pprof_py's documentation and R-comparison harness | C and A | verified; not carried over; reported upstream |  |
 | D-70 | Providers with no expected events | Presentation | decided |  |
 | D-71 | Exact test of an extreme provider | A | verified; decided: flag it |  |
-| D-72 | Penalized coefficients at λ_max | B | verified; decided (delegation): exact zeros | yes |
+| D-72 | Penalized coefficients at λ_max | B | verified; decided (delegation): exact zeros; signed off 2026-10-19 (DEC-142) |  |
 | D-73 | Failures of pprof_py that cannot arise | A | verified; does not arise |  |
 | D-74 | Status coded 1/2 | A | verified; decided: accepted |  |
 | D-75 | Baselines and curves without covariates | B | verified; decided: unsupported, with a classed error |  |
 | D-77 | Unknown provider IDs | Presentation | decided |  |
-| D-78 | Penalized paths with few events per covariate | B | verified; decided, awaiting a methodology owner (M-16): the path ends where glmnet's solutions end | yes |
+| D-78 | Penalized paths with few events per covariate | B | verified; decided: the path ends where glmnet's solutions end; signed off 2026-10-19 (DEC-142) |  |
 | D-79 | Penalized paths' other outputs | B | verified; decided: not given in C4 |  |
 | D-80 | Fine–Gray weights that are not finite | A | verified; decided: raise where survival's weights are not finite, fit otherwise |  |
 | D-81 | Fine–Gray outputs not given | B | verified; decided: not given in C5 |  |
