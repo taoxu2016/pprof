@@ -6,9 +6,9 @@ name: rewrite-coverage
 
 on:
   push:
-    branches: ["main", "rewrite/**", "coxph/**"]
+    branches: ["main", "rewrite/**", "coxph/**", "logistic/**"]
   pull_request:
-    branches: ["main", "rewrite/**", "coxph/**"]
+    branches: ["main", "rewrite/**", "coxph/**", "logistic/**"]
   workflow_dispatch:
 
 permissions: read-all

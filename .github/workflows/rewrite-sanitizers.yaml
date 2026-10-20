@@ -7,7 +7,7 @@ name: rewrite-sanitizers
 
 on:
   pull_request:
-    branches: ["main", "rewrite/**", "coxph/**"]
+    branches: ["main", "rewrite/**", "coxph/**", "logistic/**"]
   workflow_dispatch:
 
 permissions: read-all

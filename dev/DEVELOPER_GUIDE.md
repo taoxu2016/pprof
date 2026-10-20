@@ -54,7 +54,7 @@ Run from the repository root.
 | Which functions a change touched | `Rscript dev/tools/namespace_compare.R <output> <scratch directory> <old commit> [<expected changes>]` |
 | Coverage of the lines added since a commit | `Rscript dev/tools/coverage_added.R <output> <base commit>` |
 | The paired Cox benchmarks | `Rscript dev/bench/cox/run_paired.R <data directory> <csv> [--only <regex>]`, then `dev/bench/cox/summarize_paired.R` (`dev/bench/README.md`); heavy scenarios on `.github/workflows/cox-bench.yaml`, dispatched by hand |
-| The site | `Rscript -e 'pkgdown::build_site(override = list(destination = "<a folder outside the repository>"))'`; CI builds it on every push to `main` or a `rewrite/**` or `coxph/**` branch. pkgdown renders every Markdown file at the root, so a local build also renders `CLAUDE.md` (CI removes it first) |
+| The site | `Rscript -e 'pkgdown::build_site(override = list(destination = "<a folder outside the repository>"))'`; CI builds it on every push to `main` or a `rewrite/**`, `coxph/**`, or `logistic/**` branch. pkgdown renders every Markdown file at the root, so a local build also renders `CLAUDE.md` (CI removes it first) |
 
 Building the vignettes and the site needs pandoc. Examples, tests, and vignettes use at most two threads; package code never calls `set.seed()`.
 
@@ -108,7 +108,7 @@ The CoxPH brief's §2.2 lists the models that wait for briefs of their own; each
 
 ## Continuous integration
 
-`.github/workflows/`, run on pushes and pull requests to `main`, `rewrite/**`, and `coxph/**` (DEC-071; the CoxPH brief's §12):
+`.github/workflows/`, run on pushes and pull requests to `main`, `rewrite/**`, `coxph/**`, and `logistic/**` (DEC-071; the CoxPH brief's §12; the logistic extensions brief's §12):
 
 - `rewrite-check.yaml`: `R CMD check --as-cran`, failing on warnings, on Linux, macOS, and Windows with R release, devel, and oldrel-1, and with R 4.4.0, the oldest version DESCRIPTION declares (DEC-081), on Linux and on Windows. The Windows R 4.4.0 job is the fixtures' platform: only there do the tests compare numbers with the committed fixtures (DEC-080); elsewhere they compare everything else and skip the numbers.
 - `rewrite-reference.yaml`: the reference suite (`validation/run-reference.R`) with the committed fixtures on their platform, and on Linux, macOS, and Windows with fixtures that pprof 1.0.3, built on the runner (`dev/reference/setup_reference_library.R`), regenerates there into a scratch folder; it also reports how far pprof 1.0.3 itself moves on each platform. Every job also runs the Cox comparisons with both Cox fixture sets (`validation/run-cox-reference.R`, DEC-135), which `R CMD check` cannot run, since the full set is not in the tarball.
