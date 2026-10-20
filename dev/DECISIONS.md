@@ -1476,9 +1476,9 @@ The decisions below were made in Phase L0 of the logistic extensions phase, wher
 - Date: 2026-10-20
 - Status: accepted by the project lead with DEC-143; made in L0
 - Context: The brief's §12 lists the changes only the project lead can make.
-- Decision: the six workflows that run on `main`, `rewrite/**`, and `coxph/**` run on `logistic/**` too (`aba67f0`); CLAUDE.md names the brief, the status document, and the design, states pprofR 0.2.0 as the specification of the new features, and extends the fixture rule; `.claude/rules/tests.md` adds the third reference; `.claude/settings.json` protects `tests/testthat/fixtures/pprofr/` and `validation/fixtures/pprofr/` and asks before editing the brief; the phase-gate skill covers both phases (`e48f331`). The pprofR fixtures are regenerated locally only.
+- Decision: the six workflows that run on `main`, `rewrite/**`, and `coxph/**` run on `logistic/**` too (`aba67f0`); CLAUDE.md names the brief, the status document, and the design, states pprofR 0.2.0 as the specification of the new features, and extends the fixture rule and, at L0's gate, the equivalence essentials; `.claude/rules/tests.md` adds the third reference; `.claude/settings.json` protects `tests/testthat/fixtures/pprofr/` and `validation/fixtures/pprofr/` and asks before editing the brief; the phase-gate skill covers both phases (`e48f331`). The pprofR fixtures are regenerated locally only.
 - Alternatives considered: a dispatch-only workflow that fetches the upstream commit to regenerate the fixtures (the brief's §12 proposed local regeneration).
-- Consequences: pushes of `logistic/**` branches run CI.
+- Consequences: pushes of `logistic/**` branches run CI. The reference workflow runs the pprofR comparisons from L1, when they exist (design §G.5).
 
 ### DEC-155: Binomial residuals, fitted values, and `augment()` follow `glm()`
 

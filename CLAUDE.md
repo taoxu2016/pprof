@@ -113,7 +113,7 @@ When installing packages, pass `repos = "https://cloud.r-project.org"`, because 
 
 Test conventions load from `.claude/rules/tests.md`.
 
-- Fixtures come from the pinned reference, run in an isolated library and a separate R session with `threads = 1`, explicit seeds, and a JSON manifest.
+- Fixtures come from the pinned reference, run in an isolated library and a separate R session with `threads = 1`, explicit seeds, and a JSON manifest. pprofR 0.2.0 is built from commit `f23c288` in the local object store, and its manifest records no text of its files.
 - Compare with |a − b| ≤ atol + rtol·|b| using named tolerances, each justified in one line:
   - discrete outputs match exactly;
   - closed-form results match to about 1e-10;
@@ -121,7 +121,7 @@ Test conventions load from `.claude/rules/tests.md`.
   - `uniroot()` limits use the reference root-finder settings, or a tolerance justified by them;
   - lme4 results are compared under pinned versions;
   - the exact test's statistic is compared on its tail probability (DEC-083).
-- The fixtures' numbers are compared on the platform that produced them; CI compares other platforms with pprof 1.0.3 run there (DEC-080).
+- The fixtures' numbers are compared on the platform that produced them; CI compares other platforms with pprof 1.0.3 run there (DEC-080), and the Cox and pprofR fixtures within their tiers on every platform (DEC-135, DEC-152).
 - Flags match exactly, except for providers within tolerance of a decision threshold, which go in the equivalence report.
 - Package code never calls `set.seed()`. Tests that use randomness set seeds themselves. Tests and examples use at most 2 threads.
 
