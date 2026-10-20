@@ -1,0 +1,32 @@
+# 09: pprofR's behaviors that the design specifies
+
+pprofR 0.2.0, R version 4.4.0 (2024-04-24 ucrt).
+
+## (a) to (c): tests
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| (a) bootstrap p-values against the plain-R draws (seed 21, 500 draws) | 0 | 0 | yes |
+| (a) rbinom() with size 1 as a number and as a vector: identical draws | TRUE | | |
+| (b) score statistics against sum(y - n p0) / sqrt(sum(n p0 (1 - p0))) | 0 | 0 | yes |
+| (b) Wald standard errors against the block inverse at unclamped probabilities | 5.55e-17 | 2.14e-16 | no |
+| (b) Wald standard errors against the block inverse at clamped probabilities (K-20) | 5.55e-17 | 2.14e-16 | no |
+| (c) one cluster per provider: robust score statistics, distinct values | -1, 1 | | |
+| (c) one cluster per provider: stabilized score statistics, range | -0.99 to 2.71 | | |
+| (c) one cluster per provider: stabilized over model-based Wald standard errors, range | NaN to NaN | | |
+
+## (d) Binomial intervals with pprof's root finder against pprofR's
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| (d) exact limits of the 20 providers with events and non-events | 2.72e-05 | 0.000133 | no |
+| (d) score limits of the 20 providers with events and non-events | 1.83e-06 | 1.04e-05 | no |
+
+## (e) Zero trials
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| (e) three rows with zero trials added: coefficients against the fit without them | 2.26e-11 | 7.87e-11 | no |
+| (e) the same: provider effects | 9.56e-11 | 6.4e-11 | no |
+| (e) the same: BIC, with and without the rows (566 and 563 rows) | 4298.159748, 4298.037516 | | |
+| (e) a provider with no trials: fitted; its effect -0.8628 (the median -0.958), its Wald standard error 2.582e+09, flagged no events TRUE and all events TRUE | | | |

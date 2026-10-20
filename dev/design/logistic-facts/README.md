@@ -1,6 +1,6 @@
 # Logistic extensions facts
 
-The scripts behind the evidence in the logistic extensions phase brief (`dev/logistic_brief.md`, Appendices A and B), with the output each one produced. They run pprofR 0.2.0 (commit `f23c288`) beside pprof and independent references (`glm()`, sandwich, plain-R formulas) on synthetic data, and time them. None of them is part of the package or its tests, and none reads data other than the synthetic data of `facts_data.R` and the bundled `ExampleDataBinary`.
+The scripts behind the evidence in the logistic extensions phase brief (`dev/logistic_brief.md`, Appendices A and B) and its Phase L0 design (`dev/design/LOGISTIC_DESIGN.md`), with the output each one produced. They run pprofR 0.2.0 (commit `f23c288`) beside pprof and independent references (`glm()`, sandwich, plain-R formulas) on synthetic data, and time them. None of them is part of the package or its tests, and none reads data other than the synthetic data of `facts_data.R` and the bundled `ExampleDataBinary`.
 
 Each numbered script writes the output file of the same name (`.txt`). `facts_data.R` holds what they share: the libraries of 01, the synthetic data (providers, clusters of rows with a shared random intercept, and an optional number of trials per row), and the comparison table.
 
@@ -14,6 +14,7 @@ Each numbered script writes the output file of the same name (`.txt`). `facts_da
 | `06_stopping_rules.R` | the stopping rules "any" and "coefficients" on binomial outcomes with 1 to 1,000 trials per row, against a tight fit | Q1, Appendix A |
 | `07_measure_tests.R` | the delta-method standard error of direct rates against central differences, the rates' denominator, pprofR's test of a measure against its formulas, and direct standardization with provider effects supplied by the caller | §3.2, Appendix A, B4 |
 | `08_pprofr_edges.R` | what pprofR does with inputs at the edges of its features: outcomes above their trials, non-integer, zero, negative, or missing trials, no covariates, providers with one cluster, a cluster too large for the stabilized tests | §3.3, Appendix B |
+| `09_pprofr_specifications.R` | the behaviors the design specifies that 02 to 08 do not show, against plain-R versions of their definitions: the bootstrap's draws with trials, the binomial score test and Wald standard errors, the robust and stabilized tests of providers with one cluster (a stabilized variance can be negative), the binomial intervals with pprof's root finder, and rows and providers with zero trials (L0) | design §A, D-94, D-95, D-100 |
 
 ## Running them
 
@@ -23,7 +24,7 @@ From the repository root, with R (and, for 01, Rtools) on the PATH, commit `f23c
 f=dev/design/logistic-facts
 Rscript $f/01_libraries.R $f/01_libraries.txt      # first: builds the libraries the others load
 for s in 02_binary_agreement 03_binomial_references 04_cluster_inference 05_direct_standardization \
-         06_stopping_rules 07_measure_tests 08_pprofr_edges; do
+         06_stopping_rules 07_measure_tests 08_pprofr_edges 09_pprofr_specifications; do
   Rscript $f/$s.R $f/$s.txt
 done
 ```
