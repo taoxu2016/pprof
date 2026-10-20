@@ -12,6 +12,7 @@ The design documents of the v2 rewrite and of the CoxPH phase, kept as the descr
 | `COXPH_FINAL_REVIEW.md` | The CoxPH phase's final review against the brief's success criteria, with the register entries that awaited a methodology owner (signed off on 2026-10-19, DEC-142) and the open items (DEC-140) |
 | `coxph-facts/` | The scripts and outputs behind the evidence in the CoxPH brief (`dev/coxph_brief.md`, Appendices A and B) and the phases' plans |
 | `LOGISTIC_DESIGN.md` | The logistic extensions phase's design (Phase L0), with notes on how each part is built |
+| `LOGISTIC_L1_PLAN.md` | The plan of the logistic extensions phase's Phase L1, reference capture |
 | `logistic-facts/` | The scripts and outputs behind the evidence in the logistic extensions brief (`dev/logistic_brief.md`, Appendices A and B) and its design |
 
 The rewrite's plans, handoffs, audit, fact scripts, and final review are in the history (`dev/README.md`).

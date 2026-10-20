@@ -2,7 +2,7 @@
 
 The dated log of the logistic extensions phase (`dev/logistic_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase L0, design and decisions, is closed (2026-10-20) and in `main`. Phase L1, reference capture, is next, its plan first.
+**Status:** Phase L0, design and decisions, is closed (2026-10-20) and in `main`. Phase L1, reference capture, is in progress on `logistic/phase-1` (`dev/design/LOGISTIC_L1_PLAN.md`).
 
 ## 2026-10-20: the brief
 
@@ -53,3 +53,8 @@ The dated log of the logistic extensions phase (`dev/logistic_brief.md`, §0): a
 - The project lead approved closing L0's gate and asked for the work in `main` without a pull request: the fork's `main` takes `logistic/phase-0` as a fast-forward from `fa6b290`.
 - With no pull request, `rewrite-sanitizers`, which runs on pull requests or by hand, does not run; L0 changes no package code. The other workflows run on the push.
 - Next step: Phase L1, reference capture, on `logistic/phase-1` from `main`, its plan first (`dev/design/LOGISTIC_L1_PLAN.md`), for the project lead's approval.
+
+## 2026-10-20: Phase L1 started
+
+- The project lead approved the plan and asked to continue ("I approve the plan and continue"): Phase L1 runs on `logistic/phase-1`, from `main` at `2efb4e7`, by `dev/design/LOGISTIC_L1_PLAN.md`, adopted under that approval.
+- Next step: the plan's order of work, starting with the pprofR library.
