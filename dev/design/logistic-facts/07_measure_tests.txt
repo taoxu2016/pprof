@@ -1,0 +1,39 @@
+# 07: standard errors of direct rates, and the test of a measure
+
+pprofR 0.2.0, R version 4.4.0 (2024-04-24 ucrt).
+
+## (a) The delta-method standard error of direct rates
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| numer_se / N_pop against the central difference of the direct rate (h = 1e-5) | 6.57e-12 | 2.91e-11 | no |
+| the direct rate against sum(N p(gamma_i)) / sum(N) | 1.11e-16 | 2.67e-16 | no |
+| N_pop doubled: the rate halves | 0 | 0 | yes |
+| N_pop doubled: numer_se is unchanged | 0 | 0 | yes |
+
+## (b) test_SM() against its formulas
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| identity, null N(0, 1^2) statistic | 0 | 0 | yes |
+| identity, null N(0, 1^2) p-value | 0 | 0 | yes |
+| identity, null N(0, 1^2): flags differing from the formula; flags not 0 | 0; 18 | | |
+| identity, null N(0, 1^2): providers whose interval excludes the reference but are not flagged, and the reverse | 0, 0 | | |
+| identity, null N(0.3, 1.5^2) statistic | 0 | 0 | yes |
+| identity, null N(0.3, 1.5^2) p-value | 0 | 0 | yes |
+| identity, null N(0.3, 1.5^2): flags differing from the formula; flags not 0 | 0; 12 | | |
+| identity, null N(0.3, 1.5^2): providers whose interval excludes the reference but are not flagged, and the reverse | 0, 0 | | |
+| logit, null N(0, 1^2) statistic | 1.78e-15 | 2.29e-16 | no |
+| logit, null N(0, 1^2) p-value | 2.22e-16 | 1.18e-15 | no |
+| logit, null N(0, 1^2): flags differing from the formula; flags not 0 | 0; 17 | | |
+| logit, null N(0, 1^2): providers whose interval excludes the reference but are not flagged, and the reverse | 0, 0 | | |
+| logit, null N(0.3, 1.5^2) statistic | 1.78e-15 | 2.29e-16 | no |
+| logit, null N(0.3, 1.5^2) p-value | 2.22e-16 | 9.52e-16 | no |
+| logit, null N(0.3, 1.5^2): flags differing from the formula; flags not 0 | 0; 10 | | |
+| logit, null N(0.3, 1.5^2): providers whose interval excludes the reference but are not flagged, and the reverse | 0, 0 | | |
+
+## (c) Provider effects supplied by the caller
+
+- direct, with the fit's 40 effects and 2 more: 42 rates; the fit's providers' rates unchanged: TRUE
+- indirect, with the same effects: error: length of 'dimnames' [1] not equal to array extent
+- the median of the effects, the indirect null, moves from -0.459866 to -0.440120

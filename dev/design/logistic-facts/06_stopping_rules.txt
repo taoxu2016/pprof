@@ -1,0 +1,14 @@
+# 06: stopping rules on binomial outcomes
+
+pprofR 0.2.0, R version 4.4.0 (2024-04-24 ucrt). 60 providers of 20 to 60 rows; fits by SerBIN with backtracking.
+
+| Trials per row | Rule at tol 1e-5 | Iterations (tight fit's) | Largest difference of an effect | Largest difference of a coefficient | Score flags differing | Wald flags differing |
+|---|---|---|---|---|---|---|
+| 1 | "any" ("or") | 4 (6) | 7.3e-06 | 2.5e-08 | 0 | 0 |
+| 1 | "coefficients" ("beta") | 5 (6) | 0 | 0 | 0 | 0 |
+| 10 | "any" ("or") | 3 (7) | 0.00071 | 6.6e-06 | 0 | 0 |
+| 10 | "coefficients" ("beta") | 4 (7) | 4.3e-08 | 3.2e-11 | 0 | 0 |
+| 100 | "any" ("or") | 3 (5) | 0.00011 | 6e-06 | 0 | 0 |
+| 100 | "coefficients" ("beta") | 4 (5) | 0 | 0 | 0 | 0 |
+| 1000 | "any" ("or") | 3 (6) | 0.00019 | 6.5e-06 | 0 | 0 |
+| 1000 | "coefficients" ("beta") | 4 (6) | 1.2e-08 | 8.7e-11 | 0 | 0 |

@@ -1,0 +1,251 @@
+# 02: pprofR against pprof on binary outcomes
+
+pprofR 0.2.0, pprof 2.0.0, R version 4.4.0 (2024-04-24 ucrt).
+
+## synthetic: fits (1896 rows)
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| serbin, any, tol 1e-05: iterations (pprofR, pprof) | 4, 4 | | yes |
+| serbin, any, tol 1e-05 coefficients | 0 | 0 | yes |
+| serbin, any, tol 1e-05 provider effects | 0 | 0 | yes |
+| serbin, any, tol 1e-10: iterations (pprofR, pprof) | 5, 5 | | yes |
+| serbin, any, tol 1e-10 coefficients | 0 | 0 | yes |
+| serbin, any, tol 1e-10 provider effects | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-05: iterations (pprofR, pprof) | 5, 5 | | yes |
+| serbin, coefficients, tol 1e-05 coefficients | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-05 provider effects | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-10: iterations (pprofR, pprof) | 5, 5 | | yes |
+| serbin, coefficients, tol 1e-10 coefficients | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-10 provider effects | 0 | 0 | yes |
+| ban, any, tol 1e-05: iterations (pprofR, pprof) | 6, 6 | | yes |
+| ban, any, tol 1e-05 coefficients | 0 | 0 | yes |
+| ban, any, tol 1e-05 provider effects | 0 | 0 | yes |
+| ban, any, tol 1e-10: iterations (pprofR, pprof) | 12, 12 | | yes |
+| ban, any, tol 1e-10 coefficients | 0 | 0 | yes |
+| ban, any, tol 1e-10 provider effects | 0 | 0 | yes |
+| ban, coefficients, tol 1e-05: iterations (pprofR, pprof) | 13, 13 | | yes |
+| ban, coefficients, tol 1e-05 coefficients | 0 | 0 | yes |
+| ban, coefficients, tol 1e-05 provider effects | 0 | 0 | yes |
+| ban, coefficients, tol 1e-10: iterations (pprofR, pprof) | 19, 19 | | yes |
+| ban, coefficients, tol 1e-10 coefficients | 0 | 0 | yes |
+| ban, coefficients, tol 1e-10 provider effects | 0 | 0 | yes |
+| defaults: covariance of the coefficients | 0 | 0 | yes |
+| defaults: variance of the provider effects | 0 | 0 | yes |
+| defaults: log-likelihood | 0 | 0 | yes |
+| defaults: AIC, BIC | 0 | 0 | yes |
+| defaults: AUC | 0 | 0 | yes |
+
+## synthetic: provider tests, intervals, and measures at the defaults
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| exact, two-sided p-value | 0 | 0 | yes |
+| exact, two-sided statistic | 0 | 0 | yes |
+| exact, two-sided flags differing | 0 of 40 | | |
+| exact, greater p-value | 0 | 0 | yes |
+| exact, greater statistic | 0 | 0 | yes |
+| exact, greater flags differing | 0 of 40 | | |
+| exact, less p-value | 0 | 0 | yes |
+| exact, less statistic | 0 | 0 | yes |
+| exact, less flags differing | 0 of 40 | | |
+| score (modified) p-value | 0 | 0 | yes |
+| score (modified) statistic | 0 | 0 | yes |
+| score (modified) flags differing | 0 of 40 | | |
+| Wald p-value | 0 | 0 | yes |
+| Wald statistic | 0 | 0 | yes |
+| Wald flags differing | 0 of 40 | | |
+| Wald standard error | 0 | 0 | yes |
+| bootstrap (seed 11, 2000 draws) p-value | 0 | 0 | yes |
+| bootstrap (seed 11, 2000 draws) statistic | 0 | 0 | yes |
+| bootstrap (seed 11, 2000 draws) flags differing | 0 of 40 | | |
+| exact interval of the effects, lower | 2.99e-05 | 5.01e-05 | no |
+| exact interval of the effects, upper | 2.49e-05 | 0.00279 | no |
+| score interval of the effects, lower | 2.24e-06 | 6.22e-05 | no |
+| score interval of the effects, upper | 2.18e-06 | 0.000145 | no |
+| wald interval of the effects, lower | 0 | 0 | yes |
+| wald interval of the effects, upper | 0 | 0 | yes |
+| indirect: expected | 0 | 0 | yes |
+| indirect: null variance | 0 | 0 | yes |
+| indirect ratio | 0 | 0 | yes |
+| indirect rate x 100 (pprofR) against the rate in percent (pprof) | 7.11e-15 | 2.21e-16 | no |
+| direct: expected | 1.71e-12 | 2.64e-15 | no |
+| direct ratio | 2.66e-15 | 2.66e-15 | no |
+| direct rate x 100 against the rate in percent | 8.53e-14 | 2.5e-15 | no |
+| exact interval, indirect ratio, lower and upper | 1.86e-05 | 2.63e-05 | no |
+| exact interval, direct ratio, lower and upper | 1.78e-05 | 2.59e-05 | no |
+| score interval, indirect ratio, lower and upper | 1.41e-06 | 1.71e-06 | no |
+| score interval, direct ratio, lower and upper | 1.32e-06 | 1.72e-06 | no |
+| covariates, wald: statistic | 0 | 0 | yes |
+| covariates, wald: p-value | 9e-17 | 1.13e-12 | no |
+| covariates, wald: standard error | 0 | 0 | yes |
+| covariates, lr: statistic | 0 | 0 | yes |
+| covariates, lr: p-value | 0 | 0 | yes |
+| covariates, score: statistic | 5.12e-13 | 4.83e-15 | no |
+| covariates, score: p-value | 1.29e-18 | 2.58e-13 | no |
+
+## example: fits (7944 rows)
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| serbin, any, tol 1e-05: iterations (pprofR, pprof) | 8, 8 | | yes |
+| serbin, any, tol 1e-05 coefficients | 0 | 0 | yes |
+| serbin, any, tol 1e-05 provider effects | 0 | 0 | yes |
+| serbin, any, tol 1e-10: iterations (pprofR, pprof) | 13, 13 | | yes |
+| serbin, any, tol 1e-10 coefficients | 0 | 0 | yes |
+| serbin, any, tol 1e-10 provider effects | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-05: iterations (pprofR, pprof) | 8, 8 | | yes |
+| serbin, coefficients, tol 1e-05 coefficients | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-05 provider effects | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-10: iterations (pprofR, pprof) | 13, 13 | | yes |
+| serbin, coefficients, tol 1e-10 coefficients | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-10 provider effects | 0 | 0 | yes |
+| ban, any, tol 1e-05: iterations (pprofR, pprof) | 8, 8 | | yes |
+| ban, any, tol 1e-05 coefficients | 0 | 0 | yes |
+| ban, any, tol 1e-05 provider effects | 0 | 0 | yes |
+| ban, any, tol 1e-10: iterations (pprofR, pprof) | 11, 11 | | yes |
+| ban, any, tol 1e-10 coefficients | 0 | 0 | yes |
+| ban, any, tol 1e-10 provider effects | 0 | 0 | yes |
+| ban, coefficients, tol 1e-05: iterations (pprofR, pprof) | 11, 11 | | yes |
+| ban, coefficients, tol 1e-05 coefficients | 0 | 0 | yes |
+| ban, coefficients, tol 1e-05 provider effects | 0 | 0 | yes |
+| ban, coefficients, tol 1e-10: iterations (pprofR, pprof) | 22, 22 | | yes |
+| ban, coefficients, tol 1e-10 coefficients | 0 | 0 | yes |
+| ban, coefficients, tol 1e-10 provider effects | 0 | 0 | yes |
+| defaults: covariance of the coefficients | 0 | 0 | yes |
+| defaults: variance of the provider effects | 0 | 0 | yes |
+| defaults: log-likelihood | 0 | 0 | yes |
+| defaults: AIC, BIC | 0 | 0 | yes |
+| defaults: AUC | 0 | 0 | yes |
+
+## example: provider tests, intervals, and measures at the defaults
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| exact, two-sided p-value | 0 | 0 | yes |
+| exact, two-sided statistic | 0 | 0 | yes |
+| exact, two-sided flags differing | 0 of 100 | | |
+| exact, greater p-value | 0 | 0 | yes |
+| exact, greater statistic | 0 | 0 | yes |
+| exact, greater flags differing | 0 of 100 | | |
+| exact, less p-value | 0 | 0 | yes |
+| exact, less statistic | 0 | 0 | yes |
+| exact, less flags differing | 0 of 100 | | |
+| score (modified) p-value | 0 | 0 | yes |
+| score (modified) statistic | 0 | 0 | yes |
+| score (modified) flags differing | 0 of 100 | | |
+| Wald p-value | 0 | 0 | yes |
+| Wald statistic | 0 | 0 | yes |
+| Wald flags differing | 0 of 100 | | |
+| Wald standard error | 0 | 0 | yes |
+| bootstrap (seed 11, 2000 draws) p-value | 0 | 0 | yes |
+| bootstrap (seed 11, 2000 draws) statistic | 0 | 0 | yes |
+| bootstrap (seed 11, 2000 draws) flags differing | 0 of 100 | | |
+| exact interval of the effects, lower | 2.89e-05 | 4.04e-05 | no |
+| exact interval of the effects, upper | 3.01e-05 | 0.00234 | no |
+| score interval of the effects, lower | 3.05e-05 | 2.87e-05 | no |
+| score interval of the effects, upper | 3.03e-05 | 0.00741 | no |
+| wald interval of the effects, lower | 0 | 0 | yes |
+| wald interval of the effects, upper | 0 | 0 | yes |
+| indirect: expected | 0 | 0 | yes |
+| indirect: null variance | 0 | 0 | yes |
+| indirect ratio | 0 | 0 | yes |
+| indirect rate x 100 (pprofR) against the rate in percent (pprof) | 7.11e-15 | 2.38e-16 | no |
+| direct: expected | 3.46e-11 | 7.23e-15 | no |
+| direct ratio | 1.13e-14 | 7.25e-15 | no |
+| direct rate x 100 against the rate in percent | 4.41e-13 | 7.58e-15 | no |
+| exact interval, indirect ratio, lower and upper | 1.11e-05 | 1.4e-05 | no |
+| exact interval, direct ratio, lower and upper | 9.05e-06 | 1.38e-05 | no |
+| score interval, indirect ratio, lower and upper | 1.02e-05 | 1.2e-05 | no |
+| score interval, direct ratio, lower and upper | 9.22e-06 | 1.06e-05 | no |
+| covariates, wald: statistic | 0 | 0 | yes |
+| covariates, wald: p-value | 0 | 0 | yes |
+| covariates, wald: standard error | 0 | 0 | yes |
+| covariates, lr: statistic | 0 | 0 | yes |
+| covariates, lr: p-value | 0 | 0 | yes |
+| covariates, score: statistic | 5.46e-12 | 7.4e-15 | no |
+| covariates, score: p-value | 6.21e-167 | 2.73e-12 | no |
+
+## extreme: fits (1896 rows)
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| serbin, any, tol 1e-05: iterations (pprofR, pprof) | 7, 7 | | yes |
+| serbin, any, tol 1e-05 coefficients | 0 | 0 | yes |
+| serbin, any, tol 1e-05 provider effects | 0 | 0 | yes |
+| serbin, any, tol 1e-10: iterations (pprofR, pprof) | 8, 8 | | yes |
+| serbin, any, tol 1e-10 coefficients | 0 | 0 | yes |
+| serbin, any, tol 1e-10 provider effects | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-05: iterations (pprofR, pprof) | 8, 8 | | yes |
+| serbin, coefficients, tol 1e-05 coefficients | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-05 provider effects | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-10: iterations (pprofR, pprof) | 9, 9 | | yes |
+| serbin, coefficients, tol 1e-10 coefficients | 0 | 0 | yes |
+| serbin, coefficients, tol 1e-10 provider effects | 0 | 0 | yes |
+| ban, any, tol 1e-05: iterations (pprofR, pprof) | 7, 7 | | yes |
+| ban, any, tol 1e-05 coefficients | 0 | 0 | yes |
+| ban, any, tol 1e-05 provider effects | 0 | 0 | yes |
+| ban, any, tol 1e-10: iterations (pprofR, pprof) | 13, 13 | | yes |
+| ban, any, tol 1e-10 coefficients | 0 | 0 | yes |
+| ban, any, tol 1e-10 provider effects | 0 | 0 | yes |
+| ban, coefficients, tol 1e-05: iterations (pprofR, pprof) | 14, 14 | | yes |
+| ban, coefficients, tol 1e-05 coefficients | 0 | 0 | yes |
+| ban, coefficients, tol 1e-05 provider effects | 0 | 0 | yes |
+| ban, coefficients, tol 1e-10: iterations (pprofR, pprof) | 20, 20 | | yes |
+| ban, coefficients, tol 1e-10 coefficients | 0 | 0 | yes |
+| ban, coefficients, tol 1e-10 provider effects | 0 | 0 | yes |
+| defaults: covariance of the coefficients | 0 | 0 | yes |
+| defaults: variance of the provider effects | 0 | 0 | yes |
+| defaults: log-likelihood | 0 | 0 | yes |
+| defaults: AIC, BIC | 0 | 0 | yes |
+| defaults: AUC | 0 | 0 | yes |
+
+## extreme: provider tests, intervals, and measures at the defaults
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| exact, two-sided p-value | 6.88e-11 | 8.47e-10 | no |
+| exact, two-sided statistic | 1.83e-10 | 4.67e-09 | no |
+| exact, two-sided flags differing | 0 of 40 | | |
+| exact, greater p-value | 3.53e-11 | 8.22e-10 | no |
+| exact, greater statistic | 1.83e-10 | 9.75e-10 | no |
+| exact, greater flags differing | 0 of 40 | | |
+| exact, less p-value | 3.47e-11 | 1.69e-10 | no |
+| exact, less statistic | 2.1e-10 | 1.39e-09 | no |
+| exact, less flags differing | 0 of 40 | | |
+| score (modified) p-value | 7.02e-11 | 7.08e-10 | no |
+| score (modified) statistic | 1.47e-10 | 2.1e-09 | no |
+| score (modified) flags differing | 0 of 40 | | |
+| Wald p-value | 5.61e-11 | 1.23e-09 | no |
+| Wald statistic | 4.55e-10 | 1.92e-10 | no |
+| Wald flags differing | 0 of 40 | | |
+| Wald standard error | 8.12e-11 | 1.92e-10 | no |
+| bootstrap (seed 11, 2000 draws) p-value | 0 | 0 | yes |
+| bootstrap (seed 11, 2000 draws) statistic | 0 | 0 | yes |
+| bootstrap (seed 11, 2000 draws) flags differing | 0 of 40 | | |
+| exact interval of the effects, lower | 2.97e-05 | 6.43e-05 | no |
+| exact interval of the effects, upper | 3.01e-05 | 0.00097 | no |
+| score interval of the effects, lower | 2.17e-06 | 0.00342 | no |
+| score interval of the effects, upper | 2.14e-06 | 0.00011 | no |
+| wald interval of the effects, lower | 0 | 0 | yes |
+| wald interval of the effects, upper | 0 | 0 | yes |
+| indirect: expected | 0 | 0 | yes |
+| indirect: null variance | 0 | 0 | yes |
+| indirect ratio | 0 | 0 | yes |
+| indirect rate x 100 (pprofR) against the rate in percent (pprof) | 1.42e-14 | 2.57e-16 | no |
+| direct: expected | 2.5e-12 | 2.93e-15 | no |
+| direct ratio | 4e-15 | 2.83e-15 | no |
+| direct rate x 100 against the rate in percent | 1.35e-13 | 2.73e-15 | no |
+| exact interval, indirect ratio, lower and upper | 2.23e-05 | 2.03e-05 | no |
+| exact interval, direct ratio, lower and upper | 1.97e-05 | 2.05e-05 | no |
+| score interval, indirect ratio, lower and upper | 1.45e-06 | 1.68e-06 | no |
+| score interval, direct ratio, lower and upper | 1.31e-06 | 1.67e-06 | no |
+| covariates, wald: statistic | 0 | 0 | yes |
+| covariates, wald: p-value | 1.11e-16 | 5.65e-13 | no |
+| covariates, wald: standard error | 0 | 0 | yes |
+| covariates, lr: statistic | 0 | 0 | yes |
+| covariates, lr: p-value | 0 | 0 | yes |
+| covariates, score: statistic | 1.28e-13 | 3.82e-15 | no |
+| covariates, score: p-value | 5.12e-18 | 6.61e-14 | no |
+
+extreme: 76 of 1896 null probabilities below 1e-10 (pprof clamps them to 1e-10 in the exact, bootstrap, and score tests; pprofR does not).

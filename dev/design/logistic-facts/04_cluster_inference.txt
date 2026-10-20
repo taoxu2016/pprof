@@ -1,0 +1,43 @@
+# 04: cluster-level inference against sandwich and plain-R formulas
+
+pprofR 0.2.0, sandwich 3.1.3, R version 4.4.0 (2024-04-24 ucrt).
+
+## binary: 1642 rows, 642 clusters, 30 providers
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| (a) coefficients against glm() | 3.33e-16 | 8.15e-16 | no |
+| (a) robust standard errors of the coefficients against vcovCL() | 2.19e-12 | 2.24e-11 | no |
+| (a) robust over model-based standard error of the coefficients | 1.011, 1.006, 1.012 | | |
+| (b) robust standard errors of the effects against sqrt(V_i) / I_i | 1.67e-16 | 3.73e-16 | no |
+| (b) against the full sandwich's (vcovCL()), ratio: median, range | 0.9915, 0.9676 to 1.0140 | | |
+| (b) model-based Wald standard error over the full model-based variance's (vcov(glm)), median | 1.000000 | | |
+| (c) robust score statistic against U_i / sqrt(V_i) | 0 | 0 | yes |
+| (c) stabilized score statistic | 2.22e-16 | 1.77e-16 | no |
+| (c) stabilized Wald standard error | 2.22e-16 | 4.68e-16 | no |
+| (c) flags (model-based score, robust score, stabilized score): providers flagged | 4, 3, 3 | | |
+| (d) rows reversed within clusters: robust score statistic | 4.44e-16 | 5.57e-16 | no |
+| (d) rows reversed within clusters: stabilized score statistic | 0.0133 | 0.00953 | no |
+| (d) one cluster label in two providers: robust standard errors of the coefficients, pprofR against vcovCL() by label | 0.000266 | | |
+| (d) the same against vcovCL() by provider and label | 2.24e-11 | | |
+
+## binomial (5 to 20 trials a row): 1642 rows, 642 clusters, 30 providers
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| (a) coefficients against glm() | 6.62e-11 | 1.75e-10 | no |
+| (a) robust standard errors of the coefficients against vcovCL() | 5.78e-12 | 1.45e-10 | no |
+| (a) robust over model-based standard error of the coefficients | 1.360, 1.380, 1.314 | | |
+| (b) robust standard errors of the effects against sqrt(V_i) / I_i | 8.33e-17 | 5.44e-16 | no |
+| (b) against the full sandwich's (vcovCL()), ratio: median, range | 0.9947, 0.9769 to 1.0189 | | |
+| (b) model-based Wald standard error over the full model-based variance's (vcov(glm)), median | 1.000000 | | |
+| (c) robust score statistic against U_i / sqrt(V_i) | 0 | 0 | yes |
+| (c) stabilized score statistic | 8.88e-16 | 2.91e-16 | no |
+| (c) stabilized Wald standard error | 8.33e-17 | 5.48e-16 | no |
+| (c) flags (model-based score, robust score, stabilized score): providers flagged | 19, 12, 12 | | |
+| (d) rows reversed within clusters: robust score statistic | 0 | 0 | yes |
+| (d) rows reversed within clusters: stabilized score statistic | 0.0133 | 0.00451 | no |
+| (d) one cluster label in two providers: robust standard errors of the coefficients, pprofR against vcovCL() by label | 0.00105 | | |
+| (d) the same against vcovCL() by provider and label | 1.42e-10 | | |
+
+Screening with cutoff = 10 on 60 providers: 27 kept counting clusters, 54 counting rows.

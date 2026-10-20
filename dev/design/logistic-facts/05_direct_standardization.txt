@@ -1,0 +1,34 @@
+# 05: the direct standardization algorithm
+
+pprofR 0.2.0, pprof 2.0.0, R version 4.4.0 (2024-04-24 ucrt); long double of 16 bytes.
+
+## (a) Accuracy against R's long-double sum of plogis()
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| continuous: pprofR against pprof | 2.54e-08 | 1.27e-13 | no |
+| continuous: pprof against the reference | 2.54e-08 | 1.27e-13 | no |
+| continuous: pprofR against the reference | 1.46e-11 | 2.11e-16 | no |
+| continuous: pprofR's sum of p (1 - p) against the reference, plogis(x) plogis(-x) | 7.28e-12 | 1.91e-16 | no |
+| continuous, trials 1 to 30: pprofR against the reference | 4.66e-10 | 1.5e-16 | no |
+| categorical: pprofR against pprof | 2.35e-07 | 3.68e-12 | no |
+| categorical: pprof against the reference | 2.35e-07 | 3.68e-12 | no |
+| categorical: pprofR against the reference | 1.75e-10 | 1.08e-15 | no |
+| categorical: pprofR's sum of p (1 - p) against the reference, plogis(x) plogis(-x) | 5.09e-11 | 1.73e-15 | no |
+| categorical, trials 1 to 30: pprofR against the reference | 5.82e-10 | 6.29e-16 | no |
+
+## (b) The complement n - E, for effects with a direct rate near 1
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| continuous: pprof, n - E | 4.52e-08 | 0.0118 | no |
+| continuous: pprofR, n - E | 7.27e-12 | 1.9e-06 | no |
+| categorical: pprof, n - E | 4.8e-07 | 0.188 | no |
+| categorical: pprofR, n - E | 9.92e-12 | 3.4e-06 | no |
+
+## (c) Time, 2,000 effects over 200,000 rows, one thread (medians of 3, interleaved)
+
+| Linear predictor | Distinct values | pprof (s) | pprofR (s) | Ratio |
+|---|---|---|---|---|
+| continuous | 200000 | 19.59 | 0.730 | 26.8 |
+| categorical | 8 | 25.39 | 0.010 | 2539.0 |

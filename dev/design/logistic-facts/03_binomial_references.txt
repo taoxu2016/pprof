@@ -1,0 +1,83 @@
+# 03: binomial outcomes against glm() and the expanded binary data
+
+pprofR 0.2.0, pprof 2.0.0, R version 4.4.0 (2024-04-24 ucrt).
+
+## (a) pprofR against glm(cbind(y, n - y) ~ 0 + provider + x): 953 rows, 12072 trials, 30 providers
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| pprofR iterations (stop = "beta", tol 1e-13); glm() iterations | 6; 5 | | |
+| coefficients | 4.44e-16 | 1.04e-15 | no |
+| provider effects | 6.66e-16 | 7.62e-15 | no |
+| covariance of the coefficients | 4.65e-13 | 1.42e-09 | no |
+| variance of the provider effects | 9.45e-11 | 3.82e-09 | no |
+| log-likelihood + sum(lchoose(n, y)) against logLik() | 2.27e-13 | 1.14e-16 | no |
+| BIC: pprofR counts 953 rows; the expanded binary data have 12072 observations | | | |
+
+## (b) pprofR on the binomial rows against pprof on the 12072 expanded binary rows
+
+| Quantity | Largest absolute difference | Largest relative difference | Identical |
+|---|---|---|---|
+| serbin, coefficients, tol 1e-05: iterations (pprofR, pprof expanded) | 4, 4 | | yes |
+| serbin, coefficients, tol 1e-05 coefficients | 3.89e-16 | 1.16e-15 | no |
+| serbin, coefficients, tol 1e-05 provider effects | 4.44e-16 | 7e-15 | no |
+| serbin, coefficients, tol 1e-10: iterations (pprofR, pprof expanded) | 5, 5 | | yes |
+| serbin, coefficients, tol 1e-10 coefficients | 3.94e-11 | 9.22e-11 | no |
+| serbin, coefficients, tol 1e-10 provider effects | 1.12e-09 | 6.5e-10 | no |
+| serbin, any, tol 1e-05: iterations (pprofR, pprof expanded) | 3, 3 | | yes |
+| serbin, any, tol 1e-05 coefficients | 1.67e-16 | 4.95e-16 | no |
+| serbin, any, tol 1e-05 provider effects | 3.33e-16 | 9e-16 | no |
+| serbin, any, tol 1e-10: iterations (pprofR, pprof expanded) | 4, 4 | | yes |
+| serbin, any, tol 1e-10 coefficients | 3.89e-16 | 1.16e-15 | no |
+| serbin, any, tol 1e-10 provider effects | 4.44e-16 | 7e-15 | no |
+| serbin, coefficients, tol 1e-05, no backtracking: iterations (pprofR, pprof expanded) | 4, 4 | | yes |
+| serbin, coefficients, tol 1e-05, no backtracking coefficients | 3.89e-16 | 1.16e-15 | no |
+| serbin, coefficients, tol 1e-05, no backtracking provider effects | 4.44e-16 | 7e-15 | no |
+| serbin, coefficients, tol 1e-10, no backtracking: iterations (pprofR, pprof expanded) | 5, 5 | | yes |
+| serbin, coefficients, tol 1e-10, no backtracking coefficients | 1.67e-16 | 4.95e-16 | no |
+| serbin, coefficients, tol 1e-10, no backtracking provider effects | 4.44e-16 | 1.17e-15 | no |
+| tol 1e-10: covariance of the coefficients | 1.12e-13 | 2.03e-10 | no |
+| tol 1e-10: variance of the provider effects | 1.52e-11 | 7.5e-10 | no |
+| tol 1e-10: log-likelihood | 0 | 0 | yes |
+| exact, two-sided p-value | 4.74e-11 | 11.1 | no |
+| exact, two-sided statistic | 0.312 | 0.0388 | no |
+| exact, two-sided flags differing | 0 of 30 | | |
+| exact, greater p-value | 2.33e-11 | 2.84e+293 | no |
+| exact, greater statistic | 0.0617 | 0.00809 | no |
+| exact, greater flags differing | 0 of 30 | | |
+| score (modified) p-value | 4.69e-11 | 9.27e-10 | no |
+| score (modified) statistic | 1.51e-10 | 3.43e-09 | no |
+| score (modified) flags differing | 0 of 30 | | |
+| Wald p-value | 7.92e-11 | 1.67e-07 | no |
+| Wald statistic | 5.67e-09 | 4.29e-09 | no |
+| Wald flags differing | 0 of 30 | | |
+| Wald standard error | 5.34e-11 | 3.75e-10 | no |
+| exact, two-sided, a provider far in a tail: p-values 1.17e-14 and 9.64e-16, statistics 7.72 and 8.031 | | | |
+| exact, two-sided, a provider far in a tail: p-values 5.35e-14 and 3.95e-14, statistics -7.523 and -7.563 | | | |
+| exact, two-sided, a provider far in a tail: p-values 4.2e-16 and 5.42e-16, statistics 8.133 and 8.102 | | | |
+| exact interval of the effects, lower and upper | 2.98e-05 | 0.000147 | no |
+| score interval of the effects, lower and upper | 8.24e-07 | 4.09e-06 | no |
+| wald interval of the effects, lower and upper | 1.23e-09 | 7.03e-10 | no |
+| indirect: expected | 1.49e-09 | 1.09e-11 | no |
+| indirect: null variance | 1.05e-09 | 1.41e-11 | no |
+| indirect ratio | 1.38e-11 | 1.09e-11 | no |
+| indirect rate x 100 against the rate in percent | 3.91e-10 | 1.09e-11 | no |
+| direct: expected | 1.59e-06 | 9.31e-10 | no |
+| direct ratio | 4.66e-10 | 9.31e-10 | no |
+| direct rate x 100 against the rate in percent | 1.32e-08 | 9.31e-10 | no |
+| exact interval of the indirect and direct ratios | 2.42e-05 | 2.21e-05 | no |
+| score interval of the indirect and direct ratios | 4.55e-07 | 6.88e-07 | no |
+| covariates, wald: statistic | 8.14e-10 | 6.46e-11 | no |
+| covariates, lr: statistic | 9.77e-07 | 1.16e-08 | no |
+| covariates, score: statistic | 0.00444 | 4.87e-05 | no |
+
+The covariate likelihood-ratio and score tests refit the null models: pprofR with the fit's settings, pprof with its defaults (D-10), here stop_rule "any" and tol 1e-5 against the fit's "coefficients" and 1e-10.
+
+## (c) The exact test of one provider with many trials
+
+| Rows | Trials per row | Trials | poibin on the trials (s) | convolution of binomials (s) | mid-p, poibin | mid-p, convolution |
+|---|---|---|---|---|---|---|
+| 50 | 20 | 1000 | 0.08 | 0.020 | 0.516328885874308 | 0.516328885874336 |
+| 50 | 100 | 5000 | 1.64 | 0.160 | 0.649367696702081 | 0.64936769670235 |
+| 100 | 200 | 20000 | 34.20 | 13.810 | 0.541786973453373 | 0.541786973454199 |
+| 200 | 250 | 50000 | 234.47 | 75.100 | 0.36549297728218 | 0.365492977286457 |

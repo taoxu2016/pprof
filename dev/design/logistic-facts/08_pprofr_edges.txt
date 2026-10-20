@@ -1,0 +1,21 @@
+# 08: pprofR at the edges of its features
+
+pprofR 0.2.0, R version 4.4.0 (2024-04-24 ucrt).
+
+| Input | What pprofR does |
+|---|---|
+| an outcome above its number of trials | fit returned: 5 iterations, coefficients 0.4681, -0.3678, 0.3523 |
+| non-integer numbers of trials | fit returned: 5 iterations, coefficients 0.4865, -0.4084, 0.3693 |
+| rows with 0 trials | fit returned: 5 iterations, coefficients 0.4856, -0.3941, 0.3772 |
+| a negative number of trials | fit returned: 5 iterations, coefficients 0.4848, -0.4035, 0.368 |
+| a missing number of trials, with check = TRUE | error: 0.17% of all observations are missing! (warning: 1 out of 604 in 'N' missing!) |
+| the same with check = FALSE | error: solve(): solution not found |
+| a provider whose outcomes equal their trials (all events) | flagged all.events: TRUE; its effect 7.646, the median -0.6627 |
+| no covariates | prepared |
+| the AUC with trials | NA (warning: AUC is only defined for binary outcomes (N = 1); returning NA.) |
+| one covariate: the likelihood-ratio test | error: The 'lr' and 'score' tests need at least two covariates. |
+| the standard score test (score_modified = FALSE) | error: The standard score test (score_modified = FALSE) was removed in pprofR 0.2.0; test = 'score' keeps beta fixed. |
+| a clustered test without a cluster column | error: Argument 'test' = 'robust_wald' requires 'PatientID' in the data! |
+| every provider one cluster: robust score statistics | -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, -1 |
+| every provider one cluster: robust Wald statistics | -1.27e+15, -2.73e+15, -1.22e+15, -1.7e+15, -1.63e+15, -2.08e+15, -4.44e+15, -2.58e+15, -2.1e+15, -3.55e+15, -2.07e+15, -4.02e+10 |
+| a cluster of 5,001 rows: the stabilized score test | error: The stabilized tests pool a matrix over the rows of a patient; the largest patient has 5001 rows. |
