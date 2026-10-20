@@ -426,6 +426,17 @@ Phase 0 sketched a Cox model with explicit provider effects, λ_ij(t) = λ0(t) e
 
 The random-effect models delegate their estimation to lme4 and the Cox models to survival and glmnet, each through an adapter (the lme4 section of `R/model-mixed.R`, `R/model-survival.R`, `R/model-glmnet.R`) that holds every call fitting a model or preparing the engine's inputs; the model files call the engine's user-level functions only on objects the adapter built (survival's `survfit()` for the curves). The rules the adapters follow, which a later model with a delegated engine follows too, are in `dev/DEVELOPER_GUIDE.md` ("Delegated engines") and, for model authors, the vignette "Adding a model to pprof": call the engine as its user-level function calls it, so that the results are that function's bitwise; take what the package needs beyond the fit from the engine's own routines; make every setting explicit; classify the engine's errors and warnings; check what the engine does not; keep the engine's object only with `keep_data = TRUE`; pin the engine versions relied upon; and test the adapter against a direct call of the engine, bitwise.
 
+### E.8 Binomial outcomes and cluster-level inference, as planned
+
+The logistic extensions phase (`dev/logistic_brief.md`; DEC-143) brings the features of pprofR 0.2.0 (commit `f23c288`) into the logistic fixed-effect model and its profiling: binomial outcomes, cluster-level inference, the extensions of standardization, and a test of a standardized measure. Its design is `dev/design/LOGISTIC_DESIGN.md` (Phase L0); in brief:
+
+- **The data layer** takes a column of trials and screens by clusters (`data_prepare(trials, screen_clusters)`), each only when given; trials that are all 1 are the binary data (DEC-146).
+- **The model** keeps its class, `pprof_logistic_fe`, with the trials, the cluster codes, and the robust covariance of the coefficients as fields present only when used; a binomial engine path in C++ beside the binary functions, which are not edited (DEC-148).
+- **The contract** gains `observation_trials()`, `trial_probability()`, and `observation_clusters()`; the profiling and inference layers take binomial and clustered branches in new functions; and models with clusters declare the capabilities `variance_robust` and `variance_stabilized` (DEC-147, DEC-149).
+- **Standardization** gains standard errors of direct measures, a rates' denominator, supplied effects, the exported `direct_expected()`, and the merged algorithm for every direct measure of the new interface, the deprecated functions keeping pprof 1.0.3's sums (DEC-151); `test_measures()` tests a standardized measure.
+
+As for the Cox models, §E.4's rule that a new model changes no other file does not apply: the features extend an existing model and the shared layers, each through a hook whose default is the current behavior, which the `data_prepare()` snapshot and the reference suite show unchanged at every commit.
+
 ---
 
 ## F. R/C++ boundary

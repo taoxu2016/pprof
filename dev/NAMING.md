@@ -335,3 +335,44 @@ Phase C5 added, with the Fine–Gray model and the cause-specific models (`dev/d
 - The family specification has `family = "fine_gray"`, with the fit's settings `cause`, `id`, `ties`, `weights`, `max_iter`, `tol`, and `keep_data`.
 - The constant in `R/constants.R` is `fine_gray_chunk_providers`, the providers per `finegray()` call (DEC-122).
 - The survival adapter's Fine–Gray functions are `survival_fine_gray_*()` in `R/model-survival.R`, and `survival_finegray_call()`, named after survival's `finegray()`, which it calls; the model's own helpers are `fine_gray_*()` in `R/model-fine-gray.R`.
+
+## 11. The logistic extensions phase
+
+Names added by the logistic extensions phase (Phase L0, DEC-145; `dev/design/LOGISTIC_DESIGN.md` §B and §D). They extend the sections above, which they follow; pprofR's names (`N`, `PatientID`, `N_pop`, `test_SM()`, `SR_output()`, `direct_exp()`) are not carried over.
+
+Functions:
+
+| Role | Name |
+|---|---|
+| Test a standardized measure against a reference value | `test_measures()` |
+| Direct standardization over a standard population with per-row weights (the building block) | `direct_expected()` |
+| The trials of each observation, or `NULL` (model contract) | `observation_trials()` |
+| Each observation's probability of an event in one trial for a given provider effect (model contract) | `trial_probability()` |
+| The cluster of each observation, or `NULL` (model contract) | `observation_clusters()` |
+
+Arguments, in §4's order:
+
+| Concept | Name | Type and values | Default |
+|---|---|---|---|
+| Trials of each row (binomial outcomes) | `trials` | string naming a column of `data`, or `NULL` | `NULL` (one trial per row) |
+| Clusters of rows (logistic fixed effects) | `cluster` | string naming a column of `data`, or `NULL` | `NULL` |
+| The standard errors of tests, intervals, and measures | `se_type` | `"model"`, `"robust"`, `"stabilized"` | `"model"`; `NULL` in `standardize_providers()` |
+| The rates' denominator | `rate_denominator` | positive number, or `NULL` | `NULL` (the trials of the included rows) |
+| Provider effects supplied for direct standardization | `effects` | numeric vector named by provider ID, or `NULL` | `NULL` |
+| The reference value of a measure's test | `reference` | number, one per provider, or `NULL` | `NULL` (1 for ratios, the population rate for rates) |
+| The scale of a measure's test | `transform` | `"identity"`, `"logit"` | `"identity"` |
+| The null distribution of a measure's test | `null_location`, `null_scale` | number; positive number | `0`, `1` |
+| Linear predictors and weights of a standard population | `linear_predictor`, `weights` | numbers; non-negative numbers or `NULL` | required; `NULL` (all 1) |
+| Screening by clusters (data layer) | `screen_clusters` | `TRUE`/`FALSE` | `FALSE` |
+
+Classes: `c("pprof_measure_tests", "pprof_result")`, built by `test_measures()`. A logistic fixed-effect model with trials or clusters keeps its class.
+
+Fields: the model's `trials` (each observation's trials), `cluster` (each observation's code of its (provider, label) pair), and `robust_vcov` (the cluster-robust covariance of the coefficients), each present only when used; `spec$trials` and `spec$cluster`, the columns' names; the provider table's `n_trials` and `n_clusters`; the measures tables' `std_error`; the settings `se_type`, `rate_denominator`, and `supplied` where used. The family specification adds the optional field `direct_moments`, and the model setting `spec$direct_algorithm` (`"rows"` for the deprecated functions' models, DEC-151).
+
+Capabilities: `variance_robust` and `variance_stabilized`.
+
+Conditions: no new class; providers with one cluster and negative stabilized variances warn with `pprof_warning_undefined_statistics` (§6), which carries `providers`.
+
+Constants in `R/constants.R`: `stabilized_max_cluster_rows` (5,000).
+
+Internal helpers: the data layer's `data_trials()`, `data_check_events()`, and `data_cluster_counts()`; the inference layer's `infer_cluster_*()` and `infer_stabilized_*()` in `R/inference-clustered.R`; the C++ functions `fit_serbin_binomial()`, `fit_ban_binomial()`, `logistic_fe_variance_binomial()`, `standard_score_test_binomial()`, `core::binomial_loglik()`, `core::cross_block_weighted()`, and their adapters `cpp_logistic_*_binomial()`; from L4, `direct_moments()` and `cpp_logistic_direct_moments()`.

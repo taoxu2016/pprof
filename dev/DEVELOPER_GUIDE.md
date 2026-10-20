@@ -29,6 +29,7 @@ The Cox models, added in the CoxPH phase (`dev/coxph_brief.md`, whose §3 is the
 | Large validations | `validation/`: the full reference suite (`run-reference.R`), the Cox comparisons with their margins (`run-cox-reference.R`, DEC-135), differential tests against pprof 1.0.3 (`run-differential.R`), and the simulation study (`run-simulation.R`, every family, the Cox model's tests among them), with their reports |
 | Benchmarks | `dev/bench/` (`README.md`), and the Cox benchmarks in `dev/bench/cox/`, paired against the engine calls (DEC-105); results in `dev/bench/results/` |
 | The CoxPH phase's records | the brief (`dev/coxph_brief.md`), the status log (`dev/COXPH_STATUS.md`), the design (`dev/design/COXPH_DESIGN.md`), each phase's plan (`dev/design/COXPH_C<n>_PLAN.md`), the evidence behind them (`dev/design/coxph-facts/`), and the final review (`dev/design/COXPH_FINAL_REVIEW.md`) |
+| The logistic extensions phase's records | the brief (`dev/logistic_brief.md`), the status log (`dev/LOGISTIC_STATUS.md`), the design (`dev/design/LOGISTIC_DESIGN.md`), each later phase's plan (`dev/design/LOGISTIC_L<n>_PLAN.md`), and the evidence behind them (`dev/design/logistic-facts/`) |
 | Open questions, history | `dev/OPEN_QUESTIONS.md` (questions for the methodology owners); the rewrite's working documents are in the history (`dev/README.md`) |
 | User documentation | help pages from roxygen2 comments (`man/` is generated), the vignettes in `vignettes/`, the README, and the pkgdown site configured in `_pkgdown.yml` |
 
