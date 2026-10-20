@@ -173,7 +173,13 @@ lines <- c(lines, "", "## The register's CoxPH entries", "")
 if (file.exists(register)) {
   text <- readLines(register, warn = FALSE)
   start <- grep("^## The CoxPH phase", text)
-  section <- if (length(start)) text[start[1]:length(text)] else character()
+  section <- character()
+  if (length(start)) {
+    # The CoxPH section runs to the register's next section (the logistic extensions phase's follows it).
+    headings <- grep("^## ", text)
+    end <- c(headings[headings > start[1]], length(text) + 1L)[[1]] - 1L
+    section <- text[start[1]:end]
+  }
   entries <- grep("^\\| D-[0-9]+ \\|", section, value = TRUE)
   cells <- lapply(strsplit(entries, "|", fixed = TRUE), function(x) trimws(x[-1]))
   # A Class B entry decided under the delegation, or marked awaiting, awaits a methodology owner until the register
