@@ -14,15 +14,14 @@ Version 2.0.0 is the completed rewrite of pprof 1.0.3 (CRAN, commit `5260838`): 
 
 ## Current phase
 
-The CoxPH phase (Phases C0 to C6), which added Cox proportional hazards models following `pprof_py` v0.7.0 with estimation delegated to `survival` and `glmnet` (DEC-086), is complete and in `main`; its final review is `dev/design/COXPH_FINAL_REVIEW.md`.
+The logistic extensions phase brings the features of pprofR 0.2.0 (commit `f23c288`), a fork of the logistic fixed-effect model, into pprof: binomial outcomes, cluster-level inference, extensions of standardization, and a test of the standardized measure (DEC-143). Phases L0 to L5, one branch each (`logistic/phase-<n>`); the status document names the current phase and the next step.
 
-The next phase, the logistic extensions phase, brings the features of pprofR 0.2.0 (commit `f23c288`), a fork of the logistic fixed-effect model, into pprof. It starts with its brief, `dev/logistic_brief.md`, which awaits the project lead's approval; its evidence is in `dev/design/logistic-facts/`, and its branches are `logistic/phase-<n>`.
+- The brief, `dev/logistic_brief.md` (approved 2026-10-20): requirements, the equivalence contract, phases and gates, and the questions, decided as recommended (DEC-144).
+- The status document, `dev/LOGISTIC_STATUS.md`: the dated log of the phase, naming the next step.
+- The design, `dev/design/LOGISTIC_DESIGN.md` (Phase L0), and each later phase's plan, `dev/design/LOGISTIC_L<n>_PLAN.md`.
+- The evidence behind the brief, the design, and the plans: `dev/design/logistic-facts/`.
 
-The record of the CoxPH phase:
-
-- The brief, `dev/coxph_brief.md` (approved 2026-10-07), and the status log, `dev/COXPH_STATUS.md`.
-- The design, `dev/design/COXPH_DESIGN.md` (kept as built), and each phase's plan, `dev/design/COXPH_C<n>_PLAN.md`.
-- The evidence behind the brief and the plans: `dev/design/coxph-facts/`.
+The CoxPH phase (Phases C0 to C6), which added Cox proportional hazards models following `pprof_py` v0.7.0 with estimation delegated to `survival` and `glmnet` (DEC-086), is complete and in `main`. Its record: the brief, `dev/coxph_brief.md`; the status log, `dev/COXPH_STATUS.md`; the design, `dev/design/COXPH_DESIGN.md`, kept as built, with each phase's plan, `dev/design/COXPH_C<n>_PLAN.md`; the evidence, `dev/design/coxph-facts/`; and the final review, `dev/design/COXPH_FINAL_REVIEW.md`.
 
 ## Source documents
 
@@ -50,12 +49,13 @@ Code comments and the registers cite the rewrite's brief (`brief §…`), PROJEC
 
 - The statistical behavior of the existing models is the specification: pprof 1.0.3's, as the reference fixtures freeze it, with the exceptions decided in `dev/DISCREPANCIES.md`. This covers estimates and iteration paths, variances, tests, p-values, intervals, standardization formulas, flags, screening and inclusion, provider ordering, defaults (thread counts excepted), and the conventions in `dev/CONVENTIONS.md`.
 - For the Cox models of the CoxPH phase, the specification is `pprof_py` v0.7.0's behavior (commit `9320766`), with the exceptions decided in `dev/DISCREPANCIES.md`; the brief's §3 is the equivalence contract, and its Appendix B lists `pprof_py` defects not to reproduce.
+- For the features of the logistic extensions phase, the specification is pprofR 0.2.0's behavior (commit `f23c288`), with the exceptions decided in `dev/DISCREPANCIES.md`; `dev/logistic_brief.md` §3 is the equivalence contract, and its Appendix B lists pprofR defects not to reproduce. Binary outcomes keep pprof's results bitwise.
 - Every behavioral difference in an existing model goes in `dev/DISCREPANCIES.md` with a class:
   - A: the reference crashes, errors, returns `NULL`, misaligns results with provider IDs, or is nondeterministic. May be fixed, with a regression test.
   - B: any change to a number, flag, inclusion decision, or default. Don't make it. Reproduce the reference, record the proposal, and flag it for written sign-off by a methodology owner.
   - C: documentation or messages contradict behavior. Fix the documentation or message to match the behavior.
 - Never resolve a discrepancy by loosening a tolerance, editing a fixture, or dropping a test case.
-- Fixtures under `tests/testthat/fixtures/reference/` (pprof 1.0.3) and `tests/testthat/fixtures/cox/` (`pprof_py` v0.7.0 and pinned R packages) come only from the committed generators in `dev/reference/`. Never edit them by hand. Regenerate them only with my explicit approval, and produce a diff report.
+- Fixtures under `tests/testthat/fixtures/` and `validation/fixtures/` (`reference/` from pprof 1.0.3, `cox/` from `pprof_py` v0.7.0 and pinned R packages, `pprofr/` from pprofR 0.2.0) come only from the committed generators in `dev/reference/`. Never edit them by hand. Regenerate them only with my explicit approval, and produce a diff report.
 - New models and statistical methods enter only as an approved phase brief specifies them, through the model contract (`dev/DEVELOPER_GUIDE.md`), with the validation the brief names. Random-effect and CRE models keep delegating estimation to lme4.
 - Stop at every phase gate: run `/phase-gate`, report, and wait for my explicit approval. Never start the next phase on your own.
 - pprof is a general-purpose package and the fork is public: no detail of how any group uses it or pprofR in production (named measures, their conventions, parameter values, and tolerances, internal scripts, or people) goes into any file, commit message, branch name, or pull request. Describe features in general statistical terms with synthetic data, refer to the source only as "pprofR 0.2.0 (commit `f23c288`)", and search each diff for such terms before committing.

@@ -19,8 +19,14 @@
       "Bash(rm -rf *)",
       "Bash(Rscript dev/reference/*)",
       "Edit(/dev/coxph_brief.md)",
+      "Edit(/dev/logistic_brief.md)",
       "Edit(/CLAUDE.md)"
     ],
-    "deny": ["Edit(/tests/testthat/fixtures/reference/**)", "Edit(/tests/testthat/fixtures/cox/**)"]
+    "deny": [
+      "Edit(/tests/testthat/fixtures/reference/**)",
+      "Edit(/tests/testthat/fixtures/cox/**)",
+      "Edit(/tests/testthat/fixtures/pprofr/**)",
+      "Edit(/validation/fixtures/pprofr/**)"
+    ]
   }
 }
