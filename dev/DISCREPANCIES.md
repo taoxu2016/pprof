@@ -1292,3 +1292,287 @@ D-76 is not used: the CoxPH C3 plan reserved it for M-39's normal funnel limits,
 - Decision owner: project lead; decided (1) (2026-10-15, the C5 plan's decision 8, DEC-128).
 - Status: verified (2026-10-14); decided; implemented in C5 (2026-10-15).
 - Regression test: "the model declares coefficient inference only (M-41, D-81)" (`tests/testthat/test-model-fine-gray.R`): the outputs not given raise.
+
+## The logistic extensions phase: differences from pprofR 0.2.0
+
+The features of the logistic extensions phase (binomial outcomes, cluster-level inference, the extensions of standardization, the test of a measure) follow pprofR 0.2.0 (commit `f23c288`; DEC-143), not pprof 1.0.3, which has none of them. The classes above apply with pprofR as the reference (`dev/logistic_brief.md` §3.4), except D-89, a change of existing results whose reference is pprof 1.0.3. The defects found in pprofR while writing the brief (its Appendix B, B1 to B6) are registered here. Every Class B entry was decided by the project lead as methodology owner on 2026-10-20 (DEC-144, M-16, DEC-142). Minimal examples are the scripts in `dev/design/logistic-facts/`, run against pprofR built from `f23c288`; code locations in pprofR are `R/<file>:line` and `src/Fixed_effect.cpp:line` at that commit. Each entry's regression test is planned for the phase that builds it (`dev/design/LOGISTIC_DESIGN.md` §K) and recorded here when written.
+
+| ID | Component | Class | Status | One line |
+|---|---|---|---|---|
+| D-82 | Null probabilities of the binomial tests | B | decided: pprof's clamp; signed off 2026-10-20 (DEC-144) | pprofR does not clamp the null probabilities of its exact, bootstrap, and score tests to [1e-10, 1 − 1e-10] |
+| D-83 | SerBIN's cross block | B | decided: unfloored, as K-12; signed off 2026-10-20 (DEC-144) | pprofR floors the weights of the cross block at 1e-20 where pprof does not |
+| D-84 | Model-based standard errors of provider effects | B | decided: K-20's; signed off 2026-10-20 (DEC-144) | pprofR's Wald test takes them from a routine of its own, at unclamped probabilities |
+| D-85 | Root finder of the exact and score intervals | B | decided: K-90's; signed off 2026-10-20 (DEC-144) | pprofR solves with `uniroot(tol = 1e-8)` in brackets of its own; the limits move by up to 3e-5 |
+| D-86 | Score interval of providers with only events | B | decided: K-90's floor of each weight; signed off 2026-10-20 (DEC-144) | pprofR floors the sum of the weights at 1e-20 instead |
+| D-87 | Scale of rates | B | decided: percent; signed off 2026-10-20 (DEC-144) | pprofR's rates are proportions clipped to [0, 1], pprof's percentages clipped to [0, 100] |
+| D-88 | Default stopping rule | B | decided: `"any"`; signed off 2026-10-20 (DEC-144) | pprofR's default is `"beta"` (pprof's `"coefficients"`); pprof's is `"any"` |
+| D-89 | Direct standardization of the new interface (against pprof 1.0.3) | B | decided: the merged algorithm; signed off 2026-10-20 (DEC-144); to be built in L4 | every direct measure of the new interface moves by rounding, up to 4e-12 relative; the deprecated functions keep pprof 1.0.3's sums |
+| D-90 | Null refits of the covariate likelihood-ratio and score tests | B | decided: pprof's defaults (D-10); signed off 2026-10-20 (DEC-144) | pprofR refits with the fit's own settings |
+| D-91 | Likelihood-ratio and score tests with one covariate | A | decided: pprof's (DEC-084) | pprofR raises an error for both; pprof computes the likelihood-ratio test and keeps D-30's error for the score test |
+| D-92 | Invalid binomial input | A | decided: classed errors | pprofR fits events above the trials and non-integer or negative trials silently (B1) |
+| D-93 | Missing values | A | decided: listwise deletion | pprofR stops with its checks on and fails in its solver with them off (B2) |
+| D-94 | Providers with a single cluster | B | decided: missing robust results with a classed warning; signed off 2026-10-20 (DEC-144) | pprofR's robust Wald statistics are of order 1e15 and its robust score statistics ±1 (B3) |
+| D-95 | Negative stabilized variances | Presentation | decided | pprofR returns a missing statistic after R's own NaN warning; pprof returns it with a classed warning |
+| D-96 | Clusters too large for the stabilized tests | Presentation | decided | pprofR stops with a plain error beyond 5,000 rows; pprof raises a classed one at the same limit |
+| D-97 | Row order within providers | none (rounding) | decided | pprofR sorts a provider's rows by cluster label, pprof keeps their input order; the sums differ by rounding |
+| D-98 | Robust covariance of the coefficients | none (does not arise) | decided | pprofR assembles a matrix that is not symmetric (B5); only its diagonal, which pprof's symmetric sandwich shares, is reported |
+| D-99 | Provider effects supplied by the caller | A | decided: an `effects` argument for direct standardization | replacing the fit's effects breaks pprofR's indirect standardization and moves its median null (B4) |
+| D-100 | Providers whose rows all have zero trials | A | decided: a classed error | pprofR fits them with an effect near the start and a Wald standard error of order 1e9 |
+| D-101 | The measure test's `crit` and `ci.location` | Presentation | decided: not offered | pprof's critical value comes from `level` and its interval is centred at the null's location, pprofR's defaults |
+| D-102 | AUC of binomial fits | Presentation | decided | pprofR warns that it is missing; pprof leaves it missing and documents it |
+| D-103 | Covariate Wald p-value | none (rounding) | decided: K-100's | pprofR computes 2 min(Φ(z), 1 − Φ(z)) in C++, pprof 2(1 − Φ(\|z\|)) in R: 1e-12 relative apart |
+| D-104 | The standard score test | none (pprof offers more) | decided: kept, and for binomial outcomes too | pprofR 0.2.0 removed it |
+| D-105 | Long-double sums | none (platform) | decided | pprofR's cluster sums and direct standardization accumulate in long double, which some platforms lack |
+
+### D-82: The null probabilities of the binomial tests
+
+- Component: the exact, bootstrap, modified score, robust score, and stabilized score tests of binomial outcomes (`R/test_fe.R:102-136`, `:138-173`).
+- Class: B
+- Description: pprof clamps the null probabilities of its exact, bootstrap, and modified score tests to [1e-10, 1 − 1e-10] (K-62, K-64, K-65); pprofR does not. On binary outcomes both give the same numbers unless a null probability is beyond the clamp.
+- Minimal reproducible example: `dev/design/logistic-facts/02_binary_agreement.R`, the `extreme` data set: 76 of 1,896 null probabilities below 1e-10; the exact p-values differ by up to 8.5e-10 and the score statistics by 2.1e-9, relative, and no flag differs.
+- Affected outputs: those tests' statistics and p-values where a null probability lies beyond the clamp.
+- Statistical impact: negligible; the clamp keeps the computations finite.
+- Options: (1) pprof's clamp for every logistic outcome; (2) pprofR's none for binomial outcomes, and pprof's for binary ones.
+- Recommendation: (1), so that binomial and binary outcomes follow one rule (M-46).
+- Decision owner: methodology owner. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L2 (exact, bootstrap, modified score) and L3 (robust and stabilized score).
+
+### D-83: SerBIN's cross block
+
+- Component: the SerBIN step of binomial fits (`src/Fixed_effect.cpp:248-256`).
+- Class: B
+- Description: pprofR forms the cross block of the information from the weights n p(1 − p) after replacing exact zeros with 1e-20; pprof 1.0.3 and pprof form it from the unfloored weights (K-12, K-13). The two differ only where a weight is 0 in double, that is, where p rounds to 0 or 1.
+- Minimal reproducible example: none in the facts' data, where no weight is 0; on binary outcomes every fit of fact 02 is bitwise pprof's.
+- Affected outputs: binomial fits whose iterations reach a weight of 0.
+- Statistical impact: none beyond rounding.
+- Options: (1) pprof's unfloored cross block, so that one trial per row is the binary path; (2) pprofR's floor for binomial outcomes.
+- Recommendation: (1).
+- Decision owner: methodology owner. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L2.
+
+### D-84: The model-based standard errors of provider effects
+
+- Component: the Wald test of `test_fe()` (`src/Fixed_effect.cpp:347-385`).
+- Class: B
+- Description: pprofR's Wald test takes the standard errors of the provider effects from a routine of its own, at the fitted probabilities unclamped, with the weights floored at 1e-20 and one solve of the Schur system per provider; its intervals take them from `vcov()`, K-20's variances at clamped probabilities. pprof uses K-20's for both.
+- Minimal reproducible example: `02_binary_agreement.R`: bitwise equal on the synthetic data and ExampleDataBinary, 1.9e-10 relative apart on the extreme data; `09_pprofr_specifications.R` (b): 2e-16 relative on binomial data.
+- Affected outputs: Wald standard errors, statistics, and p-values where a fitted probability lies beyond the clamp.
+- Statistical impact: none beyond rounding.
+- Options: (1) K-20's, as for binary outcomes; (2) pprofR's routine for the tests of binomial outcomes.
+- Recommendation: (1).
+- Decision owner: methodology owner. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L2.
+
+### D-85: The root finder of the exact and score intervals
+
+- Component: `gamma_limits()` and `find_root()` (`R/confint.logis_fe.R:135-229`).
+- Class: B
+- Description: pprofR finds each limit with `uniroot(tol = 1e-8)` in [γ̂ − s, γ̂] and [γ̂, γ̂ + s], s = 10 + max|η| over the provider's rows, widened by s up to five times; pprof 1.0.3 and pprof use `uniroot()` at its defaults (tol 1.2e-4) in K-90's brackets. pprofR's limits are the more accurate; both are within pprof's `root` tier of each other.
+- Minimal reproducible example: `02_binary_agreement.R`: the effects' limits up to 3.05e-5 apart and the measures' up to 2.2e-5; `09_pprofr_specifications.R` (d), binomial: 2.7e-5 (exact) and 1.8e-6 (score).
+- Affected outputs: the exact and score limits of provider effects and measures.
+- Statistical impact: below the root finder's tolerance.
+- Options: (1) K-90's root finder for every logistic outcome; (2) pprofR's for binomial outcomes; (3) a more accurate root finder for every family (a Class B change of existing results).
+- Recommendation: (1) (M-47).
+- Decision owner: methodology owner. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L2.
+
+### D-86: The score interval of providers with only events
+
+- Component: the score limit of a provider with only events (`R/confint.logis_fe.R:196-199`).
+- Class: B
+- Description: pprofR solves Σ n(1 − p) / sqrt(max(Σ n p(1 − p), 1e-20)) = Φ⁻¹(1 − α), flooring the sum; pprof 1.0.3 and pprof floor each weight that is exactly 0 at 1e-20 (K-90). The two differ only where weights are 0 in double.
+- Minimal reproducible example: none in the facts' data.
+- Affected outputs: that limit, where weights are 0.
+- Statistical impact: none beyond rounding.
+- Options: (1) K-90's floor for every logistic outcome; (2) pprofR's for binomial outcomes.
+- Recommendation: (1).
+- Decision owner: methodology owner. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L2.
+
+### D-87: The scale of rates
+
+- Component: `SR_output()` and `confint()`'s rates (`R/SR_output.R:83-110`, `R/confint.logis_fe.R:81-89`).
+- Class: B
+- Description: pprofR's rates are the ratios times ΣO / `N_pop`, proportions clipped to [0, 1]; pprof's are percentages clipped to [0, 100] (K-80). pprofR's rates times 100 equal pprof's to 3e-16 relative (fact 02).
+- Minimal reproducible example: `02_binary_agreement.R`.
+- Affected outputs: rates and their limits.
+- Statistical impact: none; a change of unit.
+- Options: (1) percent for every logistic outcome; (2) proportions for binomial outcomes.
+- Recommendation: (1) (M-43).
+- Decision owner: project lead. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L2 and L4.
+
+### D-88: The default stopping rule
+
+- Component: `logis_fe()`'s `stop` (`R/logis_fe.R:57-59`).
+- Class: B
+- Description: pprofR's default rule is `"beta"`, the largest change of a coefficient (pprof's `"coefficients"`); pprof 1.0.3's and pprof's is `"or"` (`"any"`), which on large data or many trials can stop while provider effects still move (D-24).
+- Minimal reproducible example: `06_stopping_rules.R`: on binomial data with 1 to 1,000 trials a row, `"any"` stops after 3 to 4 iterations against a tight fit's 5 to 7, with provider effects up to 7.1e-4 from it; `"coefficients"` within 4.3e-8; no score or Wald flag changes.
+- Affected outputs: every binomial fit at the default settings.
+- Statistical impact: as D-24.
+- Options: (1) `"any"` for both kinds of outcome; (2) `"coefficients"` for binomial outcomes; (3) `"coefficients"` for both (a Class B change of every existing default fit, M-4).
+- Recommendation: (1), with M-4 deciding for both (M-42).
+- Decision owner: methodology owner. Decided (1), 2026-10-20 (DEC-144); M-4 stays open.
+- Status: decided; to be built in L2. pprofR's results at its default are compared with fits that name `stop_rule = "coefficients"`.
+
+### D-89: Direct standardization of the new interface
+
+- Component: the direct measures of `standardize_providers()` for the logistic families (fixed effects, Firth, random and correlated random effects), and their limits where the family sums them with its direct expectation (K-81, K-82, K-93).
+- Class: B, against pprof 1.0.3.
+- Description: pprof 1.0.3 and pprof sum expit(γ + η) over every row in double (`computeDirectExp()`, `cpp_logistic_direct_expected()`). pprofR's algorithm merges rows with equal η, takes each exponential once, and sums in long double (K-166). It is more accurate (fact 05: within 2e-16 and 1.1e-15 of R's long-double sums, where the double sums are within 1.3e-13 and 3.7e-12, and within 4e-6 for n − E of rates near 1, where they lose up to 19%) and 27 to more than 1,000 times faster. Adopting it moves every direct measure of the new interface by rounding: 7.2e-15 relative on ExampleDataBinary (fact 02), up to 3.7e-12 on fact 05's data.
+- Minimal reproducible example: `05_direct_standardization.R`.
+- Affected outputs: direct expected outcomes, ratios, rates, and their limits, in the new interface.
+- Statistical impact: none beyond rounding; more accurate.
+- Options: (1) the merged algorithm for every direct measure of the new interface, the deprecated functions keeping pprof 1.0.3's sums; (2) the merged algorithm only for the new features, the existing measures keeping their sums.
+- Recommendation: (1) (M-45).
+- Decision owner: project lead as methodology owner. Decided (1), 2026-10-20 (DEC-144, the brief's Q4 recommendation).
+- Status: decided; to be built in L4, with a fixture-difference report of the new interface against the reference fixtures (ARCHITECTURE §G.3, item 6). The deprecated functions keep reproducing pprof 1.0.3 bitwise (DEC-151).
+
+### D-90: The null refits of the covariate likelihood-ratio and score tests
+
+- Component: `summary_fe_covar(test = "lr")` and `"score"` (`R/summary_fe_covar.R:76-84`).
+- Class: B
+- Description: pprofR refits each null model with the fit's own settings; pprof 1.0.3 and pprof refit with the default settings (D-10, awaiting the owners' decision, M-5).
+- Minimal reproducible example: `03_binomial_references.R` (b): at tol 1e-10 with `"coefficients"`, the likelihood-ratio statistics 1.2e-8 and the score statistics 4.9e-5 apart, relative.
+- Affected outputs: those tests of fits whose settings are not the defaults.
+- Statistical impact: as D-10.
+- Options: (1) pprof's rule for every logistic outcome; (2) pprofR's for binomial outcomes.
+- Recommendation: (1), with M-5 deciding for both (M-55).
+- Decision owner: methodology owner. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L2.
+
+### D-91: The likelihood-ratio and score tests with one covariate
+
+- Component: `summary_fe_covar()` (`R/summary_fe_covar.R:75`).
+- Class: A
+- Description: pprofR raises an error for both tests of a model with one covariate; pprof computes the likelihood-ratio test against the model with provider effects only and raises D-30's classed error for the score test (DEC-084).
+- Minimal reproducible example: `08_pprofr_edges.R`.
+- Affected outputs: those tests with one covariate.
+- Options: (1) pprof's behavior for every logistic outcome; (2) pprofR's error.
+- Recommendation: (1).
+- Decision owner: project lead. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L2.
+
+### D-92: Invalid binomial input
+
+- Component: `fe_data_prep()` and `logis_fe()` (B1).
+- Class: A
+- Description: pprofR checks neither the trials nor the events: events above their trials, and non-integer or negative trials, are fitted silently.
+- Minimal reproducible example: `08_pprofr_edges.R`.
+- Affected outputs: every result of such data.
+- Statistical impact: severe and silent.
+- Options: (1) `pprof_error_invalid_input` naming the problem; (2) reproduce.
+- Recommendation: (1) (M-59).
+- Decision owner: project lead. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L2 (`data_trials()`, `data_check_events()`).
+
+### D-93: Missing values
+
+- Component: `fe_data_prep()` (B2).
+- Class: A
+- Description: pprofR stops on any missing value when its checks are on, and with them off a missing trial count reaches the solver, which fails (`solve(): solution not found`).
+- Minimal reproducible example: `08_pprofr_edges.R`.
+- Options: (1) listwise deletion, as every family of pprof does (K-03), with the trials and clusters among the columns; (2) reproduce.
+- Recommendation: (1) (M-59).
+- Decision owner: project lead. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L2 and L3.
+
+### D-94: Providers with a single cluster
+
+- Component: the robust Wald and score tests of providers (`R/test_fe.R:138-188`), B3.
+- Class: B
+- Description: A provider with one cluster has V_i = U_i², and U_i is 0 at the maximum likelihood estimates, so its robust variance is only as large as the fit's remaining error: pprofR's robust Wald statistics are of order 1e15, flagging every such provider, and its robust score statistics are ±1. The stabilized tests pool their matrix over all clusters and stay defined.
+- Minimal reproducible example: `08_pprofr_edges.R`, `09_pprofr_specifications.R` (c).
+- Affected outputs: the robust tests, the robust Wald intervals, and the robust standard errors of the direct measures of such providers.
+- Statistical impact: severe: false flags.
+- Options: (1) missing statistics, p-values, flags, and standard errors for providers with one cluster, with one `pprof_warning_undefined_statistics` naming them; (2) reproduce.
+- Recommendation: (1) (M-49).
+- Decision owner: methodology owner. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L3.
+
+### D-95: Negative stabilized variances
+
+- Component: the stabilized tests (`src/Fixed_effect.cpp:639-694`, `R/test_fe.R:159-164`).
+- Class: Presentation
+- Description: The pooled matrix need not be positive semi-definite, so a provider's stabilized variance can be negative; pprofR's statistic is then NaN, which it sets to missing, after R's own warning from `sqrt()`. pprof returns the same missing statistic, p-value, and flag, with one `pprof_warning_undefined_statistics` naming the providers.
+- Minimal reproducible example: `09_pprofr_specifications.R` (c): one cluster per provider, every stabilized Wald standard error NaN.
+- Status: decided; to be built in L3.
+
+### D-96: Clusters too large for the stabilized tests
+
+- Component: `test_fe()` (`R/test_fe.R:151-154`).
+- Class: Presentation
+- Description: pprofR stops with a plain error when a cluster has more than 5,000 rows; pprof raises `pprof_error_data` at the same limit (`stabilized_max_cluster_rows`).
+- Minimal reproducible example: `08_pprofr_edges.R`.
+- Status: decided; to be built in L3.
+
+### D-97: Row order within providers
+
+- Component: `fe_data_prep()`'s sort (`R/fe_data_prep.R:64-70`).
+- Class: none (rounding)
+- Description: With a cluster column pprofR sorts a provider's rows by the cluster label's `factor()` order; pprof keeps the input order within each provider (K-05). A cluster's rows keep their input order in both, which is what the stabilized tests use; the sums over a provider's rows run in another order, which changes results by rounding only. The fixtures' data come with rows grouped by provider and cluster, so that both orders agree.
+- Status: decided.
+
+### D-98: The robust covariance of the coefficients
+
+- Component: `robust_wald_covar()` (`src/Fixed_effect.cpp:485-487`), B5.
+- Class: none (does not arise)
+- Description: pprofR assembles the sandwich with twice one cross term, J A₁ S⁻¹, where the sandwich has that term and its transpose, so its matrix is not symmetric; it reports only the diagonal, which is the sandwich's (equal to `vcovCL()` to 2e-10, fact 04). pprof's `robust_vcov` is the symmetric sandwich, with the same diagonal.
+- Status: decided; to be built in L3.
+
+### D-99: Provider effects supplied by the caller
+
+- Component: `SR_output()` with a replaced `fit$gamma` (B4).
+- Class: A
+- Description: pprofR's direct standardization serves effects supplied by replacing the fit's; its indirect standardization then fails, and its median null includes the supplied effects.
+- Minimal reproducible example: `07_measure_tests.R` (c): 42 direct rates with the fit's 40 unchanged; the indirect call fails; the median moves from −0.460 to −0.440.
+- Options: (1) an `effects` argument of `standardize_providers()`, named by provider, for direct standardization only, with the null from the fit's effects; (2) reproduce.
+- Recommendation: (1) (M-60).
+- Decision owner: methodology owner. Decided (1), 2026-10-20 (DEC-144).
+- Status: decided; to be built in L4.
+
+### D-100: Providers whose rows all have zero trials
+
+- Component: `logis_fe()`.
+- Class: A
+- Description: A provider without trials has no information about its effect; pprofR fits it, with an effect near the starting value, a Wald standard error of order 1e9, and both indicators set (no events and only events).
+- Minimal reproducible example: `09_pprofr_specifications.R` (e): effect −0.86 against the median −0.96, Wald standard error 2.6e9.
+- Options: (1) `pprof_error_data` naming such providers; (2) reproduce.
+- Recommendation: (1). Rows with zero trials in providers that have others are kept, as in pprofR (M-58).
+- Decision owner: project lead. Decided (1), 2026-10-20, by best judgement under DEC-143.
+- Status: decided; to be built in L2.
+
+### D-101: The measure test's `crit` and `ci.location`
+
+- Component: `test_SM()` (`R/test_SM.R:43-48`).
+- Class: Presentation
+- Description: pprofR lets the caller set the critical value and the centre of the interval; with its defaults, Φ⁻¹(1 − α/2) and the null's location, the interval excludes the reference exactly when the test flags (fact 07). pprof's `test_measures()` has only those defaults (M-61), so its numbers are pprofR's at its defaults.
+- Status: decided; to be built in L4.
+
+### D-102: The AUC of binomial fits
+
+- Component: `logis_fe(AUC = TRUE)` (`R/logis_fe.R:118-123`).
+- Class: Presentation
+- Description: pprofR returns a missing AUC for binomial outcomes with a warning; pprof leaves `auc` missing without a warning, as its help says (M-57).
+- Status: decided; to be built in L2.
+
+### D-103: The covariate Wald p-value
+
+- Component: `wald_covar()` (`src/Fixed_effect.cpp:441-445`).
+- Class: none (rounding)
+- Description: pprofR computes 2 min(Φ(z), 1 − Φ(z)) in C++; pprof computes K-100's 2(1 − Φ(|z|)) in R. They agree to 1.1e-12 relative (fact 02).
+- Status: decided: K-100's.
+
+### D-104: The standard score test
+
+- Component: `test_fe(score_modified = FALSE)` (`R/test_fe.R:75-77`).
+- Class: none (pprof offers more)
+- Description: pprofR 0.2.0 removed the standard score test; pprof keeps it (the brief's §2.3) and extends it to binomial outcomes (M-54), its reference the expansion into trials through the binary test.
+- Status: decided; to be built in L2.
+
+### D-105: Long-double sums
+
+- Component: pprofR's cluster sums and direct standardization (`src/Fixed_effect.cpp:572-597`, `:612-630`).
+- Class: none (platform)
+- Description: pprofR accumulates these sums in long double, which arm64 macOS and CRAN's check without long double lack. pprof's direct standardization does the same (K-166); its cluster sums are formed in double by `rowsum()` (design §F.3), which differs from pprofR's by rounding. Both are compared at `closed_form`, as DEC-141 compares the Cox cross-validation's sums across platforms.
+- Status: decided.

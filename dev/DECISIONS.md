@@ -1387,3 +1387,104 @@ The decisions below belong to the logistic extensions phase (`dev/logistic_brief
 - Decision: The questions are recorded as M-42 to M-65 (Q1 to Q24) in `dev/OPEN_QUESTIONS.md`, each decided as the brief recommends. For Q4 this is the recommendation, not the default: the new interface computes every direct measure with the merged algorithm (D-89, signed off), while the deprecated functions of pprof 1.0.3 keep its sums, so that they keep reproducing it (DEC-151). Every other question takes its proposed default.
 - Alternatives considered: reading the approval as Q4's proposed default (the existing sums kept for existing results until a separate sign-off).
 - Consequences: The Class B items that follow (the brief's §3.3 and Appendix B) are registered in `dev/DISCREPANCIES.md` as signed off. Q4's change of existing numbers lands in Phase L4, with a fixture-difference report (ARCHITECTURE §G.3, item 6), after the gates of L0 to L3, so the project lead can still choose the default instead. M-4 (the default stopping rule, D-24) stays open: Q1 keeps the current default for both kinds of outcome.
+
+The decisions below were made in Phase L0 of the logistic extensions phase, where the brief made no recommendation, by best judgement under the project lead's approval of 2026-10-20 (DEC-143: "If no recommendations, please use your best judgement"). They are the design's (`dev/design/LOGISTIC_DESIGN.md`), and the L0 gate lists them for the project lead.
+
+### DEC-145: The interface of the logistic extensions
+
+- Date: 2026-10-20
+- Status: accepted under DEC-143 (best judgement), with the L0 design
+- Context: The brief left the names to Phase L0 (its §5.6), with candidates; NAMING's principles ask for one name per concept and the vocabulary's order of arguments.
+- Decision: `fit_logistic_fe()` gains `trials` and `cluster` after `provider`, as `fit_cox_stratified()` has `weights` and `cluster` there. `test_providers()`, `provider_effects()`, `profile_providers()`, `test_coefficients()`, and `confint()` gain `se_type` (`"model"`, `"robust"`, `"stabilized"`), not `variance`, which already names the measures' null variance; `standardize_providers()` gains `se_type` (default `NULL`, which leaves its output as now), `rate_denominator`, and `effects`. New exports: `test_measures()` (result class `pprof_measure_tests`), `direct_expected()`, and the contract generics `observation_trials()`, `trial_probability()`, and `observation_clusters()`. `check_data()` takes `trials` last, so that existing calls keep their meaning. The provider table adds `n_trials` and `n_clusters`; measures tables `std_error`. `dev/NAMING.md` §11 records them.
+- Alternatives considered: `variance` for the choice of variance (one name, two concepts); pprofR's names (`N`, `PatientID`, `test_SM()`, `SR_output()`; NAMING's vocabulary replaces them); a fit-time `robust` argument, as the Cox models have (pprofR offers model-based and clustered tests of one fit, which needs the choice at test time).
+- Consequences: positional calls of `fit_logistic_fe()` beyond its third argument change meaning; no internal call, test, vignette, or help example makes one, and pprof 2.0.0 has not been released.
+
+### DEC-146: Trials and clusters in the data layer
+
+- Date: 2026-10-20
+- Status: accepted under DEC-143 (best judgement), with the L0 design
+- Context: The data layer must take the trials and the clusters of the logistic fixed-effect model without changing any existing family's data (the brief's §5.1).
+- Decision: `data_prepare()` gains `trials = NULL` and `screen_clusters = FALSE`, appended. The trials are checked (finite, non-negative, integers) and the events against them (integers from 0 to the trials); a column of trials that are all 1 is not kept, so that the data, and every result, equal those of a call without it; with `screen_clusters`, `min_provider_size` counts each provider's distinct cluster labels, kept as `n_clusters`. Rows with zero trials are kept (M-58); a provider whose rows all have zero trials raises `pprof_error_data` in the fit (D-100). The settings, `model_data_spec()`, and `validate_pprof_data()` record and check the new elements only when used.
+- Alternatives considered: the checks of events against trials in the model (the data layer already checks the weights' values); keeping trials of 1 (results would follow the binomial path's arithmetic, equal to the binary path's only to rounding); a separate data function for binomial outcomes (would duplicate the formula, listwise deletion, design, and provider indexing).
+- Consequences: the `data_prepare()` snapshot, `devtools::test()`, and the reference suite at every data-layer commit of L2 and L3 show the existing families unchanged.
+
+### DEC-147: The contract and the profiling hooks for binomial outcomes and clusters
+
+- Date: 2026-10-20
+- Status: accepted under DEC-143 (best judgement), with the L0 design
+- Context: The profiling and inference layers read models only through the contract (ARCHITECTURE §B.1). Binomial tests need each trial's probability and the number of trials, which `expected_outcome()` does not give: n p cannot be divided back into p without rounding, while pprofR computes p first. The clustered tests need each observation's cluster.
+- Decision: three contract generics, `observation_trials()` and `observation_clusters()` with shared methods that read the model (`NULL` when absent), and `trial_probability()`, implemented by the logistic fixed-effect model. The profiling and inference functions take a binomial branch when `observation_trials()` is not `NULL`, and a clustered branch when `se_type` is not `"model"`, each in new functions beside the existing ones, which keep their code. The family specification of a binomial model carries its weights in `direct_expected`, sets `direct_limits = "direct_expected"`, and adds an optional `direct_moments` for the standard errors of direct measures. Two capabilities, `variance_robust` and `variance_stabilized`, are declared by logistic fixed-effect models with clusters.
+- Alternatives considered: `expected_outcome()` returning probabilities for binomial models (contradicts its meaning, the expected outcome of an observation); the profiling layer computing probabilities from the family's mean function (reads the effects through a helper, not the contract); one capability per clustered test (seven names for two variance estimators).
+- Consequences: a model of another package keeps working unchanged; the toy model's extension test stays as it is.
+
+### DEC-148: The binomial engine path
+
+- Date: 2026-10-20
+- Status: accepted under DEC-143 (best judgement), with the L0 design
+- Context: The brief requires the binary code paths to stay as they are (its §5.2), and SerBIN's and BAN's binary functions reproduce pprof 1.0.3 operation for operation.
+- Decision: new C++ in `src/logistic/binomial.{h,cpp}`: SerBIN, BAN, the variances, and the standard score test with the trials, and in `src/core/` the binomial log-likelihood and a cross block from given weights; the binary functions are not edited. The path follows pprof's conventions where they exist (K-12, K-13, K-20, D-83) and pprofR's operations in pprofR's order otherwise, so that it reproduces pprofR's iteration path. `logistic_fe_estimate()` dispatches on whether the prepared data keep trials.
+- Alternatives considered: one templated engine for both kinds of outcome (its binary instance would be new object code, whose rounding the compiler could change on platforms that contract multiply-adds; equality could only be shown, not built in); multiplying the trials into the binary functions (the same risk).
+- Consequences: some duplication between the binary and binomial engines, each short; the sanitizer job covers the new code.
+
+### DEC-149: Where the clustered variances are computed
+
+- Date: 2026-10-20
+- Status: accepted under DEC-143 (best judgement), with the L0 design
+- Context: The robust and stabilized variances of the provider effects need each row's residual, variance, and cluster; the robust covariance of the coefficients also needs the covariates, which models keep only with `keep_data = TRUE` (DEC-005).
+- Decision: the provider-level variances are computed at test time by the profiling and inference layers, from the contract (DEC-147), in R (`R/inference-clustered.R`); the robust covariance of the coefficients is computed at fit time, when the covariates are at hand, and kept as `robust_vcov`. Providers with one cluster get missing robust results with a classed warning (M-49), and negative stabilized variances missing statistics with the same warning (D-95). C++ comes only with benchmark evidence against pprofR's routines (CLAUDE.md).
+- Alternatives considered: the provider-level variances at fit time (they depend on the null for the score tests); the coefficients' sandwich at test time (would need `data` or kept covariates, as the likelihood-ratio test does).
+- Consequences: the object of a fit with clusters adds p × p numbers and an integer per row.
+
+### DEC-150: The exact test of binomial outcomes keeps pprofR's computation
+
+- Date: 2026-10-20
+- Status: accepted under DEC-143 (best judgement), with the L0 design; a deviation from a SHOULD of the brief's §3.7, recorded as §0 of the brief requires
+- Context: The brief's §3.7 says the exact test SHOULD NOT expand a provider into its trials where an equivalent computation exists, and MUST agree with pprofR within the `probability` tier. A convolution of the rows' binomial distributions took 14 s instead of 34 s at 20,000 trials and agreed to 4e-12 at 50,000 (fact 03); poibin's own rounding error at that size is of the same order, above the tier's absolute floor of 1e-14.
+- Decision: the exact test of a binomial provider calls poibin on its rows' null probabilities repeated by their trials, as pprofR does, so that its numbers are pprofR's. Its help says that the cost grows with the square of a provider's trials and that the score test serves providers with many trials.
+- Alternatives considered: the convolution, with a tier calibrated for large providers (a change of the brief's MUST); the characteristic function with powers per row, which poibin's DFT-CF method would give in O(rows) per point (not pprofR's numbers either).
+- Consequences: the SHOULD is not met; the benchmarks of L1 record the cost.
+
+### DEC-151: Direct standardization on the merged algorithm, the deprecated functions on pprof 1.0.3's sums
+
+- Date: 2026-10-20
+- Status: accepted with DEC-144 (M-45, the brief's Q4 recommendation); built in L4
+- Context: The brief's Q4 recommended the merged algorithm for every direct measure; the deprecated functions of pprof 1.0.3 must keep reproducing it (the brief's §2.3), and they compute through the new interface on the models they rebuild (DEC-032).
+- Decision: from L4, every direct measure of the new interface (logistic fixed effects, Firth, and the logistic random-effect families) uses the merged algorithm (K-166) through the families' `direct_expected`; a model setting `spec$direct_algorithm = "rows"`, which the compatibility layer sets on the models it rebuilds, keeps `cpp_logistic_direct_expected()`'s sums, so that the deprecated functions stay bitwise pprof 1.0.3's. L4's fixture-difference report shows the new interface's changes against the reference fixtures.
+- Alternatives considered: the merged algorithm for the new features only (the brief's Q4 default); the deprecated functions on the merged algorithm too (they would no longer reproduce pprof 1.0.3).
+- Consequences: two direct standardization routines in C++, one for the deprecated functions only; the equivalence report records the new interface's direct measures as within `closed_form` of the fixtures instead of bitwise.
+
+### DEC-152: Fixtures and validation of the logistic extensions
+
+- Date: 2026-10-20
+- Status: accepted under DEC-143 (best judgement), with the L0 design
+- Context: The brief's §3.1 asks for a committed generator that runs pprofR in an isolated library on synthetic data, and §6 for independent references; the tarball has 17 KB of room (DEC-153).
+- Decision: the generator is `dev/reference/pprofr/` in R (no Python), building pprofR from `git archive f23c288` against the pinned versions of `dev/reference/library-lock.json`; the full set is `validation/fixtures/pprofr/`, compared by `validation/run-pprofr-reference.R` on every CI platform (as `validation/run-cox-reference.R` is, DEC-135), with its report `validation/pprofr-equivalence-report.md`; the shipped tests check the new features against `glm()`, the expansion into trials through pprof's binary code, `sandwich::vcovCL()`, and plain-R formulas, which need no fixtures; sandwich joins Suggests. The fixtures' data group rows by provider and cluster with zero-padded labels, so that pprofR's sort and pprof's agree (D-97).
+- Alternatives considered: a shipped core set from the start (DEC-153); fixtures from pprofR's own tests' data (its helper data are not ours to copy, and the brief asks for synthetic data from our generators).
+- Consequences: `R CMD check` runs the independent references; the pprofR comparisons run where `validation/` is available.
+
+### DEC-153: The tarball's size
+
+- Date: 2026-10-20
+- Status: accepted under DEC-143 (best judgement), with the L0 design; refines M-63
+- Context: The tarball was 4,982,796 bytes at the CoxPH phase's end, 17,204 under the 5,000,000 at which `R CMD check --as-cran` notes its size (COXPH_FINAL_REVIEW §5). This phase's R and C++ code, help pages, tests, and vignette text will add more than that compressed, whatever the fixtures do.
+- Decision: no pprofR fixtures ship at first (DEC-152); L2's gate measures the tarball and puts the choice to the project lead with its numbers: accept the note, with the reason in `cran-comments.md`; or move existing shipped fixtures that the tests can rebuild out of the tarball, as DEC-076 did.
+- Alternatives considered: a core set within the room (M-63's default, which the code itself will exceed); deciding now without the measured size.
+- Consequences: the gates of L2 to L5 report the tarball's size.
+
+### DEC-154: The process changes of the logistic extensions brief's §12
+
+- Date: 2026-10-20
+- Status: accepted by the project lead with DEC-143; made in L0
+- Context: The brief's §12 lists the changes only the project lead can make.
+- Decision: the six workflows that run on `main`, `rewrite/**`, and `coxph/**` run on `logistic/**` too (`aba67f0`); CLAUDE.md names the brief, the status document, and the design, states pprofR 0.2.0 as the specification of the new features, and extends the fixture rule; `.claude/rules/tests.md` adds the third reference; `.claude/settings.json` protects `tests/testthat/fixtures/pprofr/` and `validation/fixtures/pprofr/` and asks before editing the brief; the phase-gate skill covers both phases (`e48f331`). The pprofR fixtures are regenerated locally only.
+- Alternatives considered: a dispatch-only workflow that fetches the upstream commit to regenerate the fixtures (the brief's §12 proposed local regeneration).
+- Consequences: pushes of `logistic/**` branches run CI.
+
+### DEC-155: Binomial residuals, fitted values, and `augment()` follow `glm()`
+
+- Date: 2026-10-20
+- Status: accepted under DEC-143 (best judgement), with the L0 design
+- Context: pprofR offers no residuals or fitted values of its own beyond the probabilities; pprof's methods for binary fits are `glm()`'s.
+- Decision: for binomial fits, `fitted()` gives the probabilities, `residuals()` the response residuals y/n − p, the Pearson residuals (y/n − p)/sqrt(p(1 − p)/n), and the deviance residuals of the binomial deviance, as `glm()` with a two-column response gives them; rows with zero trials get missing residuals; `augment()` reports `observed` as y/n, with `trials`.
+- Alternatives considered: counts (y and n p), which `glm()` does not use for these methods; `glm()`'s values for rows with zero trials, where it sets y/n to 0, so that their response residual is −p and their Pearson and deviance residuals 0, numbers with no observation behind them.
+- Consequences: L2's tests compare these methods with `glm()`'s on the rows with trials.
