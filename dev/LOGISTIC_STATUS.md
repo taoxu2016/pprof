@@ -2,7 +2,7 @@
 
 The dated log of the logistic extensions phase (`dev/logistic_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase L0, design and decisions, is complete on `logistic/phase-0` and awaits the project lead's approval at its gate; L1 starts only after it.
+**Status:** Phase L0, design and decisions, is closed (2026-10-20) and in `main`. Phase L1, reference capture, is next, its plan first.
 
 ## 2026-10-20: the brief
 
@@ -47,3 +47,9 @@ The dated log of the logistic extensions phase (`dev/logistic_brief.md`, §0): a
   - DEC-153: the tarball's size goes to L2's gate;
   - DEC-145: positional calls of `fit_logistic_fe()` beyond its third argument change meaning.
 - Next step: the project lead's approval of L0's gate, and of pushing `logistic/phase-0` and opening its pull request into `main`. Then L1, reference capture, on `logistic/phase-1` from `main`, its plan first (`dev/design/LOGISTIC_L1_PLAN.md`).
+
+## 2026-10-20: Phase L0's gate closed
+
+- The project lead approved closing L0's gate and asked for the work in `main` without a pull request: the fork's `main` takes `logistic/phase-0` as a fast-forward from `fa6b290`.
+- With no pull request, `rewrite-sanitizers`, which runs on pull requests or by hand, does not run; L0 changes no package code. The other workflows run on the push.
+- Next step: Phase L1, reference capture, on `logistic/phase-1` from `main`, its plan first (`dev/design/LOGISTIC_L1_PLAN.md`), for the project lead's approval.
