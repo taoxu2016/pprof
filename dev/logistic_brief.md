@@ -1,6 +1,6 @@
 # Logistic Extensions in `pprof` — Phase Brief
 
-> **Status: draft for the project lead's approval (2026-10-20).** Approving the brief approves its plan, scope, and gates. Items marked *proposed* and the questions of §10 still need the decisions §10 names, which the project lead takes, as methodology owner where they are statistical (M-16, DEC-142).
+> **Status: approved by the project lead on 2026-10-20 (DEC-143), with its recommendations and §12's process changes.** Approving the brief approves its plan, scope, and gates. The questions of §10 are decided as recommended (DEC-144; M-42 to M-65), by the project lead as methodology owner where they are statistical (M-16, DEC-142); Phase L0's design (`dev/design/LOGISTIC_DESIGN.md`) decides what the brief left open.
 
 ## 0. How to use this brief
 

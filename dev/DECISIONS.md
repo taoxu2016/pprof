@@ -1365,3 +1365,25 @@ The decision below was made after the CoxPH phase closed.
 - Decision: M-16 is answered: the project lead is the methodology owner who signs off Class B items. As such, the project lead signs off D-56, D-57, D-58, D-59, D-60, D-61, D-64, D-72, and D-78, and M-23 to M-41, each as decided and recorded in the registers.
 - Alternatives considered: recording the approval as the project lead's, with the methodology owners' sign-off left open; adding only the "awaiting a methodology owner" wording to the register's rows.
 - Consequences: the registers mark these entries signed off (`dev/DISCREPANCIES.md` and `dev/OPEN_QUESTIONS.md`, their CoxPH sections; M-16 in ARCHITECTURE §M; DEC-087 and DEC-115), the final review carries a dated note, and the Cox equivalence report marks no CoxPH entry as awaiting. No number changes. The rewrite's Class B entries and the questions among M-1 to M-22 that are still open are not signed off by this decision; they await the project lead's sign-off.
+
+---
+
+The decisions below belong to the logistic extensions phase (`dev/logistic_brief.md`), which brings the features of pprofR 0.2.0 (commit `f23c288`) into pprof.
+
+### DEC-143: The logistic extensions phase: reimplement pprofR's features through the layers, binary paths unchanged, pprofR as the reference
+
+- Date: 2026-10-20
+- Status: accepted by the project lead (2026-10-20): "I approve all your plan and recommendations. If no recommendations, please use your best judgement and implement the code."
+- Context: pprofR 0.2.0 is a fork of pprof's logistic fixed-effect model with binomial outcomes, cluster-level inference, extensions of standardization, a test of a standardized measure, and a faster direct standardization algorithm. The brief's evidence (`dev/design/logistic-facts/`, its Appendix A) found pprofR's binary results equal to pprof's bitwise except where a convention differs, its new features in agreement with independent references, and the defects of its Appendix B.
+- Decision: The brief is approved with its plan, scope, gates, and §12's process changes. The features are reimplemented through pprof's layers and contract, never ported; the binary code paths stay as they are, with the binomial path beside them; pprofR 0.2.0 (commit `f23c288`) is the reference for the new features, with independent references wherever they exist; pprof's existing conventions hold where pprof and pprofR differ (the brief's §3.3). The phases are L0 to L5 on branches `logistic/phase-<n>`. Where the brief made no recommendation, the phase decides by best judgement and records the decision here.
+- Alternatives considered: porting pprofR's code (its interface, its numerical shortcuts, and its defects would come along, and its binary arithmetic differs from pprof's in places); a separate package (the profiling layer would be duplicated).
+- Consequences: Phase L0 writes the design (`dev/design/LOGISTIC_DESIGN.md`) and registers the questions, conventions, and differences; every later phase keeps the existing families bitwise identical, except where DEC-144 signs off a change. No production detail enters the repository (CLAUDE.md).
+
+### DEC-144: The brief's questions are decided as recommended
+
+- Date: 2026-10-20
+- Status: decided by the project lead as methodology owner (M-16, DEC-142), with the approval of DEC-143
+- Context: The brief's §10 asks 24 questions, each with a proposed default; for Q4 it also recommends a different choice than its default: adopting the merged direct standardization algorithm for every direct measure, a Class B change of existing results.
+- Decision: The questions are recorded as M-42 to M-65 (Q1 to Q24) in `dev/OPEN_QUESTIONS.md`, each decided as the brief recommends. For Q4 this is the recommendation, not the default: the new interface computes every direct measure with the merged algorithm (D-89, signed off), while the deprecated functions of pprof 1.0.3 keep its sums, so that they keep reproducing it (DEC-151). Every other question takes its proposed default.
+- Alternatives considered: reading the approval as Q4's proposed default (the existing sums kept for existing results until a separate sign-off).
+- Consequences: The Class B items that follow (the brief's §3.3 and Appendix B) are registered in `dev/DISCREPANCIES.md` as signed off. Q4's change of existing numbers lands in Phase L4, with a fixture-difference report (ARCHITECTURE §G.3, item 6), after the gates of L0 to L3, so the project lead can still choose the default instead. M-4 (the default stopping rule, D-24) stays open: Q1 keeps the current default for both kinds of outcome.
