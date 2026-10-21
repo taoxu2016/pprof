@@ -335,6 +335,15 @@ No data are expanded into trials (8 bytes a trial would be 8 bytes a row times t
 - **Sets**: the full set in `validation/fixtures/pprofr/`. No core set ships at first: the tarball has 17 KB of room below the 5 MB note, which the phase's code, help, and tests will use (DEC-153); the tests that ship check the new features against the independent references of §G.3, which need no fixtures. L1 measures whether a core set of a few KB fits.
 - **Regeneration** needs the project lead's approval and a diff report, and runs locally only (the brief's §12).
 
+**As built (L1; DEC-156, DEC-157).** `dev/reference/pprofr/` makes eleven cases with 492 records, 1.4 MB in all (`dev/design/LOGISTIC_L1_PLAN.md` §2). It departs from the list above in four ways:
+
+- the clustered cases of item 4 are the moderate cases' clustered fits;
+- the many-trials case's providers have about 1,100 to 2,200 trials, as many as the cost of pprofR's exact intervals allows;
+- the moderate and many-trials cases add tight fits, made without the line search, for the comparisons with `glm()` and `sandwich::vcovCL()`;
+- pprofR's exact test of a provider without trials crashes R and is not recorded (D-100).
+
+No core set ships: the smallest case is 8 KB, and every case with a binomial fit 59 KB or more, against 17 KB of room (DEC-153).
+
 ### G.2 Tolerance tiers
 
 The existing tiers, applied as the brief's §3.5 says, calibrated in L1 against negative controls (one event moved between rows, one cluster split in two, the null shifted by 1e-9), each control at least 10 tolerance units away and the agreement within 1:
@@ -349,9 +358,11 @@ The existing tiers, applied as the brief's §3.5 says, calibrated in L1 against 
 
 Where pprof's convention differs from pprofR's (§3.3 of the brief), the comparison expects the difference the register entry states, and the report lists such cases.
 
+**As built (L1; DEC-158).** The table is applied in `tests/testthat/helper-pprofr-fixtures.R`. The calibration (`dev/reference/pprofr/calibrate.R`, `validation/pprofr-calibration-report.md`) found every agreement with an independent reference within its tier; 187 of 196 rows pass. In the nine others a control lies within 10 units: the limits under `root` (one event moved: 0.22 to 8.4 units) and the indirect measures under `closed_form` (the null shifted by 1e-9: about 7). M-66 puts them to the project lead.
+
 ### G.3 Test layers
 
-- **A. Reference comparisons** against the pprofR fixtures: `tests/testthat/test-pprofr-reference.R`, run on the full set by `validation/run-pprofr-reference.R` (new), which writes `validation/pprofr-equivalence-report.md`, as `validation/run-cox-reference.R` does for the Cox fixtures (DEC-135).
+- **A. Reference comparisons** against the pprofR fixtures: `tests/testthat/test-pprofr-reference.R`, run on the full set by `validation/run-pprofr-reference.R` (new), which writes `validation/pprofr-equivalence-report.md`, as `validation/run-cox-reference.R` does for the Cox fixtures (DEC-135). From L1, the binary cases (DEC-159).
 - **B. Existing results**: §C.2, and the differential tests (`validation/run-differential.R`).
 - **C. Closed-form units**: binomial sums by hand; the sandwich and the pooled matrix by hand on a few rows; the delta method against central differences; the measure test against its formulas; `direct_expected()` against R's long-double sums.
 - **D. Independent references**, shipped:

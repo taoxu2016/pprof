@@ -45,3 +45,18 @@ Rscript dev/bench/cox/summarize_paired.R <report md> dev/bench/results/cox-engin
 ```
 
 Each task runs in a fresh process. The R tasks follow `harness.R`'s measurements (the first run, `bench::mark()` with at least 5 runs, 3 from 10 s, 1 from 60 s, the process's peak memory, and `gc()`'s maximum of R's heap); the Python tasks warm up on 2,000 rows first, so that numba's compilation is not timed. Each CSV has a `.json` with the machine and the versions.
+
+## The pprofR baseline (`pprofr/`)
+
+There is no pprof 1.0.3 baseline for the logistic extensions' features either (the logistic extensions brief's §3.7): pprofR 0.2.0 is the comparator. The baseline times pprofR's tasks from its isolated library (`dev/reference/pprofr/lib`); from Phase L2 on, the package's binomial and clustered tasks are measured against them in the same process, as DEC-038 pairs runs, and must be no slower (DEC-160).
+
+| File | Purpose |
+|---|---|
+| `pprofr/scenarios.R` | Six scenarios, one factor at a time around 100,000 rows, 1,000 providers of equal size, 10 trials a row, 5 covariates, and clusters of 1 to 4 rows whose rows share a random intercept: one trial a row, 100 trials a row, 10,000 rows with 100 providers, 1,000,000 rows, and 20 covariates; data made once per scenario, with its seed |
+| `pprofr/run_pprofr.R` | pprofR's 22 tasks (data preparation, the fits, the variances, every provider test, the covariate tests, the intervals, the measures, `direct_exp()`, and `test_SM()`), each in a fresh process with `harness.R`'s measurements. A task too costly here is skipped with the reason: the exact test where a provider has more than 5,000 trials, its intervals beyond m T^2 = 1e8, and the bootstrap beyond 2e9 draws; `test_exact_one` and `confint_exact_one` time one provider instead |
+| `pprofr/summarize.R` | The baseline's report (`results/pprofr-baseline-<date>-<platform>.md`) |
+
+```sh
+Rscript dev/bench/pprofr/run_pprofr.R <data dir> dev/bench/results/pprofr-baseline-<date>-<platform>.csv [--only <regex>]
+Rscript dev/bench/pprofr/summarize.R dev/bench/results/pprofr-baseline-<date>-<platform>.md dev/bench/results/pprofr-baseline-<date>-<platform>.csv
+```

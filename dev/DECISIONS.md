@@ -1488,3 +1488,49 @@ The decisions below were made in Phase L0 of the logistic extensions phase, wher
 - Decision: for binomial fits, `fitted()` gives the probabilities, `residuals()` the response residuals y/n − p, the Pearson residuals (y/n − p)/sqrt(p(1 − p)/n), and the deviance residuals of the binomial deviance, as `glm()` with a two-column response gives them; rows with zero trials get missing residuals; `augment()` reports `observed` as y/n, with `trials`.
 - Alternatives considered: counts (y and n p), which `glm()` does not use for these methods; `glm()`'s values for rows with zero trials, where it sets y/n to 0, so that their response residual is −p and their Pearson and deviance residuals 0, numbers with no observation behind them.
 - Consequences: L2's tests compare these methods with `glm()`'s on the rows with trials.
+
+The decisions below were made in Phase L1 of the logistic extensions phase, under the project lead's approval of its plan ("I approve the plan and continue", 2026-10-20; `dev/design/LOGISTIC_L1_PLAN.md` §6).
+
+### DEC-156: The pprofR library
+
+- Date: 2026-10-21
+- Status: accepted with the L1 plan
+- Context: The brief's §3.1 asks for pprofR built from commit `f23c288` in an isolated library, against Rcpp, RcppArmadillo, and poibin at the versions of `dev/reference/library-lock.json`; pprofR's files must stay out of the repository.
+- Decision: `dev/reference/pprofr/setup_pprofr_library.R` builds `dev/reference/pprofr/lib/` (gitignored). It extracts pprofR from `git archive f23c288` into a temporary folder and installs it with `R CMD INSTALL --preclean`, after its three hard dependencies from the CRAN snapshot of 2026-10-01 (DEC-017), whose versions must equal the reference lock's (Rcpp 1.1.2, RcppArmadillo 15.6.0-1, poibin 1.6). It checks the library's isolation in a child session, runs pprofR's own tests against it (19 blocks, 102 expectations, none failing), and writes `pprofr-library-lock.json`: versions, sources, the platform, and the tests' results, never the text of pprofR's files.
+- Alternatives considered: the pprof 1.0.3 reference library (132 packages and pprof 1.0.3, where pprofR needs three); the site library, as fact 01 used (not pinned).
+- Consequences: the library builds in under a minute here; the generator refuses to run without it.
+
+### DEC-157: The pprofR fixtures' format and cases
+
+- Date: 2026-10-21
+- Status: accepted with the L1 plan
+- Context: The package compares itself with pprofR through its own interface, whose functions differ from pprofR's, so the fixtures cannot be calls the tests replay.
+- Decision: one RDS per case in `validation/fixtures/pprofr/`, the full set only (DEC-153): `format_version`, `id`, `description`, `data` (the case's synthetic data sets as given to pprofR), and `records`, one per pprofR call, named by what it computes. Each record holds the call's text with the values of its loop variables, its seed, its value as pprofR returns it (fits as lists of their components), its error, and its warnings and messages. The eleven cases of the plan's §2 hold 492 records; the negative controls are records of the cases they perturb. Each case runs in a child session on the pprofR library and base R only.
+  - The tight fits that the comparisons with `glm()` and `sandwich::vcovCL()` need stop on every criterion below 1e-13 without the line search. With it, binomial-moderate's clustered fit stopped with a score of 1.6e-5, its last decisions comparing changes of the log-likelihood near their rounding error (the brief's §3.5).
+  - pprofR's exact test of a provider without trials crashes R (D-100), so the zero-trials case records that provider's other tests.
+- Alternatives considered: replaying pprofR's calls in the tests (they would need pprofR); fixtures in a schema of the package's own (it would change with each phase's interface).
+- Consequences: the set is 1.4 MB and takes about 15 minutes to generate here; two runs from one commit agree byte for byte (`dev/reference/pprofr/compare.R`). Its strings and manifest hold none of the production terms.
+
+### DEC-158: The comparison rules and their calibration
+
+- Date: 2026-10-21
+- Status: accepted with the L1 plan; M-66 asks the project lead about the two kinds of result whose controls fall short
+- Context: The brief's §3.5 keeps the tiers and asks L1 to apply them to each kind of result, with a calibration against negative controls: agreement within 1 tolerance unit, every control at least 10 units away.
+- Decision: the tiers' application of LOGISTIC_L1_PLAN §3.4, in `tests/testthat/helper-pprofr-fixtures.R`: counts and flags `exact`, estimates `iterative`, closed-form results `closed_form`, p-values `probability` (the exact statistic by DEC-083's rule), limits `root`. `dev/reference/pprofr/calibrate.R` compares each kind of result with an independent reference and with the negative controls, and writes `validation/pprofr-calibration-report.md`. The references are `glm()`, `sandwich::vcovCL()`, pprof's binary code on the data expanded into trials, and plain-R versions of pprofR's definitions at its own estimates.
+  - Every agreement is within its tier: 187 of 196 calibrated rows pass.
+  - The nine others are controls within 10 units of their tier. One event moved shifts the exact and score limits by 0.22 to 8.4 units of `root`; the null shifted by 1e-9 moves the indirect measures by about 7 units of `closed_form`.
+- Alternatives considered: widening or tightening a tier, which the brief forbids without sign-off; leaving out the controls that fall short, which would hide them.
+- Consequences: no tier changes. L2 to L4 compare under these tiers, and M-66's answer may add tests of the limits' equations at fixed effects.
+
+### DEC-159: The comparisons from L1, and CI
+
+- Date: 2026-10-21
+- Status: accepted with the L1 plan
+- Context: The package computes binary outcomes already, and the reference workflow is to run the pprofR comparisons from L1 (DEC-154).
+- Decision: `tests/testthat/test-pprofr-reference.R` compares the package's binary results with binary-moderate's and the binary part of extreme-probabilities: the fits' grid, criteria, inclusion, variances, every provider test, the intervals of effects and measures, the measures (pprofR's rates times 100, D-87), and the covariate tests. `validation/run-pprofr-reference.R` writes `validation/pprofr-equivalence-report.md`, and both jobs of `rewrite-reference.yaml` run it.
+  - 201 comparisons: 192 within their tier (the largest ratio 0.615), and 9 differences that a register entry decides.
+  - D-82: the clamp, on the exact and score tests of the extreme data.
+  - D-84: the Wald test there.
+  - D-90: the null refits of the covariate likelihood-ratio and score tests.
+- Alternatives considered: waiting for L2 to compare anything; comparing the binary cases in the calibration only (the comparisons would then not run on CI).
+- Consequences: `devtools::test()` runs these comparisons, the full set being in the repository, and `R CMD check` skips them.

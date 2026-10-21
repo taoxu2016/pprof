@@ -1317,7 +1317,7 @@ The features of the logistic extensions phase (binomial outcomes, cluster-level 
 | D-97 | Row order within providers | none (rounding) | decided | pprofR sorts a provider's rows by cluster label, pprof keeps their input order; the sums differ by rounding |
 | D-98 | Robust covariance of the coefficients | none (does not arise) | decided | pprofR assembles a matrix that is not symmetric (B5); only its diagonal, which pprof's symmetric sandwich shares, is reported |
 | D-99 | Provider effects supplied by the caller | A | decided: an `effects` argument for direct standardization | replacing the fit's effects breaks pprofR's indirect standardization and moves its median null (B4) |
-| D-100 | Providers whose rows all have zero trials | A | decided: a classed error | pprofR fits them with an effect near the start and a Wald standard error of order 1e9 |
+| D-100 | Providers whose rows all have zero trials | A | decided: a classed error | pprofR fits them with an effect near the start and a Wald standard error of order 1e9; its exact test then crashes R |
 | D-101 | The measure test's `crit` and `ci.location` | Presentation | decided: not offered | pprof's critical value comes from `level` and its interval is centred at the null's location, pprofR's defaults |
 | D-102 | AUC of binomial fits | Presentation | decided | pprofR warns that it is missing; pprof leaves it missing and documents it |
 | D-103 | Covariate Wald p-value | none (rounding) | decided: K-100's | pprofR computes 2 min(Φ(z), 1 − Φ(z)) in C++, pprof 2(1 − Φ(\|z\|)) in R: 1e-12 relative apart |
@@ -1535,8 +1535,8 @@ The features of the logistic extensions phase (binomial outcomes, cluster-level 
 
 - Component: `logis_fe()`.
 - Class: A
-- Description: A provider without trials has no information about its effect; pprofR fits it, with an effect near the starting value, a Wald standard error of order 1e9, and both indicators set (no events and only events).
-- Minimal reproducible example: `09_pprofr_specifications.R` (e): effect −0.86 against the median −0.96, Wald standard error 2.6e9.
+- Description: A provider without trials has no information about its effect; pprofR fits it, with an effect near the starting value, a Wald standard error of order 1e9, and both indicators set (no events and only events). Its `vcov()` then fails (`inv_sympd()`: the matrix is singular), and its exact test ends the R session: it passes poibin an empty vector of probabilities for the provider, and `poibin::ppoibin(0, numeric(0))` crashes (found in L1).
+- Minimal reproducible example: `09_pprofr_specifications.R` (e): effect −0.86 against the median −0.96, Wald standard error 2.6e9. The fixture `zero-trials` records the fit, the failing `vcov()`, and the score and Wald tests, not the exact test, which cannot be recorded; `Rscript -e 'poibin::ppoibin(0, numeric(0))'` crashes R (poibin 1.6).
 - Options: (1) `pprof_error_data` naming such providers; (2) reproduce.
 - Recommendation: (1). Rows with zero trials in providers that have others are kept, as in pprofR (M-58).
 - Decision owner: project lead. Decided (1), 2026-10-20, by best judgement under DEC-143.
