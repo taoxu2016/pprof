@@ -1,0 +1,92 @@
+{
+  "created": "2026-10-21 15:50:14 UTC",
+  "r_version": "R version 4.4.0 (2024-04-24 ucrt)",
+  "platform": "x86_64-w64-mingw32",
+  "running": "Windows 11 x64 (build 22621)",
+  "cores": 8,
+  "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+  "git_commit": "e69c2b500b38e8b7e94892085f0a303db8fd3c6a",
+  "pprofr": {
+    "version": "0.2.0",
+    "git_commit": "f23c2889b59108f9506da3f91327c3f239945a63",
+    "source": "git archive, built from source"
+  },
+  "packages": [
+    {
+      "package": "poibin",
+      "version": "1.6",
+      "built": "4.4.0",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "pprofR",
+      "version": "0.2.0",
+      "built": "4.4.0",
+      "source": "git archive of commit f23c288 (built from source)"
+    },
+    {
+      "package": "Rcpp",
+      "version": "1.1.2",
+      "built": "4.4.0",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "RcppArmadillo",
+      "version": "15.6.0-1",
+      "built": "4.4.0",
+      "source": "snapshot binary"
+    }
+  ],
+  "bench": "1.1.4",
+  "threads": 1,
+  "scenarios": [
+    {
+      "scenario": "centre",
+      "n": 100000,
+      "m": 1000,
+      "trials": 10,
+      "p": 5,
+      "seed": 301
+    },
+    {
+      "scenario": "binary",
+      "n": 100000,
+      "m": 1000,
+      "trials": 1,
+      "p": 5,
+      "seed": 302
+    },
+    {
+      "scenario": "trials-100",
+      "n": 100000,
+      "m": 1000,
+      "trials": 100,
+      "p": 5,
+      "seed": 303
+    },
+    {
+      "scenario": "rows-1e4",
+      "n": 10000,
+      "m": 100,
+      "trials": 10,
+      "p": 5,
+      "seed": 304
+    },
+    {
+      "scenario": "rows-1e6",
+      "n": 1000000,
+      "m": 1000,
+      "trials": 10,
+      "p": 5,
+      "seed": 305
+    },
+    {
+      "scenario": "covariates-20",
+      "n": 100000,
+      "m": 1000,
+      "trials": 10,
+      "p": 20,
+      "seed": 306
+    }
+  ]
+}

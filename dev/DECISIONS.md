@@ -1534,3 +1534,19 @@ The decisions below were made in Phase L1 of the logistic extensions phase, unde
   - D-90: the null refits of the covariate likelihood-ratio and score tests.
 - Alternatives considered: waiting for L2 to compare anything; comparing the binary cases in the calibration only (the comparisons would then not run on CI).
 - Consequences: `devtools::test()` runs these comparisons, the full set being in the repository, and `R CMD check` skips them.
+
+### DEC-160: The pprofR benchmark baseline
+
+- Date: 2026-10-21
+- Status: accepted with the L1 plan
+- Context: The brief's §3.7 makes pprofR the comparator of the new features' speed, and asks L1 to record a baseline in `dev/bench/`. Design §I's grid crosses rows, providers, trials, clusters, and covariates.
+- Decision: `dev/bench/pprofr/` times pprofR's tasks, each in a fresh process on the pprofR library, with `harness.R`'s measurements.
+  - Six scenarios vary one factor at a time around 100,000 rows, 1,000 providers, 10 trials a row, 5 covariates, and clusters of 1 to 4 rows. The other levels of design §I's grid are one and 100 trials a row, 10,000 rows with 100 providers, 1,000,000 rows, and 20 covariates.
+  - The 22 tasks are data preparation, the fits, the variances, every provider test, the covariate tests, the intervals, the measures, `direct_exp()`, and `test_SM()`.
+  - A task too costly here is skipped with the reason. One provider is timed instead of the exact test above 5,000 trials a provider, and of its intervals above m T² = 1e8; the bootstrap is skipped beyond 2e9 draws.
+- Alternatives considered: the full crossing of design §I's grid (36 scenarios, most of whose exact tasks would take days); paired runs against the package now (it has no binomial or clustered tasks yet).
+- Consequences: the baseline of 2026-10-21 (`dev/bench/results/pprofr-baseline-20261021-windows.*`) records 132 measurements, 7 skipped, in 42 minutes.
+  - The fits and every z test take under a second at 100,000 rows, and a few seconds at 1,000,000.
+  - The cluster-level tests take about what the model-based ones do.
+  - The exact test and its intervals grow with the square of the trials, up to 383 s for one provider of 10,000 trials.
+  - The machine paged throughout, so L2 to L4 decide from paired runs in one process.

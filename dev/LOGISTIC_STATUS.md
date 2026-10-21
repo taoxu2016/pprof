@@ -58,3 +58,24 @@ The dated log of the logistic extensions phase (`dev/logistic_brief.md`, §0): a
 
 - The project lead approved the plan and asked to continue ("I approve the plan and continue"): Phase L1 runs on `logistic/phase-1`, from `main` at `2efb4e7`, by `dev/design/LOGISTIC_L1_PLAN.md`, adopted under that approval.
 - Next step: the plan's order of work, starting with the pprofR library.
+
+## 2026-10-21: Phase L1's deliverables
+
+On `logistic/phase-1`, by `dev/design/LOGISTIC_L1_PLAN.md`:
+
+- **The pprofR library** (`f0d82ce`, DEC-156): pprofR 0.2.0 from `git archive f23c288`, with Rcpp, RcppArmadillo, and poibin at the reference lock's versions; pprofR's own tests pass there (19 blocks, 102 expectations).
+- **The generator and the fixtures** (`f0d82ce`, `95f9090`, `4d605f7`; DEC-157):
+  - eleven synthetic cases, 492 records, 1.4 MB, in `validation/fixtures/pprofr/`;
+  - two runs from one commit agree byte for byte;
+  - the fixtures' strings and manifest hold none of the production terms.
+- **Found while building the cases:**
+  - pprofR's exact test of a provider without trials crashes R, through `poibin::ppoibin(0, numeric(0))`; added to D-100.
+  - pprofR's tight fits stop short of the maximum when the line search is on (a score of 1.6e-5 at tol 1e-13), so the tight fits run without it (`95f9090`). This is a property of SerBIN's line search near the rounding error of the log-likelihood, shared by both packages, not a difference between them.
+  - The many-trials case was sized to the cost of pprofR's exact intervals: 70 s a call at 1,100 to 2,200 trials a provider, 280 s at 2,000 to 4,000.
+- **The calibration** (`be5a063`, DEC-158): every agreement with an independent reference is within its tier, and 187 of 196 rows pass. The nine others are controls within 10 units of their tier; M-66 asks the project lead about them:
+  - the exact and score limits under `root`: one event moved, 0.22 to 8.4 units;
+  - the indirect measures under `closed_form`: the null shifted by 1e-9, about 7 units.
+- **The binary comparisons and CI** (`272b6a3`, DEC-159): 201 comparisons, none failing. 192 are within their tier (the largest ratio 0.615), and 9 differences are decided by D-82, D-84, and D-90. Both jobs of the reference workflow run them.
+- **The benchmark baseline** (`303d88a` and this entry's commit, DEC-160): 132 measurements on six scenarios, 7 skipped with the reason. pprofR's exact intervals take up to 383 s for one provider of 10,000 trials.
+- **No core set.** The smallest case is 8 KB, and every case with a binomial fit 59 KB or more, against 17 KB of room (DEC-153); the choice stays for L2's gate.
+- **Next step:** L1's gate checks, then the report and the project lead's approval.

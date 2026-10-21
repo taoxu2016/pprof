@@ -396,6 +396,8 @@ Where pprof's convention differs from pprofR's (§3.3 of the brief), the compari
 - **Bound**: the stabilized variance's padded matrix at most 2.5 × 10^7 doubles at once (200 MB, the size of R̂ itself at the largest cluster allowed, 5,000 rows), with chunks of clusters beyond; L3 confirms the bound with the benchmarks.
 - **Peak memory** with `gc()`'s maximum used.
 
+**As built (L1; DEC-160).** `dev/bench/pprofr/` varies one factor at a time around the grid's centre instead of crossing it: six scenarios and 22 pprofR tasks. Exact tasks too costly here are timed for one provider instead. The baseline (`dev/bench/results/pprofr-baseline-20261021-windows.*`) gives pprofR's costs, which L2 to L4 measure again beside the package's, paired in one process. Its fits and z tests take under a second at 100,000 rows; its exact intervals take up to 383 s for one provider of 10,000 trials.
+
 ## J. Register entries
 
 | Register | Entries |
