@@ -22,6 +22,10 @@
 # survival, and glmnet under the calibrated tiers on every platform (COXPH_DESIGN §G.5), with glmnet
 # installed. R CMD check runs only the core set, since the full set is not in the tarball.
 #
+# Both jobs also run the pprofR comparisons (validation/run-pprofr-reference.R; logistic extensions L1,
+# DEC-152, DEC-159): the package against pprofR 0.2.0 (commit f23c288) through the full pprofR fixture set,
+# under the calibrated tiers on every platform. R CMD check skips them, since the set is not in the tarball.
+#
 # The reports are uploaded as artifacts and summarized in annotations (.github/scripts/ci-annotate.R).
 name: rewrite-reference
 
@@ -150,6 +154,14 @@ jobs:
           set -o pipefail
           Rscript validation/run-cox-reference.R cox-equivalence-report-ci.md 2>&1 | tee cox-reference-run.log
 
+      # The script writes its summary as an annotation.
+      - name: Run the pprofR comparisons
+        if: always() && steps.dependencies.outcome == 'success'
+        shell: bash
+        run: |
+          set -o pipefail
+          Rscript validation/run-pprofr-reference.R pprofr-equivalence-report-ci.md 2>&1 | tee pprofr-reference-run.log
+
       - name: Upload the equivalence report
         if: always()
         uses: actions/upload-artifact@v6
@@ -158,6 +170,7 @@ jobs:
           path: |
             validation/equivalence-report-ci.md
             cox-equivalence-report-ci.md
+            pprofr-equivalence-report-ci.md
           if-no-files-found: ignore
 
   platforms:
@@ -237,6 +250,14 @@ jobs:
           set -o pipefail
           Rscript validation/run-cox-reference.R cox-equivalence-report-platform.md 2>&1 | tee cox-reference-run.log
 
+      # The script writes its summary as an annotation.
+      - name: Run the pprofR comparisons
+        if: always() && steps.dependencies.outcome == 'success'
+        shell: bash
+        run: |
+          set -o pipefail
+          Rscript validation/run-pprofr-reference.R pprofr-equivalence-report-platform.md 2>&1 | tee pprofr-reference-run.log
+
       - name: Report in annotations
         if: always() && steps.dependencies.outcome == 'success'
         shell: bash
@@ -256,6 +277,7 @@ jobs:
           path: |
             equivalence-report-platform.md
             cox-equivalence-report-platform.md
+            pprofr-equivalence-report-platform.md
             fixture-diff-core.md
             fixture-diff-full.md
           if-no-files-found: ignore
