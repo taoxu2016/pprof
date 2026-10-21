@@ -205,13 +205,16 @@ pprofr_profile_clustered <- function(fit, prefix, alternatives = pprofr_alternat
   collect$records()
 }
 
-# A tight fit (SerBIN, "beta", tol 1e-13), its variances, and its covariate tests.
+# A tight fit (SerBIN, every criterion below 1e-13, Newton's full steps), its variances, and its covariate tests: the
+# fits the comparisons with glm() and sandwich::vcovCL() need at the maximum likelihood estimates. With the line
+# search, whose last decisions compare changes of the log-likelihood near its rounding error (the brief's §3.5),
+# binomial-moderate's clustered fit stops with a score of 1.6e-5; without it, every fit's score is below 1e-13.
 pprofr_tight <- function(prep, prefix, covariate_tests) {
   collect <- pprofr_collector(prefix)
   fit <- NULL
-  record <- pprofr_record(fit <- pprofR::logis_fe(prep, tol = 1e-13, stop = "beta", threads = 1),
+  record <- pprofr_record(fit <- pprofR::logis_fe(prep, tol = 1e-13, stop = "all", backtrack = FALSE, threads = 1),
                           value = pprofr_fit_summary)
-  record$call <- "logis_fe(prep, tol = 1e-13, stop = \"beta\", threads = 1)"
+  record$call <- "logis_fe(prep, tol = 1e-13, stop = \"all\", backtrack = FALSE, threads = 1)"
   collect$add("fit", record)
   collect$add("vcov", pprofr_record(stats::vcov(fit)))
   for (test in covariate_tests) {
@@ -336,6 +339,7 @@ pprofr_many_trials_case <- function(datasets) {
   add_all(default$records)
   add_all(pprofr_profile(default$fit, "unclustered", seed_base = 3000L, n_resamples = 2000,
                          interval_alternatives = "two.sided", n_pop_interval = FALSE))
+  add_all(pprofr_tight(prep, "unclustered/tight", covariate_tests = "wald"))
   moved <- pprofr_default_fit(pprofr_prep(datasets[["many-event-moved"]], TRUE, FALSE),
                               "control/event-moved/unclustered")
   add_all(moved$records)
