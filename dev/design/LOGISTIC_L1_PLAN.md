@@ -33,7 +33,7 @@ The data are synthetic only, with generic names, and exact in text: integer even
 |---|---|---|---|
 | `binary-moderate` | 40 providers, 8 to 30 clusters each of 1 to 4 rows, one trial per row, 3 covariates | fits: SerBIN and BAN, `"or"` and `"beta"`, tol 1e-5 and 1e-10; at pprofR's defaults, the variances, every test with each alternative (the bootstrap with a seed), the intervals of effects and measures, the measures (`N_pop` default and given), and the covariate tests; with the clusters (`PatientID`, screened by clusters), the robust and stabilized tests, the robust Wald intervals and coefficients, and the direct rates' standard errors | one event moved between rows; one cluster split in two; the null shifted by 1e-9 |
 | `binomial-moderate` | the same layout, 1 to 20 trials a row | the same | the same |
-| `binomial-many-trials` | 12 providers of 1,500 to 4,000 trials | fits, the tests, the intervals | one event moved; the null shifted |
+| `binomial-many-trials` | 12 providers of about 1,100 to 2,200 trials | fits, the tests, the two-sided intervals | one event moved; the null shifted |
 | `few-clusters` | providers with one, two, and three clusters; and every provider with one cluster | the robust and stabilized tests and Wald intervals; a stabilized variance that is negative | — |
 | `extreme-probabilities` | binary and binomial data with null probabilities below 1e-10 | fits, tests, measures | — |
 | `extreme-providers` | binomial providers with no events, and with only events | fits, tests, intervals, measures | — |
@@ -44,6 +44,8 @@ The data are synthetic only, with generic names, and exact in text: integer even
 | `cluster-order` | `binomial-moderate` with each cluster's rows reversed | the robust and stabilized tests | — |
 
 Design §G.1 lists `clustered-binary` and `clustered-binomial` as cases of their own. They are the clustered fits of the two moderate cases here, whose data have clusters with a shared random intercept.
+
+The many-trials case's providers have about 1,100 to 2,200 trials, fewer than the few thousand of design §G.1, which allows for the cost. pprofR's exact intervals cost O(T²) per provider: 70 s a call at that size, against 280 s at 2,000 to 4,000 trials, and the case computes them five times. The exact and score tests at a few thousand trials are timed by the benchmarks.
 
 **What each fixture stores.** Plain R objects keyed by provider, not pprofR's classes:
 
@@ -70,7 +72,7 @@ Design §G.1 lists `clustered-binary` and `clustered-binomial` as cases of their
    - R, the platform, the compiler, BLAS and LAPACK, long double, the RNG kinds, the locale, the thread settings, and the package versions;
    - the generator's commit;
    - each case's calls and seeds;
-   - the SHA-256 of every file.
+   - the MD5 of every file, as the pprof 1.0.3 generator records (R 4.4.0 has no SHA-256 in base R).
 
    `compare.R` compares two fixture trees, by bytes and by values, for regenerations and for the determinism check.
 3. **The calibration.** `calibrate.R` runs in the development environment (`devtools::load_all()`, with sandwich). It compares each kind of result in each case with its independent reference (design §G.3, D):

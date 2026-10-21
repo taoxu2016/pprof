@@ -1,0 +1,53 @@
+{
+  "purpose": "Isolated library holding pprofR 0.2.0, the reference of the logistic extensions phase's new features, for fixture generation (DEC-152, DEC-156).",
+  "created": "2026-10-20 20:36:34 UTC",
+  "snapshot": "https://packagemanager.posit.co/cran/2026-10-01",
+  "pprofr": {
+    "version": "0.2.0",
+    "git_commit": "f23c2889b59108f9506da3f91327c3f239945a63",
+    "source": "git archive, built from source"
+  },
+  "reference_lock": "dev/reference/library-lock.json: the dependencies' versions equal its",
+  "r_version": "R version 4.4.0 (2024-04-24 ucrt)",
+  "platform": "x86_64-w64-mingw32",
+  "compiler": "g++",
+  "blas": "",
+  "lapack": "",
+  "lapack_version": "3.12.0",
+  "long_double_bytes": 16,
+  "pprofr_tests": {
+    "blocks": 19,
+    "expectations": 102,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 0,
+    "errors": 0,
+    "testthat": "3.3.2"
+  },
+  "packages": [
+    {
+      "package": "poibin",
+      "version": "1.6",
+      "built": "4.4.0",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "pprofR",
+      "version": "0.2.0",
+      "built": "4.4.0",
+      "source": "git archive of commit f23c288 (built from source)"
+    },
+    {
+      "package": "Rcpp",
+      "version": "1.1.2",
+      "built": "4.4.0",
+      "source": "snapshot binary"
+    },
+    {
+      "package": "RcppArmadillo",
+      "version": "15.6.0-1",
+      "built": "4.4.0",
+      "source": "snapshot binary"
+    }
+  ]
+}
