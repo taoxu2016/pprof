@@ -2,7 +2,7 @@
 
 The dated log of the logistic extensions phase (`dev/logistic_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase L0, design and decisions, is closed (2026-10-20) and in `main`. Phase L1, reference capture, is in progress on `logistic/phase-1` (`dev/design/LOGISTIC_L1_PLAN.md`).
+**Status:** Phase L0, design and decisions, is closed (2026-10-20) and in `main`. Phase L1, reference capture, is complete on `logistic/phase-1` and awaits the project lead's approval at its gate; L2 starts only after it.
 
 ## 2026-10-20: the brief
 
@@ -79,3 +79,33 @@ On `logistic/phase-1`, by `dev/design/LOGISTIC_L1_PLAN.md`:
 - **The benchmark baseline** (`303d88a` and this entry's commit, DEC-160): 132 measurements on six scenarios, 7 skipped with the reason. pprofR's exact intervals take up to 383 s for one provider of 10,000 trials.
 - **No core set.** The smallest case is 8 KB, and every case with a binomial fit 59 KB or more, against 17 KB of room (DEC-153); the choice stays for L2's gate.
 - **Next step:** L1's gate checks, then the report and the project lead's approval.
+
+## 2026-10-21: Phase L1's gate
+
+- The deliverables of the brief's §4 row L1, and of the plan's §1, are done:
+  - the generator with its isolated library;
+  - the synthetic cases, with their manifest;
+  - the calibration report and the tiers' application;
+  - the binary comparisons and CI;
+  - the benchmark baseline;
+  - the core set's measurement (the previous entry).
+- Checks at `c882063`, in the verification worktree; `R CMD check` runs on a clean export of that commit, alone:
+  - `devtools::document()`: the generated files as committed;
+  - `devtools::test()`: 84 files, 1,326 tests, 12,897 expectations; none failed, errored, skipped, or warned (620 s). These are L0's counts and the pprofR comparisons' 6 tests and 201 expectations;
+  - `validation/run-reference.R`: 368 of 368 cases, none skipped, no provider within tolerance of a flag threshold; the report changed only in its date and commit;
+  - `validation/run-cox-reference.R`: 1,897 comparisons, 1,871 within their tier, 26 explained, none failing; the report changed only in its date and commit;
+  - `dev/reference/cox/calibrate.R`, with pprof_spark's fixtures at `e917a68`: `validation/cox-calibration-report.md` byte for byte;
+  - `validation/run-pprofr-reference.R`: 201 comparisons, 192 within their tier (the largest ratio 0.615), and 9 differences that D-82, D-84, and D-90 decide, none failing; the report changed only in its date and commit;
+  - `dev/reference/pprofr/calibrate.R`: 187 of 196 calibrated rows pass, the nine others being M-66's controls; the report changed only in its header line;
+  - `R CMD check --as-cran --no-manual`: 0 errors, 0 warnings, and the 2 notes of the previous gates (the website's address, 404; "unable to verify current time"), in 662 s. Its tests skip the pprofR comparisons, the fixtures being outside the package;
+  - the tarball is 4,988,078 bytes, 5,284 more than at L0 (the two test files) and 11,922 under the 5,000,000 at which the check notes its size;
+  - `lintr`: the new test files, the generator, the calibration, the runner, and the benchmark scripts are clean;
+  - coverage and the benchmark comparison begin at L2.
+- The production-term search of `main..logistic/phase-1` (9 commits before this entry, 45 files) found no match in the added lines, the file names, the commit messages, the branch name, or the strings inside the binary fixtures.
+- CI has not run on these commits; the branch is not pushed.
+- For the project lead's attention:
+  - M-66, open: the controls that fall within 10 units of their tier;
+  - pprofR's exact test crashes R on a provider without trials (D-100);
+  - the line search's premature stops at tight tolerances, in both packages;
+  - the tarball's room, now 11,922 bytes. The comparisons always skip under `R CMD check`, so leaving their two files out of the tarball is one option for DEC-153's choice at L2's gate.
+- Next step: the project lead's approval of L1's gate, and the answer to M-66. Then L2, binomial outcomes, on `logistic/phase-2` from `main`, its plan first.
