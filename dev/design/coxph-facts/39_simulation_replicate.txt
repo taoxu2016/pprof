@@ -1,9 +1,0 @@
-null: 100 replicates in 3.8 s (0.038 s each); rows 4501, events 2207 (means); expected events per provider: median of minima 13.3, of medians 43.1, of maxima 85.4
-  midp  size 4.90%, coverage (none) 95.10%
-  exact size 3.92%, coverage (none) 96.08%
-outliers: 100 replicates in 4.6 s (0.046 s each); rows 4530, events 2220 (means); expected events per provider: median of minima 13.4, of medians 42.9, of maxima 87.4
-  midp  size 4.73%, coverage (none) 95.27%, power 87.0%, coverage (outliers) 96.2%
-  exact size 4.00%, coverage (none) 96.00%, power 85.0%, coverage (outliers) 97.2%
-small: 100 replicates in 2.4 s (0.024 s each); rows 879, events 431 (means); expected events per provider: median of minima 1.7, of medians 8.2, of maxima 18.4
-  midp  size 4.70%, coverage (none) 95.30%
-  exact size 3.14%, coverage (none) 96.86%

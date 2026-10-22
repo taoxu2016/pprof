@@ -21,7 +21,7 @@ The logistic extensions phase brings the features of pprofR 0.2.0 (commit `f23c2
 - The design, `dev/design/LOGISTIC_DESIGN.md` (Phase L0), and each later phase's plan, `dev/design/LOGISTIC_L<n>_PLAN.md`.
 - The evidence behind the brief, the design, and the plans: `dev/design/logistic-facts/`.
 
-The CoxPH phase (Phases C0 to C6), which added Cox proportional hazards models following `pprof_py` v0.7.0 with estimation delegated to `survival` and `glmnet` (DEC-086), is complete and in `main`. Its record: the brief, `dev/coxph_brief.md`; the status log, `dev/COXPH_STATUS.md`; the design, `dev/design/COXPH_DESIGN.md`, kept as built, with each phase's plan, `dev/design/COXPH_C<n>_PLAN.md`; the evidence, `dev/design/coxph-facts/`; and the final review, `dev/design/COXPH_FINAL_REVIEW.md`.
+The CoxPH phase (Phases C0 to C6), which added Cox proportional hazards models following `pprof_py` v0.7.0 with estimation delegated to `survival` and `glmnet` (DEC-086), is complete and in `main`. Its working documents (the brief, the status log, the design, each phase's plan, the evidence, and the final review) are in the history at commit `447398e` (`dev/README.md`); the Cox models as built are in `dev/design/ARCHITECTURE.md` and `dev/DEVELOPER_GUIDE.md`.
 
 ## Source documents
 
@@ -37,7 +37,7 @@ The CoxPH phase (Phases C0 to C6), which added Cox proportional hazards models f
 | `dev/design/ARCHITECTURE.md`, `dev/design/BEHAVIOR_SPECS.md` | The design as built; what each function of pprof 1.0.3 does | Before changing a layer or an old function |
 | `dev/DOMAIN.md` | Glossary and methodological references | When a term is unclear |
 
-Code comments and the registers cite the rewrite's brief (`brief §…`), PROJECT_CONTEXT, and phase documents; they are in the history at commit `5977087` (`dev/README.md`).
+Code comments and the registers cite the rewrite's brief (`brief §…`), PROJECT_CONTEXT, and phase documents, in the history at commit `5977087`, and the CoxPH phase's brief, design, plans, and facts, in the history at commit `447398e` (`dev/README.md`).
 
 ## Starting a session
 
@@ -48,7 +48,7 @@ Code comments and the registers cite the rewrite's brief (`brief §…`), PROJEC
 ## Non-negotiables
 
 - The statistical behavior of the existing models is the specification: pprof 1.0.3's, as the reference fixtures freeze it, with the exceptions decided in `dev/DISCREPANCIES.md`. This covers estimates and iteration paths, variances, tests, p-values, intervals, standardization formulas, flags, screening and inclusion, provider ordering, defaults (thread counts excepted), and the conventions in `dev/CONVENTIONS.md`.
-- For the Cox models of the CoxPH phase, the specification is `pprof_py` v0.7.0's behavior (commit `9320766`), with the exceptions decided in `dev/DISCREPANCIES.md`; the brief's §3 is the equivalence contract, and its Appendix B lists `pprof_py` defects not to reproduce.
+- For the Cox models of the CoxPH phase, the specification is `pprof_py` v0.7.0's behavior (commit `9320766`), with the exceptions decided in `dev/DISCREPANCIES.md`; the CoxPH brief's §3 (in the history at `447398e`) is the equivalence contract, and its Appendix B lists `pprof_py` defects not to reproduce.
 - For the features of the logistic extensions phase, the specification is pprofR 0.2.0's behavior (commit `f23c288`), with the exceptions decided in `dev/DISCREPANCIES.md`; `dev/logistic_brief.md` §3 is the equivalence contract, and its Appendix B lists pprofR defects not to reproduce. Binary outcomes keep pprof's results bitwise.
 - Every behavioral difference in an existing model goes in `dev/DISCREPANCIES.md` with a class:
   - A: the reference crashes, errors, returns `NULL`, misaligns results with provider IDs, or is nondeterministic. May be fixed, with a regression test.

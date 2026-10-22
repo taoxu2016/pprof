@@ -7,7 +7,7 @@ paths:
 
 # Testing and equivalence conventions
 
-Source: the rewrite's brief §3 and §6 (in the history, `dev/README.md`); for Cox models, the CoxPH brief (`dev/coxph_brief.md`) §3 and §6; for binomial outcomes, clusters, and the other features of pprofR, the logistic extensions brief (`dev/logistic_brief.md`) §3 and §6. Read those sections when in doubt.
+Source: the rewrite's brief §3 and §6 (in the history, `dev/README.md`); for Cox models, the CoxPH brief §3 and §6 (in the history at `447398e`, `dev/README.md`); for binomial outcomes, clusters, and the other features of pprofR, the logistic extensions brief (`dev/logistic_brief.md`) §3 and §6. Read those sections when in doubt.
 
 - Fixtures in `tests/testthat/fixtures/reference/` come only from the committed generator in `dev/reference/`. The generator runs the pinned reference (pprof 1.0.3, commit `5260838`) in an isolated library and a separate R session, with `threads = 1` passed explicitly and explicit seeds.
 - Cox fixtures, in `tests/testthat/fixtures/cox/`, come only from their committed generator in `dev/reference/`. It runs the second reference, `pprof_py` v0.7.0 (commit `9320766`), in a pinned Python environment, and pinned R packages (`survival`, `glmnet`) in an isolated library. Their manifest records the Python and package versions too. Tests never need Python or `pprof_py` (CoxPH brief §3.1).

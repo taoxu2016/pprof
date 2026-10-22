@@ -2,7 +2,7 @@
 
 Status: approved with the Phase 0 gate on 2026-10-02. Branch: `rewrite/v2`. Open questions (§M) remain open until the methodology owners answer them.
 
-> Citations of the v2 rewrite's working documents (the brief, PROJECT_CONTEXT, the phase plans and handoffs, the Phase 0 audit's evidence IDs, the phase fact scripts, the final review) refer to files removed when the rewrite closed on 2026-10-07; `dev/README.md` says where they are. PROJECT_CONTEXT §5.7 is now `dev/CONVENTIONS.md`, and §9 `dev/OPEN_QUESTIONS.md`.
+> Citations of the v2 rewrite's working documents (the brief, PROJECT_CONTEXT, the phase plans and handoffs, the Phase 0 audit's evidence IDs, the phase fact scripts, the final review) refer to files removed when the rewrite closed on 2026-10-07; `dev/README.md` says where they are. PROJECT_CONTEXT §5.7 is now `dev/CONVENTIONS.md`, and §9 `dev/OPEN_QUESTIONS.md`. Citations of the CoxPH phase's working documents (its brief, status log, design, plans, wording list, final review, and fact scripts) refer to files removed on 2026-10-22, in the history at commit `447398e` (`dev/README.md`).
 
 This is the Phase 0 design document required by brief §10. Its companions:
 
