@@ -2,7 +2,7 @@
 
 The dated log of the logistic extensions phase (`dev/logistic_brief.md`, §0): an entry after each session with material progress, naming the next step. Newest last.
 
-**Status:** Phase L0, design and decisions, is closed (2026-10-20) and in `main`. Phase L1, reference capture, is complete on `logistic/phase-1` and awaits the project lead's approval at its gate; L2 starts only after it.
+**Status:** Phase L0, design and decisions, is closed (2026-10-20) and in `main`. Phase L1, reference capture, is closed (2026-10-22) and in `main`. Phase L2, binomial outcomes, is next, its plan first.
 
 ## 2026-10-20: the brief
 
@@ -109,3 +109,10 @@ On `logistic/phase-1`, by `dev/design/LOGISTIC_L1_PLAN.md`:
   - the line search's premature stops at tight tolerances, in both packages;
   - the tarball's room, now 11,922 bytes. The comparisons always skip under `R CMD check`, so leaving their two files out of the tarball is one option for DEC-153's choice at L2's gate.
 - Next step: the project lead's approval of L1's gate, and the answer to M-66. Then L2, binomial outcomes, on `logistic/phase-2` from `main`, its plan first.
+
+## 2026-10-22: Phase L1's gate closed
+
+- The project lead approved closing L1's gate and decided M-66 as proposed ("Use your recommendations on M-66"; DEC-161): the limits and the indirect measures keep their tiers, and from L2 the limits' equations are also compared at fixed effects.
+- As at L0, the work goes to `main` without a pull request: the fork's `main` takes `logistic/phase-1` as a fast-forward from `2efb4e7`.
+- With no pull request, `rewrite-sanitizers` does not run; L1 changes no package code. The other workflows run on the push, `rewrite-reference` with the pprofR comparisons for the first time.
+- Next step: Phase L2, binomial outcomes, on `logistic/phase-2` from `main`, its plan first (`dev/design/LOGISTIC_L2_PLAN.md`), for the project lead's approval.

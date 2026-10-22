@@ -358,7 +358,7 @@ The existing tiers, applied as the brief's §3.5 says, calibrated in L1 against 
 
 Where pprof's convention differs from pprofR's (§3.3 of the brief), the comparison expects the difference the register entry states, and the report lists such cases.
 
-**As built (L1; DEC-158).** The table is applied in `tests/testthat/helper-pprofr-fixtures.R`. The calibration (`dev/reference/pprofr/calibrate.R`, `validation/pprofr-calibration-report.md`) found every agreement with an independent reference within its tier; 187 of 196 rows pass. In the nine others a control lies within 10 units: the limits under `root` (one event moved: 0.22 to 8.4 units) and the indirect measures under `closed_form` (the null shifted by 1e-9: about 7). M-66 puts them to the project lead.
+**As built (L1; DEC-158).** The table is applied in `tests/testthat/helper-pprofr-fixtures.R`. The calibration (`dev/reference/pprofr/calibrate.R`, `validation/pprofr-calibration-report.md`) found every agreement with an independent reference within its tier; 187 of 196 rows pass. In the nine others a control lies within 10 units: the limits under `root` (one event moved: 0.22 to 8.4 units) and the indirect measures under `closed_form` (the null shifted by 1e-9: about 7). M-66 put them to the project lead, who decided as proposed (DEC-161): the tiers stay, and from L2 the limits' equations are also compared at fixed effects.
 
 ### G.3 Test layers
 

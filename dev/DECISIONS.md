@@ -1514,7 +1514,7 @@ The decisions below were made in Phase L1 of the logistic extensions phase, unde
 ### DEC-158: The comparison rules and their calibration
 
 - Date: 2026-10-21
-- Status: accepted with the L1 plan; M-66 asks the project lead about the two kinds of result whose controls fall short
+- Status: accepted with the L1 plan; M-66 asked the project lead about the two kinds of result whose controls fall short, decided as proposed (DEC-161)
 - Context: The brief's §3.5 keeps the tiers and asks L1 to apply them to each kind of result, with a calibration against negative controls: agreement within 1 tolerance unit, every control at least 10 units away.
 - Decision: the tiers' application of LOGISTIC_L1_PLAN §3.4, in `tests/testthat/helper-pprofr-fixtures.R`: counts and flags `exact`, estimates `iterative`, closed-form results `closed_form`, p-values `probability` (the exact statistic by DEC-083's rule), limits `root`. `dev/reference/pprofr/calibrate.R` compares each kind of result with an independent reference and with the negative controls, and writes `validation/pprofr-calibration-report.md`. The references are `glm()`, `sandwich::vcovCL()`, pprof's binary code on the data expanded into trials, and plain-R versions of pprofR's definitions at its own estimates.
   - Every agreement is within its tier: 187 of 196 calibrated rows pass.
@@ -1550,3 +1550,16 @@ The decisions below were made in Phase L1 of the logistic extensions phase, unde
   - The cluster-level tests take about what the model-based ones do.
   - The exact test and its intervals grow with the square of the trials, up to 383 s for one provider of 10,000 trials.
   - The machine paged throughout, so L2 to L4 decide from paired runs in one process.
+
+### DEC-161: The tiers of the limits and the indirect measures stay; the limits' equations are compared at fixed effects
+
+- Date: 2026-10-22
+- Status: accepted by the project lead at L1's gate ("Use your recommendations on M-66"), as M-66 proposed
+- Context: L1's calibration found two kinds of result whose negative controls lie within 10 units of their tier (DEC-158).
+  - Under `root`, one event moved shifts the exact and score limits by 0.22 to 8.4 units, so the tier cannot see a one-event change in a provider with hundreds of trials.
+  - Under `closed_form`, the null shifted by 1e-9 moves the indirect measures by about 7 units.
+- Decision:
+  - The limits keep the `root` tier, within which pprof's root finder (K-90) and pprofR's differ (D-85). From L2, the limits' equations are also compared at fixed effects: the package's exact tails and score statistics at pprofR's limits, against plain-R versions of pprofR's, under `probability` and `closed_form`.
+  - The indirect measures keep `closed_form`, which detects the null's shift. The 10-unit margin is met by the event-moved control.
+- Alternatives considered: a tighter root finder for every family, a Class B change of existing results (D-85's option 3); a larger null shift as the measures' control.
+- Consequences: L2's plan adds the equations' comparisons for binomial outcomes, and the binary ones beside them; no tier changes.
